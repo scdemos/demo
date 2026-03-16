@@ -9,14 +9,29 @@ const PAGE_SIZE = 200;
  * @param {string} origin - Content origin URL
  * @returns {Promise<Array>}
  */
-async function fetchAllArticles(origin) {
+async function fetchAllArticles(origin, siteUrl, env) {
   const results = [];
   let offset = 0;
+  const host = new URL(siteUrl).hostname;
 
   let rows;
   do {
     const url = `${origin}/query-index.json?offset=${offset}&limit=${PAGE_SIZE}`;
-    const resp = await fetch(url);
+    const headers = {
+      'x-forwarded-host': host,
+      'x-byo-cdn-type': 'cloudflare',
+    };
+    if (env.PUSH_INVALIDATION !== 'disabled') {
+      headers['x-push-invalidation'] = 'enabled';
+    }
+    if (env.ORIGIN_AUTHENTICATION) {
+      headers.authorization = `token ${env.ORIGIN_AUTHENTICATION}`;
+    }
+    const req = new Request(url, {
+      headers,
+      cf: { cacheEverything: true },
+    });
+    const resp = await fetch(req);
     if (!resp.ok) throw new Error(`query-index fetch failed: ${resp.status}`);
     const json = await resp.json();
     rows = json?.data || [];
@@ -51,8 +66,8 @@ function getTimestamp(row) {
 /**
  * Build sorted article list.
  */
-async function getArticles(origin) {
-  const all = await fetchAllArticles(origin);
+async function getArticles(origin, siteUrl, env) {
+  const all = await fetchAllArticles(origin, siteUrl, env);
   return all
     .filter(isArticle)
     .sort((a, b) => getTimestamp(b) - getTimestamp(a));
@@ -192,7 +207,7 @@ export default {
     }
 
     try {
-      const articles = await getArticles(origin);
+      const articles = await getArticles(origin, siteUrl, env);
 
       if (pathname === '/feed.json') {
         return new Response(buildJsonFeed(articles, siteUrl), {
