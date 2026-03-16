@@ -1,0 +1,15 @@
+name: Deploy Contact Us Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/contact_us/**/*.js'
+      - 'workers/contact_us/wrangler.toml'
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-worker.yaml
+    secrets: inherit
+    with:
+      working-directory: workers/contact_us
