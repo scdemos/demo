@@ -3,10 +3,11 @@ main = "index.js"
 compatibility_date = "2026-02-16"
 account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
 
-routes = [
-  { pattern = "demo.bbird.live/rss.xml", zone_name = "bbird.live" },
-  { pattern = "demo.bbird.live/feed.json", zone_name = "bbird.live" },
-]
+# Uncomment once bbird.live zone is in this Cloudflare account
+# routes = [
+#   { pattern = "demo.bbird.live/rss.xml", zone_name = "bbird.live" },
+#   { pattern = "demo.bbird.live/feed.json", zone_name = "bbird.live" },
+# ]
 
 [vars]
 SITE_URL = "https://demo.bbird.live"
