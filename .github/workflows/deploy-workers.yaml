@@ -1,0 +1,63 @@
+name: Deploy Workers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/**'
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      auth: ${{ steps.changes.outputs.auth }}
+      contact_us: ${{ steps.changes.outputs.contact_us }}
+      feed: ${{ steps.changes.outputs.feed }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            auth:
+              - 'workers/auth/**'
+            contact_us:
+              - 'workers/contact_us/**'
+            feed:
+              - 'workers/feed/**'
+
+  deploy-auth:
+    needs: detect
+    if: needs.detect.outputs.auth == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ac7ee4615628005dc5ba0a22f0aae2a6
+          workingDirectory: workers/auth
+
+  deploy-contact-us:
+    needs: detect
+    if: needs.detect.outputs.contact_us == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ac7ee4615628005dc5ba0a22f0aae2a6
+          workingDirectory: workers/contact_us
+
+  deploy-feed:
+    needs: detect
+    if: needs.detect.outputs.feed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ac7ee4615628005dc5ba0a22f0aae2a6
+          workingDirectory: workers/feed
