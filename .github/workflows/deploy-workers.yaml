@@ -16,19 +16,14 @@ jobs:
       feed: ${{ steps.changes.outputs.feed }}
     steps:
       - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: changes
         with:
-          filters: |
-            auth:
-              - 'workers/auth/**/*.js'
-              - 'workers/auth/wrangler.toml'
-            contact_us:
-              - 'workers/contact_us/**/*.js'
-              - 'workers/contact_us/wrangler.toml'
-            feed:
-              - 'workers/feed/**/*.js'
-              - 'workers/feed/wrangler.toml'
+          fetch-depth: 2
+      - id: changes
+        run: |
+          changed=$(git diff --name-only HEAD~1 HEAD)
+          echo "auth=$(echo "$changed" | grep -qE '^workers/auth/(.*\.js|wrangler\.toml)$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "contact_us=$(echo "$changed" | grep -qE '^workers/contact_us/(.*\.js|wrangler\.toml)$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "feed=$(echo "$changed" | grep -qE '^workers/feed/(.*\.js|wrangler\.toml)$' && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   deploy-auth:
     needs: detect
