@@ -184,7 +184,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const { pathname } = url;
-    const siteUrl = (env.SITE_URL || 'https://diyfire.ca').replace(/\/+$/, '');
+    const siteUrl = (env.SITE_URL || 'https://demo.bbird.live').replace(/\/+$/, '');
     const origin = (env.CONTENT_ORIGIN || 'https://main--demo--scdemos.aem.live').replace(/\/+$/, '');
 
     if (pathname !== '/rss.xml' && pathname !== '/feed.json') {

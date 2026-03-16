@@ -3,7 +3,7 @@ main = "index.js"
 compatibility_date = "2026-02-16"
 
 [vars]
-SITE_URL = "https://diyfire.ca"
+SITE_URL = "https://demo.bbird.live"
 CONTENT_ORIGIN = "https://main--demo--scdemos.aem.live"
 
 [observability.logs]
