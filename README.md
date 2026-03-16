@@ -1,8 +1,8 @@
 Demo Project - Cloud Adoption
 
 ## Environments
-- Preview: https://main--diyfire--cloudadoption.aem.page/
-- Live: https://main--diyfire--cloudadoption.aem.live/
+- Preview: https://main--demo--scdemos.aem.page/
+- Live: https://main--demo--scdemos.aem.live/
 
 ## Documentation
 

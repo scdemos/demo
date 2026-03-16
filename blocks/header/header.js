@@ -15,7 +15,7 @@ import {
 } from '../../scripts/shared/auth-api.js';
 
 const DESKTOP = window.matchMedia('(min-width: 900px)');
-const THEME_KEY = 'diyfire-theme';
+const THEME_KEY = 'demo-theme';
 
 function getNavPath() {
   const meta = getMetadata('nav');

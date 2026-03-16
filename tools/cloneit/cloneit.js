@@ -7,10 +7,10 @@
 
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 
-const ORG = 'cloudadoption';
-const BASELINE_SITE = 'diyfire';
-const CODE_OWNER = 'cloudadoption';
-const CODE_REPO = 'diyfire';
+const ORG = 'scdemos';
+const BASELINE_SITE = 'demo';
+const CODE_OWNER = 'scdemos';
+const CODE_REPO = 'demo';
 
 const API = {
   AEM_CONFIG: 'https://admin.hlx.page/config',

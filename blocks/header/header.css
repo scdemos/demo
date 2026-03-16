@@ -1040,7 +1040,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     outline-offset: -2px;
   }
 
-  /* mega menu – desktop: full-width panel, centered content (like diyfire) */
+  /* mega menu – desktop: full-width panel, centered content */
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul {
     display: flex;
     justify-content: center;

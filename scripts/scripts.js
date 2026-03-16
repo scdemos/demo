@@ -37,7 +37,7 @@ function isExperimentationEnabled() {
     || Object.keys(getAllMetadata('audience')).length;
 }
 
-const THEME_STORAGE_KEY = 'diyfire-theme';
+const THEME_STORAGE_KEY = 'demo-theme';
 
 function applyTheme(theme) {
   let t = theme ?? (() => { try { return localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { return null; } })();

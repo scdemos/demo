@@ -22,7 +22,7 @@ function getBaseUrl() {
   const { origin } = window.location;
   if (origin.includes('.aem.')) return origin;
   if (origin.includes('localhost')) return origin;
-  return 'https://main--diyfire--cloudadoption.aem.live';
+  return 'https://main--demo--scdemos.aem.live';
 }
 
 function resolveUrl(path) {
@@ -60,7 +60,7 @@ function Hero() {
     <section class="hero">
       <h1>AEM Embed Tester</h1>
       <p>
-        This page demonstrates embedding diyfire content in a non-AEM page
+        This page demonstrates embedding demo content in a non-AEM page
         using the <code>${'<aem-embed>'}</code> web component.
         The header and footer above and below are live embeds.
       </p>
@@ -137,7 +137,7 @@ function App() {
       <div class="bottom-content">
         <p>
           Built with Preact + htm — this entire page is a non-AEM surface
-          consuming diyfire content via <a href="https://www.aem.live/docs/aem-embed"><code>${'<aem-embed>'}</code></a>.
+          consuming demo content via <a href="https://www.aem.live/docs/aem-embed"><code>${'<aem-embed>'}</code></a>.
         </p>
       </div>
     </main>

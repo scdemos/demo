@@ -106,7 +106,7 @@ When facing trade-offs, follow this order: *Intuitive* (author-friendly) > *Simp
     - Pass `--html-folder drafts` when starting dev server
     - Use `.html` or `.plain.html` extensions
 - **Three-phase loading**: Pages load in phases for performance (eager → LCP, lazy → rest, delayed → martech); see `loadPage()` in `scripts.js`
-- **Dark/light theme**: Persisted in `localStorage` (`diyfire-theme`), applied via `data-theme` attribute and `light-scheme`/`dark-scheme` body classes
+- **Dark/light theme**: Persisted in `localStorage` (`demo-theme`), applied via `data-theme` attribute and `light-scheme`/`dark-scheme` body classes
 - **Auto-blocking**: Fragment links (`/fragments/*`) and YouTube URLs are automatically wrapped in blocks; see `buildAutoBlocks()` in `scripts.js`. Use `#_dnb` hash to opt out of fragment auto-blocking.
 - **Dynamic blocks**: Tabs and modal are conditionally loaded after sections via `blocks/dynamic/index.js`
 

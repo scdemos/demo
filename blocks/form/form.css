@@ -1,4 +1,4 @@
-/* Contact-style form layout (inspired by kunwarsaluja/diyfire contact-us) */
+/* Contact-style form layout (inspired by contact-us pattern) */
 main .form-container {
   max-width: min(var(--grid-container-width), 860px);
   width: 100%;

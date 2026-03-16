@@ -8,13 +8,13 @@ CloneIt creates a new repoless site by:
 
 1. **Creating DA folder** – Creates the new site folder in DA with a minimal `index.html`.
 2. **Copying DA config** – Fetches repo-level config from the baseline via [DA Config GET](https://opensource.adobe.com/da-admin/#tag/Config/operation/getConfig) and creates it for the new site via [DA Config POST](https://opensource.adobe.com/da-admin/#tag/Config/operation/createConfig). Skipped if baseline has no config.
-3. **Copying DA content** – Recursively copies all files from `cloudadoption/diyfire` to the new site folder, skipping `drafts` and `demo-docs`. Uses the [DA List API](https://admin.da.live/list) to discover all files, then the [DA Copy API](https://opensource.adobe.com/da-admin/#tag/Copy) per file (the Copy API does not recurse into folders). If copy fails, falls back to updating the minimal `index.html`.
-4. **Creating the AEM site config** – Fetches the baseline diyfire configuration from the [AEM Admin API](https://www.aem.live/docs/admin.html#tag/siteConfig/operation/createSiteSite), copies only code, sidekick, and headers, sets content to the new DA URL, and creates the site via `PUT /config/{org}/sites/{site}.json`
+3. **Copying DA content** – Recursively copies all files from `scdemos/demo` to the new site folder, skipping `drafts` and `demo-docs`. Uses the [DA List API](https://admin.da.live/list) to discover all files, then the [DA Copy API](https://opensource.adobe.com/da-admin/#tag/Copy) per file (the Copy API does not recurse into folders). If copy fails, falls back to updating the minimal `index.html`.
+4. **Creating the AEM site config** – Fetches the baseline demo configuration from the [AEM Admin API](https://www.aem.live/docs/admin.html#tag/siteConfig/operation/createSiteSite), copies only code, sidekick, and headers, sets content to the new DA URL, and creates the site via `PUT /config/{org}/sites/{site}.json`
 5. **Copying query index config** – Fetches the baseline `query.yaml` and creates it for the new site. Skipped if the baseline has no index config.
 
-The new site shares the same codebase (diyfire) and uses `https://content.da.live/cloudadoption/{sitename}/` as its content source.
+The new site shares the same codebase (demo) and uses `https://content.da.live/scdemos/{sitename}/` as its content source.
 
-**Edit in DA:** Open your site in Document Authoring at `https://da.live/edit#/cloudadoption/{sitename}`
+**Edit in DA:** Open your site in Document Authoring at `https://da.live/edit#/scdemos/{sitename}`
 
 ## How to Use
 
@@ -24,7 +24,7 @@ The new site shares the same codebase (diyfire) and uses `https://content.da.liv
 2. **Authentication** – The app must be opened from a DA context (e.g. da.live) to obtain the bearer token for API calls
 3. Enter a **site name** (lowercase, numbers and hyphens only, max 50 chars, e.g. `my-new-site`). Reserved names like `admin`, `api`, `config` are blocked.
 4. Click **Clone Site**
-5. Access your new site at `https://main--{sitename}--cloudadoption.aem.page`
+5. Access your new site at `https://main--{sitename}--scdemos.aem.page`
 6. **Bulk Preview/Publish** (optional) – After a successful clone, click **Bulk Preview/Publish** to copy all content URLs to your clipboard. A modal guides you to the [DA Bulk app](https://da.live/apps/bulk), where you paste the URLs and run preview or publish as needed.
 
 ---
@@ -60,15 +60,15 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 
 | API | Endpoint | Purpose |
 |-----|----------|---------|
-| DA Admin | `GET /config/cloudadoption/diyfire/` | Fetch baseline repo config |
-| DA Admin | `POST /config/cloudadoption/{site}/` | Create config for new site |
-| DA Admin | `GET /list/cloudadoption/diyfire/{path}` | Discover all files recursively |
-| DA Admin | `POST /copy/cloudadoption/diyfire/{path}` | Copy each file to new site folder |
-| DA Admin | `POST /source/cloudadoption/{site}/index.html` | Fallback: create minimal content if copy fails |
-| AEM Admin | `GET /config/cloudadoption/sites/diyfire.json` | Fetch baseline config |
-| AEM Admin | `PUT /config/cloudadoption/sites/{site}.json` | Create repoless site |
-| AEM Admin | `GET /config/cloudadoption/sites/diyfire/content/query.yaml` | Fetch baseline index config |
-| AEM Admin | `PUT /config/cloudadoption/sites/{site}/content/query.yaml` | Create index config for new site |
+| DA Admin | `GET /config/scdemos/demo/` | Fetch baseline repo config |
+| DA Admin | `POST /config/scdemos/{site}/` | Create config for new site |
+| DA Admin | `GET /list/scdemos/demo/{path}` | Discover all files recursively |
+| DA Admin | `POST /copy/scdemos/demo/{path}` | Copy each file to new site folder |
+| DA Admin | `POST /source/scdemos/{site}/index.html` | Fallback: create minimal content if copy fails |
+| AEM Admin | `GET /config/scdemos/sites/demo.json` | Fetch baseline config |
+| AEM Admin | `PUT /config/scdemos/sites/{site}.json` | Create repoless site |
+| AEM Admin | `GET /config/scdemos/sites/demo/content/query.yaml` | Fetch baseline index config |
+| AEM Admin | `PUT /config/scdemos/sites/{site}/content/query.yaml` | Create index config for new site |
 
 ## Authentication
 
