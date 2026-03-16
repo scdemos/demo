@@ -1,0 +1,222 @@
+/* Hero block – Heritage Elite, mobile-first */
+
+.hero-container .hero-wrapper {
+  max-width: unset;
+  padding: 0;
+}
+
+.hero {
+  position: relative;
+  background-color: light-dark(var(--color-parchment), var(--color-obsidian));
+}
+
+/* Image */
+.hero > div:first-child,
+.hero .hero-img-light,
+.hero .hero-img-dark {
+  line-height: 0;
+}
+
+/* Dual-image hero: light shown by default, dark hidden */
+.hero .hero-img-dark {
+  display: none;
+}
+
+/* Dark theme: swap images (must match light-dark() triggers, not OS preference) */
+.dark-scheme .hero .hero-img-light,
+:root[data-theme='dark'] .hero .hero-img-light {
+  display: none;
+}
+
+.dark-scheme .hero .hero-img-dark,
+:root[data-theme='dark'] .hero .hero-img-dark {
+  display: block;
+}
+
+.hero picture img {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  object-fit: cover;
+  opacity: 0.5;
+}
+
+/* Text overlay */
+.hero > div:last-child {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 40px var(--content-padding-inline);
+  display: flex;
+  align-items: center;
+}
+
+.hero > div:last-child > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-m);
+  max-width: 600px;
+}
+
+/* Tagline */
+.hero .hero-tagline {
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-gold);
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  margin: 0;
+}
+
+/* Heading */
+.hero h1 {
+  margin: 0;
+  font-family: var(--font-family-serif);
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.hero h1 em {
+  font-weight: 400;
+  font-style: italic;
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
+}
+
+/* Body text — hidden on mobile */
+.hero p:not(.button-container, .hero-tagline) {
+  display: none;
+  max-width: 550px;
+  margin: 0;
+  font-family: var(--font-family-serif);
+  font-size: 1.1rem;
+  color: light-dark(var(--color-ink), var(--color-muted));
+  line-height: 1.7;
+}
+
+.hero p.button-container {
+  margin-top: var(--space-s);
+}
+
+/* Icon */
+.hero .icon {
+  flex-shrink: 0;
+  width: 165px;
+  height: 45px;
+}
+
+.hero .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Dark-mode image: blend into obsidian bg with soft edges */
+.dark-scheme .hero .hero-img-dark picture img,
+:root[data-theme='dark'] .hero .hero-img-dark picture img {
+  opacity: 0.35;
+  mask-image: radial-gradient(ellipse 80% 65% at 50% 40%, black 30%, transparent 100%);
+}
+
+/* Tablet: show body text */
+@media (width >= 600px) {
+  .hero p:not(.button-container, .hero-tagline) {
+    display: block;
+    font-size: 1.3rem;
+  }
+}
+
+/* Desktop */
+@media (width >= 900px) {
+  .hero > div:last-child {
+    padding: 80px 5vw;
+  }
+
+  .hero > div:last-child > div {
+    max-width: 1000px;
+    margin: 0 25%;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 4vw, 5rem);
+  }
+}
+
+@media (width >= 1200px) {
+  .hero > div:last-child {
+    padding: 80px 6vw;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.5rem, 4.5vw, 5.5rem);
+  }
+}
+
+/* No-image fallback */
+.hero.no-image > div:last-child {
+  position: static;
+  padding: 80px var(--content-padding-inline);
+}
+
+.hero.no-image > div:last-child > div {
+  align-items: center;
+  text-align: center;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.hero.no-image p:not(.button-container, .hero-tagline) {
+  display: block;
+}
+
+@media (width >= 900px) {
+  .hero.no-image > div:last-child {
+    min-height: 400px;
+    padding: 100px 5vw;
+  }
+}
+
+@media (width >= 1200px) {
+  .hero.no-image > div:last-child {
+    padding: 120px 6vw;
+  }
+}
+
+/* Background color variants */
+.hero.rust {
+  background-color: var(--color-rust);
+}
+
+.hero.rust h1,
+.hero.rust p:not(.button-container, .hero-tagline) {
+  color: var(--color-parchment);
+}
+
+.hero.rust h1 em {
+  color: var(--color-gold);
+}
+
+.hero.gold {
+  background-color: var(--color-gold);
+}
+
+.hero.gold h1,
+.hero.gold p:not(.button-container, .hero-tagline) {
+  color: var(--color-ink);
+}
+
+.hero.ink {
+  background-color: var(--color-ink);
+}
+
+.hero.ink h1,
+.hero.ink p:not(.button-container, .hero-tagline) {
+  color: var(--color-parchment);
+}
+
+.hero.ink h1 em {
+  color: var(--color-rust);
+}

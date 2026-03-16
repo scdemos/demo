@@ -1,0 +1,41 @@
+{
+  "definitions": [
+    {
+      "title": "Related Articles",
+      "id": "related-articles",
+      "model": "related-articles",
+      "plugins": {
+        "da": {
+          "name": "related-articles",
+          "type": "key-value-block"
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "related-articles",
+      "fields": [
+        {
+          "component": "richtext",
+          "name": "links",
+          "label": "Article Links",
+          "description": "A list of links to specific articles."
+        },
+        {
+          "component": "text",
+          "name": "keywords",
+          "label": "Keywords",
+          "description": "Comma-separated keywords to match articles (e.g. fire, tfsa, rrsp). Use 'random' for random articles."
+        },
+        {
+          "component": "text",
+          "name": "excluded-keywords",
+          "label": "Excluded Keywords",
+          "description": "Comma-separated keywords to exclude (e.g. external)"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

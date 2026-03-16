@@ -1,0 +1,31 @@
+{
+  "definitions": [
+    {
+      "title": "Tabs",
+      "id": "tabs",
+      "model": "tabs",
+      "plugins": {
+        "da": {
+          "name": "tabs",
+          "rows": 1,
+          "columns": 1
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "tabs",
+      "fields": [
+        {
+          "component": "text",
+          "name": "classes",
+          "label": "Style",
+          "valueType": "string",
+          "description": "Optional style variant for the tabs block"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

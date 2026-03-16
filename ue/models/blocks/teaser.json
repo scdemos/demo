@@ -1,0 +1,34 @@
+{
+  "definitions": [
+    {
+      "title": "Teaser",
+      "id": "teaser",
+      "model": "teaser",
+      "plugins": {
+        "da": {
+          "name": "teaser",
+          "rows": 1,
+          "columns": 1,
+          "fields": [
+            { "name": "text", "selector": "div>div>p" }
+          ]
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "teaser",
+      "fields": [
+        {
+          "component": "richtext",
+          "name": "text",
+          "label": "Text",
+          "valueType": "string",
+          "description": "Teaser text. Include a link for the CTA (e.g. 'Learn More')"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

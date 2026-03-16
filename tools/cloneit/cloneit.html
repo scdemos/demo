@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CloneIt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Clone the diyfire demo site to create a new repoless site with DA content">
+    <base href="/tools/">
+    <link rel="stylesheet" href="/tools/cloneit/cloneit.css">
+    <script src="https://da.live/nx/utils/sdk.js" type="module"></script>
+    <script src="/tools/cloneit/cloneit.js" type="module"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="app-header">
+        <div class="header-content">
+          <div class="header-main">
+            <div class="app-icon">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+              </svg>
+            </div>
+            <div class="header-text">
+              <h1>Clone-It</h1>
+              <p class="subtitle">Clone demo site → new repoless AEM site</p>
+            </div>
+          </div>
+          <button class="help-btn" type="button" aria-label="Help" id="help-btn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <section class="config-card">
+          <div class="card-content">
+            <h2 class="card-title">New site name</h2>
+            <p class="card-desc">
+              Clones <strong>demo site</strong> content (excl. drafts, demo-docs) and creates a repoless AEM site with the same codebase.
+            </p>
+            <p class="card-note" role="note">
+              Please sign in to AEM Sidekick on the Base Demo site before you initiate the Clone process.
+            </p>
+            <div class="input-group">
+              <label for="site-name-input" class="input-label">
+                <span class="label-text">Site name</span>
+                <span class="label-hint" id="site-name-hint">Lowercase, numbers, hyphens only (max 50 chars)</span>
+              </label>
+              <input
+                type="text"
+                id="site-name-input"
+                class="input-field"
+                placeholder="e.g. retaildemo"
+                autocomplete="off"
+                maxlength="50"
+                pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                aria-describedby="site-name-hint"
+              >
+              <p class="input-preview">
+                <code>https://main--<span id="site-preview">yoursite</span>--cloudadoption.aem.page</code>
+              </p>
+            </div>
+            <button id="clone-btn" class="btn btn-primary" type="button" disabled aria-busy="false">
+              <span class="btn-text">Clone site</span>
+              <span class="btn-loading" style="display: none;">
+                <span class="spinner"></span>
+                <span>Cloning…</span>
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section class="progress-section" id="progress-container" style="display: none;">
+          <div class="progress-card">
+            <div class="progress-header">
+              <span class="progress-phase" id="progress-phase">Initializing</span>
+              <span class="progress-count" id="progress-count"></span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="progress-status" id="progress-text">Starting…</p>
+            <div class="progress-files" id="progress-files" aria-live="polite" role="log"></div>
+          </div>
+        </section>
+
+        <section class="result-section" id="result-container" style="display: none;">
+          <div class="result-card success" id="result-success">
+            <div class="result-header">
+              <svg class="icon result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <h3>Site created</h3>
+            </div>
+            <div class="result-body">
+              <ul id="result-summary-list" class="result-summary"></ul>
+              <div class="bulk-actions" id="bulk-actions">
+                <p class="bulk-actions-label">Next steps</p>
+                <div class="bulk-buttons">
+                  <button id="bulk-btn" class="btn btn-secondary" type="button" disabled>
+                    <span class="btn-text">Bulk Preview/Publish</span>
+                  </button>
+                </div>
+                <p class="bulk-hint"></p>
+              </div>
+              <div class="result-links">
+                <a id="result-site-link" href="#" target="_blank" rel="noopener noreferrer" class="result-link">
+                  <span class="result-link-label">Preview</span>
+                  <span class="result-link-url" id="result-site-url"></span>
+                </a>
+                <a id="result-da-link" href="#" target="_blank" rel="noopener noreferrer" class="result-link">
+                  <span class="result-link-label">DA content</span>
+                  <span class="result-link-url" id="result-da-url"></span>
+                </a>
+                <a id="result-github-link" href="#" target="_blank" rel="noopener noreferrer" class="result-link">
+                  <span class="result-link-label">Code</span>
+                  <span class="result-link-url" id="result-github-url"></span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="result-card error" id="result-error" style="display: none;">
+            <div class="result-header">
+              <svg class="icon result-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              <h3>Clone failed</h3>
+            </div>
+            <div class="result-body">
+              <p id="result-error-message"></p>
+            </div>
+          </div>
+        </section>
+
+        <div id="bulk-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="bulk-modal-title">
+          <div class="modal-content modal-sm">
+            <div class="modal-header">
+              <h2 id="bulk-modal-title">URLs copied</h2>
+              <button class="modal-close" type="button" aria-label="Close">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p id="bulk-modal-message">URLs have been copied to your clipboard.</p>
+              <p>Paste them in the <strong>DA Bulk App</strong> to preview or publish as you see fit.</p>
+              <a href="https://da.live/apps/bulk" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open DA Bulk app</a>
+            </div>
+          </div>
+        </div>
+
+        <div id="help-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 id="help-modal-title">CloneIt Help</h2>
+              <button class="modal-close" type="button" aria-label="Close">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="help-section">
+                <h3>What does CloneIt do?</h3>
+                <p>CloneIt creates a new repoless AEM site by:</p>
+                <ol>
+                  <li><strong>Creating the AEM site config</strong> – Copies the diyfire demo site configuration and points it to a new content source</li>
+                  <li><strong>Creating the DA content repo</strong> – Creates a new folder in Document Authoring (DA) for your site's content</li>
+                </ol>
+              </div>
+              <div class="help-section">
+                <h3>Site naming</h3>
+                <p>Use lowercase letters, numbers, and hyphens only (e.g. <code>my-site</code>, <code>project-2024</code>).</p>
+              </div>
+              <div class="help-section">
+                <h3>After cloning</h3>
+                <p>Your new site shares the same codebase as diyfire. Add content in DA and preview/publish to see it live.</p>
+              </div>
+              <div class="help-section">
+                <h3>Bulk Preview/Publish</h3>
+                <p>After a successful clone, use <strong>Bulk Preview/Publish</strong>. URLs are copied to your clipboard and a modal guides you to the <a href="https://da.live/apps/bulk" target="_blank" rel="noopener noreferrer">DA Bulk app</a>, where you paste and run preview or publish.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="toast-container">
+          <div class="toast hidden" id="toast">
+            <div class="toast-content">
+              <span class="toast-message"></span>
+              <button class="toast-close" type="button" aria-label="Close">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

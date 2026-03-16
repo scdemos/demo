@@ -1,0 +1,474 @@
+[
+  {
+    "id": "page-metadata",
+    "fields": [
+      {
+        "component": "text",
+        "name": "title",
+        "label": "Title"
+      },
+      {
+        "component": "text",
+        "name": "description",
+        "label": "Description"
+      },
+      {
+        "component": "reference",
+        "name": "image",
+        "label": "Image"
+      },
+      {
+        "component": "select",
+        "name": "template",
+        "label": "Template",
+        "description": "Page template",
+        "options": [
+          {
+            "name": "Default",
+            "value": ""
+          },
+          {
+            "name": "Article",
+            "value": "article"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "name": "author",
+        "label": "Author",
+        "description": "Author name (used with article template)"
+      },
+      {
+        "component": "text",
+        "name": "keywords",
+        "label": "Keywords",
+        "description": "Comma-separated keywords (e.g. article, Beginner, tfsa, rrsp, fhsa)"
+      },
+      {
+        "component": "date-time",
+        "name": "date",
+        "label": "Publish Date",
+        "valueType": "string",
+        "description": "Publication date (used with article template)"
+      },
+      {
+        "component": "text",
+        "name": "robots",
+        "label": "Robots",
+        "description": "Index control via robots meta tag"
+      },
+      {
+        "component": "text",
+        "name": "theme",
+        "label": "Theme",
+        "description": "Page theme override"
+      }
+    ]
+  },
+  {
+    "id": "image",
+    "fields": [
+      {
+        "component": "reference",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "name": "imageAlt",
+        "label": "Alt Text"
+      }
+    ]
+  },
+  {
+    "id": "section",
+    "fields": [
+      {
+        "component": "multiselect",
+        "name": "style",
+        "label": "Style",
+        "options": [
+          {
+            "name": "Highlight",
+            "value": "highlight"
+          },
+          {
+            "name": "Tabs",
+            "value": "tabs"
+          },
+          {
+            "name": "Divider",
+            "value": "divider"
+          },
+          {
+            "name": "Spacer Top (Small)",
+            "value": "spacer-top-s"
+          },
+          {
+            "name": "Spacer Top (Medium)",
+            "value": "spacer-top-m"
+          },
+          {
+            "name": "Spacer Top (Large)",
+            "value": "spacer-top-l"
+          },
+          {
+            "name": "Spacer Bottom (Small)",
+            "value": "spacer-bottom-s"
+          },
+          {
+            "name": "Spacer Bottom (Medium)",
+            "value": "spacer-bottom-m"
+          },
+          {
+            "name": "Spacer Bottom (Large)",
+            "value": "spacer-bottom-l"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "name": "tabId",
+        "label": "Tab ID",
+        "description": "Set a tab ID to include this section in a tabs group"
+      },
+      {
+        "component": "text",
+        "name": "tabTitle",
+        "label": "Tab Title",
+        "description": "Display title for the tab (defaults to Tab ID if empty)"
+      },
+      {
+        "component": "reference",
+        "name": "background",
+        "label": "Background Image",
+        "description": "Background image for the section (used by tabs)"
+      }
+    ]
+  },
+  {
+    "id": "cards",
+    "fields": [
+      {
+        "component": "select",
+        "name": "classes",
+        "label": "Variant",
+        "options": [
+          {
+            "name": "Default",
+            "value": ""
+          },
+          {
+            "name": "Links",
+            "value": "links"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cards-item",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false,
+        "description": "Optional. Block renders without image when empty."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "text",
+        "label": "Text",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "columns",
+    "fields": [
+      {
+        "component": "number",
+        "valueType": "number",
+        "name": "columns",
+        "label": "Number of Columns",
+        "value": 2,
+        "validation": {
+          "numberMin": 1,
+          "numberMax": 6
+        }
+      }
+    ]
+  },
+  {
+    "id": "embed",
+    "fields": [
+      {
+        "component": "select",
+        "name": "classes",
+        "label": "Variation",
+        "options": [
+          {
+            "name": "With placeholder",
+            "value": ""
+          },
+          {
+            "name": "No placeholder",
+            "value": "no-placeholder"
+          }
+        ]
+      },
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Placeholder Image",
+        "multi": false,
+        "description": "Optional thumbnail shown before the video plays. Leave empty when using 'No placeholder' variation."
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "embedUrl",
+        "label": "Embed URL",
+        "valueType": "string",
+        "required": true,
+        "description": "URL to embed (YouTube, Vimeo, Twitter, or any embed URL)"
+      }
+    ]
+  },
+  {
+    "id": "form",
+    "fields": [
+      {
+        "component": "text",
+        "name": "urlText",
+        "label": "Form Source URL Text",
+        "valueType": "string",
+        "required": true,
+        "description": "Text to display for the Form Source URL"
+      },
+      {
+        "component": "text",
+        "name": "url",
+        "label": "Form Source URL",
+        "valueType": "string",
+        "required": true,
+        "description": "URL to the JSON form definition"
+      },
+      {
+        "component": "text",
+        "name": "actionUrlText",
+        "label": "Submit Endpoint Text",
+        "valueType": "string",
+        "description": "Text to display for the Submit Endpoint"
+      },
+      {
+        "component": "text",
+        "name": "actionUrl",
+        "label": "Submit Endpoint",
+        "valueType": "string",
+        "description": "URL where form data is submitted"
+      }
+    ]
+  },
+  {
+    "id": "fragment",
+    "fields": [
+      {
+        "component": "text",
+        "name": "urlText",
+        "label": "Fragment URL Text"
+      },
+      {
+        "component": "text",
+        "name": "url",
+        "label": "Fragment URL",
+        "required": true
+      }
+    ]
+  },
+  {
+    "id": "hero",
+    "fields": [
+      {
+        "component": "reference",
+        "valueType": "string",
+        "name": "image",
+        "label": "Image",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "valueType": "string",
+        "name": "imageAlt",
+        "label": "Alt Text",
+        "value": ""
+      },
+      {
+        "component": "text",
+        "name": "heading",
+        "label": "Heading",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
+    "id": "journey-map-step",
+    "fields": [
+      {
+        "component": "richtext",
+        "valueType": "string",
+        "name": "title",
+        "value": "",
+        "label": "Step Title",
+        "required": true
+      },
+      {
+        "component": "richtext",
+        "name": "content",
+        "value": "",
+        "label": "Step Content",
+        "valueType": "string",
+        "required": true
+      }
+    ]
+  },
+  {
+    "id": "related-articles",
+    "fields": [
+      {
+        "component": "richtext",
+        "name": "links",
+        "label": "Article Links",
+        "description": "A list of links to specific articles."
+      },
+      {
+        "component": "text",
+        "name": "keywords",
+        "label": "Keywords",
+        "description": "Comma-separated keywords to match articles (e.g. fire, tfsa, rrsp). Use 'random' for random articles."
+      },
+      {
+        "component": "text",
+        "name": "excluded-keywords",
+        "label": "Excluded Keywords",
+        "description": "Comma-separated keywords to exclude (e.g. external)"
+      }
+    ]
+  },
+  {
+    "id": "search",
+    "fields": [
+      {
+        "component": "select",
+        "name": "view",
+        "label": "View",
+        "options": [
+          {
+            "name": "Cards",
+            "value": "cards"
+          },
+          {
+            "name": "List",
+            "value": "list"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "name": "keywords",
+        "label": "Keywords",
+        "valueType": "string",
+        "description": "Comma-separated keywords to filter articles (e.g. tfsa, rrsp, fhsa)"
+      },
+      {
+        "component": "text",
+        "name": "excluded-keywords",
+        "label": "Excluded Keywords",
+        "valueType": "string",
+        "description": "Comma-separated keywords to exclude from results (e.g. noindex)"
+      },
+      {
+        "component": "select",
+        "name": "searchbar",
+        "label": "Search Bar",
+        "options": [
+          {
+            "name": "Disabled",
+            "value": ""
+          },
+          {
+            "name": "Enabled",
+            "value": "enabled"
+          }
+        ]
+      },
+      {
+        "component": "text",
+        "name": "category",
+        "label": "Category Filter",
+        "valueType": "string",
+        "description": "Comma-separated category options (e.g. FIRE, TFSA, RRSP, FHSA, Others)"
+      },
+      {
+        "component": "text",
+        "name": "level",
+        "label": "Level Filter",
+        "valueType": "string",
+        "description": "Comma-separated level options (e.g. Beginner, Advanced)"
+      },
+      {
+        "component": "text",
+        "name": "type",
+        "label": "Type Filter",
+        "valueType": "string",
+        "description": "Comma-separated type options (e.g. Article, Video)"
+      }
+    ]
+  },
+  {
+    "id": "social-share",
+    "fields": []
+  },
+  {
+    "id": "tabs",
+    "fields": [
+      {
+        "component": "text",
+        "name": "classes",
+        "label": "Style",
+        "valueType": "string",
+        "description": "Optional style variant for the tabs block"
+      }
+    ]
+  },
+  {
+    "id": "teaser",
+    "fields": [
+      {
+        "component": "richtext",
+        "name": "text",
+        "label": "Text",
+        "valueType": "string",
+        "description": "Teaser text. Include a link for the CTA (e.g. 'Learn More')"
+      }
+    ]
+  }
+]

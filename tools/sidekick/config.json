@@ -1,0 +1,13 @@
+{
+  "project": "DIYFire",
+  "plugins": [
+    {
+      "id": "experimentation",
+      "titleI18n": {
+        "en": "Experimentation"
+      },
+      "environments": ["dev", "preview"],
+      "event": "experimentation"
+    }
+  ]
+}

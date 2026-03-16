@@ -1,0 +1,8 @@
+[
+  {
+    "id": "main",
+    "components": ["section"]
+  },
+  { "...": "./section.json#/filters" },
+  { "...": "./blocks/*.json#/filters" }
+]

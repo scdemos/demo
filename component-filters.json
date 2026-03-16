@@ -1,0 +1,56 @@
+[
+  {
+    "id": "main",
+    "components": [
+      "section"
+    ]
+  },
+  {
+    "id": "section",
+    "components": [
+      "cards",
+      "columns",
+      "embed",
+      "form",
+      "fragment",
+      "hero",
+      "image",
+      "journey-map",
+      "related-articles",
+      "search",
+      "social-share",
+      "tabs",
+      "teaser",
+      "text"
+    ]
+  },
+  {
+    "id": "cards",
+    "components": [
+      "cards-item"
+    ]
+  },
+  {
+    "id": "columns",
+    "components": [
+      "columns-row"
+    ]
+  },
+  {
+    "id": "columns-row",
+    "components": []
+  },
+  {
+    "id": "columns-cell",
+    "components": [
+      "text",
+      "image"
+    ]
+  },
+  {
+    "id": "journey-map",
+    "components": [
+      "journey-map-step"
+    ]
+  }
+]

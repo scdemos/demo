@@ -1,0 +1,227 @@
+/* Tabs block – Heritage Elite, mobile-first */
+
+.tabs {
+  color: var(--text-color);
+}
+
+/* Break out of constrained content area */
+main .section.tabs,
+main .section .tabs {
+  width: 100vw;
+  max-width: none;
+  margin-inline: calc(50% - 50vw);
+  box-sizing: border-box;
+}
+
+.tabs a {
+  color: inherit;
+  -webkit-text-fill-color: currentcolor;
+}
+
+.tabs .tabs-wrapper {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+/* Section header above tabs */
+.tabs .tabs-wrapper .section h2 {
+  font-family: var(--font-family-serif);
+  font-size: 2.5rem;
+  color: var(--color-rust);
+  margin: 0;
+  text-align: center;
+}
+
+.tabs .tabs-wrapper .section p {
+  font-family: var(--font-family-serif);
+  font-size: 1.1rem;
+  color: light-dark(var(--color-ink), var(--color-muted));
+  opacity: 0.7;
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* Tab list */
+.tabs .tabs-list {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0 auto var(--space-l);
+  max-width: 900px;
+  padding: 0 var(--space-xs) var(--space-xs);
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  border-bottom: var(--border-heritage);
+}
+
+.tabs .tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs .tabs-list button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: light-dark(var(--color-ink), var(--color-muted));
+  -webkit-text-fill-color: currentcolor;
+  cursor: pointer;
+  font-family: var(--body-font-family);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+  padding: 16px 18px;
+  opacity: 0.5;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.tabs .tabs-list button.is-active,
+.tabs .tabs-list button[aria-selected='true'] {
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  -webkit-text-fill-color: light-dark(var(--color-rust), var(--color-rust-bright));
+  opacity: 1;
+  border-bottom-color: light-dark(var(--color-rust), var(--color-rust-bright));
+}
+
+.tabs .tabs-list button:hover {
+  opacity: 0.8;
+}
+
+.tabs .tabs-list button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+}
+
+/* Tab panels */
+.tabs .tabs-content {
+  margin-top: var(--space-m);
+  padding-bottom: var(--space-m);
+}
+
+.tabs .tab[role='tabpanel'] {
+  display: none;
+}
+
+.tabs .tab[role='tabpanel'][aria-hidden='false'] {
+  display: block;
+}
+
+/* Tab section content */
+.tabs .tab .section {
+  margin: 0;
+  padding: var(--space-xl) var(--content-padding-inline);
+}
+
+.tabs .tab .section h2 {
+  font-family: var(--font-family-serif);
+  font-weight: 500;
+  font-size: var(--heading-font-size-m);
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.tabs .tab .section > :is(.default-content, .default-content-wrapper, .block-content) {
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+}
+
+.tabs .tab .section :is(.default-content, .default-content-wrapper) {
+  margin-block: var(--space-s);
+}
+
+/* Columns inside tabs — stacked vertically, video on top */
+.tabs .columns > div {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-l);
+}
+
+.tabs .columns > div > div {
+  flex: unset;
+  order: unset;
+  width: 100%;
+  max-width: 700px;
+}
+
+.tabs .columns .embed {
+  max-width: 100%;
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  overflow: hidden;
+  background: light-dark(transparent, var(--color-card-dark));
+}
+
+/* Columns text — left aligned */
+.tabs .tab .columns h2 {
+  text-align: left;
+}
+
+.tabs .tab .columns p {
+  text-align: left;
+}
+
+.tabs .tab .columns ul {
+  text-align: left;
+  padding-left: var(--space-l);
+}
+
+.tabs .tab .columns li {
+  margin-bottom: var(--space-s);
+  line-height: 1.6;
+}
+
+/* iOS/WebKit themed sections */
+.section.light-scheme .tabs .tabs-list > button[role='tab'] {
+  color: var(--color-ink);
+  -webkit-text-fill-color: var(--color-ink);
+}
+
+.section.dark-scheme .tabs .tabs-list > button[role='tab'] {
+  color: var(--color-light);
+  -webkit-text-fill-color: var(--color-light);
+}
+
+@media (width >= 600px) {
+  .tabs .tabs-wrapper .section h2 {
+    font-size: 3.2rem;
+  }
+
+  .tabs .tabs-wrapper .section p {
+    font-size: 1.3rem;
+  }
+}
+
+@media (width >= 900px) {
+  .tabs {
+    padding-block: var(--space-xl);
+    border-top: var(--border-heritage);
+  }
+
+  .tabs .tabs-list {
+    justify-content: center;
+    overflow-x: visible;
+    padding: 0 var(--content-padding-inline);
+    gap: var(--space-l);
+    margin-bottom: 60px;
+  }
+
+  .tabs .tabs-list button {
+    padding: 22px 45px;
+  }
+
+  .tabs .tabs-wrapper .section h2 {
+    font-size: 3.8rem;
+  }
+
+  .tabs .columns > div > div {
+    max-width: 800px;
+  }
+
+  .tabs .tab .columns h2 {
+    font-size: var(--heading-font-size-m);
+  }
+}

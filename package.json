@@ -1,0 +1,45 @@
+{
+  "name": "@adobe/aem-boilerplate",
+  "private": true,
+  "version": "1.3.0",
+  "description": "Starter project for Adobe Helix",
+  "scripts": {
+    "lint:js": "eslint .",
+    "lint:css": "stylelint \"blocks/**/*.css\" \"styles/*.css\"",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:fix": "npm run lint:js -- --fix && npm run lint:css -- --fix",
+    "build:json": "npm-run-all -p build:json:models build:json:definitions build:json:filters",
+    "build:json:models": "merge-json-cli -i \"ue/models/component-models.json\" -o \"component-models.json\"",
+    "build:json:definitions": "merge-json-cli -i \"ue/models/component-definition.json\" -o \"component-definition.json\"",
+    "build:json:filters": "merge-json-cli -i \"ue/models/component-filters.json\" -o \"component-filters.json\"",
+    "prepare": "husky",
+    "dev:auth": "wrangler dev --config ./workers/auth/wrangler.toml",
+    "deploy:auth": "wrangler deploy --config ./workers/auth/wrangler.toml",
+    "tail:auth": "wrangler tail --config ./workers/auth/wrangler.toml",
+    "dev:contact-us": "wrangler dev --config ./workers/contact_us/wrangler.toml",
+    "deploy:contact-us": "wrangler deploy --config ./workers/contact_us/wrangler.toml",
+    "tail:contact-us": "wrangler tail --config ./workers/contact_us/wrangler.toml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adobe/aem-boilerplate.git"
+  },
+  "author": "Adobe",
+  "license": "Apache License 2.0",
+  "bugs": {
+    "url": "https://github.com/adobe/aem-boilerplate/issues"
+  },
+  "homepage": "https://github.com/adobe/aem-boilerplate#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "eslint": "^10.0.2",
+    "eslint-plugin-import": "^1.14.0",
+    "globals": "^15.0.0",
+    "husky": "^9.1.7",
+    "merge-json-cli": "^1.0.4",
+    "npm-run-all": "^4.1.5",
+    "stylelint": "17.3.0",
+    "stylelint-config-standard": "40.0.0",
+    "wrangler": "^4.54.0"
+  }
+}

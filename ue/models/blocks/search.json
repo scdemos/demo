@@ -1,0 +1,76 @@
+{
+  "definitions": [
+    {
+      "title": "Search",
+      "id": "search",
+      "model": "search",
+      "plugins": {
+        "da": {
+          "name": "search",
+          "type": "key-value-block"
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "search",
+      "fields": [
+        {
+          "component": "select",
+          "name": "view",
+          "label": "View",
+          "options": [
+            { "name": "Cards", "value": "cards" },
+            { "name": "List", "value": "list" }
+          ]
+        },
+        {
+          "component": "text",
+          "name": "keywords",
+          "label": "Keywords",
+          "valueType": "string",
+          "description": "Comma-separated keywords to filter articles (e.g. tfsa, rrsp, fhsa)"
+        },
+        {
+          "component": "text",
+          "name": "excluded-keywords",
+          "label": "Excluded Keywords",
+          "valueType": "string",
+          "description": "Comma-separated keywords to exclude from results (e.g. noindex)"
+        },
+        {
+          "component": "select",
+          "name": "searchbar",
+          "label": "Search Bar",
+          "options": [
+            { "name": "Disabled", "value": "" },
+            { "name": "Enabled", "value": "enabled" }
+          ]
+        },
+        {
+          "component": "text",
+          "name": "category",
+          "label": "Category Filter",
+          "valueType": "string",
+          "description": "Comma-separated category options (e.g. FIRE, TFSA, RRSP, FHSA, Others)"
+        },
+        {
+          "component": "text",
+          "name": "level",
+          "label": "Level Filter",
+          "valueType": "string",
+          "description": "Comma-separated level options (e.g. Beginner, Advanced)"
+        },
+        {
+          "component": "text",
+          "name": "type",
+          "label": "Type Filter",
+          "valueType": "string",
+          "description": "Comma-separated type options (e.g. Article, Video)"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

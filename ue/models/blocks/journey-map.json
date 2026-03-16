@@ -1,0 +1,62 @@
+{
+  "definitions": [
+    {
+      "title": "Journey Map",
+      "id": "journey-map",
+      "model": "journey-map",
+      "filter": "journey-map",
+      "plugins": {
+        "da": {
+          "name": "journey-map",
+          "rows": 1,
+          "columns": 2
+        }
+      }
+    },
+    {
+      "title": "Journey Map Step",
+      "id": "journey-map-step",
+      "model": "journey-map-step",
+      "plugins": {
+        "da": {
+          "name": "journey-map-step",
+          "rows": 2,
+          "columns": 0,
+          "fields": [
+            { "name": "title", "selector": "div:nth-child(1)" },
+            { "name": "content", "selector": "div:nth-child(2)" }
+          ]
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "journey-map-step",
+      "fields": [
+        {
+          "component": "richtext",
+          "valueType": "string",
+          "name": "title",
+          "value": "",
+          "label": "Step Title",
+          "required": true
+        },
+        {
+          "component": "richtext",
+          "name": "content",
+          "value": "",
+          "label": "Step Content",
+          "valueType": "string",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "journey-map",
+      "components": ["journey-map-step"]
+    }
+  ]
+}

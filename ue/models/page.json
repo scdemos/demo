@@ -1,0 +1,65 @@
+{
+  "models": [
+    {
+      "id": "page-metadata",
+      "fields": [
+        {
+          "component": "text",
+          "name": "title",
+          "label": "Title"
+        },
+        {
+          "component": "text",
+          "name": "description",
+          "label": "Description"
+        },
+        {
+          "component": "reference",
+          "name": "image",
+          "label": "Image"
+        },
+        {
+          "component": "select",
+          "name": "template",
+          "label": "Template",
+          "description": "Page template",
+          "options": [
+            { "name": "Default", "value": "" },
+            { "name": "Article", "value": "article" }
+          ]
+        },
+        {
+          "component": "text",
+          "name": "author",
+          "label": "Author",
+          "description": "Author name (used with article template)"
+        },
+        {
+          "component": "text",
+          "name": "keywords",
+          "label": "Keywords",
+          "description": "Comma-separated keywords (e.g. article, Beginner, tfsa, rrsp, fhsa)"
+        },
+        {
+          "component": "date-time",
+          "name": "date",
+          "label": "Publish Date",
+          "valueType": "string",
+          "description": "Publication date (used with article template)"
+        },
+        {
+          "component": "text",
+          "name": "robots",
+          "label": "Robots",
+          "description": "Index control via robots meta tag"
+        },
+        {
+          "component": "text",
+          "name": "theme",
+          "label": "Theme",
+          "description": "Page theme override"
+        }
+      ]
+    }
+  ]
+}

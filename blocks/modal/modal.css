@@ -1,0 +1,71 @@
+/* Modal – opens fragment links in a dialog */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-s);
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+}
+
+.modal .modal-dialog {
+  position: relative;
+  width: min(920px, calc(100vw - var(--space-xl)));
+  max-height: calc(100vh - var(--space-xl));
+  margin: 0;
+  overflow: auto;
+  border-radius: 12px;
+  background: light-dark(var(--color-light), var(--color-gray-900));
+  box-shadow: 0 12px 30px rgb(0 0 0 / 26%);
+  padding: var(--space-l);
+}
+
+.modal .modal-close {
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  display: block;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: light-dark(var(--color-gray-100), var(--color-gray-700));
+  color: inherit;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal .modal-close:hover {
+  opacity: 0.9;
+}
+
+.modal .modal-content .modal-main {
+  display: block;
+  min-height: 0;
+  max-width: 100%;
+  padding: 0;
+}
+
+.modal .modal-content .modal-main > div,
+.modal .modal-content .modal-main div[data-status] {
+  display: block;
+}
+
+@media (width >= 600px) {
+  .modal {
+    padding: var(--space-m);
+  }
+}

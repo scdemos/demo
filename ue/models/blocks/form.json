@@ -1,0 +1,58 @@
+{
+  "definitions": [
+    {
+      "title": "Form",
+      "id": "form",
+      "model": "form",
+      "plugins": {
+        "da": {
+          "unsafeHTML": "<div class=\"form\"><div><div><p><a href=\"\"></a></p></div></div><div><div><p><a href=\"\"></a></p></div></div></div>",
+          "fields": [
+            { "name": "url", "selector": "div:nth-child(1)>div>p>a[href]"},
+            { "name": "urlText", "selector": "div:nth-child(1)>div>p>a"},
+            { "name": "actionUrl", "selector": "div:nth-child(2)>div>p>a[href]"},
+            { "name": "actionUrlText", "selector": "div:nth-child(2)>div>p>a"}
+          ]
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "form",
+      "fields": [
+        {
+          "component": "text",
+          "name": "urlText",
+          "label": "Form Source URL Text",
+          "valueType": "string",
+          "required": true,
+          "description": "Text to display for the Form Source URL"
+        },
+        {
+          "component": "text",
+          "name": "url",
+          "label": "Form Source URL",
+          "valueType": "string",
+          "required": true,
+          "description": "URL to the JSON form definition"
+        },
+        {
+          "component": "text",
+          "name": "actionUrlText",
+          "label": "Submit Endpoint Text",
+          "valueType": "string",
+          "description": "Text to display for the Submit Endpoint"
+        },
+        {
+          "component": "text",
+          "name": "actionUrl",
+          "label": "Submit Endpoint",
+          "valueType": "string",
+          "description": "URL where form data is submitted"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

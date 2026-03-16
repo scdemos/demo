@@ -1,0 +1,23 @@
+{
+  "definitions": [
+    {
+      "title": "Social Share",
+      "id": "social-share",
+      "model": "social-share",
+      "plugins": {
+        "da": {
+          "name": "social-share",
+          "rows": 0,
+          "columns": 0
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "social-share",
+      "fields": []
+    }
+  ],
+  "filters": []
+}

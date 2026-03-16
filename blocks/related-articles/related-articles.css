@@ -1,0 +1,292 @@
+/* Related articles block – default slider, mobile-first */
+
+main .related-articles {
+  width: 100%;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: var(--space-m) var(--content-padding-inline);
+}
+
+main .related-articles .related-articles-slider {
+  position: relative;
+}
+
+/* List – horizontal scroll by default */
+main .related-articles .related-articles-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  gap: var(--space-l);
+  padding-bottom: var(--space-s);
+  scroll-padding-inline: var(--content-padding-inline);
+}
+
+/* Card */
+main .related-articles .related-articles-card {
+  flex: 0 0 min(86%, 360px);
+  scroll-snap-align: start;
+  margin: 0;
+  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border-radius: var(--space-m);
+  overflow: clip;
+  background: light-dark(var(--color-light), var(--color-gray-900));
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Card link */
+main .related-articles .related-articles-card-link {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+main .related-articles .related-articles-card-link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  border-radius: var(--space-m);
+}
+
+/* Card accent strip */
+main .related-articles .related-articles-card-strip {
+  block-size: var(--space-s);
+  background: var(--color-accent);
+}
+
+/* Card content */
+main .related-articles .related-articles-card-content {
+  padding: var(--space-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  height: 100%;
+}
+
+/* Heading */
+main .related-articles .related-articles-card h3 {
+  margin: 0;
+  font-size: var(--heading-font-size-s);
+}
+
+/* Description */
+main .related-articles .related-articles-card-description {
+  margin: 0;
+  line-height: 1.4;
+  color: light-dark(var(--color-gray-700), var(--color-gray-300));
+}
+
+/* Date */
+main .related-articles .related-articles-card-date {
+  margin: auto 0 0;
+  font-size: var(--body-font-size-xs);
+  color: var(--color-gray-500);
+}
+
+/* Hover & focus */
+main .related-articles .related-articles-card:hover,
+main .related-articles .related-articles-card:focus-within {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 10%);
+}
+
+/* Empty state */
+main .related-articles .related-articles-empty {
+  margin: var(--space-m) 0 0;
+}
+
+/* Slider controls */
+main .related-articles .related-articles-controls {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  inset: 50% 0 auto;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 2;
+  padding-inline: var(--space-xs);
+}
+
+main .related-articles .related-articles-arrow {
+  border: 1px solid light-dark(rgb(255 255 255 / 55%), rgb(255 255 255 / 16%));
+  background: light-dark(rgb(255 255 255 / 72%), rgb(24 27 32 / 70%));
+  color: inherit;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 999px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
+  pointer-events: auto;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+main .related-articles .related-articles-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+main .related-articles .related-articles-arrow.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.9);
+}
+
+@media (width >= 600px) {
+  main .related-articles .related-articles-card {
+    flex-basis: min(88%, 360px);
+  }
+}
+
+@media (width >= 900px) {
+  main .related-articles {
+    padding-inline: 0;
+  }
+
+  main .related-articles .related-articles-card {
+    flex-basis: min(32%, 380px);
+  }
+
+  main .related-articles .related-articles-card-content {
+    padding: var(--space-l);
+  }
+
+  main .related-articles .related-articles-arrow {
+    inline-size: 52px;
+    block-size: 52px;
+    font-size: 24px;
+  }
+}
+
+/* ==========================================================================
+   Bento variant – Heritage Elite grid layout
+   ========================================================================== */
+
+main .related-articles.bento .related-articles-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow-x: visible;
+  overscroll-behavior-x: auto;
+  scroll-snap-type: none;
+  padding-bottom: 0;
+}
+
+main .related-articles.bento .related-articles-card {
+  flex: none;
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+main .related-articles.bento .related-articles-card-link:focus-visible {
+  outline-color: var(--color-gold);
+  border-radius: var(--border-radius-heritage);
+}
+
+main .related-articles.bento .related-articles-card-content {
+  padding: 30px;
+}
+
+/* Keyword tag */
+main .related-articles.bento .related-articles-card-tag {
+  display: block;
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--color-gold);
+  margin: 0 0 var(--space-xs);
+}
+
+/* Heading */
+main .related-articles.bento .related-articles-card h3 {
+  font-family: var(--font-family-serif);
+  font-weight: 500;
+  font-size: 1.4rem;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* Description */
+main .related-articles.bento .related-articles-card-description {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: light-dark(var(--color-ink), var(--color-muted));
+  opacity: 0.8;
+}
+
+/* Date */
+main .related-articles.bento .related-articles-card-date {
+  font-family: var(--font-family-mono);
+  color: light-dark(var(--color-gray-500), var(--color-gray-400));
+  letter-spacing: 1px;
+}
+
+/* Hover & focus */
+main .related-articles.bento .related-articles-card:hover,
+main .related-articles.bento .related-articles-card:focus-within {
+  transform: translateY(-8px);
+  border-color: var(--color-gold);
+  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+}
+
+/* Featured (first) card */
+main .related-articles.bento .related-articles-card-featured .related-articles-card-content {
+  padding: 35px;
+}
+
+main .related-articles.bento .related-articles-card-featured h3 {
+  font-size: 1.8rem;
+}
+
+/* Tablet: 2-column grid */
+@media (width >= 600px) {
+  main .related-articles.bento .related-articles-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  main .related-articles.bento .related-articles-card-featured {
+    grid-column: span 2;
+  }
+}
+
+/* Desktop: 3-column grid */
+@media (width >= 900px) {
+  main .related-articles.bento .related-articles-card-content {
+    padding: 40px;
+  }
+
+  main .related-articles.bento .related-articles-card-featured .related-articles-card-content {
+    padding: 45px;
+  }
+
+  main .related-articles.bento .related-articles-card-featured h3 {
+    font-size: 2.2rem;
+  }
+
+  main .related-articles.bento .related-articles-card h3 {
+    font-size: 1.6rem;
+  }
+
+  main .related-articles.bento .related-articles-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Wide */
+@media (width >= 1200px) {
+  main .related-articles.bento .related-articles-card-featured h3 {
+    font-size: 2.4rem;
+  }
+}

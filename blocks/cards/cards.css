@@ -1,0 +1,231 @@
+/* Default cards */
+
+.cards > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-l);
+  max-width: 340px;
+  margin-inline: auto;
+}
+
+.cards > ul > li {
+  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+  background: light-dark(var(--color-light), var(--color-card-dark));
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cards > ul > li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 35%));
+}
+
+/* Card link */
+.cards .cards-card-link {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Image */
+.cards .cards-card-image {
+  line-height: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.cards .cards-card-image img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+/* Body */
+.cards .cards-card-body {
+  padding: var(--space-m);
+  flex-grow: 1;
+}
+
+/* Tablet: 2 columns */
+@media (width >= 600px) {
+  .cards > ul {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: none;
+  }
+}
+
+/* Desktop */
+@media (width >= 900px) {
+  .cards > ul {
+    grid-template-columns: repeat(auto-fill, minmax(257px, 1fr));
+  }
+
+  .cards .cards-card-body {
+    padding: var(--space-l);
+  }
+}
+
+/* Links variant empty state */
+.cards .cards-links-empty {
+  margin: 0;
+  padding: var(--space-m);
+  color: light-dark(var(--color-gray-600), var(--color-gray-400));
+}
+
+/* ==========================================================================
+   Bento variant
+   ========================================================================== */
+
+.cards.bento > ul {
+  max-width: 1400px;
+  gap: 24px;
+}
+
+.cards.bento > ul > li {
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  padding: 45px;
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.cards.bento > ul > li:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+  border-color: var(--color-gold);
+}
+
+/* Featured card */
+.cards.bento > ul > li.cards-card-featured {
+  border: none;
+  background-color: var(--color-rust);
+  color: var(--color-parchment);
+}
+
+/* Tag */
+.cards.bento .cards-card-tag {
+  font-family: var(--font-family-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--color-gold);
+  margin: 0 0 30px;
+}
+
+/* Headings */
+.cards.bento .cards-card-body :is(h2, h3) {
+  font-family: var(--font-family-serif);
+  font-weight: 500;
+  font-size: 2.2rem;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin: 0;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.cards.bento .cards-card-featured .cards-card-body :is(h2, h3) {
+  font-size: 3.2rem;
+}
+
+/* Body text */
+.cards.bento .cards-card-body p:not(.cards-card-tag) {
+  line-height: 1.5;
+}
+
+.cards.bento .cards-card-featured .cards-card-body p:not(.cards-card-tag) {
+  font-family: var(--font-family-serif);
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-top: 35px;
+  max-width: 550px;
+}
+
+.cards.bento > ul > li:not(.cards-card-featured) .cards-card-body p:not(.cards-card-tag) {
+  font-size: 0.95rem;
+  opacity: 0.8;
+  color: light-dark(var(--color-ink), var(--color-muted));
+}
+
+/* Focus */
+.cards.bento .cards-card-link:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+  border-radius: var(--border-radius-heritage);
+}
+
+/* Image — stretch to card edges */
+.cards.bento .cards-card-image {
+  margin: -45px -45px 24px;
+  width: calc(100% + 90px);
+  border-radius: var(--border-radius-heritage);
+}
+
+/* Body — no extra padding, card has its own */
+.cards.bento .cards-card-body {
+  padding: 0;
+}
+
+/* Medium desktop: 2-column equal cards */
+@media (width >= 900px) {
+  .cards.bento > ul {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .cards.bento > ul > li {
+    padding: 60px;
+  }
+
+  .cards.bento .cards-card-image {
+    margin: -60px -60px 30px;
+    width: calc(100% + 120px);
+    aspect-ratio: 16 / 9;
+  }
+
+  .cards.bento .cards-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+/* Large desktop: 12-column bento grid */
+@media (width >= 1200px) {
+  .cards.bento > ul {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .cards.bento > ul > li {
+    grid-column: span 3;
+  }
+
+  .cards.bento > ul > li.cards-card-featured {
+    grid-column: span 6;
+  }
+
+  /* Text-only cards (no image) span double width */
+  .cards.bento > ul > li.cards-card-text-only {
+    grid-column: span 6;
+  }
+
+  .cards.bento .cards-card-image {
+    aspect-ratio: 4 / 3;
+  }
+
+  .cards.bento .cards-card-featured .cards-card-image {
+    max-height: 300px;
+  }
+}

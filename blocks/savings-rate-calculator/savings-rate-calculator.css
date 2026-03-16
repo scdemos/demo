@@ -1,0 +1,193 @@
+main .savings-rate-calculator {
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: var(--space-m) var(--content-padding-inline);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-s);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-presets-label {
+  margin: 0;
+  font-size: var(--body-font-size-s);
+  font-weight: 600;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-legend {
+  margin: 0 0 var(--space-s);
+  border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-legend summary {
+  cursor: pointer;
+  font-size: var(--body-font-size-s);
+  font-weight: 600;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-legend ul {
+  margin: var(--space-xs) 0 0;
+  padding-inline-start: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: var(--body-font-size-s);
+  color: light-dark(var(--color-gray-700), var(--color-gray-300));
+}
+
+main .savings-rate-calculator .savings-rate-calculator-presets button {
+  border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
+  border-radius: 999px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: var(--body-font-size-s);
+  color: inherit;
+  background: light-dark(var(--color-light), rgb(21 25 31));
+  cursor: pointer;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-presets button.is-active {
+  border-color: var(--color-accent);
+  background: light-dark(rgb(57 96 119 / 10%), rgb(57 96 119 / 22%));
+}
+
+main .savings-rate-calculator .savings-rate-calculator-layout {
+  display: grid;
+  gap: var(--space-s);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-form {
+  display: grid;
+  gap: var(--space-xs);
+  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border-radius: 12px;
+  padding: var(--space-s);
+  background: light-dark(rgb(255 255 255 / 78%), rgb(17 20 25 / 60%));
+}
+
+main .savings-rate-calculator .savings-rate-calculator-group {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-row {
+  display: grid;
+  gap: 4px;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-label {
+  font-size: var(--body-font-size-s);
+  font-weight: 600;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-tip {
+  color: light-dark(var(--color-gray-600), var(--color-gray-300));
+  cursor: help;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+main .savings-rate-calculator input[type='number'],
+main .savings-rate-calculator select {
+  inline-size: 100%;
+  border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  color: inherit;
+  background: light-dark(var(--color-light), rgb(25 29 35));
+}
+
+main .savings-rate-calculator input[type='range'] {
+  inline-size: 100%;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-suffix {
+  font-size: var(--body-font-size-s);
+  color: light-dark(var(--color-gray-600), var(--color-gray-300));
+}
+
+main .savings-rate-calculator .savings-rate-calculator-toggle {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-toggle input {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-output {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-metric {
+  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border-radius: 12px;
+  padding: var(--space-s);
+  background: light-dark(var(--color-light), rgb(21 25 31));
+}
+
+main .savings-rate-calculator .savings-rate-calculator-metric h3 {
+  margin: 0 0 6px;
+  font-size: var(--heading-font-size-xs);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-metric-value {
+  margin: 0 0 6px;
+  font-size: clamp(20px, 1.8vw, 28px);
+  line-height: 1.2;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-metric-note {
+  margin: 0;
+  color: light-dark(var(--color-gray-700), var(--color-gray-300));
+  font-size: var(--body-font-size-s);
+}
+
+main .savings-rate-calculator .savings-rate-calculator-progress {
+  margin: var(--space-s) 0 var(--space-m);
+  padding: var(--space-xs) 0;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-progress-label {
+  margin: 0 0 6px;
+  font-size: var(--body-font-size-s);
+  font-weight: 600;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-progress-track {
+  inline-size: 100%;
+  block-size: 10px;
+  border-radius: 999px;
+  background: light-dark(var(--color-gray-200), var(--color-gray-700));
+  overflow: clip;
+}
+
+main .savings-rate-calculator .savings-rate-calculator-progress-fill {
+  display: block;
+  block-size: 100%;
+  inline-size: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4f7b94 0%, #396077 100%);
+}
+
+@media (width >= 900px) {
+  main .savings-rate-calculator .savings-rate-calculator-layout {
+    grid-template-columns: minmax(260px, 390px) 1fr;
+    align-items: start;
+  }
+}
