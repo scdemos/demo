@@ -164,8 +164,8 @@ function updateBulkActionButtons() {
   if (bulkBtn) bulkBtn.disabled = !hasPaths;
   if (bulkHint) {
     bulkHint.textContent = hasPaths
-      ? 'Copies URLs to clipboard – paste in the DA Bulk app to preview or publish.'
-      : 'No HTML content. Only .html files are included.';
+      ? 'Copies all content URLs (pages, images, SVGs, etc.) to clipboard – paste in the DA Bulk app to preview or publish.'
+      : 'No content. No files were copied.';
   }
 }
 
@@ -463,15 +463,17 @@ async function copyDaFolder(token, newSiteName, onProgress) {
 
 /**
  * Convert DA file paths to Admin API paths for bulk preview/publish.
- * Only .html files are content paths; index.html → /, others → /path/without/ext
+ * Includes all content: HTML pages (index.html → /, others → /path/without/ext),
+ * plus assets (SVG, PNG, JPG, etc.) as /path/to/file.ext
  */
 function daPathsToApiPaths(daFiles) {
-  return daFiles
-    .filter((f) => f.endsWith('.html'))
-    .map((f) => {
+  return daFiles.map((f) => {
+    if (f.endsWith('.html')) {
       const withoutExt = f.slice(0, -5);
       return withoutExt === 'index' ? '/' : `/${withoutExt}`;
-    });
+    }
+    return `/${f}`.replace(/\/+/g, '/');
+  });
 }
 
 async function createDaSource(token, siteName, path, content) {

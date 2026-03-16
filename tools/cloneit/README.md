@@ -25,7 +25,7 @@ The new site shares the same codebase (demo) and uses `https://content.da.live/s
 3. Enter a **site name** (lowercase, numbers and hyphens only, max 50 chars, e.g. `my-new-site`). Reserved names like `admin`, `api`, `config` are blocked.
 4. Click **Clone Site**
 5. Access your new site at `https://main--{sitename}--scdemos.aem.page`
-6. **Bulk Preview/Publish** (optional) – After a successful clone, click **Bulk Preview/Publish** to copy all content URLs to your clipboard. A modal guides you to the [DA Bulk app](https://da.live/apps/bulk), where you paste the URLs and run preview or publish as needed.
+6. **Bulk Preview/Publish** (optional) – After a successful clone, click **Bulk Preview/Publish** to copy all content URLs (HTML pages, images, SVGs, etc.) to your clipboard. A modal guides you to the [DA Bulk app](https://da.live/apps/bulk), where you paste the URLs and run preview or publish as needed.
 
 ---
 
