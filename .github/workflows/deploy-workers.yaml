@@ -4,7 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'workers/**'
+      - 'workers/**/*.js'
+      - 'workers/**/wrangler.toml'
 
 jobs:
   detect:
@@ -20,11 +21,14 @@ jobs:
         with:
           filters: |
             auth:
-              - 'workers/auth/**'
+              - 'workers/auth/**/*.js'
+              - 'workers/auth/wrangler.toml'
             contact_us:
-              - 'workers/contact_us/**'
+              - 'workers/contact_us/**/*.js'
+              - 'workers/contact_us/wrangler.toml'
             feed:
-              - 'workers/feed/**'
+              - 'workers/feed/**/*.js'
+              - 'workers/feed/wrangler.toml'
 
   deploy-auth:
     needs: detect
