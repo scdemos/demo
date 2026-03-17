@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
-// eslint-disable-next-line import/no-unresolved
 import { DA_ORIGIN } from 'https://da.live/nx/public/utils/constants.js';
 
 /**
@@ -18,7 +16,6 @@ async function fetchTaggingData(token, actions, org, repo) {
     const response = await actions.daFetch(taggingUrl);
 
     if (!response.ok) {
-      // eslint-disable-next-line no-console
       console.error(`Failed to fetch tagging data: ${response.status} ${response.statusText}`);
       return null;
     }
@@ -26,7 +23,6 @@ async function fetchTaggingData(token, actions, org, repo) {
     const taggingData = await response.json();
     return taggingData;
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error fetching tagging data:', error);
     return null;
   }
@@ -224,10 +220,8 @@ function displayTaggingData(taggingData, actions) {
       await actions.sendText(tagsText);
       await actions.closeLibrary();
 
-      // eslint-disable-next-line no-console
       console.log('Selected tags sent to document:', selectedTagsArray);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Error sending selected tags to document:', error);
 
       // Show error feedback
@@ -269,7 +263,6 @@ async function init() {
     // Display tagging data
     displayTaggingData(taggingData, actions);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error initializing tags tool:', error);
 
     const errorDiv = document.createElement('div');

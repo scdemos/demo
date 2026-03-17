@@ -6,58 +6,41 @@
   <link rel="stylesheet" href="fragments.css">
 </head>
 <body>
-  <div class="fragments-form-wrapper">
-    <form class="fragments-form">
-      <div class="search-container">
-        <input type="text" 
-               class="fragment-search" 
-               placeholder="Type to search fragments by name..." 
-               role="searchbox" 
-               aria-label="Search fragments">
+  <div class="fragments-container">
+    <!-- Left Panel: Fragment Tree -->
+    <div class="fragments-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Fragments</h2>
       </div>
-      
-      <ul class="fragments-list">
-        <div class="loading-state">Loading fragments...</div>
-      </ul>
-    </form>
 
-    <div class="actions-container">
+      <input type="search"
+             class="fragment-search"
+             placeholder="Enter fragment name"
+             role="searchbox"
+             aria-label="Search fragments">
+
       <div class="message-wrapper hidden">
         <div class="feedback-message"></div>
       </div>
-      
-      <div class="button-group">
-        <button class="fragment-btn" 
-                type="button" 
-                title="Refresh the Fragments List" 
-                role="button" 
-                aria-label="Refresh fragments list">
-          Refresh
-        </button>
-        <button class="fragment-btn" 
-                type="reset" 
-                title="Cancel Fetching Fragments" 
-                role="button" 
-                aria-label="Cancel fetching fragments">
-          Cancel
-        </button>
+
+      <div class="fragments-list" role="list">
+        <div class="loading-state">Loading fragments...</div>
       </div>
     </div>
 
-    <button class="message-indicator hidden" 
-            role="button" 
-            aria-label="View inserted fragments" 
-            aria-expanded="false" 
-            title="View inserted fragments">
-      <img src="/.da/icons/info-icon.png" 
-           alt="View inserted fragments" 
-           class="indicator-icon" 
-           aria-hidden="true">
-    </button>
-
-    <div class="info-list-wrapper hidden">
-      <h3>Added fragments:</h3>
-      <ul class="info-list"></ul>
+    <!-- Right Panel: Preview -->
+    <div class="preview-panel">
+      <div class="preview-panel-content">
+        <div class="preview-placeholder">
+          <svg class="preview-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <p>Click preview icon to view fragment</p>
+        </div>
+        <iframe class="preview-iframe hidden" allow="clipboard-write *"></iframe>
+      </div>
     </div>
   </div>
 
