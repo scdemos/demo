@@ -1,7 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable import/no-absolute-path */
-/* eslint-disable import/no-unresolved */
-
 // Import SDK for Document Authoring
 import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 import { crawl } from 'https://da.live/nx/public/utils/tree.js';
@@ -17,8 +13,37 @@ const CONSTANTS = {
     FOLDER: '/.da/icons/folder-icon.png',
     FOLDER_OPEN: '/.da/icons/folder-open-icon.png',
     FRAGMENT: '/.da/icons/fragment-icon.png',
+    PREVIEW: './icons/preview.svg',
   },
 };
+
+/**
+ * Shows a user-facing message in the feedback area
+ * @param {string} text - Message text to display
+ * @param {boolean} isError - Whether this is an error message
+ * @param {boolean} autoHide - Whether to auto-hide after delay
+ */
+function showMessage(text, isError = false, autoHide = false) {
+  const message = document.querySelector('.feedback-message');
+  const msgContainer = document.querySelector('.message-wrapper');
+
+  if (!message || !msgContainer) return;
+
+  message.innerHTML = text.replace(/\r?\n/g, '<br>');
+  message.classList.toggle('error', isError);
+  msgContainer.classList.remove('hidden');
+
+  if (autoHide && !isError) {
+    // Use CSS animation end event instead of setTimeout
+    msgContainer.classList.add('auto-hide');
+    const handleAnimationEnd = () => {
+      msgContainer.classList.add('hidden');
+      msgContainer.classList.remove('auto-hide');
+      msgContainer.removeEventListener('animationend', handleAnimationEnd);
+    };
+    msgContainer.addEventListener('animationend', handleAnimationEnd);
+  }
+}
 
 /**
  * Creates a tree structure from file paths
@@ -47,16 +72,28 @@ function createFileTree(files, basePath) {
   return tree;
 }
 
+
 /**
- * Hides the message container and updates indicator
+ * Shows preview in the right panel
+ * @param {string} fragmentPath - Path to the fragment file
+ * @param {string} fragmentName - Display name of the fragment
+ * @param {Object} context - SDK context object
  */
-function hideMessageContainer() {
-  const infoWrapper = document.querySelector('.info-list-wrapper');
-  const indicator = document.querySelector('.message-indicator');
-  if (!infoWrapper.classList.contains('hidden')) {
-    infoWrapper.classList.add('hidden');
-    indicator.classList.remove('active');
-  }
+function showPreview(fragmentPath, fragmentName, context) {
+  const iframe = document.querySelector('.preview-iframe');
+  const placeholder = document.querySelector('.preview-placeholder');
+
+  if (!iframe || !placeholder) return;
+
+  // Build preview URL
+  const basePath = `/${context.org}/${context.repo}`;
+  const displayPath = fragmentPath.replace(basePath, '').replace(/\.html$/, '');
+  const previewUrl = `https://main--${context.repo}--${context.org}.aem.page${displayPath}`;
+
+  // Show iframe, hide placeholder
+  iframe.src = previewUrl;
+  iframe.classList.remove('hidden');
+  placeholder.classList.add('hidden');
 }
 
 /**
@@ -64,11 +101,13 @@ function hideMessageContainer() {
  * @param {string} name - Item name
  * @param {Object} node - Tree node data
  * @param {Function} onClick - Click handler for fragment items
+ * @param {Object} context - SDK context for preview URL generation
  * @returns {HTMLElement} Tree item element
  */
-function createTreeItem(name, node, onClick) {
-  const item = document.createElement('li');
+function createTreeItem(name, node, onClick, context) {
+  const item = document.createElement('div');
   item.className = 'tree-item';
+  item.setAttribute('role', 'listitem');
 
   const content = document.createElement('div');
   content.className = 'tree-item-content';
@@ -94,6 +133,26 @@ function createTreeItem(name, node, onClick) {
     button.title = `Click to insert link for "${displayName}"`;
     button.addEventListener('click', () => onClick({ path: node.path }));
     content.appendChild(button);
+
+    // Add preview button
+    const previewBtn = document.createElement('button');
+    previewBtn.className = 'fragment-preview-btn';
+    previewBtn.setAttribute('aria-label', `Preview fragment "${displayName}"`);
+    previewBtn.title = `Preview "${displayName}"`;
+
+    const previewIcon = document.createElement('img');
+    previewIcon.src = CONSTANTS.ICONS.PREVIEW;
+    previewIcon.alt = 'Preview';
+    previewIcon.className = 'tree-icon preview-icon';
+
+    previewBtn.appendChild(previewIcon);
+
+    previewBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showPreview(node.path, displayName, context);
+    });
+
+    content.appendChild(previewBtn);
   } else {
     const folderButton = document.createElement('button');
     folderButton.className = 'folder-btn';
@@ -115,7 +174,6 @@ function createTreeItem(name, node, onClick) {
     folderButton.appendChild(label);
 
     const toggleFolder = () => {
-      hideMessageContainer();
       folderButton.classList.toggle('expanded');
       folderButton.setAttribute('aria-expanded', folderButton.classList.contains('expanded'));
       folderIcon.src = folderButton.classList.contains('expanded')
@@ -131,13 +189,14 @@ function createTreeItem(name, node, onClick) {
     content.appendChild(folderButton);
 
     if (Object.keys(node.children).length > 0) {
-      const list = document.createElement('ul');
+      const list = document.createElement('div');
       list.className = 'tree-list hidden';
+      list.setAttribute('role', 'list');
 
       Object.entries(node.children)
         .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([childName, childNode]) => {
-          list.appendChild(createTreeItem(childName, childNode, onClick));
+          list.appendChild(createTreeItem(childName, childNode, onClick, context));
         });
 
       item.appendChild(content);
@@ -160,7 +219,7 @@ function createTreeItem(name, node, onClick) {
  */
 function handleFragmentSelect(actions, file, context) {
   if (!actions?.sendHTML) {
-    console.error('Cannot insert fragment: Editor not available');
+    showMessage('Cannot insert fragment: Editor not available', true);
     return;
   }
 
@@ -169,9 +228,10 @@ function handleFragmentSelect(actions, file, context) {
     const displayPath = file.path.replace(basePath, '').replace(/\.html$/, '');
     const fragmentUrl = `https://main--${context.repo}--${context.org}.aem.page${displayPath}`;
     actions.sendHTML(`<a href="${fragmentUrl}" class="fragment">${fragmentUrl}</a>`);
+    showMessage('Fragment inserted successfully', false, true);
     actions.closeLibrary();
   } catch (error) {
-    console.error('Failed to insert fragment:', error);
+    showMessage('Failed to insert fragment', true);
   }
 }
 
@@ -183,14 +243,6 @@ function handleFragmentSelect(actions, file, context) {
 function filterFragments(searchText, fragmentsList) {
   const items = fragmentsList.querySelectorAll('.tree-item');
   const searchLower = searchText.toLowerCase();
-
-  // Hide message container when searching
-  const msgContainer = document.querySelector('.message-wrapper');
-  const indicator = document.querySelector('.message-indicator');
-  if (!msgContainer.classList.contains('hidden')) {
-    msgContainer.classList.add('hidden');
-    indicator.classList.remove('active');
-  }
 
   // First pass: Find matching items and their parent folders
   const matchingPaths = new Set();
@@ -225,23 +277,57 @@ function filterFragments(searchText, fragmentsList) {
     }
   });
 
-  // If search is cleared, collapse all folders
+  // If search is cleared, restore to initial state
   if (!searchText) {
+    const targetDepth = getBasePathDepth();
+
     items.forEach((item) => {
-      const folderBtn = item.querySelector('.folder-btn');
-      const list = item.querySelector('.tree-list');
-      if (folderBtn && list) {
-        folderBtn.classList.remove('expanded');
-        folderBtn.setAttribute('aria-expanded', 'false');
-        const folderIcon = folderBtn.querySelector('.folder-icon');
-        if (folderIcon) {
-          folderIcon.src = '/.da/icons/folder-icon.png';
-        }
-        list.classList.add('hidden');
-      }
+      // Show all items
       item.style.display = '';
+
+      // Re-expand to initial depth
+      const depth = getItemDepth(item);
+      const folderBtn = item.querySelector(':scope > .tree-item-content > .folder-btn');
+      const list = item.querySelector(':scope > .tree-list');
+
+      if (folderBtn && list) {
+        if (depth <= targetDepth) {
+          // Expand folders within target depth
+          folderBtn.classList.add('expanded');
+          folderBtn.setAttribute('aria-expanded', 'true');
+          const folderIcon = folderBtn.querySelector('.folder-icon');
+          if (folderIcon) {
+            folderIcon.src = '/.da/icons/folder-open-icon.png';
+          }
+          list.classList.remove('hidden');
+        } else {
+          // Collapse folders beyond target depth
+          folderBtn.classList.remove('expanded');
+          folderBtn.setAttribute('aria-expanded', 'false');
+          const folderIcon = folderBtn.querySelector('.folder-icon');
+          if (folderIcon) {
+            folderIcon.src = '/.da/icons/folder-icon.png';
+          }
+          list.classList.add('hidden');
+        }
+      }
     });
   }
+}
+
+/**
+ * Gets the depth level of a tree item
+ * @param {HTMLElement} item - Tree item element
+ * @returns {number} Depth level (1-based)
+ */
+function getItemDepth(item) {
+  let depth = 0;
+  let current = item;
+  while (current && current.classList.contains('tree-item')) {
+    depth += 1;
+    current = current.parentElement.closest('.tree-item');
+  }
+  return depth;
 }
 
 // Function to get the depth of FRAGMENTS_BASE
@@ -276,15 +362,10 @@ function expandToDepth(item, currentDepth, targetDepth) {
  * Initializes the fragments interface and sets up event handlers
  */
 (async function init() {
-  const { actions } = await DA_SDK;
-
-  const form = document.querySelector('.fragments-form');
-  const fragmentsList = document.querySelector('.fragments-list');
-  const searchInput = document.querySelector('.fragment-search');
-  const refreshBtn = document.querySelector('.fragment-btn[type="button"]');
-
-  // Prevent default form submission
-  form.addEventListener('submit', (e) => e.preventDefault());
+  try {
+    const { actions, context } = await DA_SDK;
+    const fragmentsList = document.querySelector('.fragments-list');
+    const searchInput = document.querySelector('.fragment-search');
 
   // Add search handler
   searchInput.addEventListener('input', (e) => {
@@ -294,36 +375,39 @@ function expandToDepth(item, currentDepth, targetDepth) {
   // Function to load fragments
   async function loadFragments() {
     const fragmentsContainer = document.querySelector('.fragments-list');
-    const cancelBtn = document.querySelector('.fragment-btn[type="reset"]');
 
     if (!fragmentsContainer.querySelector('.loading-state')) {
       fragmentsContainer.innerHTML = '<div class="loading-state">Loading fragments...</div>';
     }
 
-    cancelBtn.disabled = false;
-
     try {
       const files = [];
-      const { context, token } = await DA_SDK;
-      const path = `/${context.org}/${context.repo}${FRAGMENTS_BASE}`;
-      const basePath = `/${context.org}/${context.repo}`;
+      const { context: loadContext, token } = await DA_SDK;
+      const path = `/${loadContext.org}/${loadContext.repo}${FRAGMENTS_BASE}`;
+      const basePath = `/${loadContext.org}/${loadContext.repo}`;
 
-      const { results, cancelCrawl } = crawl({
+      const { results } = crawl({
         path,
-        callback: (file) => file.path.endsWith('.html') && files.push(file),
+        callback: (file) => {
+          if (file.path.endsWith('.html')) {
+            files.push(file);
+          }
+        },
         throttle: CONSTANTS.CRAWL_THROTTLE,
+        mode: 'horizontal',
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      cancelBtn.addEventListener('click', cancelCrawl, { once: true });
       await results;
-
-      // Disable cancel button after crawl completes
-      cancelBtn.disabled = true;
 
       // Clear loading message
       fragmentsContainer.innerHTML = '';
+
+      if (files.length === 0) {
+        fragmentsContainer.innerHTML = '<div class="loading-state">No fragments found</div>';
+        return;
+      }
 
       const tree = createFileTree(files, basePath);
       const targetDepth = getBasePathDepth();
@@ -334,7 +418,8 @@ function expandToDepth(item, currentDepth, targetDepth) {
           const item = createTreeItem(
             name,
             node,
-            (file) => handleFragmentSelect(actions, file, context),
+            (file) => handleFragmentSelect(actions, file, loadContext),
+            loadContext,
           );
           fragmentsContainer.appendChild(item);
 
@@ -342,15 +427,26 @@ function expandToDepth(item, currentDepth, targetDepth) {
           expandToDepth(item, 1, targetDepth);
         });
     } catch (error) {
-      console.error('Failed to load fragments:', error);
-      // Also disable cancel button on error
-      cancelBtn.disabled = true;
+      // Clear loading spinner and show error with retry option
+      fragmentsContainer.innerHTML = `
+        <div class="error-state">
+          <p>Failed to load fragments.</p>
+          <button class="retry-btn" type="button">Retry</button>
+        </div>
+      `;
+      showMessage('Failed to load fragments. Click Retry to try again.', true);
+
+      // Add retry handler
+      const retryBtn = fragmentsContainer.querySelector('.retry-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', loadFragments);
+      }
     }
   }
 
   // Load fragments initially
   await loadFragments();
-
-  // Add refresh handler
-  refreshBtn.addEventListener('click', loadFragments);
+  } catch (error) {
+    showMessage('Initialization failed. Please refresh the page.', true);
+  }
 }());
