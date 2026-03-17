@@ -13,9 +13,11 @@ const CONSTANTS = {
     FOLDER: '/.da/icons/folder-icon.png',
     FOLDER_OPEN: '/.da/icons/folder-open-icon.png',
     FRAGMENT: '/.da/icons/fragment-icon.png',
-    PREVIEW: './icons/preview.svg',
   },
 };
+
+// Track currently selected fragment
+let selectedFragment = null;
 
 /**
  * Shows a user-facing message in the feedback area
@@ -74,21 +76,44 @@ function createFileTree(files, basePath) {
 
 
 /**
- * Shows preview in the right panel
+ * Shows preview in the right panel and updates selection state
  * @param {string} fragmentPath - Path to the fragment file
  * @param {string} fragmentName - Display name of the fragment
  * @param {Object} context - SDK context object
+ * @param {HTMLElement} fragmentElement - The tree item element that was selected
  */
-function showPreview(fragmentPath, fragmentName, context) {
+function showPreview(fragmentPath, fragmentName, context, fragmentElement) {
   const iframe = document.querySelector('.preview-iframe');
   const placeholder = document.querySelector('.preview-placeholder');
+  const insertBtn = document.querySelector('.insert-btn');
 
-  if (!iframe || !placeholder) return;
+  if (!iframe || !placeholder || !insertBtn) return;
 
   // Build preview URL
   const basePath = `/${context.org}/${context.repo}`;
   const displayPath = fragmentPath.replace(basePath, '').replace(/\.html$/, '');
   const previewUrl = `https://main--${context.repo}--${context.org}.aem.page${displayPath}`;
+
+  // Update selection state
+  if (selectedFragment && selectedFragment.element) {
+    selectedFragment.element.classList.remove('selected');
+    selectedFragment.element.classList.add('was-selected');
+  }
+
+  selectedFragment = {
+    path: fragmentPath,
+    name: fragmentName,
+    element: fragmentElement,
+  };
+
+  if (fragmentElement) {
+    fragmentElement.classList.remove('was-selected');
+    fragmentElement.classList.add('selected');
+  }
+
+  // Enable insert button
+  insertBtn.disabled = false;
+  insertBtn.setAttribute('aria-label', `Insert fragment "${fragmentName}"`);
 
   // Show iframe, hide placeholder
   iframe.src = previewUrl;
@@ -100,11 +125,10 @@ function showPreview(fragmentPath, fragmentName, context) {
  * Creates a tree item element
  * @param {string} name - Item name
  * @param {Object} node - Tree node data
- * @param {Function} onClick - Click handler for fragment items
  * @param {Object} context - SDK context for preview URL generation
  * @returns {HTMLElement} Tree item element
  */
-function createTreeItem(name, node, onClick, context) {
+function createTreeItem(name, node, context) {
   const item = document.createElement('div');
   item.className = 'tree-item';
   item.setAttribute('role', 'listitem');
@@ -116,7 +140,8 @@ function createTreeItem(name, node, onClick, context) {
     const button = document.createElement('button');
     button.className = 'fragment-btn-item';
     button.setAttribute('role', 'button');
-    button.setAttribute('aria-label', `Insert link for fragment "${name.replace('.html', '')}"`);
+    const displayName = name.replace('.html', '');
+    button.setAttribute('aria-label', `Preview fragment "${displayName}"`);
 
     const fragmentIcon = document.createElement('img');
     fragmentIcon.src = '/.da/icons/fragment-icon.png';
@@ -125,34 +150,18 @@ function createTreeItem(name, node, onClick, context) {
     fragmentIcon.setAttribute('aria-hidden', 'true');
 
     const textSpan = document.createElement('span');
-    const displayName = name.replace('.html', '');
     textSpan.textContent = displayName;
 
     button.appendChild(fragmentIcon);
     button.appendChild(textSpan);
-    button.title = `Click to insert link for "${displayName}"`;
-    button.addEventListener('click', () => onClick({ path: node.path }));
-    content.appendChild(button);
+    button.title = `Click to preview "${displayName}"`;
 
-    // Add preview button
-    const previewBtn = document.createElement('button');
-    previewBtn.className = 'fragment-preview-btn';
-    previewBtn.setAttribute('aria-label', `Preview fragment "${displayName}"`);
-    previewBtn.title = `Preview "${displayName}"`;
-
-    const previewIcon = document.createElement('img');
-    previewIcon.src = CONSTANTS.ICONS.PREVIEW;
-    previewIcon.alt = 'Preview';
-    previewIcon.className = 'tree-icon preview-icon';
-
-    previewBtn.appendChild(previewIcon);
-
-    previewBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showPreview(node.path, displayName, context);
+    // Click shows preview
+    button.addEventListener('click', () => {
+      showPreview(node.path, displayName, context, item);
     });
 
-    content.appendChild(previewBtn);
+    content.appendChild(button);
   } else {
     const folderButton = document.createElement('button');
     folderButton.className = 'folder-btn';
@@ -196,7 +205,7 @@ function createTreeItem(name, node, onClick, context) {
       Object.entries(node.children)
         .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([childName, childNode]) => {
-          list.appendChild(createTreeItem(childName, childNode, onClick, context));
+          list.appendChild(createTreeItem(childName, childNode, context));
         });
 
       item.appendChild(content);
@@ -212,12 +221,16 @@ function createTreeItem(name, node, onClick, context) {
 }
 
 /**
- * Handles fragment selection by inserting a link
+ * Handles fragment insertion by inserting a link for the currently selected fragment
  * @param {Object} actions - SDK actions object
- * @param {Object} file - Selected fragment file
  * @param {Object} context - SDK context
  */
-function handleFragmentSelect(actions, file, context) {
+function handleFragmentInsert(actions, context) {
+  if (!selectedFragment) {
+    showMessage('No fragment selected', true);
+    return;
+  }
+
   if (!actions?.sendHTML) {
     showMessage('Cannot insert fragment: Editor not available', true);
     return;
@@ -225,7 +238,7 @@ function handleFragmentSelect(actions, file, context) {
 
   try {
     const basePath = `/${context.org}/${context.repo}`;
-    const displayPath = file.path.replace(basePath, '').replace(/\.html$/, '');
+    const displayPath = selectedFragment.path.replace(basePath, '').replace(/\.html$/, '');
     const fragmentUrl = `https://main--${context.repo}--${context.org}.aem.page${displayPath}`;
     actions.sendHTML(`<a href="${fragmentUrl}" class="fragment">${fragmentUrl}</a>`);
     showMessage('Fragment inserted successfully', false, true);
@@ -363,13 +376,43 @@ function expandToDepth(item, currentDepth, targetDepth) {
  */
 (async function init() {
   try {
-    const { actions } = await DA_SDK;
+    const { actions, context } = await DA_SDK;
     const fragmentsList = document.querySelector('.fragments-list');
     const searchInput = document.querySelector('.fragment-search');
+    const insertBtn = document.querySelector('.insert-btn');
 
   // Add search handler
   searchInput.addEventListener('input', (e) => {
     filterFragments(e.target.value, fragmentsList);
+  });
+
+  // Add Insert button handler
+  insertBtn.addEventListener('click', () => {
+    handleFragmentInsert(actions, context);
+  });
+
+  // Add keyboard navigation for fragments list
+  fragmentsList.addEventListener('keydown', (e) => {
+    const allFragments = Array.from(fragmentsList.querySelectorAll('.fragment-btn-item'));
+    if (allFragments.length === 0) return;
+
+    const currentIndex = allFragments.findIndex((btn) => btn === document.activeElement);
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const nextIndex = (currentIndex + 1) % allFragments.length;
+      allFragments[nextIndex].focus();
+      allFragments[nextIndex].click(); // Trigger preview
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prevIndex = currentIndex <= 0 ? allFragments.length - 1 : currentIndex - 1;
+      allFragments[prevIndex].focus();
+      allFragments[prevIndex].click(); // Trigger preview
+    } else if (e.key === 'Enter' && currentIndex >= 0) {
+      e.preventDefault();
+      // Insert button click
+      insertBtn.click();
+    }
   });
 
   // Function to load fragments
@@ -415,12 +458,7 @@ function expandToDepth(item, currentDepth, targetDepth) {
       Object.entries(tree)
         .sort(([a], [b]) => a.localeCompare(b))
         .forEach(([name, node]) => {
-          const item = createTreeItem(
-            name,
-            node,
-            (file) => handleFragmentSelect(actions, file, loadContext),
-            loadContext,
-          );
+          const item = createTreeItem(name, node, loadContext);
           fragmentsContainer.appendChild(item);
 
           // Expand folders to the target depth

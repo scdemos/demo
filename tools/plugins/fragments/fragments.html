@@ -30,6 +30,13 @@
 
     <!-- Right Panel: Preview -->
     <div class="preview-panel">
+      <div class="panel-header preview-header">
+        <h2 class="panel-title">Preview</h2>
+        <div class="preview-actions">
+          <button class="action-btn insert-btn" type="button" disabled aria-label="Insert selected fragment">Insert</button>
+        </div>
+      </div>
+
       <div class="preview-panel-content">
         <div class="preview-placeholder">
           <svg class="preview-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -37,7 +44,7 @@
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
             <polyline points="21 15 16 10 5 21"></polyline>
           </svg>
-          <p>Click preview icon to view fragment</p>
+          <p>Select a fragment to preview</p>
         </div>
         <iframe class="preview-iframe hidden" allow="clipboard-write *"></iframe>
       </div>
