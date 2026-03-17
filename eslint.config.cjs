@@ -2,7 +2,7 @@ const js = require('@eslint/js');
 const globals = require('globals');
 
 module.exports = [
-  { ignores: ['helix-importer-ui/**', 'tools/**', '.skills/**', '**/*.min.js', '.eslintrc.js', 'eslint.config.cjs', 'plugins/**'] },
+  { ignores: ['helix-importer-ui/**', 'tools/!(plugins)/**', '.skills/**', '**/*.min.js', '.eslintrc.js', 'eslint.config.cjs', 'plugins/**'] },
   js.configs.recommended,
   {
     languageOptions: {
