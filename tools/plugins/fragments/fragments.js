@@ -363,7 +363,7 @@ function expandToDepth(item, currentDepth, targetDepth) {
  */
 (async function init() {
   try {
-    const { actions, context } = await DA_SDK;
+    const { actions } = await DA_SDK;
     const fragmentsList = document.querySelector('.fragments-list');
     const searchInput = document.querySelector('.fragment-search');
 
