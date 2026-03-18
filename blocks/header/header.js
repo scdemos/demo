@@ -103,6 +103,7 @@ function setupDropdown(li) {
   const heading = li.querySelector(':scope > p');
   const parentLink = li.querySelector(':scope > p > a');
   let toggleBtn = null;
+  let closeTimer = null;
 
   const syncToggle = () => {
     if (!toggleBtn) return;
@@ -132,19 +133,22 @@ function setupDropdown(li) {
   }
 
   const open = () => {
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     li.megaSync?.();
     collapseAll(li.closest('nav'));
     li.setAttribute('aria-expanded', 'true');
     syncToggle();
   };
   const close = () => {
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     li.setAttribute('aria-expanded', 'false');
     syncToggle();
   };
 
   li.addEventListener('mouseenter', () => { if (DESKTOP.matches) open(); });
   li.addEventListener('mouseleave', (e) => {
-    if (DESKTOP.matches && !li.contains(e.relatedTarget)) close();
+    if (!DESKTOP.matches || li.contains(e.relatedTarget)) return;
+    closeTimer = setTimeout(close, 150);
   });
   li.addEventListener('focusin', () => { if (DESKTOP.matches) open(); });
   li.addEventListener('focusout', (e) => {

@@ -1,8 +1,9 @@
 .table {
-  --table-border-color: var(--color-gray-200);
+  --table-border-color: light-dark(var(--color-gray-200), rgb(245 242 237 / 12%));
 
   width: 100%;
   overflow-x: auto;
+  border-radius: 12px;
 }
 
 .table table {
@@ -24,23 +25,37 @@
   }
 }
 
-.table table thead tr {
-  border-top: 2px solid var(--table-border-color);
-  border-bottom: 2px solid var(--table-border-color);
-}
-
-.table table tbody tr {
-  border-bottom: 1px solid var(--table-border-color);
-}
-
 .table table th {
   font-weight: 700;
 }
 
 .table table th,
 .table table td {
-  padding: 0.5em;
+  padding: 0.75em 0.85em;
   text-align: left;
+}
+
+.table table thead tr {
+  border-top: 2px solid var(--table-border-color);
+  border-bottom: 2px solid var(--table-border-color);
+}
+
+.table table thead th {
+  font-family: var(--body-font-family);
+  font-weight: 700;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.table table tbody tr {
+  border-bottom: 1px solid var(--table-border-color);
+  transition: background-color 0.2s;
+}
+
+.table table tbody tr:hover {
+  background-color: light-dark(rgb(161 79 43 / 4%), rgb(197 160 89 / 5%));
 }
 
 .table table th p,
@@ -60,6 +75,10 @@
 /* striped variant */
 .table.striped tbody tr:nth-child(odd) {
   background-color: var(--light-color);
+}
+
+.table.striped tbody tr:nth-child(odd):hover {
+  background-color: light-dark(rgb(161 79 43 / 6%), rgb(197 160 89 / 8%));
 }
 
 /* bordered variant */

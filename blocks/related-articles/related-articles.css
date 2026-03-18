@@ -34,7 +34,9 @@ main .related-articles .related-articles-card {
   border-radius: var(--space-m);
   overflow: clip;
   background: light-dark(var(--color-light), var(--color-gray-900));
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 0.3s ease,
+    box-shadow 0.4s ease;
 }
 
 /* Card link */
@@ -71,12 +73,13 @@ main .related-articles .related-articles-card-content {
 main .related-articles .related-articles-card h3 {
   margin: 0;
   font-size: var(--heading-font-size-s);
+  line-height: 1.2;
 }
 
 /* Description */
 main .related-articles .related-articles-card-description {
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.55;
   color: light-dark(var(--color-gray-700), var(--color-gray-300));
 }
 
@@ -90,9 +93,9 @@ main .related-articles .related-articles-card-date {
 /* Hover & focus */
 main .related-articles .related-articles-card:hover,
 main .related-articles .related-articles-card:focus-within {
-  transform: translateY(-2px);
-  border-color: var(--color-accent);
-  box-shadow: 0 8px 20px rgb(0 0 0 / 10%);
+  transform: translateY(-6px);
+  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  box-shadow: 0 20px 40px light-dark(rgb(161 79 43 / 14%), rgb(197 160 89 / 14%));
 }
 
 /* Empty state */
@@ -125,12 +128,19 @@ main .related-articles .related-articles-arrow {
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
   pointer-events: auto;
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  cursor: pointer;
+  transition: opacity 0.25s, transform 0.25s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 0.25s;
 }
 
 main .related-articles .related-articles-arrow:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+main .related-articles .related-articles-arrow:hover:not(:disabled) {
+  border-color: var(--color-gold);
+  transform: scale(1.08);
 }
 
 main .related-articles .related-articles-arrow.is-hidden {

@@ -9,6 +9,15 @@ main .teaser {
   font-size: var(--body-font-size-m);
   font-weight: 500;
   color: light-dark(var(--color-ink), var(--color-parchment));
+  transition: transform 0.5s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 0.5s ease,
+    border-color 0.4s ease;
+}
+
+main .teaser:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift-m);
+  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
 }
 
 main .teaser > div {
@@ -20,12 +29,20 @@ main .teaser > div {
 main .teaser > div > div a {
   color: light-dark(var(--color-rust), var(--color-rust-bright));
   text-decoration: underline;
-  text-underline-offset: 0.15em;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
   text-decoration-color: var(--color-gold);
   padding-inline-start: 0.5em;
-  transition: color 0.3s;
+  transition: color 0.3s, text-decoration-color 0.3s;
 }
 
 main .teaser > div > div a:hover {
   color: var(--color-gold);
+  text-decoration-color: var(--color-gold);
+}
+
+@media (width >= 900px) {
+  main .teaser > div {
+    padding: var(--space-xl) var(--space-2xl, 48px);
+  }
 }

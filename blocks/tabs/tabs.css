@@ -30,6 +30,7 @@ main .section .tabs {
   color: var(--color-rust);
   margin: 0;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .tabs .tabs-wrapper .section p {
@@ -39,6 +40,7 @@ main .section .tabs {
   opacity: 0.7;
   margin-top: 20px;
   text-align: center;
+  line-height: 1.65;
 }
 
 /* Tab list */
@@ -76,7 +78,7 @@ main .section .tabs {
   margin: 0;
   padding: 16px 18px;
   opacity: 0.5;
-  transition: all 0.3s;
+  transition: opacity 0.35s, color 0.35s, border-color 0.35s;
   white-space: nowrap;
 }
 
@@ -89,7 +91,8 @@ main .section .tabs {
 }
 
 .tabs .tabs-list button:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
 }
 
 .tabs .tabs-list button:focus-visible {
@@ -188,6 +191,7 @@ main .section .tabs {
 @media (width >= 600px) {
   .tabs .tabs-wrapper .section h2 {
     font-size: 3.2rem;
+    letter-spacing: -0.02em;
   }
 
   .tabs .tabs-wrapper .section p {
@@ -215,6 +219,7 @@ main .section .tabs {
 
   .tabs .tabs-wrapper .section h2 {
     font-size: 3.8rem;
+    letter-spacing: -0.025em;
   }
 
   .tabs .columns > div > div {

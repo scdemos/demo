@@ -8,8 +8,15 @@ function buildStep(row, index) {
   if (!titleSource || !contentSource) return null;
 
   const titleText = titleSource.textContent.trim() || `Step ${index + 1}`;
-  const title = createTag('h3', { class: 'journey-map-step-title' });
-  title.append(...[...titleSource.childNodes]);
+  const existingHeading = titleSource.querySelector(':is(h1, h2, h3, h4, h5, h6)');
+  let title;
+  if (existingHeading) {
+    title = existingHeading;
+    title.className = 'journey-map-step-title';
+  } else {
+    title = createTag('h3', { class: 'journey-map-step-title' });
+    title.append(...[...titleSource.childNodes]);
+  }
   moveInstrumentation(titleSource, title);
 
   const content = createTag('div', { class: 'journey-map-step-content' });

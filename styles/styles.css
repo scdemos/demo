@@ -26,12 +26,15 @@
   --grid-column-width: calc(var(--grid-container-width) / 12);
   --grid-gutter-width: 8.3%;
 
-  /* minimal spacing scale for consistent global layout */
+  /* spacing scale for consistent global layout */
   --space-xs: 4px;
   --space-s: 8px;
   --space-m: 16px;
   --space-l: 24px;
   --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
 
   /* global layout rhythm */
   --content-padding-inline: var(--space-m);
@@ -48,7 +51,7 @@
   --color-ink: #1a1a1a;
 
   /* heritage dark palette */
-  --color-obsidian: #0d1414;
+  --color-obsidian: #060d0d;
   --color-card-dark: #162121;
   --color-rust-bright: #d16a3e;
   --color-muted: #8b9a9a;
@@ -153,6 +156,18 @@
   /* heritage border */
   --border-heritage: 2px solid light-dark(rgb(161 79 43 / 20%), rgb(245 242 237 / 20%));
   --border-radius-heritage: 24px;
+
+  /* gradient and glow tokens */
+  --gradient-brand: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
+  --gradient-brand-dark: linear-gradient(135deg, var(--color-rust-bright) 0%, var(--color-gold) 100%);
+  --shadow-glow-rust: 0 0 40px rgb(161 79 43 / 30%);
+  --shadow-glow-gold: 0 0 40px rgb(197 160 89 / 25%);
+  --shadow-lift-m: 0 20px 40px -8px rgb(0 0 0 / 15%);
+  --shadow-lift-l: 0 30px 60px -12px rgb(0 0 0 / 22%);
+
+  /* easing presets for consistent motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root[data-theme='light'],
@@ -180,13 +195,14 @@
     --body-font-size-m: 18px;
     --body-font-size-s: 16px;
     --body-font-size-xs: 14px;
-    --heading-font-size-xxl: 45px;
-    --heading-font-size-xl: 36px;
-    --heading-font-size-l: 28px;
-    --heading-font-size-m: 22px;
+    --heading-font-size-xxl: 64px;
+    --heading-font-size-xl: 48px;
+    --heading-font-size-l: 32px;
+    --heading-font-size-m: 24px;
     --heading-font-size-s: 20px;
     --heading-font-size-xs: 18px;
     --content-padding-inline: var(--space-xl);
+    --section-block-space: var(--space-3xl);
   }
 }
 
@@ -237,6 +253,12 @@ body.theme-dark {
 html {
   min-height: 100%;
   scroll-padding-top: calc(var(--nav-height) + 1rem);
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: light-dark(rgb(161 79 43 / 20%), rgb(197 160 89 / 30%));
+  color: inherit;
 }
 
 body {
@@ -248,6 +270,8 @@ body {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
   line-height: var(--body-line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 :root body {
@@ -287,8 +311,16 @@ h6 {
   scroll-margin: 40px;
 }
 
-h1 { font-size: var(--heading-font-size-xxl); }
-h2 { font-size: var(--heading-font-size-xl); }
+h1 {
+  font-size: var(--heading-font-size-xxl);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--heading-font-size-xl);
+  letter-spacing: -0.015em;
+}
+
 h3 { font-size: var(--heading-font-size-m); }
 h4 { font-size: var(--heading-font-size-s); }
 h5 { font-size: var(--heading-font-size-xs); }
@@ -347,12 +379,16 @@ strong {
 a:any-link {
   color: var(--link-color);
   text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: light-dark(rgb(26 26 26 / 30%), rgb(245 242 237 / 30%));
   overflow-wrap: break-word;
 }
 
 a:hover {
   color: var(--link-hover-color);
   text-decoration: underline;
+  text-decoration-color: var(--link-hover-color);
 }
 
 /* buttons (AEM default content: links in standalone paragraphs) */
@@ -381,12 +417,24 @@ button.button {
   text-transform: uppercase;
   letter-spacing: 2px;
   background-color: light-dark(var(--color-rust), var(--color-rust-bright));
+  background-image: linear-gradient(135deg, rgb(255 255 255 / 12%), rgb(0 0 0 / 8%));
   color: var(--color-light);
   cursor: pointer;
   overflow: hidden;
+  position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: all 0.4s;
+}
+
+a.button:any-link::after,
+button.button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 22%) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.55s ease;
 }
 
 input,
@@ -410,10 +458,17 @@ button.button:hover,
 button.button:focus-visible {
   background-color: var(--color-gold);
   border-color: var(--color-gold);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px light-dark(rgb(161 79 43 / 20%), rgb(209 106 62 / 25%));
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px light-dark(rgb(161 79 43 / 30%), rgb(209 106 62 / 35%)), 0 0 0 1px var(--color-gold);
   cursor: pointer;
   text-decoration: none;
+}
+
+a.button:any-link:hover::after,
+a.button:any-link:focus-visible::after,
+button.button:hover::after,
+button.button:focus-visible::after {
+  transform: translateX(120%);
 }
 
 a.button.primary:hover,
@@ -456,8 +511,10 @@ a.button.secondary:focus-visible,
 button.button.secondary:hover,
 button.button.secondary:focus-visible {
   border-color: var(--color-gold);
-  background-color: transparent;
+  background-color: light-dark(rgb(197 160 89 / 8%), rgb(197 160 89 / 12%));
   color: var(--color-gold);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px light-dark(rgb(197 160 89 / 18%), rgb(197 160 89 / 22%));
 }
 
 /* main content area – use design tokens for rhythm */
@@ -506,6 +563,10 @@ main img:not([width], [height]) {
 main > .section {
   margin: inherit;
   padding-block: var(--space-xl);
+}
+
+main > .section:first-child {
+  padding-block-start: 0;
 
   /* Reduce CLS: contain layout so section appearance causes less reflow.
      Exclude social-share section: contain creates a containing block for position:fixed,
@@ -556,3 +617,56 @@ main > .section.divider.center {
 .spacer-bottom-s { margin-bottom: var(--space-s); }
 .spacer-bottom-m { margin-bottom: var(--space-m); }
 .spacer-bottom-l { margin-bottom: var(--space-l); }
+
+/* section-metadata style=gradient: warm brand gradient full-bleed section */
+main > .section.gradient {
+  background: var(--gradient-brand);
+  color: var(--color-parchment);
+  margin: 0;
+  padding: var(--space-3xl, var(--section-block-space)) 0;
+}
+
+main > .section.gradient * {
+  color: var(--color-parchment);
+}
+
+main > .section.gradient a:any-link {
+  color: var(--color-parchment);
+  text-decoration-color: rgb(255 255 255 / 40%);
+}
+
+main > .section.gradient a.button:any-link,
+main > .section.gradient button.button {
+  border-color: var(--color-parchment);
+  background-color: transparent;
+  background-image: none;
+  color: var(--color-parchment);
+  box-shadow: none;
+}
+
+main > .section.gradient a.button:any-link:hover,
+main > .section.gradient button.button:hover {
+  background-color: var(--color-parchment);
+  border-color: var(--color-parchment);
+  color: var(--color-rust);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
+/* section-metadata style=ink: deep dark full-bleed section */
+main > .section.ink {
+  background-color: var(--color-ink);
+  color: var(--color-parchment);
+  margin: 0;
+  padding: var(--space-3xl, var(--section-block-space)) 0;
+}
+
+main > .section.ink * {
+  color: var(--color-parchment);
+}
+
+/* gradient-text utility: apply to any heading or span for brand gradient text */
+.gradient-text {
+  background: var(--gradient-brand);
+  background-clip: text;
+  color: transparent;
+}

@@ -4,7 +4,7 @@ main .faq {
 }
 
 main .faq .faq-category {
-  margin-bottom: var(--space-l);
+  margin-bottom: var(--space-xl);
 }
 
 main .faq .faq-category-heading {
@@ -14,6 +14,7 @@ main .faq .faq-category-heading {
   margin-bottom: var(--space-m);
   padding-bottom: var(--space-s);
   border-bottom: var(--border-heritage);
+  letter-spacing: -0.01em;
 }
 
 main .faq .faq-item {
@@ -35,6 +36,7 @@ main .faq .faq-question {
   color: var(--color-text);
   text-align: left;
   line-height: var(--body-line-height);
+  transition: color 0.3s;
 }
 
 main .faq .faq-question::after {
@@ -44,11 +46,12 @@ main .faq .faq-question::after {
   color: var(--color-accent);
   flex-shrink: 0;
   margin-left: var(--space-m);
-  transition: transform 0.2s ease;
+  transition: transform 0.35s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 main .faq .faq-question[aria-expanded='true']::after {
-  content: '−';
+  content: '\2212';
+  transform: rotate(180deg);
 }
 
 main .faq .faq-question:hover {
@@ -62,7 +65,7 @@ main .faq .faq-answer {
 main .faq .faq-answer p {
   font-family: var(--font-family-serif);
   font-size: var(--body-font-size-m);
-  line-height: var(--body-line-height);
+  line-height: 1.65;
   color: var(--color-text);
   margin: 0;
 }

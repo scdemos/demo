@@ -15,10 +15,10 @@ main .form-container .form-wrapper {
 main .form form {
   display: grid;
   gap: var(--space-s);
-  border: 1px solid currentcolor;
-  border-radius: 12px;
-  padding: var(--space-m);
-  background: transparent;
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  padding: var(--space-l);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
   color: inherit;
   min-width: 0;
   max-width: 100%;
@@ -44,12 +44,13 @@ main .form form {
   scroll-margin: 1em;
   width: 100%;
   min-width: 0;
-  border: 1px solid currentcolor;
+  border: 1px solid light-dark(rgb(26 26 26 / 20%), rgb(245 242 237 / 20%));
   border-radius: 8px;
-  padding: 10px 12px;
-  background: transparent;
+  padding: 12px 14px;
+  background: light-dark(var(--color-light), rgb(6 13 13 / 60%));
   color: inherit;
   font-size: var(--body-font-size-s);
+  transition: border-color 0.25s, box-shadow 0.25s;
 }
 
 .form textarea {
@@ -67,14 +68,16 @@ main .form form {
 .form input:hover,
 .form textarea:hover,
 .form select:hover {
-  opacity: 0.9;
+  border-color: light-dark(var(--color-rust), var(--color-rust-bright));
 }
 
 .form input:focus,
 .form textarea:focus,
 .form select:focus {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-gold);
   outline-offset: 2px;
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 4px rgb(197 160 89 / 12%);
 }
 
 .form input:disabled,
@@ -141,7 +144,7 @@ main .form form {
 @media (width >= 600px) {
   .form form,
   main .form form {
-    padding: var(--space-l);
+    padding: var(--space-xl);
   }
 
 
@@ -232,15 +235,16 @@ main .form form {
 
 .form .button-wrapper button.button {
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 12px 24px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
 .form .button-wrapper button.button:not(.secondary) {
-  border: 1px solid currentcolor;
-  background: transparent;
-  color: inherit;
+  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
+  background: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: var(--color-parchment);
 }
 
 .form .button-wrapper button.button:disabled,
@@ -250,15 +254,20 @@ main .form form {
 }
 
 .form .button-wrapper button.button:not(.secondary):hover {
-  opacity: 0.9;
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 25%));
 }
 
 .form .button-wrapper button.button.secondary {
-  border: 1px solid currentcolor;
+  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
   background: transparent;
-  color: inherit;
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
 }
 
 .form .button-wrapper button.button.secondary:hover {
-  opacity: 0.9;
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+  transform: translateY(-2px);
 }

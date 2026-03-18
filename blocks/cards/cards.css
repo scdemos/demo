@@ -18,12 +18,13 @@
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
 .cards > ul > li:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 35%));
+  transform: translateY(-8px);
+  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
+  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
 }
 
 /* Card link */
@@ -49,12 +50,28 @@
   height: auto;
   max-width: 100%;
   margin-inline: auto;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cards > ul > li:hover .cards-card-image img {
+  transform: scale(1.05);
 }
 
 /* Body */
 .cards .cards-card-body {
   padding: var(--space-m);
   flex-grow: 1;
+}
+
+.cards .cards-card-body :is(h2, h3, h4) {
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+.cards .cards-card-body p {
+  color: light-dark(var(--color-gray-700), var(--color-muted));
+  font-size: var(--body-font-size-s);
+  line-height: 1.55;
 }
 
 /* Tablet: 2 columns */
@@ -97,12 +114,12 @@
   border-radius: var(--border-radius-heritage);
   padding: 45px;
   background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease, background-color 0.4s ease;
 }
 
 .cards.bento > ul > li:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+  transform: translateY(-10px);
+  box-shadow: 0 32px 64px -12px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(197 160 89 / 40%));
   border-color: var(--color-gold);
 }
 
@@ -161,8 +178,9 @@
 /* Focus */
 .cards.bento .cards-card-link:focus-visible {
   outline: 2px solid var(--color-gold);
-  outline-offset: -2px;
+  outline-offset: 3px;
   border-radius: var(--border-radius-heritage);
+  box-shadow: 0 0 0 4px rgb(197 160 89 / 20%);
 }
 
 /* Image — stretch to card edges */
