@@ -1,85 +1,110 @@
 <head>
-    {{#title}}
-    <title>{{title}} | Upcoming Events</title>
-    <meta name="description" content="{{description}}">
-    <meta name="date" content="{{occurrenceDate}}">
-    {{/title}}
-  
-    {{^title}}
-      {{#channel.title}}
-    <title>{{.}}</title>
-      {{/channel.title}}
-      {{^channel.title}}
-    <title>Upcoming Events</title>
-      {{/channel.title}}
-  
-      {{#channel.description}}
-    <meta name="description" content="{{.}}">
-      {{/channel.description}}
-      {{^channel.description}}
-    <meta
-      name="description"
-      content="Reusable sample feed for events, sessions, workshops, and community programs."
-    >
-      {{/channel.description}}
-  
-      {{#channel.updatedAt}}
-    <meta name="date" content="{{.}}">
-      {{/channel.updatedAt}}
-    {{/title}}
-  
-    <meta name="keywords" content="events, upcoming-events">
-  </head>
-  <body>
-    <header></header>
-    <main>
-      {{#title}}
-      <div>
-        <div class="hero">
+  {{#title}}
+  <title>{{title}} | Upcoming Events</title>
+  <meta name="description" content="{{description}}">
+  <meta name="date" content="{{occurrenceDate}}">
+  {{/title}}
+
+  {{^title}}
+    {{#channel.title}}
+  <title>{{.}}</title>
+    {{/channel.title}}
+    {{^channel.title}}
+  <title>Upcoming Events</title>
+    {{/channel.title}}
+
+    {{#channel.description}}
+  <meta name="description" content="{{.}}">
+    {{/channel.description}}
+    {{^channel.description}}
+  <meta
+    name="description"
+    content="Reusable sample feed for events, sessions, workshops, and community programs."
+  >
+    {{/channel.description}}
+
+    {{#channel.updatedAt}}
+  <meta name="date" content="{{.}}">
+    {{/channel.updatedAt}}
+  {{/title}}
+
+  <meta name="keywords" content="events, upcoming-events">
+</head>
+<body>
+  <header></header>
+  <main>
+    <div>
+      <div class="hero">
+        <div>
           <div>
-            {{#type}}<p><strong>Type:</strong> {{.}}</p>{{/type}}
-            <h1>{{title}}</h1>
-            {{#occurrenceDate}}<p><strong>Date:</strong> {{.}}</p>{{/occurrenceDate}}
-            {{#description}}<p>{{.}}</p>{{/description}}
+            <picture>
+              <source
+                type="image/webp"
+                srcset="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                media="(min-width: 600px)"
+              >
+              <source
+                type="image/webp"
+                srcset="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+              >
+              <source
+                type="image/jpeg"
+                srcset="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                media="(min-width: 600px)"
+              >
+              <img
+                loading="eager"
+                alt=""
+                src="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                width="1600"
+                height="900"
+              >
+            </picture>
           </div>
         </div>
-      </div>
-  
-      <div>
-        {{#publishedAt}}<p><strong>Published:</strong> {{.}}</p>{{/publishedAt}}
-        {{#id}}<p><strong>ID:</strong> {{.}}</p>{{/id}}
-        {{#path}}<p><strong>Path:</strong> {{.}}</p>{{/path}}
-        {{#link}}<p><strong>Source page:</strong> <a href="{{.}}">{{.}}</a></p>{{/link}}
-      </div>
-      {{/title}}
-  
-      {{^title}}
-      <div>
-        <div class="hero">
+        <div>
           <div>
+            {{#title}}
+            <h1>{{title}}</h1>
+            {{#description}}<h5>{{.}}</h5>{{/description}}
+            {{/title}}
+
+            {{^title}}
             {{#channel.title}}<h1>{{.}}</h1>{{/channel.title}}
             {{^channel.title}}<h1>Upcoming Events</h1>{{/channel.title}}
-            {{#channel.description}}<p>{{.}}</p>{{/channel.description}}
+            {{#channel.description}}<h5>{{.}}</h5>{{/channel.description}}
+            {{/title}}
           </div>
         </div>
       </div>
-  
-      <div>
-        {{#source}}<p><strong>Feed source:</strong> <a href="{{.}}">{{.}}</a></p>{{/source}}
-        {{#channel.updatedAt}}<p><strong>Updated:</strong> {{.}}</p>{{/channel.updatedAt}}
-        {{#total}}<p><strong>Total events:</strong> {{.}}</p>{{/total}}
-      </div>
-  
-      {{#data}}
-      <div>
-        <h2><a href="{{path}}">{{title}}</a></h2>
-        {{#type}}<p><strong>Type:</strong> {{.}}</p>{{/type}}
-        {{#occurrenceDate}}<p><strong>Date:</strong> {{.}}</p>{{/occurrenceDate}}
-        {{#description}}<p>{{.}}</p>{{/description}}
-      </div>
-      {{/data}}
-      {{/title}}
-    </main>
-    <footer></footer>
-  </body>
-  
+    </div>
+
+    {{#title}}
+    <div>
+      {{#type}}<p><strong>Type:</strong> {{.}}</p>{{/type}}
+      {{#occurrenceDate}}<p><strong>Date:</strong> {{.}}</p>{{/occurrenceDate}}
+      {{#publishedAt}}<p><strong>Published:</strong> {{.}}</p>{{/publishedAt}}
+      {{#id}}<p><strong>ID:</strong> {{.}}</p>{{/id}}
+      {{#link}}<p><strong>Source page:</strong> <a href="{{.}}">{{.}}</a></p>{{/link}}
+    </div>
+    {{/title}}
+
+    {{^title}}
+    <div>
+      {{#source}}<p><strong>Feed source:</strong> <a href="{{.}}">{{.}}</a></p>{{/source}}
+      {{#channel.updatedAt}}<p><strong>Updated:</strong> {{.}}</p>{{/channel.updatedAt}}
+      {{#total}}<p><strong>Total events:</strong> {{.}}</p>{{/total}}
+    </div>
+
+    {{#data}}
+    <div>
+      <h2><a href="{{path}}">{{title}}</a></h2>
+      {{#type}}<p><strong>Type:</strong> {{.}}</p>{{/type}}
+      {{#occurrenceDate}}<p><strong>Date:</strong> {{.}}</p>{{/occurrenceDate}}
+      {{#description}}<p>{{.}}</p>{{/description}}
+    </div>
+    {{/data}}
+    {{/title}}
+  </main>
+  <footer></footer>
+</body>
