@@ -71,16 +71,11 @@ function isCorrectSelection(selected, correctIndexes) {
 }
 
 function buildFeedback(isCorrect, snippets = []) {
-  const wrap = createTag('div', {
+  const label = isCorrect ? 'Correct' : 'Not quite';
+  const text = snippets.length ? `${label} — ${snippets.join(' ')}` : label;
+  return createTag('p', {
     class: `quiz-feedback ${isCorrect ? 'is-correct' : 'is-incorrect'}`,
-  });
-  wrap.append(createTag('p', { class: 'quiz-feedback-result' }, isCorrect ? 'Correct' : 'Not quite'));
-  if (!snippets.length) return wrap;
-
-  const list = createTag('ul', { class: 'quiz-feedback-snippets' });
-  snippets.forEach((snippet) => list.append(createTag('li', {}, snippet)));
-  wrap.append(list);
-  return wrap;
+  }, text);
 }
 
 /**
@@ -99,6 +94,7 @@ export default function decorate(block) {
   block.classList.add('quiz');
 
   const status = createTag('div', { class: 'quiz-status', role: 'status', 'aria-live': 'polite' });
+  const completeBanner = createTag('div', { class: 'quiz-complete-banner', hidden: true });
   const form = createTag('form', { class: 'quiz-form' });
   const submit = createTag('button', { type: 'submit', class: 'quiz-submit' }, 'Check answers');
   const isSlider = questions.length > 1;
@@ -144,28 +140,37 @@ export default function decorate(block) {
     type: 'button',
     class: 'quiz-nav-btn quiz-nav-prev',
     'aria-label': 'Previous question',
-  }, '←') : null;
+  }, '← Back') : null;
   const navNext = isSlider ? createTag('button', {
     type: 'button',
     class: 'quiz-nav-btn quiz-nav-next',
     'aria-label': 'Next question',
-  }, '→') : null;
-  const navCount = isSlider ? createTag('p', { class: 'quiz-nav-count' }, '') : null;
+  }, 'Next →') : null;
+  const dots = isSlider ? questions.map((_, i) => createTag('li', {
+    class: `quiz-nav-dot${i === 0 ? ' is-active' : ''}`,
+    'aria-hidden': 'true',
+  })) : [];
+  const navDots = isSlider ? createTag('ol', { class: 'quiz-nav-dots' }, dots) : null;
+
+  function currentQuestionAnswered() {
+    const currentQuestion = sliderTrack.querySelectorAll('.quiz-question')[currentIndex];
+    return currentQuestion ? getSelectedIndexes(currentQuestion).length > 0 : false;
+  }
 
   function renderSlider() {
     if (!isSlider) return;
     sliderTrack.style.transform = `translateX(-${currentIndex * 100}%)`;
-    navCount.textContent = `${currentIndex + 1} / ${questions.length}`;
+    dots.forEach((dot, i) => dot.classList.toggle('is-active', i === currentIndex));
     navPrev.disabled = currentIndex === 0;
     navPrev.classList.toggle('is-hidden', currentIndex === 0);
-    navNext.hidden = currentIndex === questions.length - 1;
     navNext.classList.toggle('is-hidden', currentIndex === questions.length - 1);
+    navNext.disabled = !currentQuestionAnswered();
     submit.hidden = currentIndex !== questions.length - 1;
   }
 
   if (isSlider) {
-    const nav = createTag('div', { class: 'quiz-nav' }, [navPrev, navCount, navNext]);
-    const sliderShell = createTag('div', { class: 'quiz-slider-shell' }, [sliderViewport, nav]);
+    const nav = createTag('div', { class: 'quiz-nav' }, [navPrev, navDots, navNext]);
+    const sliderShell = createTag('div', { class: 'quiz-slider-shell' }, [sliderViewport, nav, completeBanner]);
     form.append(sliderShell);
   } else {
     form.append(sliderTrack);
@@ -183,6 +188,10 @@ export default function decorate(block) {
     renderSlider();
   });
 
+  sliderTrack.addEventListener('change', () => {
+    navNext.disabled = !currentQuestionAnswered();
+  });
+
   renderSlider();
 
   form.addEventListener('submit', (event) => {
@@ -197,19 +206,16 @@ export default function decorate(block) {
       const feedbackSlot = questionEl.querySelector('.quiz-feedback-slot');
       const optionEls = [...questionEl.querySelectorAll('.quiz-option')];
       feedbackSlot.textContent = '';
-      questionEl.classList.remove('is-correct', 'is-incorrect');
       optionEls.forEach((el) => el.classList.remove('is-selected', 'is-correct', 'is-wrong'));
 
       if (!selected.length) {
         allAnswered = false;
         feedbackSlot.append(buildFeedback(false, ['Please select an answer before submitting.']));
-        questionEl.classList.add('is-incorrect');
         return;
       }
 
       const correct = isCorrectSelection(selected, correctIndexes);
       if (correct) score += 1;
-      questionEl.classList.add(correct ? 'is-correct' : 'is-incorrect');
 
       const snippets = [];
       selected.forEach((selectedIndex) => {
@@ -241,12 +247,18 @@ export default function decorate(block) {
 
     const total = questions.length;
     if (score === total) {
+      completeBanner.textContent = config.completeMessage;
+      completeBanner.className = 'quiz-complete-banner is-success';
+      completeBanner.hidden = false;
       status.textContent = `${config.completeMessage} (${score}/${total})`;
       if (!config.doNotMarkLessonAsCompleted) {
         window.dispatchEvent(new CustomEvent('quiz:completed', { detail: { score, total } }));
       }
     } else {
-      status.textContent = `You got ${score}/${total}. Review the feedback and try again.`;
+      completeBanner.textContent = `You scored ${score} of ${total} — review each question and try again.`;
+      completeBanner.className = 'quiz-complete-banner is-retry';
+      completeBanner.hidden = false;
+      status.textContent = `You got ${score}/${total}.`;
     }
   });
 }
