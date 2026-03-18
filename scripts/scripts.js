@@ -200,8 +200,8 @@ async function loadEager(doc) {
     decorateMain(main);
     document.body.classList.add('appear');
     await loadSection(main.querySelector('.section'), async (s) => {
-      await loadFragments(s);
       await waitForFirstImage(s);
+      await loadFragments(s);
     });
   }
 

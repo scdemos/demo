@@ -49,6 +49,42 @@
 }
 
 /* ==========================================================================
+  Post-LCP link transitions
+  ========================================================================== */
+
+a:any-link {
+  transition: color 0.25s, text-decoration-color 0.25s;
+}
+
+/* ==========================================================================
+  Blockquote and horizontal rule – editorial polish
+  ========================================================================== */
+
+main blockquote {
+  margin: var(--space-2xl, 48px) 0;
+  padding: var(--space-l) var(--space-xl);
+  border-left: 3px solid var(--color-gold);
+  font-family: var(--font-family-serif);
+  font-size: var(--body-font-size-xl);
+  font-style: italic;
+  line-height: 1.55;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+main blockquote p {
+  margin: 0;
+}
+
+main hr {
+  border: none;
+  height: 1px;
+  margin: var(--space-2xl, 48px) auto;
+  max-width: 120px;
+  background: var(--gradient-brand);
+  opacity: 0.6;
+}
+
+/* ==========================================================================
   Section polish — non-critical enhancements
   ========================================================================== */
 

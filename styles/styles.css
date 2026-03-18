@@ -272,7 +272,6 @@ body {
   line-height: var(--body-line-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizelegibility;
 }
 
 :root body {
@@ -384,7 +383,6 @@ a:any-link {
   text-underline-offset: 0.2em;
   text-decoration-color: light-dark(rgb(26 26 26 / 30%), rgb(245 242 237 / 30%));
   overflow-wrap: break-word;
-  transition: color 0.25s, text-decoration-color 0.25s;
 }
 
 a:hover {
@@ -517,32 +515,6 @@ button.button.secondary:focus-visible {
   color: var(--color-gold);
   transform: translateY(-3px);
   box-shadow: 0 14px 30px light-dark(rgb(197 160 89 / 18%), rgb(197 160 89 / 22%));
-}
-
-/* blockquote: editorial pull-quote styling */
-main blockquote {
-  margin: var(--space-2xl) 0;
-  padding: var(--space-l) var(--space-xl);
-  border-left: 3px solid var(--color-gold);
-  font-family: var(--font-family-serif);
-  font-size: var(--body-font-size-xl);
-  font-style: italic;
-  line-height: 1.55;
-  color: light-dark(var(--color-ink), var(--color-parchment));
-}
-
-main blockquote p {
-  margin: 0;
-}
-
-/* horizontal rule: brand-aligned divider */
-main hr {
-  border: none;
-  height: 1px;
-  margin: var(--space-2xl) auto;
-  max-width: 120px;
-  background: var(--gradient-brand);
-  opacity: 0.6;
 }
 
 /* main content area – use design tokens for rhythm */
