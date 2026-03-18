@@ -101,7 +101,7 @@ export function getContentTimestamp(entry = {}) {
 }
 
 /** Default page size for query-index pagination */
-export const QUERY_INDEX_PAGE_SIZE = 200;
+export const QUERY_INDEX_PAGE_SIZE = 500;
 
 /**
  * Fetch a page of query-index.

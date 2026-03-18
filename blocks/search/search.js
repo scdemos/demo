@@ -10,7 +10,7 @@ import {
 } from '../../scripts/shared.js';
 
 const PAGE_SIZE = 15;
-const FETCH_LIMIT = 50;
+const FETCH_LIMIT = 500;
 const RESERVED_CONFIG_KEYS = ['view', 'keywords', 'excluded-keywords', 'searchbar'];
 
 function parseFilterGroupsFromConfig(config) {
