@@ -34,10 +34,10 @@ main .networth-calculator .networth-calculator-layout {
 main .networth-calculator .networth-calculator-form {
   display: grid;
   gap: var(--space-xs);
-  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
-  padding: var(--space-s);
-  background: light-dark(rgb(255 255 255 / 78%), rgb(17 20 25 / 60%));
+  border: var(--border-heritage);
+  border-radius: 16px;
+  padding: var(--space-m);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
 }
 
 main .networth-calculator .networth-calculator-group {
@@ -127,10 +127,16 @@ main .networth-calculator .networth-calculator-output {
 }
 
 main .networth-calculator .networth-calculator-metric {
-  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
   border-radius: 12px;
-  padding: var(--space-s);
-  background: light-dark(var(--color-light), rgb(21 25 31));
+  padding: var(--space-m);
+  background: light-dark(var(--color-light), var(--color-card-dark));
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+main .networth-calculator .networth-calculator-metric:hover {
+  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 35%));
+  box-shadow: 0 8px 24px light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 8%));
 }
 
 main .networth-calculator .networth-calculator-metric h3 {

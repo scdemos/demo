@@ -47,7 +47,7 @@
   display: flex;
   width: 100%;
   align-items: stretch;
-  transition: transform 0.3s ease;
+  transition: transform 0.45s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .quiz .quiz-slider-track > .quiz-question {
@@ -127,8 +127,13 @@
   gap: var(--space-xs);
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
   border-radius: 10px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s, transform 0.25s;
+}
+
+.quiz .quiz-option:hover {
+  transform: translateX(2px);
 }
 
 .quiz .quiz-option:is(:hover, :has(input:checked)) {
@@ -196,13 +201,21 @@
   justify-self: start;
   border: 1px solid var(--color-accent);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 10px 20px;
   font: inherit;
   font-size: var(--body-font-size-s);
   font-weight: 600;
   color: #fff;
   background: var(--color-accent);
   cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.quiz .quiz-submit:hover {
+  background: var(--color-rust);
+  border-color: var(--color-rust);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 20%));
 }
 
 .quiz .quiz-submit[hidden] {

@@ -69,10 +69,12 @@
   color: var(--color-light);
   background: light-dark(var(--color-light), var(--color-gray-900));
   transform: translateY(4px);
+  transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
 }
 
 .journey-map .journey-map-progress-item.is-active .journey-map-progress-dot {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px rgb(197 160 89 / 20%);
 }
 
 .journey-map .journey-map-progress-item.is-complete .journey-map-progress-dot {
@@ -91,11 +93,13 @@
   border-inline-start: 3px solid light-dark(var(--color-gray-300), var(--color-gray-600));
   padding: var(--space-l);
   background: light-dark(var(--color-light), var(--color-gray-900));
+  transition: border-color 0.35s, box-shadow 0.35s, background-color 0.35s;
 }
 
 .journey-map .journey-map-step.is-active {
   border-color: light-dark(var(--color-gray-300), var(--color-gray-500));
   border-inline-start-color: var(--color-accent);
+  box-shadow: 0 4px 16px light-dark(rgb(197 160 89 / 10%), rgb(197 160 89 / 8%));
 }
 
 .journey-map .journey-map-step.is-complete {
@@ -142,7 +146,7 @@
   border-right: 2px solid light-dark(var(--color-gray-500), var(--color-gray-300));
   border-bottom: 2px solid light-dark(var(--color-gray-500), var(--color-gray-300));
   transform: rotate(45deg);
-  transition: transform 0.2s ease;
+  transition: transform 0.3s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 .journey-map .journey-map-step.is-active .journey-map-step-toggle-icon {

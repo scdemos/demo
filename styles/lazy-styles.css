@@ -1,1 +1,116 @@
 /* add global styles that can be loaded post LCP here */
+
+/* add global styles that can be loaded post LCP here */
+
+/* ==========================================================================
+  Scroll reveal – sections below fold animate in as they enter the viewport.
+  JS in scripts.js adds .will-reveal to off-screen sections, then .revealed
+  when they intersect. Only runs when prefers-reduced-motion allows it.
+  ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  main > .section.will-reveal:not(.revealed) {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  main > .section.will-reveal.revealed {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      transform 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+
+  /* Stagger children inside revealed sections for cascading entrance */
+  main > .section.will-reveal.revealed > div > :is(h1, h2, h3, h4, p, .block, .button-container, picture) {
+    animation: content-enter 0.7s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  }
+
+  main > .section.will-reveal.revealed > div > :nth-child(1) { animation-delay: 0.05s; }
+  main > .section.will-reveal.revealed > div > :nth-child(2) { animation-delay: 0.1s; }
+  main > .section.will-reveal.revealed > div > :nth-child(3) { animation-delay: 0.15s; }
+  main > .section.will-reveal.revealed > div > :nth-child(4) { animation-delay: 0.2s; }
+  main > .section.will-reveal.revealed > div > :nth-child(5) { animation-delay: 0.25s; }
+  main > .section.will-reveal.revealed > div > :nth-child(6) { animation-delay: 0.3s; }
+
+  @keyframes content-enter {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* ==========================================================================
+  Section polish — non-critical enhancements
+  ========================================================================== */
+
+/* Highlighted/light sections get a subtle inner glow in dark mode */
+.dark-scheme main > .section.light,
+.dark-scheme main > .section.highlight,
+:root[data-theme='dark'] main > .section.light,
+:root[data-theme='dark'] main > .section.highlight {
+  box-shadow: inset 0 1px 0 rgb(197 160 89 / 10%), inset 0 -1px 0 rgb(197 160 89 / 10%);
+}
+
+/* Divider sections: slightly larger padding for visual breathing room */
+@media (width >= 900px) {
+  main > .section.divider {
+    padding-block: calc(var(--space-xl) * 1.5);
+  }
+}
+
+/* ==========================================================================
+  Header scroll shadow — appears after user scrolls past hero
+  ========================================================================== */
+
+header .nav-wrapper.scrolled {
+  box-shadow: 0 4px 24px rgb(0 0 0 / 10%);
+}
+
+.dark-scheme header .nav-wrapper.scrolled,
+:root[data-theme='dark'] header .nav-wrapper.scrolled {
+  box-shadow: 0 4px 24px rgb(0 0 0 / 35%);
+}
+
+/* ==========================================================================
+  Teaser block — enhanced dark mode glow
+  ========================================================================== */
+
+.dark-scheme main .teaser,
+:root[data-theme='dark'] main .teaser {
+  box-shadow: 0 0 0 1px rgb(197 160 89 / 12%), 0 8px 32px rgb(0 0 0 / 25%);
+}
+
+/* ==========================================================================
+  Global image hover – subtle scale on linked images
+  ========================================================================== */
+
+main a picture img {
+  transition: transform 0.55s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+    filter 0.55s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+main a:hover picture img {
+  transform: scale(1.04);
+  filter: brightness(1.04);
+}
+
+/* Inline images get subtle rounded corners for a polished look */
+main > .section > div > p > picture img {
+  border-radius: 8px;
+}
+
+/* Focus-visible on all interactive elements: consistent brand ring */
+main :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}

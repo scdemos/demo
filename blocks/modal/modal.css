@@ -17,7 +17,8 @@
 .modal .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgb(0 0 0 / 45%);
+  background: light-dark(rgb(26 26 26 / 40%), rgb(0 0 0 / 55%));
+  backdrop-filter: blur(6px);
 }
 
 .modal .modal-dialog {
@@ -26,30 +27,36 @@
   max-height: calc(100vh - var(--space-xl));
   margin: 0;
   overflow: auto;
-  border-radius: 12px;
-  background: light-dark(var(--color-light), var(--color-gray-900));
-  box-shadow: 0 12px 30px rgb(0 0 0 / 26%);
-  padding: var(--space-l);
+  border-radius: var(--border-radius-heritage);
+  border: var(--border-heritage);
+  background: light-dark(var(--color-light), var(--color-card-dark));
+  box-shadow: var(--shadow-lift-l);
+  padding: var(--space-xl);
 }
 
 .modal .modal-close {
   position: sticky;
   top: 0;
   margin-left: auto;
-  display: block;
-  width: 32px;
-  height: 32px;
-  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 15%));
   border-radius: 999px;
-  background: light-dark(var(--color-gray-100), var(--color-gray-700));
+  background: light-dark(var(--color-parchment), var(--color-obsidian));
   color: inherit;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1;
   cursor: pointer;
+  transition: background-color 0.25s, transform 0.25s, border-color 0.25s;
 }
 
 .modal .modal-close:hover {
-  opacity: 0.9;
+  background-color: light-dark(var(--color-gray-100), var(--color-gray-800));
+  border-color: var(--color-gold);
+  transform: scale(1.08);
 }
 
 .modal .modal-content .modal-main {
