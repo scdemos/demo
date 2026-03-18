@@ -1011,6 +1011,16 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     border-bottom: var(--nav-desktop-arrow-size) solid var(--nav-bg-dropdown);
   }
 
+  /* invisible hover bridge above regular dropdown to prevent close on gap traversal */
+  header nav .nav-sections .default-content-wrapper > ul > li:not(.nav-drop-mega) > ul::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    height: calc(var(--nav-dropdown-offset) + var(--space-m));
+  }
+
   header nav .nav-sections .default-content-wrapper > ul > li:not(.nav-drop-mega) > ul > li {
     padding: 0;
     border: 0;
@@ -1080,6 +1090,16 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     border-left: var(--nav-desktop-arrow-size) solid transparent;
     border-right: var(--nav-desktop-arrow-size) solid transparent;
     border-bottom: var(--nav-desktop-arrow-size) solid var(--nav-bg-mega);
+  }
+
+  /* invisible hover bridge above mega dropdown to prevent close on gap traversal */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    height: var(--space-l);
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner {
