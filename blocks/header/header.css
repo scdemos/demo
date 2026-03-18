@@ -437,7 +437,6 @@ header nav .nav-sections .default-content-wrapper > ul > li > ul > li:not(.nav-m
     font-size: var(--nav-heading-size);
     font-weight: var(--nav-heading-weight);
     color: var(--dark-color);
-    border-bottom: 1px solid light-dark(var(--color-gray-200), var(--color-gray-600));
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li > ul > .nav-mega-inner > li.nav-mega-heading:first-child {
@@ -1168,7 +1167,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   /* mega items under headings: align with heading, proper padding for hover */
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul a {
     display: block;
-    padding: var(--space-s) var(--space-s) var(--space-s) 0;
+    padding: var(--space-s) var(--space-s);
     border-radius: var(--nav-radius);
     color: var(--text-color);
     font-size: var(--body-font-size-m);
@@ -1176,6 +1175,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     text-decoration: none;
     transition: background-color 0.18s ease, color 0.18s ease;
     overflow-wrap: break-word;
+    max-width: max-content;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-promo {
