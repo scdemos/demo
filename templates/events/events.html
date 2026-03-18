@@ -1,33 +1,7 @@
 <head>
-  {{#title}}
   <title>{{title}} | Upcoming Events</title>
   <meta name="description" content="{{description}}">
   <meta name="date" content="{{occurrenceDate}}">
-  {{/title}}
-
-  {{^title}}
-    {{#channel.title}}
-  <title>{{.}}</title>
-    {{/channel.title}}
-    {{^channel.title}}
-  <title>Upcoming Events</title>
-    {{/channel.title}}
-
-    {{#channel.description}}
-  <meta name="description" content="{{.}}">
-    {{/channel.description}}
-    {{^channel.description}}
-  <meta
-    name="description"
-    content="Reusable sample feed for events, sessions, workshops, and community programs."
-  >
-    {{/channel.description}}
-
-    {{#channel.updatedAt}}
-  <meta name="date" content="{{.}}">
-    {{/channel.updatedAt}}
-  {{/title}}
-
   <meta name="keywords" content="events, upcoming-events">
 </head>
 <body>
@@ -40,22 +14,22 @@
             <picture>
               <source
                 type="image/webp"
-                srcset="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                srcset="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=2000&format=webply&optimize=medium?width=2000&format=webp&optimize=medium"
                 media="(min-width: 600px)"
               >
               <source
                 type="image/webp"
-                srcset="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                srcset="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=750&format=webp&optimize=medium"
               >
               <source
                 type="image/jpeg"
-                srcset="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                srcset="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=2000&format=jpg&optimize=medium"
                 media="(min-width: 600px)"
               >
               <img
-                loading="eager"
+                loading="lazy"
                 alt=""
-                src="https://main--demo--scdemos.aem.page/media_1b1fa9c654a0893d886dbac009083ee558c2c207d.jpg"
+                src="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=750&format=jpg&optimize=medium"
                 width="1600"
                 height="900"
               >
@@ -64,47 +38,37 @@
         </div>
         <div>
           <div>
-            {{#title}}
-            <h1>{{title}}</h1>
-            {{#description}}<h5>{{.}}</h5>{{/description}}
-            {{/title}}
-
-            {{^title}}
-            {{#channel.title}}<h1>{{.}}</h1>{{/channel.title}}
-            {{^channel.title}}<h1>Upcoming Events</h1>{{/channel.title}}
-            {{#channel.description}}<h5>{{.}}</h5>{{/channel.description}}
-            {{/title}}
+            <h1 id="{{id}}">{{title}}</h1>
           </div>
         </div>
       </div>
+      <div class="columns">
+        <div>
+          <div>
+            <p>{{description}}</p>
+            {{#details}}<p>{{details}}</p>{{/details}}
+            <p>Type : {{type}}</p>
+            <p>Date : {{occurrenceDate}}</p>
+            <p>Time : {{time}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="section-metadata">
+        <div>
+          <div>Style</div>
+          <div>divider, center</div>
+        </div>
+      </div>
     </div>
-
-    {{#title}}
     <div>
-      {{#type}}<p><strong>Type:</strong> {{.}}</p>{{/type}}
-      {{#occurrenceDate}}<p><strong>Date:</strong> {{.}}</p>{{/occurrenceDate}}
-      {{#publishedAt}}<p><strong>Published:</strong> {{.}}</p>{{/publishedAt}}
-      {{#id}}<p><strong>ID:</strong> {{.}}</p>{{/id}}
-      {{#link}}<p><strong>Source page:</strong> <a href="{{.}}">{{.}}</a></p>{{/link}}
+      <h2 id="other-events">Other Events</h2>
+      <div class="related-articles">
+        <div>
+          <div>keywords</div>
+          <div>events</div>
+        </div>
+      </div>
     </div>
-    {{/title}}
-
-    {{^title}}
-    <div>
-      {{#source}}<p><strong>Feed source:</strong> <a href="{{.}}">{{.}}</a></p>{{/source}}
-      {{#channel.updatedAt}}<p><strong>Updated:</strong> {{.}}</p>{{/channel.updatedAt}}
-      {{#total}}<p><strong>Total events:</strong> {{.}}</p>{{/total}}
-    </div>
-
-    {{#data}}
-    <div>
-      <h2><a href="{{path}}">{{title}}</a></h2>
-      {{#type}}<p><strong>Type:</strong> {{.}}</p>{{/type}}
-      {{#occurrenceDate}}<p><strong>Date:</strong> {{.}}</p>{{/occurrenceDate}}
-      {{#description}}<p>{{.}}</p>{{/description}}
-    </div>
-    {{/data}}
-    {{/title}}
   </main>
   <footer></footer>
 </body>
