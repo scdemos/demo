@@ -591,6 +591,10 @@ main img:not([width], [height]) {
 main > .section {
   margin: inherit;
   padding-block: var(--space-xl);
+}
+
+main > .section:first-child {
+  padding-block-start: 0;
 
   /* Reduce CLS: contain layout so section appearance causes less reflow.
      Exclude social-share section: contain creates a containing block for position:fixed,

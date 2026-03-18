@@ -65,6 +65,10 @@
   main > .section.divider {
     padding-block: calc(var(--space-xl) * 1.5);
   }
+
+  main > .section.divider:first-child {
+    padding-block-start: 0;
+  }
 }
 
 /* ==========================================================================
