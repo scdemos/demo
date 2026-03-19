@@ -21,7 +21,10 @@
     "tail:contact-us": "wrangler tail --config ./workers/contact_us/wrangler.toml",
     "dev:feed": "wrangler dev --config ./workers/feed/wrangler.toml",
     "deploy:feed": "wrangler deploy --config ./workers/feed/wrangler.toml",
-    "tail:feed": "wrangler tail --config ./workers/feed/wrangler.toml"
+    "tail:feed": "wrangler tail --config ./workers/feed/wrangler.toml",
+    "dev:cdn": "wrangler dev --config ./workers/cdn/wrangler.toml",
+    "deploy:cdn": "wrangler deploy --config ./workers/cdn/wrangler.toml",
+    "tail:cdn": "wrangler tail --config ./workers/cdn/wrangler.toml"
   },
   "repository": {
     "type": "git",
