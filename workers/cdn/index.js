@@ -21,8 +21,24 @@ const getExtension = (path) => {
 const isMediaRequest = (url) => /\/media_[0-9a-f]{40,}[/a-zA-Z0-9_-]*\.[0-9a-z]+$/.test(url.pathname);
 const isRUMRequest = (url) => /\/\.(rum|optel)\/.*/.test(url.pathname);
 
+//html2json - start
+const HTML2JSON_QUERY_PARAMS = new Set(['head', 'preview', 'compact']);
+const buildHTML2JSONURL = (requestURL) => {
+  const pagePath = requestURL.pathname.replace(/\.json$/, '');
+  const html2jsonURL = new URL(
+    `https://mhast-html-to-json.adobeaem.workers.dev/scdemos/demo${pagePath}`,
+  );
+  for (const [key, value] of requestURL.searchParams.entries()) {
+    if (HTML2JSON_QUERY_PARAMS.has(key)) {
+      html2jsonURL.searchParams.append(key, value);
+    }
+  }
+  return html2jsonURL;
+};
+//html2json - end
 
 const handleRequest = async (request, env) => {
+  const requestURL = new URL(request.url);
   const url = new URL(request.url);
   if (url.port) {
     // Cloudflare opens a couple more ports than 443, so we redirect visitors
@@ -94,6 +110,24 @@ const handleRequest = async (request, env) => {
       cacheEverything: true,
     },
   });
+
+  // html2json - start
+  if (request.method === 'GET' && extension === 'json' && resp.status === 404) {
+    const html2jsonResp = await fetch(buildHTML2JSONURL(requestURL), {
+      headers: {
+        accept: 'application/json',
+      },
+      cf: {
+        cacheEverything: true,
+      },
+    });
+
+    if (html2jsonResp.ok) {
+      resp = html2jsonResp;
+    }
+  }
+  // html2json - end
+
   resp = new Response(resp.body, resp);
   if (resp.status === 301 && savedSearch) {
     const location = resp.headers.get('location');
