@@ -2,7 +2,26 @@
 const STORAGE_KEY = 'tools-demo-walkthrough-v1';
 
 /**
- * `?url=https://…` pre-fills the slides JSON URL (overrides saved value for this visit).
+ * What we fetch: full `https://…` URLs as-is, or a path / site-relative ref resolved against this origin
+ * (e.g. `demo-slides` → `https://current.host/demo-slides`).
+ */
+function resolveSlidesUrl(input) {
+  const s = String(input || '').trim();
+  if (!s) return '';
+  try {
+    if (/^https?:\/\//i.test(s)) {
+      const u = new URL(s);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+      return u.href;
+    }
+    return new URL(s, `${window.location.origin}/`).href;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * `?url=…` pre-fills the slides URL (overrides saved value for this visit).
  * The query string is left in the address bar so the page URL stays a shareable deep link.
  */
 function applySlidesUrlFromQuery() {
@@ -10,14 +29,7 @@ function applySlidesUrlFromQuery() {
   const raw = params.get('url');
   if (!raw) return;
   const trimmed = String(raw).trim();
-  if (!trimmed) return;
-  let parsed;
-  try {
-    parsed = new URL(trimmed);
-  } catch {
-    return;
-  }
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return;
+  if (!trimmed || !resolveSlidesUrl(trimmed)) return;
   state.slidesUrl = trimmed;
   state.stepIndex = 0;
   persistState();
@@ -25,7 +37,9 @@ function applySlidesUrlFromQuery() {
 
 function getContentUrl() {
   const saved = String(state.slidesUrl || '').trim();
-  return saved || null;
+  if (!saved) return null;
+  const resolved = resolveSlidesUrl(saved);
+  return resolved || null;
 }
 
 /** DA delivery often wraps the document in `{ metadata, data }`. */

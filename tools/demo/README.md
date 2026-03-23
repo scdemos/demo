@@ -14,6 +14,8 @@
 
 The full URL (including `?url=…`) stays in the address bar so you can copy it and share the same deep link.
 
+**Same site, shorter:** a value without `http(s)://` is resolved against the current origin (e.g. `?url=demo-slides` → `https://demo.bbird.live/demo-slides`). Works in the query field and in the setup form.
+
 **Content shape:** See [`demo-walkthrough.schema.json`](demo-walkthrough.schema.json). Top bar: `topbarTitle`, optional `topbarSubtitle`. Each slide has `slideTitle`, optional bullets, takeaway, and `openInBrowser` buttons (`buttonText` + full `url`). DA JSON is often wrapped as `{ "data": { … } }`; the app reads that automatically.
 
 **Docs:** [Structured Content in Document Authoring](https://docs.da.live/developers/guides/structured-content)
