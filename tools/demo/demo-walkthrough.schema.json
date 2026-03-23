@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://demo.bbird.live/tools/demo/demo-walkthrough.schema.json",
+  "title": "Demo Presenter",
+  "description": "Header text, slides, and buttons (label + URL only).",
+  "type": "object",
+  "required": ["topbarTitle", "slides"],
+  "properties": {
+    "topbarTitle": {
+      "type": "string",
+      "title": "Title",
+      "description": "Main heading next to the slide counter.",
+      "minLength": 1
+    },
+    "topbarSubtitle": {
+      "type": "string",
+      "title": "Subtitle",
+      "description": "Optional line under the top bar title.",
+      "x-semantic-type": "long-text"
+    },
+    "slides": {
+      "type": "array",
+      "title": "Slides",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/slide"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "slide": {
+      "type": "object",
+      "title": "Slide",
+      "required": ["slideTitle"],
+      "properties": {
+        "eyebrowLabel": {
+          "type": "string",
+          "title": "Eyebrow label"
+        },
+        "slideTitle": {
+          "type": "string",
+          "title": "Slide title",
+          "minLength": 1
+        },
+        "leadParagraph": {
+          "type": "string",
+          "title": "Lead paragraph",
+          "x-semantic-type": "long-text"
+        },
+        "bulletPoints": {
+          "type": "array",
+          "title": "Bullet points",
+          "items": {
+            "type": "string",
+            "title": "Bullet",
+            "minLength": 1
+          }
+        },
+        "openInBrowser": {
+          "type": "array",
+          "title": "Open in browser",
+          "items": {
+            "$ref": "#/$defs/slideLink"
+          }
+        },
+        "keyTakeaways": {
+          "type": "string",
+          "title": "Key takeaways",
+          "x-semantic-type": "long-text"
+        }
+      },
+      "additionalProperties": false
+    },
+    "slideLink": {
+      "type": "object",
+      "title": "Link",
+      "description": "Button label and full URL (https://… or a path starting with /).",
+      "required": ["buttonText", "url"],
+      "properties": {
+        "buttonText": {
+          "type": "string",
+          "title": "Label",
+          "minLength": 1
+        },
+        "url": {
+          "type": "string",
+          "title": "URL",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
