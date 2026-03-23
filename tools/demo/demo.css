@@ -28,6 +28,9 @@
   --radius: 12px;
   --radius-sm: 8px;
 
+  /* One shared “stage” for every slide (title + content) */
+  --slide-card-min-height: min(52vh, 560px);
+
   /* Spacing scale */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
@@ -249,21 +252,22 @@ button:disabled {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+
+  /* Same vertical placement for title + content slides (card sits in the same band). */
+  justify-content: center;
   padding: 0;
 }
 
-/* Cover slide: vertically center the card in the slide row (same min-height as other slides). */
-.slide-main:has(.slide-card-title) {
-  justify-content: center;
-}
-
-/* ——— Card: uses horizontal space; not a skinny column ——— */
+/* ——— Card: shared size/orientation for every slide ——— */
 .slide-card {
   width: 100%;
   max-width: 52rem;
   margin: 0 auto;
   padding: var(--s-8) var(--s-8) var(--s-6);
+  min-height: var(--slide-card-min-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -272,11 +276,8 @@ button:disabled {
     0 4px 24px rgb(0 0 0 / 4%);
 }
 
-/* Opening slide: same footprint as content slides (fills slide row), title centered. */
+/* Opening slide: center title block inside the same card footprint as content slides. */
 .slide-card-title {
-  min-height: min(52vh, 560px);
-  display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
@@ -599,6 +600,10 @@ button:disabled {
 }
 
 @media (width <= 600px) {
+  :root {
+    --slide-card-min-height: min(42vh, 380px);
+  }
+
   .presenter-shell {
     padding: var(--s-4) var(--s-4) var(--s-5);
   }
@@ -630,7 +635,6 @@ button:disabled {
   }
 
   .slide-card-title {
-    min-height: min(42vh, 380px);
     padding-top: var(--s-8);
     padding-bottom: var(--s-8);
   }
