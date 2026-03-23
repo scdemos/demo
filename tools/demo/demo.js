@@ -1,6 +1,28 @@
 /** Presenter: fetch JSON from a URL (Document Authoring structured content). */
 const STORAGE_KEY = 'tools-demo-walkthrough-v1';
 
+/**
+ * `?url=https://…` pre-fills the slides JSON URL (overrides saved value for this visit).
+ * The query string is left in the address bar so the page URL stays a shareable deep link.
+ */
+function applySlidesUrlFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('url');
+  if (!raw) return;
+  const trimmed = String(raw).trim();
+  if (!trimmed) return;
+  let parsed;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return;
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return;
+  state.slidesUrl = trimmed;
+  state.stepIndex = 0;
+  persistState();
+}
+
 function getContentUrl() {
   const saved = String(state.slidesUrl || '').trim();
   return saved || null;
@@ -19,6 +41,8 @@ function unwrapWalkthroughPayload(json) {
 let config = null;
 
 const state = loadState();
+
+applySlidesUrlFromQuery();
 
 function loadState() {
   const initial = { stepIndex: 0, slidesUrl: '' };
