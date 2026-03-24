@@ -47,8 +47,11 @@ const DA_EDIT_BY_PATHNAME = {
   '/demo-slides': 'scdemos/demo/drafts/demo-slides/demo',
 };
 
-/** DA edit link for a fetched JSON URL, or null. Preview worker + paths in `DA_EDIT_BY_PATHNAME`. */
-function getDaEditUrlFromSlidesUrl(resolvedUrl) {
+/** Same slug as `?url=demo-slides` / `/demo-slides` — used for setup “New” → DA folder. */
+const DEFAULT_SLIDES_SLUG = 'demo-slides';
+
+/** Path after `da.live/formsref#/`, or null. Preview worker + `DA_EDIT_BY_PATHNAME`. */
+function getDaFormsrefPath(resolvedUrl) {
   if (!resolvedUrl) return null;
   try {
     const u = new URL(resolvedUrl);
@@ -56,16 +59,27 @@ function getDaEditUrlFromSlidesUrl(resolvedUrl) {
 
     if (u.hostname.endsWith('adobeaem.workers.dev') && u.pathname.startsWith('/preview/')) {
       const afterPreview = u.pathname.slice('/preview/'.length).replace(/\/$/, '');
-      if (afterPreview) return `https://da.live/formsref#/${afterPreview}`;
+      return afterPreview || null;
     }
 
-    const mapped = DA_EDIT_BY_PATHNAME[pathname];
-    if (mapped) return `https://da.live/formsref#/${mapped}`;
-
-    return null;
+    return DA_EDIT_BY_PATHNAME[pathname] || null;
   } catch {
     return null;
   }
+}
+
+function getDaEditUrlFromSlidesUrl(resolvedUrl) {
+  const path = getDaFormsrefPath(resolvedUrl);
+  return path ? `https://da.live/formsref#/${path}` : null;
+}
+
+/** Parent folder in DA browse (drop last path segment) — `da.live/#/…` so authors can create documents. */
+function getDaNewDocumentUrlFromSlidesUrl(resolvedUrl) {
+  const path = getDaFormsrefPath(resolvedUrl);
+  if (!path) return null;
+  const parts = path.split('/').filter(Boolean);
+  if (parts.length <= 1) return null;
+  return `https://da.live/#/${parts.slice(0, -1).join('/')}`;
 }
 
 /** DA delivery often wraps the document in `{ metadata, data }`. */
@@ -234,7 +248,9 @@ function renderTopbar(steps) {
   const total = steps.length;
   const current = total ? state.stepIndex + 1 : 0;
   const pct = total ? Math.round((current / total) * 100) : 0;
-  const daEditUrl = getDaEditUrlFromSlidesUrl(getContentUrl());
+  const contentUrlResolved = getContentUrl();
+  const daEditUrl = getDaEditUrlFromSlidesUrl(contentUrlResolved);
+  const daNewUrl = getDaNewDocumentUrlFromSlidesUrl(contentUrlResolved);
 
   return `
     <header class="topbar">
@@ -245,13 +261,23 @@ function renderTopbar(steps) {
       <div class="topbar-meta">
         ${daEditUrl ? `
         <a
-          class="topbar-edit-da"
+          class="topbar-da-link topbar-edit-da"
           href="${escapeHtml(daEditUrl)}"
           target="_blank"
           rel="noopener noreferrer"
           title="Edit in Document Authoring"
           aria-label="Edit structured content in Document Authoring"
         >${PENCIL_SVG}</a>
+        ` : ''}
+        ${daNewUrl ? `
+        <a
+          class="topbar-da-link topbar-new-da"
+          href="${escapeHtml(daNewUrl)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open folder in Document Authoring to create a document"
+          aria-label="Open folder in Document Authoring to create a document"
+        >+</a>
         ` : ''}
         <button type="button" class="topbar-change-url" data-action="change-content-url">Change URL</button>
         <span class="step-badge" aria-live="polite">
@@ -381,6 +407,7 @@ function render() {
 function renderSetup() {
   const app = document.getElementById('app');
   const saved = escapeHtml(state.slidesUrl || '');
+  const setupNewDaUrl = getDaNewDocumentUrlFromSlidesUrl(resolveSlidesUrl(DEFAULT_SLIDES_SLUG));
   app.innerHTML = `
     <div class="presenter-setup">
       <h1 class="presenter-setup-title">Demo slides</h1>
@@ -399,6 +426,16 @@ function renderSetup() {
         >
         <div class="slides-url-actions">
           <button type="submit" class="slides-url-submit">Start</button>
+          ${setupNewDaUrl ? `
+          <a
+            class="slides-url-new"
+            href="${escapeHtml(setupNewDaUrl)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open folder in Document Authoring to create a document"
+            aria-label="Open folder in Document Authoring to create a document"
+          >New</a>
+          ` : ''}
         </div>
       </form>
     </div>
