@@ -42,6 +42,32 @@ function getContentUrl() {
   return resolved || null;
 }
 
+/** Known JSON paths on this site → DA `formsref` path (after `#/`). */
+const DA_EDIT_BY_PATHNAME = {
+  '/demo-slides': 'scdemos/demo/drafts/demo-slides/demo',
+};
+
+/** DA edit link for a fetched JSON URL, or null. Preview worker + paths in `DA_EDIT_BY_PATHNAME`. */
+function getDaEditUrlFromSlidesUrl(resolvedUrl) {
+  if (!resolvedUrl) return null;
+  try {
+    const u = new URL(resolvedUrl);
+    const pathname = u.pathname.replace(/\/$/, '') || '/';
+
+    if (u.hostname.endsWith('adobeaem.workers.dev') && u.pathname.startsWith('/preview/')) {
+      const afterPreview = u.pathname.slice('/preview/'.length).replace(/\/$/, '');
+      if (afterPreview) return `https://da.live/formsref#/${afterPreview}`;
+    }
+
+    const mapped = DA_EDIT_BY_PATHNAME[pathname];
+    if (mapped) return `https://da.live/formsref#/${mapped}`;
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 /** DA delivery often wraps the document in `{ metadata, data }`. */
 function unwrapWalkthroughPayload(json) {
   const inner = json?.data;
@@ -77,6 +103,22 @@ function persistState() {
   );
 }
 
+/** Drop `?…` from the address bar; keeps path and hash. */
+function clearAddressBarQuery() {
+  const loc = new URL(window.location.href);
+  if (!loc.search) return;
+  loc.search = '';
+  window.history.replaceState({}, '', `${loc.pathname}${loc.hash}`);
+}
+
+/** Clear slides URL, step, loaded deck, and persisted session (full tool reset). */
+function resetToolState() {
+  state.slidesUrl = '';
+  state.stepIndex = 0;
+  config = null;
+  window.localStorage.removeItem(STORAGE_KEY);
+}
+
 /**
  * @param {object} raw
  * @returns {{ label: string, title: string, lead: string, bullets: string[], takeaway: string, links: { label: string, url: string }[] }}
@@ -105,7 +147,12 @@ async function loadContent() {
   if (!res.ok) {
     throw new Error(`Could not load presenter content (${res.status}) — ${contentUrl}`);
   }
-  const raw = await res.json();
+  let raw;
+  try {
+    raw = await res.json();
+  } catch {
+    throw new Error('Response was not valid JSON.');
+  }
   const data = unwrapWalkthroughPayload(raw);
   if (!data.topbarTitle || typeof data.topbarTitle !== 'string') {
     throw new Error('JSON must include topbarTitle (inside data if wrapped).');
@@ -180,11 +227,14 @@ function renderLinkButtons(slide) {
   }).join('');
 }
 
+const PENCIL_SVG = `<svg class="topbar-edit-da-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
+
 function renderTopbar(steps) {
   const meta = config.meta;
   const total = steps.length;
   const current = total ? state.stepIndex + 1 : 0;
   const pct = total ? Math.round((current / total) * 100) : 0;
+  const daEditUrl = getDaEditUrlFromSlidesUrl(getContentUrl());
 
   return `
     <header class="topbar">
@@ -193,6 +243,16 @@ function renderTopbar(steps) {
         ${meta.subtitle ? `<p class="topbar-subtitle">${escapeHtml(meta.subtitle)}</p>` : ''}
       </div>
       <div class="topbar-meta">
+        ${daEditUrl ? `
+        <a
+          class="topbar-edit-da"
+          href="${escapeHtml(daEditUrl)}"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Edit in Document Authoring"
+          aria-label="Edit structured content in Document Authoring"
+        >${PENCIL_SVG}</a>
+        ` : ''}
         <button type="button" class="topbar-change-url" data-action="change-content-url">Change URL</button>
         <span class="step-badge" aria-live="polite">
           <span class="step-badge-num">${current}</span>
@@ -325,16 +385,16 @@ function renderSetup() {
     <div class="presenter-setup">
       <h1 class="presenter-setup-title">Demo slides</h1>
       <p class="presenter-setup-lead">Add slides URL</p>
-      <form class="slides-url-form" id="slides-url-form">
+      <form class="slides-url-form" id="slides-url-form" novalidate>
         <label class="slides-url-label" for="slides-url-input">Demo slides URL</label>
         <input
           id="slides-url-input"
           class="slides-url-input"
           name="slidesUrl"
-          type="url"
+          type="text"
           inputmode="url"
-          autocomplete="url"
-          placeholder="https://…"
+          autocomplete="off"
+          placeholder="Add slides URL"
           value="${saved}"
         >
         <div class="slides-url-actions">
@@ -378,10 +438,8 @@ function handleAction(action, target) {
   if (action === 'prev-step') moveStep(-1);
   if (action === 'jump-step') jumpToStep(Number(target.dataset.stepIndex));
   if (action === 'change-content-url') {
-    state.slidesUrl = '';
-    state.stepIndex = 0;
-    config = null;
-    persistState();
+    resetToolState();
+    clearAddressBarQuery();
     renderSetup();
   }
 }
