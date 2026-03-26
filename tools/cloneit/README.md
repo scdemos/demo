@@ -8,9 +8,11 @@ CloneIt creates a new repoless site by:
 
 1. **Creating DA folder** – Creates the new site folder in DA with a minimal `index.html`.
 2. **Copying DA config** – Fetches repo-level config from the baseline via [DA Config GET](https://opensource.adobe.com/da-admin/#tag/Config/operation/getConfig) and creates it for the new site via [DA Config POST](https://opensource.adobe.com/da-admin/#tag/Config/operation/createConfig). Skipped if baseline has no config.
-3. **Copying DA content** – Recursively copies all files from `scdemos/demo` to the new site folder, skipping `drafts` and `demo-docs`. Uses the [DA List API](https://admin.da.live/list) to discover all files, then the [DA Copy API](https://opensource.adobe.com/da-admin/#tag/Copy) per file (the Copy API does not recurse into folders). If copy fails, falls back to updating the minimal `index.html`.
+3. **Copying DA content** – Recursively copies all files from `scdemos/demo` to the new site folder, skipping `drafts`, `demo-docs`, and **locale folders** (segment names like `en`, `fr`, `de`, `ja`, `hi`, `zh`, plus other common ISO 639-1 codes and a few regional variants such as `zh-cn`, `pt-br`). Uses the [DA List API](https://admin.da.live/list) to discover all files, then the [DA Copy API](https://opensource.adobe.com/da-admin/#tag/Copy) per file (the Copy API does not recurse into folders). If copy fails, falls back to updating the minimal `index.html`.
 4. **Creating the AEM site config** – Fetches the baseline demo configuration from the [AEM Admin API](https://www.aem.live/docs/admin.html#tag/siteConfig/operation/createSiteSite), copies only code, sidekick, and headers, sets content to the new DA URL, and creates the site via `PUT /config/{org}/sites/{site}.json`
-5. **Copying query index config** – Fetches the baseline `query.yaml` and creates it for the new site. Skipped if the baseline has no index config.
+5. **Copying query index config** – Fetches the baseline `query.yaml` and `PUT`s it for the new site. Then **GETs the same URL** (with retries) so you see **copied and verified** in the success summary when propagation succeeds. If the baseline has no `query.yaml`, CloneIt shows that nothing was copied. If `PUT` fails, the error is shown; if `PUT` succeeds but `GET` stays empty, the UI warns with a link to the Admin API URL for manual checks.
+
+After a successful clone, use **Copy handoff** to copy a plain-text block (Preview URL, DA content, Code) for email or Slack.
 
 The new site shares the same codebase (demo) and uses `https://content.da.live/scdemos/{sitename}/` as its content source.
 

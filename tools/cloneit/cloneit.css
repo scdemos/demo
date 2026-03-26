@@ -155,7 +155,7 @@ body {
   color: var(--text-muted);
   margin-bottom: 1.25rem;
   padding: 0.625rem 0.75rem;
-  background: var(--surface-alt, rgba(0 0 0 / 0.04));
+  background: var(--surface-alt, rgb(0 0 0 / 4%));
   border-left: 3px solid var(--primary, #1473e6);
   border-radius: 0 4px 4px 0;
   line-height: 1.55;
@@ -501,6 +501,41 @@ body {
   font-family: var(--font-mono);
   word-break: break-all;
   color: var(--text-muted);
+}
+
+.result-summary-warn {
+  color: var(--text);
+}
+
+.result-summary-warn a {
+  color: var(--primary);
+}
+
+.result-handoff {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.result-handoff-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--text);
+}
+
+.result-handoff-pre {
+  margin: 0 0 0.75rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  font-family: var(--font-mono);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 /* Modal */

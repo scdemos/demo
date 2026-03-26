@@ -27,6 +27,25 @@ const app = {
 const SITE_NAME_MAX_LENGTH = 50;
 const RESERVED_NAMES = ['admin', 'api', 'config', 'main', 'live', 'preview', 'status', 'job'];
 
+/** Locale / language folder segments — not cloned (e.g. /en/, /fr/blog/…). */
+const LOCALE_EXCLUDED_FOLDER_NAMES = new Set([
+  'ar', 'bg', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko',
+  'lt', 'lv', 'ms', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'uk', 'vi', 'zh',
+  'en-gb', 'en-us', 'pt-br', 'zh-cn', 'zh-tw',
+]);
+
+function isExcludedLocaleFolderName(name) {
+  if (!name || typeof name !== 'string') return false;
+  return LOCALE_EXCLUDED_FOLDER_NAMES.has(name.toLowerCase());
+}
+
+/** True if relative path starts with a locale segment (e.g. en/index.html). */
+function pathStartsWithExcludedLocale(relPath) {
+  if (!relPath) return false;
+  const first = relPath.split('/').filter(Boolean)[0];
+  return isExcludedLocaleFolderName(first);
+}
+
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
   const messageEl = toast?.querySelector('.toast-message');
@@ -91,34 +110,71 @@ function setButtonLoading(loading) {
   if (loadingEl) loadingEl.style.display = loading ? 'inline-flex' : 'none';
 }
 
-function showResult(success, siteName, errorMessage, codeConfig, queryIndexCopied = false, contentPaths = [], daConfigCopied = false) {
+/**
+ * @param {boolean} success
+ * @param {string} siteName
+ * @param {string|null} errorMessage
+ * @param {object} [options]
+ * @param {object} [options.codeConfig]
+ * @param {string[]} [options.contentPaths]
+ * @param {boolean} [options.daConfigCopied]
+ * @param {object} [options.queryIndex] copied, verified, skippedNoBaseline, error
+ */
+function showResult(success, siteName, errorMessage, options = {}) {
   const container = document.getElementById('result-container');
   const successCard = document.getElementById('result-success');
   const errorCard = document.getElementById('result-error');
   if (!container) return;
+
+  const {
+    codeConfig,
+    contentPaths = [],
+    daConfigCopied = false,
+    queryIndex = {},
+  } = options;
+
+  const {
+    copied: queryIndexCopied = false,
+    verified: queryIndexVerified = false,
+    skippedNoBaseline = false,
+    error: queryIndexError = null,
+  } = queryIndex;
 
   container.style.display = 'block';
   if (success) {
     successCard.style.display = 'block';
     errorCard.style.display = 'none';
 
+    const code = codeConfig || { owner: CODE_OWNER, repo: CODE_REPO };
+    const githubUrl = code.source?.url || `https://github.com/${code.owner}/${code.repo}`;
+
+    let queryLine = '';
+    if (skippedNoBaseline) {
+      queryLine = `<li>Query index (<code>query.yaml</code>): skipped — baseline <code>${BASELINE_SITE}</code> has no <code>query.yaml</code> in Admin API (nothing to copy)</li>`;
+    } else if (queryIndexError) {
+      queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): <strong>not copied</strong> — ${escapeHtml(queryIndexError)}</li>`;
+    } else if (queryIndexCopied && queryIndexVerified) {
+      queryLine = `<li>Query index (<code>query.yaml</code>): copied and <strong>verified</strong> (GET after upload)</li>`;
+    } else if (queryIndexCopied && !queryIndexVerified) {
+      queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): upload reported OK but <strong>verification failed</strong> (GET still empty after retries). Check Admin API or re-upload <code>query.yaml</code> for <code>${ORG}/${siteName}</code> — <a href="${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml" target="_blank" rel="noopener noreferrer">direct link</a></li>`;
+    } else {
+      queryLine = `<li>Query index (<code>query.yaml</code>): not configured</li>`;
+    }
+
     const summaryList = document.getElementById('result-summary-list');
     if (summaryList) {
-      const queryItem = queryIndexCopied ? '<li>Query index config (query.yaml) copied</li>' : '';
       const daConfigItem = daConfigCopied ? '<li>DA config copied</li>' : '';
       summaryList.innerHTML = `
         <li>DA content: <code>${ORG}/${BASELINE_SITE}/</code> → <code>${ORG}/${siteName}/</code></li>
         ${daConfigItem}
         <li>AEM site config created</li>
-        ${queryItem}
+        ${queryLine}
         <li>Content: <code>content.da.live/${ORG}/${siteName}/</code></li>
       `;
     }
 
     const siteUrl = `https://main--${siteName}--${ORG}.aem.page`;
     const daUrl = `https://da.live/edit#/${ORG}/${siteName}`;
-    const code = codeConfig || { owner: CODE_OWNER, repo: CODE_REPO };
-    const githubUrl = code.source?.url || `https://github.com/${code.owner}/${code.repo}`;
 
     const siteLink = document.getElementById('result-site-link');
     const daLink = document.getElementById('result-da-link');
@@ -139,9 +195,15 @@ function showResult(success, siteName, errorMessage, codeConfig, queryIndexCopie
       if (urlEl) urlEl.textContent = githubUrl;
     }
 
+    const handoffEl = document.getElementById('result-handoff-text');
+    if (handoffEl) {
+      handoffEl.textContent = buildHandoffText(siteName, githubUrl);
+    }
+
     // Bulk actions: store paths, show buttons, reset state
     app.lastClonedSite = siteName;
     app.contentPaths = contentPaths;
+    app.lastHandoffText = buildHandoffText(siteName, githubUrl);
     updateBulkActionButtons();
   } else {
     successCard.style.display = 'none';
@@ -303,6 +365,34 @@ async function fetchBaselineQueryIndex(token) {
 }
 
 /**
+ * GET query.yaml for a site (same Admin API path used after PUT).
+ */
+async function fetchSiteQueryIndex(token, siteName) {
+  const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) return null;
+  const text = await response.text();
+  return text?.trim() ? text : null;
+}
+
+/**
+ * After PUT, confirm query.yaml is readable (retries for propagation lag).
+ * @returns {Promise<boolean>}
+ */
+async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, delayMs = 700) {
+  for (let i = 0; i < maxAttempts; i += 1) {
+    const body = await fetchSiteQueryIndex(token, siteName);
+    if (body != null && body.trim().length > 0) return true;
+    if (i < maxAttempts - 1) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  return false;
+}
+
+/**
  * Create or update index config (query.yaml) for new site.
  * PUT creates; if 409 (already exists), retry with POST to update.
  * @see https://www.aem.live/docs/admin.html#tag/indexConfig
@@ -322,6 +412,25 @@ async function createQueryIndex(token, newSiteName, yamlContent) {
     const text = await response.text();
     throw new Error(`Failed to create query index config: ${response.status} ${response.statusText} - ${text}`);
   }
+}
+
+function escapeHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Plain-text block for email / Slack handoff.
+ */
+function buildHandoffText(siteName, githubUrl) {
+  const preview = `https://main--${siteName}--${ORG}.aem.page`;
+  const da = `https://da.live/edit#/${ORG}/${siteName}`;
+  return `Preview URL: ${preview}
+DA content: ${da}
+Code: ${githubUrl}`;
 }
 
 function getDefaultIndexHtml(siteName) {
@@ -403,7 +512,11 @@ async function collectAllFilePaths(token, basePath = '', files = []) {
   for (const item of items) {
     const isFile = item.lastModified != null && (item.ext || /\.(html|json|png|jpg|jpeg|gif|svg|webp|pdf)$/i.test(item.name || ''));
     const isFolder = !item.ext && !item.lastModified && item.name && item.name !== '.DS_Store';
-    const skipFolder = isFolder && (item.name === 'drafts' || item.name === 'demo-docs');
+    const skipFolder = isFolder && (
+      item.name === 'drafts'
+      || item.name === 'demo-docs'
+      || isExcludedLocaleFolderName(item.name)
+    );
 
     if (skipFolder) continue;
 
@@ -412,7 +525,9 @@ async function collectAllFilePaths(token, basePath = '', files = []) {
       const relPath = itemPath.startsWith(prefix)
         ? itemPath.slice(prefix.length).replace(/^\/+/, '')
         : (basePath ? `${basePath}/${item.name}` : (item.name || itemPath));
-      files.push(relPath || item.name);
+      const normalized = relPath || item.name;
+      if (pathStartsWithExcludedLocale(normalized)) continue;
+      files.push(normalized);
     } else if (isFolder) {
       const subPath = basePath ? `${basePath}/${item.name}` : item.name;
       await collectAllFilePaths(token, subPath, files);
@@ -565,21 +680,39 @@ async function cloneSite(siteName) {
     const newConfig = buildNewSiteConfig(baselineConfig, siteName);
     await createAemSiteConfig(token, siteName, newConfig);
 
-    let queryIndexCopied = false;
+    const queryIndex = {
+      copied: false,
+      verified: false,
+      skippedNoBaseline: false,
+      error: null,
+    };
     const queryYaml = await fetchBaselineQueryIndex(token);
-    if (queryYaml?.trim()) {
+    if (!queryYaml?.trim()) {
+      queryIndex.skippedNoBaseline = true;
+    } else {
       setProgress(true, 85, 'Copying query index config…', null, 'Configuring', '');
       try {
         await createQueryIndex(token, siteName, queryYaml);
-        queryIndexCopied = true;
+        queryIndex.copied = true;
+        setProgress(true, 88, 'Verifying query index (query.yaml)…', null, 'Configuring', '');
+        queryIndex.verified = await verifyQueryIndexAfterCreate(token, siteName);
+        if (!queryIndex.verified) {
+          console.warn('Query index GET verification failed after upload; Admin API may still be propagating.');
+        }
       } catch (queryErr) {
-        console.warn('Query index copy skipped:', queryErr);
+        queryIndex.error = queryErr.message || String(queryErr);
+        console.warn('Query index copy failed:', queryErr);
       }
     }
 
     setProgress(true, 100, 'Done', null, 'Done', '');
     const contentPaths = daPathsToApiPaths(copiedFiles);
-    showResult(true, siteName, null, newConfig.code, queryIndexCopied, contentPaths, daConfigCopied);
+    showResult(true, siteName, null, {
+      codeConfig: newConfig.code,
+      contentPaths,
+      daConfigCopied,
+      queryIndex,
+    });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
     console.error('Clone failed:', error);
@@ -663,6 +796,21 @@ function setupEventListeners() {
 
   const bulkBtn = document.getElementById('bulk-btn');
   if (bulkBtn) bulkBtn.addEventListener('click', handleBulkAction);
+
+  const copyHandoffBtn = document.getElementById('copy-handoff-btn');
+  if (copyHandoffBtn) {
+    copyHandoffBtn.addEventListener('click', () => {
+      const text = app.lastHandoffText || document.getElementById('result-handoff-text')?.textContent;
+      if (!text) {
+        showToast('Nothing to copy yet.', 'error');
+        return;
+      }
+      navigator.clipboard.writeText(text).then(
+        () => showToast('Handoff copied to clipboard.', 'success'),
+        () => showToast('Could not copy — select the text manually.', 'error'),
+      );
+    });
+  }
 }
 
 async function init() {
