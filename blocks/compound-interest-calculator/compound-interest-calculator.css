@@ -7,7 +7,7 @@ main .compound-interest-calculator {
 main .compound-interest-calculator .compound-interest-calculator-legend {
   margin: 0 0 var(--space-s);
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 6px 8px;
 }
 
@@ -46,7 +46,7 @@ main .compound-interest-calculator .compound-interest-calculator-form {
   display: grid;
   gap: var(--space-xs);
   border: var(--border-heritage);
-  border-radius: 16px;
+  border-radius: 10px;
   padding: var(--space-m);
   background: light-dark(var(--color-parchment), var(--color-card-dark));
 }
@@ -90,11 +90,11 @@ main .compound-interest-calculator input[type='number'],
 main .compound-interest-calculator select {
   inline-size: 100%;
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 8px 10px;
   font: inherit;
   color: inherit;
-  background: light-dark(var(--color-light), rgb(25 29 35));
+  background: light-dark(var(--color-light), rgb(17 29 46));
 }
 
 main .compound-interest-calculator .compound-interest-calculator-suffix {
@@ -106,7 +106,7 @@ main .compound-interest-calculator .compound-interest-calculator-toggle {
   grid-template-columns: 1fr auto;
   align-items: center;
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 6px 8px;
 }
 
@@ -121,16 +121,16 @@ main .compound-interest-calculator .compound-interest-calculator-output {
 }
 
 main .compound-interest-calculator .compound-interest-calculator-metric {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
-  border-radius: 12px;
+  border: 1px solid light-dark(var(--color-gray-200), rgb(247 249 251 / 10%));
+  border-radius: 10px;
   padding: var(--space-m);
   background: light-dark(var(--color-light), var(--color-card-dark));
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 main .compound-interest-calculator .compound-interest-calculator-metric:hover {
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 35%));
-  box-shadow: 0 8px 24px light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 8%));
+  border-color: light-dark(var(--color-gold), rgb(0 163 173 / 35%));
+  box-shadow: 0 8px 24px light-dark(rgb(12 35 64 / 10%), rgb(0 163 173 / 8%));
 }
 
 main .compound-interest-calculator .compound-interest-calculator-metric h3 {
@@ -181,7 +181,7 @@ main .compound-interest-calculator .compound-interest-calculator-table {
   border-collapse: collapse;
   font-size: var(--body-font-size-s);
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -196,7 +196,7 @@ main .compound-interest-calculator .compound-interest-calculator-table thead th 
   font-size: 0.85em;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 12%));
+  background: light-dark(rgb(12 35 64 / 10%), rgb(0 163 173 / 12%));
   color: light-dark(var(--color-ink), var(--color-parchment));
   white-space: nowrap;
 }
@@ -218,11 +218,11 @@ main .compound-interest-calculator .compound-interest-calculator-table-td-num {
 }
 
 main .compound-interest-calculator .compound-interest-calculator-table tbody tr:nth-child(even) {
-  background: light-dark(rgb(245 248 250), rgb(30 38 48));
+  background: light-dark(rgb(240 244 248), rgb(22 35 52));
 }
 
 main .compound-interest-calculator .compound-interest-calculator-table tbody tr:nth-child(odd) {
-  background: light-dark(var(--color-light), rgb(21 25 31));
+  background: light-dark(var(--color-light), rgb(17 29 46));
 }
 
 @media (width >= 900px) {

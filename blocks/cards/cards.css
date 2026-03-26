@@ -12,19 +12,19 @@
 }
 
 .cards > ul > li {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(247 249 251 / 10%));
   background: light-dark(var(--color-light), var(--color-card-dark));
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  transition: transform 0.35s var(--ease-out-smooth), box-shadow 0.35s var(--ease-out-smooth), border-color 0.35s var(--ease-out-smooth);
 }
 
 .cards > ul > li:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+  box-shadow: 0 24px 48px light-dark(rgb(12 35 64 / 18%), rgb(0 163 173 / 18%));
+  border-color: light-dark(var(--color-gold), rgb(0 163 173 / 45%));
 }
 
 /* Card link */
@@ -50,7 +50,7 @@
   height: auto;
   max-width: 100%;
   margin-inline: auto;
-  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.55s var(--ease-out-smooth);
 }
 
 .cards > ul > li:hover .cards-card-image img {
@@ -114,12 +114,12 @@
   border-radius: var(--border-radius-heritage);
   padding: 45px;
   background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease, background-color 0.4s ease;
+  transition: transform 0.5s var(--ease-out-smooth), box-shadow 0.5s var(--ease-out-smooth), border-color 0.4s var(--ease-out-smooth), background-color 0.4s var(--ease-out-smooth);
 }
 
 .cards.bento > ul > li:hover {
   transform: translateY(-10px);
-  box-shadow: 0 32px 64px -12px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  box-shadow: 0 32px 64px -12px light-dark(rgb(12 35 64 / 25%), rgb(0 163 173 / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(0 163 173 / 40%));
   border-color: var(--color-gold);
 }
 
@@ -143,7 +143,7 @@
 
 /* Headings */
 .cards.bento .cards-card-body :is(h2, h3) {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-weight: 500;
   font-size: 2.2rem;
   line-height: 1.1;
@@ -162,7 +162,7 @@
 }
 
 .cards.bento .cards-card-featured .cards-card-body p:not(.cards-card-tag) {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.2rem;
   opacity: 0.9;
   margin-top: 35px;
@@ -180,7 +180,7 @@
   outline: 2px solid var(--color-gold);
   outline-offset: 3px;
   border-radius: var(--border-radius-heritage);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 20%);
+  box-shadow: 0 0 0 4px rgb(0 163 173 / 20%);
 }
 
 /* Image — stretch to card edges */

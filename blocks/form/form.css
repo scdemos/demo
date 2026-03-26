@@ -44,13 +44,13 @@ main .form form {
   scroll-margin: 1em;
   width: 100%;
   min-width: 0;
-  border: 1px solid light-dark(rgb(26 26 26 / 20%), rgb(245 242 237 / 20%));
+  border: 1px solid light-dark(rgb(26 26 46 / 20%), rgb(247 249 251 / 20%));
   border-radius: 8px;
   padding: 12px 14px;
-  background: light-dark(var(--color-light), rgb(6 13 13 / 60%));
+  background: light-dark(var(--color-light), rgb(10 22 40 / 60%));
   color: inherit;
   font-size: var(--body-font-size-s);
-  transition: border-color 0.25s, box-shadow 0.25s;
+  transition: border-color 0.25s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1)), box-shadow 0.25s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .form textarea {
@@ -77,7 +77,7 @@ main .form form {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
   border-color: var(--color-gold);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 12%);
+  box-shadow: 0 0 0 4px rgb(0 163 173 / 12%);
 }
 
 .form input:disabled,
@@ -180,7 +180,7 @@ main .form form {
   border: 1px solid currentcolor;
   background: currentcolor;
   opacity: 0.4;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1));
   cursor: pointer;
 }
 
@@ -194,7 +194,7 @@ main .form form {
   height: 1em;
   border-radius: 50%;
   background: inherit;
-  transition: left 0.2s;
+  transition: left 0.2s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .form .form-field.toggle-field label input:checked + span {
@@ -238,7 +238,7 @@ main .form form {
   padding: 12px 24px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .form .button-wrapper button.button:not(.secondary) {
@@ -257,7 +257,7 @@ main .form form {
   background: var(--color-gold);
   border-color: var(--color-gold);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 25%));
+  box-shadow: 0 8px 20px light-dark(rgb(12 35 64 / 25%), rgb(0 163 173 / 25%));
 }
 
 .form .button-wrapper button.button.secondary {

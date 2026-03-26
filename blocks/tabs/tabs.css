@@ -1,4 +1,4 @@
-/* Tabs block – Heritage Elite, mobile-first */
+/* Tabs block – Tizen Pharmaceutical, mobile-first */
 
 .tabs {
   color: var(--text-color);
@@ -25,7 +25,7 @@ main .section .tabs {
 
 /* Section header above tabs */
 .tabs .tabs-wrapper .section h2 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 2.5rem;
   color: var(--color-rust);
   margin: 0;
@@ -34,7 +34,7 @@ main .section .tabs {
 }
 
 .tabs .tabs-wrapper .section p {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.1rem;
   color: light-dark(var(--color-ink), var(--color-muted));
   opacity: 0.7;
@@ -78,7 +78,7 @@ main .section .tabs {
   margin: 0;
   padding: 16px 18px;
   opacity: 0.5;
-  transition: opacity 0.35s, color 0.35s, border-color 0.35s;
+  transition: opacity 0.35s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1)), color 0.35s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1)), border-color 0.35s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1));
   white-space: nowrap;
 }
 
@@ -121,7 +121,7 @@ main .section .tabs {
 }
 
 .tabs .tab .section h2 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-weight: 500;
   font-size: var(--heading-font-size-m);
   color: light-dark(var(--color-ink), var(--color-parchment));

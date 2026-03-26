@@ -1,23 +1,23 @@
-/* Teaser block – Heritage Elite */
+/* Teaser block – Tizen Pharmaceutical */
 
 main .teaser {
   background: light-dark(var(--color-parchment), var(--color-card-dark));
   border: var(--border-heritage);
   border-radius: var(--border-radius-heritage);
   text-align: center;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-m);
   font-weight: 500;
   color: light-dark(var(--color-ink), var(--color-parchment));
-  transition: transform 0.5s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    box-shadow 0.5s ease,
-    border-color 0.4s ease;
+  transition: transform 0.5s var(--ease-out-smooth),
+    box-shadow 0.5s var(--ease-out-smooth),
+    border-color 0.4s var(--ease-out-smooth);
 }
 
 main .teaser:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lift-m);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  border-color: light-dark(var(--color-gold), rgb(0 163 173 / 40%));
 }
 
 main .teaser > div {
@@ -33,7 +33,7 @@ main .teaser > div > div a {
   text-underline-offset: 0.2em;
   text-decoration-color: var(--color-gold);
   padding-inline-start: 0.5em;
-  transition: color 0.3s, text-decoration-color 0.3s;
+  transition: color 0.3s var(--ease-out-smooth), text-decoration-color 0.3s var(--ease-out-smooth);
 }
 
 main .teaser > div > div a:hover {

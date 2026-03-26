@@ -121,7 +121,7 @@
 /* Heading */
 .hero h1 {
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: clamp(2rem, 8vw, 4.5rem);
   font-weight: 500;
   line-height: 1.05;
@@ -148,7 +148,7 @@
   display: none;
   max-width: 550px;
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.15rem;
   color: light-dark(var(--color-ink), var(--color-muted));
   line-height: 1.7;

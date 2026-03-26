@@ -21,7 +21,7 @@ main .savings-rate-calculator .savings-rate-calculator-presets-label {
 main .savings-rate-calculator .savings-rate-calculator-legend {
   margin: 0 0 var(--space-s);
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 6px 8px;
 }
 
@@ -47,13 +47,13 @@ main .savings-rate-calculator .savings-rate-calculator-presets button {
   font: inherit;
   font-size: var(--body-font-size-s);
   color: inherit;
-  background: light-dark(var(--color-light), rgb(21 25 31));
+  background: light-dark(var(--color-light), rgb(17 29 46));
   cursor: pointer;
 }
 
 main .savings-rate-calculator .savings-rate-calculator-presets button.is-active {
   border-color: var(--color-accent);
-  background: light-dark(rgb(57 96 119 / 10%), rgb(57 96 119 / 22%));
+  background: light-dark(rgb(0 163 173 / 10%), rgb(0 163 173 / 22%));
 }
 
 main .savings-rate-calculator .savings-rate-calculator-layout {
@@ -65,7 +65,7 @@ main .savings-rate-calculator .savings-rate-calculator-form {
   display: grid;
   gap: var(--space-xs);
   border: var(--border-heritage);
-  border-radius: 16px;
+  border-radius: 10px;
   padding: var(--space-m);
   background: light-dark(var(--color-parchment), var(--color-card-dark));
 }
@@ -100,11 +100,11 @@ main .savings-rate-calculator input[type='number'],
 main .savings-rate-calculator select {
   inline-size: 100%;
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 8px 10px;
   font: inherit;
   color: inherit;
-  background: light-dark(var(--color-light), rgb(25 29 35));
+  background: light-dark(var(--color-light), rgb(17 29 46));
 }
 
 main .savings-rate-calculator input[type='range'] {
@@ -120,7 +120,7 @@ main .savings-rate-calculator .savings-rate-calculator-toggle {
   grid-template-columns: 1fr auto;
   align-items: center;
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 6px 8px;
 }
 
@@ -135,16 +135,16 @@ main .savings-rate-calculator .savings-rate-calculator-output {
 }
 
 main .savings-rate-calculator .savings-rate-calculator-metric {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
-  border-radius: 12px;
+  border: 1px solid light-dark(var(--color-gray-200), rgb(247 249 251 / 10%));
+  border-radius: 10px;
   padding: var(--space-m);
   background: light-dark(var(--color-light), var(--color-card-dark));
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 main .savings-rate-calculator .savings-rate-calculator-metric:hover {
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 35%));
-  box-shadow: 0 8px 24px light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 8%));
+  border-color: light-dark(var(--color-gold), rgb(0 163 173 / 35%));
+  box-shadow: 0 8px 24px light-dark(rgb(12 35 64 / 10%), rgb(0 163 173 / 8%));
 }
 
 main .savings-rate-calculator .savings-rate-calculator-metric h3 {

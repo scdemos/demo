@@ -34,9 +34,9 @@ main .related-articles .related-articles-card {
   border-radius: var(--space-m);
   overflow: clip;
   background: light-dark(var(--color-light), var(--color-gray-900));
-  transition: transform 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    border-color 0.3s ease,
-    box-shadow 0.4s ease;
+  transition: transform 0.4s var(--ease-out-smooth),
+    border-color 0.3s var(--ease-out-smooth),
+    box-shadow 0.4s var(--ease-out-smooth);
 }
 
 /* Card link */
@@ -94,8 +94,8 @@ main .related-articles .related-articles-card-date {
 main .related-articles .related-articles-card:hover,
 main .related-articles .related-articles-card:focus-within {
   transform: translateY(-6px);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
-  box-shadow: 0 20px 40px light-dark(rgb(161 79 43 / 14%), rgb(197 160 89 / 14%));
+  border-color: light-dark(var(--color-gold), rgb(0 163 173 / 40%));
+  box-shadow: 0 20px 40px light-dark(rgb(12 35 64 / 14%), rgb(0 163 173 / 14%));
 }
 
 /* Empty state */
@@ -129,8 +129,8 @@ main .related-articles .related-articles-arrow {
   box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
   pointer-events: auto;
   cursor: pointer;
-  transition: opacity 0.25s, transform 0.25s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    border-color 0.25s;
+  transition: opacity 0.25s var(--ease-out-smooth), transform 0.25s var(--ease-out-smooth),
+    border-color 0.25s var(--ease-out-smooth);
 }
 
 main .related-articles .related-articles-arrow:disabled {
@@ -177,7 +177,7 @@ main .related-articles .related-articles-arrow.is-hidden {
 }
 
 /* ==========================================================================
-   Bento variant – Heritage Elite grid layout
+   Bento variant – Tizen Pharmaceutical grid layout
    ========================================================================== */
 
 main .related-articles.bento .related-articles-list {
@@ -194,7 +194,7 @@ main .related-articles.bento .related-articles-card {
   border: var(--border-heritage);
   border-radius: var(--border-radius-heritage);
   background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.5s var(--ease-out-smooth);
 }
 
 main .related-articles.bento .related-articles-card-link:focus-visible {
@@ -220,7 +220,7 @@ main .related-articles.bento .related-articles-card-tag {
 
 /* Heading */
 main .related-articles.bento .related-articles-card h3 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-weight: 500;
   font-size: 1.4rem;
   line-height: 1.15;
@@ -248,7 +248,7 @@ main .related-articles.bento .related-articles-card:hover,
 main .related-articles.bento .related-articles-card:focus-within {
   transform: translateY(-8px);
   border-color: var(--color-gold);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+  box-shadow: 0 30px 60px -12px rgb(12 35 64 / 15%);
 }
 
 /* Featured (first) card */

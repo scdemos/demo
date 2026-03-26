@@ -14,9 +14,9 @@ main .social-share .sharethis-inline-share-buttons {
   display: block;
   min-width: 0;
   padding: 4px 2px;
-  border-radius: 12px 0 0 12px;
-  background: light-dark(rgb(255 255 255 / 78%), rgb(22 33 33 / 75%));
-  border: 1px solid light-dark(rgb(161 79 43 / 12%), rgb(245 242 237 / 10%));
+  border-radius: 10px 0 0 10px;
+  background: light-dark(rgb(255 255 255 / 78%), rgb(17 29 46 / 75%));
+  border: 1px solid light-dark(rgb(12 35 64 / 12%), rgb(247 249 251 / 10%));
   box-shadow: 0 8px 24px rgb(0 0 0 / 10%);
   backdrop-filter: blur(10px);
 }

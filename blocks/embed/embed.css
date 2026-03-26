@@ -19,7 +19,7 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   position: relative;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
 }
 

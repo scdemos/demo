@@ -17,7 +17,7 @@
 .modal .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: light-dark(rgb(26 26 26 / 40%), rgb(0 0 0 / 55%));
+  background: light-dark(rgb(26 26 46 / 40%), rgb(0 0 0 / 55%));
   backdrop-filter: blur(6px);
 }
 
@@ -43,14 +43,14 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 15%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(247 249 251 / 15%));
   border-radius: 999px;
   background: light-dark(var(--color-parchment), var(--color-obsidian));
   color: inherit;
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 0.25s, transform 0.25s, border-color 0.25s;
+  transition: background-color 0.25s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1)), transform 0.25s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1)), border-color 0.25s var(--ease-out-smooth, cubic-bezier(0.4, 0, 0.2, 1));
 }
 
 .modal .modal-close:hover {
