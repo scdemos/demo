@@ -44,7 +44,9 @@
 
 .article .article-breadcrumb a:hover,
 .article .article-breadcrumb a:focus-visible {
+  color: var(--color-link-hover);
   text-decoration: underline;
   text-underline-offset: 0.2em;
   text-decoration-thickness: 2px;
+  transition: color 0.15s cubic-bezier(0, 0, 0.2, 1);
 }

@@ -17,7 +17,7 @@
 .modal .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgb(0 0 0 / 45%);
+  background: rgb(0 0 0 / 65%);
 }
 
 .modal .modal-dialog {
@@ -26,9 +26,9 @@
   max-height: calc(100vh - var(--space-xl));
   margin: 0;
   overflow: auto;
-  border-radius: 12px;
+  border-radius: 0;
   background: light-dark(var(--color-light), var(--color-gray-900));
-  box-shadow: 0 12px 30px rgb(0 0 0 / 26%);
+  box-shadow: 6px 6px 0 rgb(0 0 0 / 30%);
   padding: var(--space-l);
 }
 
@@ -39,8 +39,8 @@
   display: block;
   width: 32px;
   height: 32px;
-  border: 0;
-  border-radius: 999px;
+  border: 2px solid currentcolor;
+  border-radius: 0;
   background: light-dark(var(--color-gray-100), var(--color-gray-700));
   color: inherit;
   font-size: 24px;
@@ -49,7 +49,7 @@
 }
 
 .modal .modal-close:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .modal .modal-content .modal-main {

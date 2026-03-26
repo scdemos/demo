@@ -29,7 +29,7 @@
 .quiz .quiz-question {
   margin: 0;
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-m);
   background: light-dark(var(--color-parchment), rgb(21 25 31));
   min-inline-size: 0;
@@ -47,7 +47,7 @@
   display: flex;
   width: 100%;
   align-items: stretch;
-  transition: transform 0.3s ease;
+  transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 .quiz .quiz-slider-track > .quiz-question {
@@ -66,7 +66,7 @@
 
 .quiz .quiz-nav-btn {
   border: 1px solid light-dark(rgb(255 255 255 / 55%), rgb(255 255 255 / 16%));
-  border-radius: 999px;
+  border-radius: 0;
   inline-size: 44px;
   block-size: 44px;
   padding: 0;
@@ -76,7 +76,7 @@
   color: inherit;
   background: light-dark(rgb(255 255 255 / 72%), rgb(24 27 32 / 70%));
   backdrop-filter: blur(8px);
-  box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
+  box-shadow: 3px 3px 0 rgb(0 0 0 / 14%);
   cursor: pointer;
 }
 
@@ -126,7 +126,7 @@
   align-items: flex-start;
   gap: var(--space-xs);
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px 12px;
   cursor: pointer;
 }
@@ -136,7 +136,7 @@
 }
 
 .quiz .quiz-option:has(input:checked) {
-  background: light-dark(rgb(161 79 43 / 8%), rgb(22 33 33 / 80%));
+  background: light-dark(rgb(205 255 0 / 8%), rgb(22 33 33 / 80%));
 }
 
 .quiz .quiz-option input {
@@ -164,7 +164,7 @@
 }
 
 .quiz .quiz-feedback {
-  border-radius: 8px;
+  border-radius: 0;
   padding: 8px 10px;
 }
 
@@ -195,7 +195,7 @@
 .quiz .quiz-submit {
   justify-self: start;
   border: 1px solid var(--color-accent);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 8px 14px;
   font: inherit;
   font-size: var(--body-font-size-s);

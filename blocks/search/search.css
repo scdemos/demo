@@ -27,7 +27,7 @@ main .search .search-query-form input[type="search"] {
   flex: 1 1 auto;
   min-width: 180px;
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: var(--space-s);
+  border-radius: 0;
   padding: var(--space-s) var(--space-m);
   font: inherit;
   color: inherit;
@@ -39,7 +39,7 @@ main .search .search-load-more {
   margin-left: auto;
   margin-right: auto;
   display: block;
-  border-radius: var(--space-s);
+  border-radius: 0;
   padding: var(--space-s) var(--space-m);
   font: inherit;
 }
@@ -61,7 +61,7 @@ main .search .search-sort-label {
 main .search .search-sort-label select {
   width: 112px;
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: var(--space-s);
+  border-radius: 0;
   padding: var(--space-s) var(--space-m);
   font: inherit;
   color: inherit;
@@ -91,8 +91,8 @@ main .search .search-results-list {
 }
 
 main .search .search-result.is-card {
-  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: var(--space-m);
+  border: 2px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border-radius: 0;
   overflow: clip;
   background: light-dark(var(--color-light), var(--color-gray-900));
   min-block-size: 210px;
@@ -173,8 +173,8 @@ main .search .search-filters {
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
   background: light-dark(var(--color-light), var(--color-gray-900));
   padding: var(--space-m);
-  border-radius: var(--space-m);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 4%);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 8%);
 }
 
 /* Accordion toggle: visible on mobile only */
@@ -188,7 +188,7 @@ main .search .search-filters-toggle {
   padding: var(--space-m);
   margin: calc(-1 * var(--space-m)) calc(-1 * var(--space-m)) 0;
   border: 0;
-  border-radius: var(--space-m) var(--space-m) 0 0;
+  border-radius: 0;
   background: light-dark(var(--color-gray-100), var(--color-gray-800));
   color: inherit;
   font-size: var(--body-font-size-m);
@@ -218,7 +218,7 @@ main .search .search-filters-toggle::after {
   border-top: 7px solid light-dark(var(--color-gray-600), var(--color-gray-400));
   margin-left: auto;
   align-self: center;
-  transition: transform 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 main .search .search-filters.is-expanded .search-filters-toggle::after {
@@ -230,7 +230,7 @@ main .search .search-filters.is-expanded .search-filters-toggle::after {
 main .search .search-filters-panel {
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.25s ease-out;
+  transition: max-height 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 main .search .search-filters.is-expanded .search-filters-panel {
@@ -256,7 +256,7 @@ main .search .search-filters-sort select {
   width: 100%;
   padding: var(--space-s) var(--space-m);
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: var(--space-s);
+  border-radius: 0;
   background: light-dark(var(--color-light), var(--color-gray-800));
   color: inherit;
   font: inherit;

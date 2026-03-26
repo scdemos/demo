@@ -13,11 +13,10 @@ main .social-share .sharethis-inline-share-buttons {
   display: block;
   min-width: 0;
   padding: 3px 1px;
-  border-radius: 8px 0 0 8px;
+  border-radius: 0;
   background: light-dark(rgb(255 255 255 / 74%), rgb(20 24 30 / 72%));
-  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-600));
-  box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
-  backdrop-filter: blur(3px);
+  border: 2px solid light-dark(var(--color-gray-200), var(--color-gray-600));
+  box-shadow: none;
 }
 
 main .social-share .st-inline-share-buttons {

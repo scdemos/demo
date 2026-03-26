@@ -31,10 +31,10 @@ main .related-articles .related-articles-card {
   scroll-snap-align: start;
   margin: 0;
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: var(--space-m);
+  border-radius: 0;
   overflow: clip;
   background: light-dark(var(--color-light), var(--color-gray-900));
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1), border-color 0.15s cubic-bezier(0, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 /* Card link */
@@ -47,9 +47,9 @@ main .related-articles .related-articles-card-link {
 }
 
 main .related-articles .related-articles-card-link:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid #cdff00;
   outline-offset: -2px;
-  border-radius: var(--space-m);
+  border-radius: 0;
 }
 
 /* Card accent strip */
@@ -90,9 +90,9 @@ main .related-articles .related-articles-card-date {
 /* Hover & focus */
 main .related-articles .related-articles-card:hover,
 main .related-articles .related-articles-card:focus-within {
-  transform: translateY(-2px);
+  transform: translate(-2px, -2px);
   border-color: var(--color-accent);
-  box-shadow: 0 8px 20px rgb(0 0 0 / 10%);
+  box-shadow: 4px 4px 0 rgb(0 0 0 / 20%);
 }
 
 /* Empty state */
@@ -118,14 +118,14 @@ main .related-articles .related-articles-arrow {
   color: inherit;
   inline-size: 44px;
   block-size: 44px;
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0;
   font-size: 22px;
   line-height: 1;
   backdrop-filter: blur(8px);
-  box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
+  box-shadow: 2px 2px 0 rgb(0 0 0 / 14%);
   pointer-events: auto;
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1), transform 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 main .related-articles .related-articles-arrow:disabled {
@@ -181,15 +181,15 @@ main .related-articles.bento .related-articles-list {
 
 main .related-articles.bento .related-articles-card {
   flex: none;
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
+  border: 2px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border-radius: 0;
   background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 main .related-articles.bento .related-articles-card-link:focus-visible {
-  outline-color: var(--color-gold);
-  border-radius: var(--border-radius-heritage);
+  outline-color: #cdff00;
+  border-radius: 0;
 }
 
 main .related-articles.bento .related-articles-card-content {
@@ -236,9 +236,9 @@ main .related-articles.bento .related-articles-card-date {
 /* Hover & focus */
 main .related-articles.bento .related-articles-card:hover,
 main .related-articles.bento .related-articles-card:focus-within {
-  transform: translateY(-8px);
-  border-color: var(--color-gold);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+  transform: translate(-2px, -2px);
+  border-color: #cdff00;
+  box-shadow: 4px 4px 0 rgb(205 255 0 / 20%);
 }
 
 /* Featured (first) card */

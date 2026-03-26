@@ -7,7 +7,7 @@ main .networth-calculator {
 main .networth-calculator .networth-calculator-legend {
   margin: 0 0 var(--space-s);
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 10px;
+  border-radius: 0;
   padding: 6px 8px;
 }
 
@@ -35,7 +35,7 @@ main .networth-calculator .networth-calculator-form {
   display: grid;
   gap: var(--space-xs);
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-s);
   background: light-dark(rgb(255 255 255 / 78%), rgb(17 20 25 / 60%));
 }
@@ -70,7 +70,7 @@ main .networth-calculator input[type='number'],
 main .networth-calculator input[type='text'] {
   inline-size: 100%;
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 0;
   padding: 8px 10px;
   font: inherit;
   color: inherit;
@@ -91,7 +91,7 @@ main .networth-calculator .networth-calculator-toggle {
   grid-template-columns: 1fr auto;
   align-items: center;
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 0;
   padding: 6px 8px;
 }
 
@@ -107,7 +107,7 @@ main .networth-calculator .networth-calculator-subtitle {
 
 main .networth-calculator .networth-calculator-optional {
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 10px;
+  border-radius: 0;
   padding: 6px 8px;
 }
 
@@ -128,7 +128,7 @@ main .networth-calculator .networth-calculator-output {
 
 main .networth-calculator .networth-calculator-metric {
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-s);
   background: light-dark(var(--color-light), rgb(21 25 31));
 }

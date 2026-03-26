@@ -7,7 +7,7 @@ main .compound-interest-calculator {
 main .compound-interest-calculator .compound-interest-calculator-legend {
   margin: 0 0 var(--space-s);
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 10px;
+  border-radius: 0;
   padding: 6px 8px;
 }
 
@@ -46,7 +46,7 @@ main .compound-interest-calculator .compound-interest-calculator-form {
   display: grid;
   gap: var(--space-xs);
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-s);
   background: light-dark(rgb(255 255 255 / 78%), rgb(17 20 25 / 60%));
 }
@@ -90,7 +90,7 @@ main .compound-interest-calculator input[type='number'],
 main .compound-interest-calculator select {
   inline-size: 100%;
   border: 1px solid light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 0;
   padding: 8px 10px;
   font: inherit;
   color: inherit;
@@ -106,7 +106,7 @@ main .compound-interest-calculator .compound-interest-calculator-toggle {
   grid-template-columns: 1fr auto;
   align-items: center;
   border: 1px dashed light-dark(var(--color-gray-300), var(--color-gray-600));
-  border-radius: 8px;
+  border-radius: 0;
   padding: 6px 8px;
 }
 
@@ -122,7 +122,7 @@ main .compound-interest-calculator .compound-interest-calculator-output {
 
 main .compound-interest-calculator .compound-interest-calculator-metric {
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-s);
   background: light-dark(var(--color-light), rgb(21 25 31));
 }
@@ -175,7 +175,7 @@ main .compound-interest-calculator .compound-interest-calculator-table {
   border-collapse: collapse;
   font-size: var(--body-font-size-s);
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -187,8 +187,8 @@ main .compound-interest-calculator .compound-interest-calculator-table td {
 
 main .compound-interest-calculator .compound-interest-calculator-table thead th {
   font-weight: 600;
-  background: light-dark(#c5dce6, #396077);
-  color: light-dark(var(--color-gray-800), var(--color-gray-100));
+  background: light-dark(#cdff00, #1a1a1a);
+  color: light-dark(#0a0a0a, #e0ff4f);
   white-space: nowrap;
 }
 
@@ -209,11 +209,11 @@ main .compound-interest-calculator .compound-interest-calculator-table-td-num {
 }
 
 main .compound-interest-calculator .compound-interest-calculator-table tbody tr:nth-child(even) {
-  background: light-dark(rgb(245 248 250), rgb(30 38 48));
+  background: light-dark(rgb(245 245 245), rgb(20 20 20));
 }
 
 main .compound-interest-calculator .compound-interest-calculator-table tbody tr:nth-child(odd) {
-  background: light-dark(var(--color-light), rgb(21 25 31));
+  background: light-dark(var(--color-light), rgb(10 10 10));
 }
 
 @media (width >= 900px) {

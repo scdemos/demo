@@ -23,7 +23,7 @@ header {
   --nav-dropdown-padding: var(--space-m);
   --nav-dropdown-item-padding: var(--space-s) var(--space-m);
   --nav-dropdown-offset: var(--space-s);
-  --nav-radius: var(--space-s);
+  --nav-radius: 0;
 
   /* backgrounds */
   --nav-bg: var(--background-color);
@@ -34,7 +34,7 @@ header {
   --nav-bg-mega: light-dark(var(--color-parchment), var(--color-obsidian));
   --nav-bg-hover-item: light-dark(var(--light-color), var(--color-card-dark));
 
-  /* header uses neutral hover color */
+  /* header uses lime/magenta hover color */
   --nav-hover-color: light-dark(var(--color-rust), var(--color-gold));
   --nav-focus-color: light-dark(var(--color-rust), var(--color-gold));
 
@@ -50,7 +50,7 @@ header {
 }
 
 header .nav-wrapper {
-  background-color: light-dark(#faf8f5, var(--color-obsidian));
+  background-color: light-dark(#fff, var(--color-obsidian));
   width: 100%;
   z-index: 1000;
   position: fixed;
@@ -92,7 +92,7 @@ header nav p {
 
 header nav a:any-link {
   color: currentcolor;
-  transition: color 0.18s ease, opacity 0.18s ease;
+  transition: color 0.15s cubic-bezier(0, 0, 0.2, 1), opacity 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 /* hamburger – mobile */
@@ -108,12 +108,12 @@ header nav .nav-hamburger button {
   height: 22px;
   margin: 0;
   border: 0;
-  border-radius: var(--nav-radius);
+  border-radius: 0;
   padding: 0;
   background-color: transparent;
   color: inherit;
   cursor: pointer;
-  transition: background-color 0.18s ease, opacity 0.18s ease;
+  transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1), opacity 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 header nav .nav-hamburger button:hover,
@@ -142,7 +142,7 @@ header nav[aria-expanded='false'] .nav-hamburger-icon,
 header nav[aria-expanded='false'] .nav-hamburger-icon::before,
 header nav[aria-expanded='false'] .nav-hamburger-icon::after {
   height: 2px;
-  border-radius: 2px;
+  border-radius: 0;
   background: currentcolor;
 }
 
@@ -166,7 +166,7 @@ header nav[aria-expanded='true'] .nav-hamburger-icon::after {
   height: 20px;
   margin: auto;
   background: currentcolor;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 header nav[aria-expanded='true'] .nav-hamburger-icon::before {
@@ -185,7 +185,7 @@ header .nav-brand {
   justify-content: center;
   justify-self: stretch;
   min-width: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--nav-brand-size);
   font-weight: var(--nav-brand-weight);
   line-height: 1;
@@ -196,7 +196,7 @@ header .nav-brand {
 header nav .nav-brand a:any-link {
   display: inline-flex;
   align-items: center;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 header nav .nav-brand a:any-link:hover,
@@ -308,7 +308,7 @@ header nav .nav-sections .default-content-wrapper > ul > li.nav-drop > p > a {
     height: 24px;
     transform: translateY(-50%);
     border: 0;
-    border-radius: 999px;
+    border-radius: 0;
     background: transparent;
     color: inherit;
     padding: 0;
@@ -322,11 +322,11 @@ header nav .nav-sections .default-content-wrapper > ul > li.nav-drop > p > a {
     height: 6px;
     margin: auto;
     border: 2px solid currentcolor;
-    border-radius: 0 1px 0 0;
+    border-radius: 0;
     border-width: 2px 2px 0 0;
     opacity: 0.6;
     transform: rotate(135deg);
-    transition: transform 0.2s ease;
+    transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop[aria-expanded='true'] > p > .nav-submenu-toggle::before {
@@ -344,7 +344,7 @@ header nav .nav-sections .default-content-wrapper > ul > li > ul {
   display: none;
   padding: 0 var(--nav-dropdown-padding) var(--nav-dropdown-padding);
   margin: 0;
-  border-radius: var(--nav-radius);
+  border-radius: 0;
 }
 
 header nav .nav-sections .default-content-wrapper > ul > li[aria-expanded='true'] > ul {
@@ -422,7 +422,7 @@ header nav .nav-sections .default-content-wrapper > ul > li > ul > li:not(.nav-m
     background-color: var(--nav-bg-dropdown-mobile);
     padding: var(--nav-dropdown-padding);
     margin: 0 var(--nav-gap) var(--nav-gap);
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-600));
   }
 
@@ -457,7 +457,7 @@ header nav .nav-sections .default-content-wrapper > ul > li > ul > li:not(.nav-m
 
   header nav .nav-sections .default-content-wrapper > ul > li > ul > .nav-mega-inner > li.nav-mega-heading > ul > li {
     padding: 0;
-    margin: 0;    
+    margin: 0;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li > ul > .nav-mega-inner > li.nav-mega-heading > ul a {
@@ -534,8 +534,8 @@ header nav .nav-sections button.button:focus-visible {
 
 /* CTA button in header tools */
 header nav .nav-tools a.button:any-link:not(.nav-tool) {
-  border: 1.5px solid var(--color-rust);
-  border-radius: 4px;
+  border: 1.5px solid var(--color-ink);
+  border-radius: 0;
   background: transparent;
   color: var(--color-rust);
   padding: 12px 24px;
@@ -543,7 +543,7 @@ header nav .nav-tools a.button:any-link:not(.nav-tool) {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  transition: all 0.3s;
+  transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 header nav .nav-tools a.button.nav-auth-link:any-link {
@@ -561,7 +561,7 @@ header nav .nav-auth-link .nav-auth-info {
   height: 14px;
   margin-left: 8px;
   border: 1px solid currentcolor;
-  border-radius: 50%;
+  border-radius: 0;
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
@@ -581,7 +581,7 @@ header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item
 
 header nav .nav-tools a.button:any-link:not(.nav-tool):hover {
   background: var(--color-rust);
-  color: var(--color-light);
+  color: var(--color-ink);
   transform: none;
   box-shadow: none;
 }
@@ -619,14 +619,14 @@ header nav .nav-tools .nav-search-form {
 header nav .nav-tools .nav-search-input {
   width: 120px;
   border: 1px solid light-dark(rgb(0 0 0 / 14%), rgb(255 255 255 / 20%));
-  border-radius: 999px;
+  border-radius: 0;
   padding: var(--nav-gap) 38px var(--nav-gap) var(--nav-padding);
   background-color: transparent;
   color: inherit;
   font: inherit;
   font-size: var(--body-font-size-s);
   line-height: 1.2;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color 0.15s cubic-bezier(0, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 header nav .nav-tools .nav-search-input::placeholder {
@@ -646,11 +646,11 @@ header nav .nav-tools .nav-tool {
   justify-content: center;
   cursor: pointer;
   border: 0;
-  border-radius: 999px;
+  border-radius: 0;
   background: transparent;
   padding: var(--nav-gap);
   color: inherit;
-  transition: background-color 0.18s ease;
+  transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 header nav .nav-tools .nav-search-submit {
@@ -660,7 +660,7 @@ header nav .nav-tools .nav-search-submit {
   transform: translateY(-50%);
   flex: 0 0 auto;
   padding: var(--space-xs);
-  border-radius: 999px;
+  border-radius: 0;
 }
 
 header nav .nav-tools .nav-tool:hover,
@@ -711,7 +711,7 @@ header nav .nav-tools .nav-language-menu {
   max-width: min(200px, calc(100vw - 2 * var(--space-m)));
   background-color: var(--nav-bg-dropdown);
   border: 1px solid var(--header-drop-border);
-  border-radius: var(--nav-radius);
+  border-radius: 0;
   box-shadow: var(--header-drop-shadow);
   z-index: 1001;
 }
@@ -729,7 +729,7 @@ header nav .nav-tools .nav-language-menu a {
   display: block;
   padding: var(--nav-dropdown-item-padding);
   text-decoration: none;
-  transition: background-color 0.18s ease;
+  transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 header nav .nav-tools .nav-language-menu a:hover,
@@ -760,37 +760,37 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
       --nav-padding: var(--space-s);
       --nav-gap: 6px;
     }
-  
+
     header nav {
       gap: 0 var(--nav-gap);
     }
-  
+
     header nav .nav-brand :is(img, svg) {
       width: min(138px, 37vw);
       height: 36px;
     }
-  
+
     header nav .nav-brand .icon.icon-logo {
       width: 100px;
       height: 40px;
     }
-  
+
     header nav .nav-tools {
       gap: 4px;
       min-width: 0;
     }
-  
+
     header nav .nav-tools .nav-search-input {
       width: min(98px, 26vw);
       padding: var(--space-xs) 32px var(--space-xs) var(--space-s);
       font-size: var(--body-font-size-xs);
     }
-  
+
     header nav .nav-tools .nav-tool,
     header nav .nav-tools a.button.nav-tool:any-link {
       padding: var(--space-xs);
     }
-  
+
     header nav .nav-tools .icon img {
       width: 16px;
       height: 16px;
@@ -802,19 +802,19 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
       letter-spacing: 1px;
     }
   }
-  
+
   /* very small phones */
   @media (width <= 350px) {
     header {
       --nav-padding: var(--space-s);
       --nav-gap: var(--space-xs);
     }
-  
+
     header nav .nav-brand :is(img, svg) {
       width: min(120px, 40vw);
       height: 38px;
     }
-  
+
     header nav .nav-tools .nav-search-input {
       width: 82px;
       padding: var(--space-xs) 34px var(--space-xs) var(--space-s);
@@ -910,9 +910,9 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 
   header nav .nav-sections .default-content-wrapper > ul > li > p > a {
     padding: var(--space-xs) var(--space-s);
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     line-height: 1.2;
-    transition: color 0.18s ease, background-color 0.18s ease;
+    transition: color 0.15s cubic-bezier(0, 0, 0.2, 1), background-color 0.15s cubic-bezier(0, 0, 0.2, 1);
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li > p > a:hover,
@@ -955,10 +955,10 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     width: 5px;
     height: 5px;
     border: 2px solid currentcolor;
-    border-radius: 0 1px 0 0;
+    border-radius: 0;
     border-width: 2px 2px 0 0;
-    transition: transform 0.2s ease;
-    opacity: 0.7;
+    transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
+    opacity: 1;
   }
 
   header nav .nav-sections .nav-drop:hover::after,
@@ -978,7 +978,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     width: max-content;
     max-width: var(--nav-desktop-dropdown-max);
     padding: var(--nav-gap);
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     border: 1px solid var(--header-drop-border);
     background-color: var(--nav-bg-dropdown);
     box-shadow: var(--header-drop-shadow);
@@ -987,7 +987,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     opacity: 0;
     pointer-events: none;
     z-index: 8;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+    transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1), transform 0.15s cubic-bezier(0, 0, 0.2, 1), visibility 0s linear 0.15s;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li:not(.nav-drop-mega)[aria-expanded='true'] > ul {
@@ -995,7 +995,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     opacity: 1;
     transform: translate(-50%, var(--space-xs));
     pointer-events: auto;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
+    transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1), transform 0.15s cubic-bezier(0, 0, 0.2, 1), visibility 0s;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li:not(.nav-drop-mega) > ul::before {
@@ -1023,9 +1023,9 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   header nav .nav-sections .default-content-wrapper > ul > li:not(.nav-drop-mega) > ul a {
     display: block;
     padding: var(--nav-dropdown-item-padding);
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     text-decoration: none;
-    transition: background-color 0.18s ease, color 0.18s ease;
+    transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1), color 0.15s cubic-bezier(0, 0, 0.2, 1);
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li:not(.nav-drop-mega) > ul a:hover,
@@ -1050,14 +1050,14 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     top: var(--mega-top, var(--nav-height, 64px));
     padding: var(--space-xl) var(--space-xl);
     border-bottom: var(--border-heritage);
-    background-color: light-dark(#faf8f5, var(--color-obsidian));
+    background-color: light-dark(#fff, var(--color-obsidian));
     color: var(--text-color);
     box-shadow: var(--header-drop-shadow);
     z-index: 999;
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+    transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1), transform 0.15s cubic-bezier(0, 0, 0.2, 1), visibility 0s linear 0.15s;
     transform: translateY(-4px);
     overflow: hidden;
   }
@@ -1067,7 +1067,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
+    transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1), transform 0.15s cubic-bezier(0, 0, 0.2, 1), visibility 0s;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul::before {
@@ -1136,12 +1136,12 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-item > a {
     display: block;
     padding: var(--nav-dropdown-item-padding);
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     color: var(--text-color);
     font-size: var(--body-font-size-m);
     line-height: 1.25;
     font-weight: var(--nav-item-weight);
-    transition: background-color 0.18s ease, color 0.18s ease;
+    transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1), color 0.15s cubic-bezier(0, 0, 0.2, 1);
     overflow-wrap: break-word;
   }
 
@@ -1149,12 +1149,12 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul a {
     display: block;
     padding: var(--space-s) var(--space-s) var(--space-s) 0;
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     color: var(--text-color);
     font-size: var(--body-font-size-m);
     font-weight: var(--nav-item-weight);
     text-decoration: none;
-    transition: background-color 0.18s ease, color 0.18s ease;
+    transition: background-color 0.15s cubic-bezier(0, 0, 0.2, 1), color 0.15s cubic-bezier(0, 0, 0.2, 1);
     overflow-wrap: break-word;
   }
 
@@ -1172,7 +1172,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     height: 100%;
     min-height: 0;
     max-height: var(--nav-mega-promo-max-height);
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     background-color: var(--nav-bg-hover-item);
     text-decoration: none;
     overflow: hidden;
@@ -1182,7 +1182,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-promo picture {
     display: block;
-    border-radius: var(--nav-radius);
+    border-radius: 0;
     overflow: hidden;
     flex: 1 1 auto;
     min-height: 0;
@@ -1272,8 +1272,8 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1.5px solid var(--color-rust);
-    border-radius: 4px;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 0;
     background: transparent;
     color: var(--color-rust);
     padding: 12px 24px;
@@ -1289,7 +1289,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item > p > a.button.nav-auth-mobile:any-link:hover,
   header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item > p > a.button.nav-auth-mobile:any-link:focus-visible {
     background: var(--color-rust);
-    color: var(--color-light);
+    color: var(--color-ink);
     transform: none;
     box-shadow: none;
     text-decoration: none;

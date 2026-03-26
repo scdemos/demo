@@ -1,4 +1,4 @@
-/* Tabs block – Heritage Elite, mobile-first */
+/* Tabs block – Brutalist Street, mobile-first */
 
 .tabs {
   color: var(--text-color);
@@ -25,7 +25,7 @@ main .section .tabs {
 
 /* Section header above tabs */
 .tabs .tabs-wrapper .section h2 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 2.5rem;
   color: var(--color-rust);
   margin: 0;
@@ -33,7 +33,7 @@ main .section .tabs {
 }
 
 .tabs .tabs-wrapper .section p {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.1rem;
   color: light-dark(var(--color-ink), var(--color-muted));
   opacity: 0.7;
@@ -53,7 +53,7 @@ main .section .tabs {
   scroll-behavior: smooth;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  border-bottom: var(--border-heritage);
+  border-bottom: 2px solid light-dark(var(--color-gray-200), var(--color-gray-600));
 }
 
 .tabs .tabs-list::-webkit-scrollbar {
@@ -76,7 +76,7 @@ main .section .tabs {
   margin: 0;
   padding: 16px 18px;
   opacity: 0.5;
-  transition: all 0.3s;
+  transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
   white-space: nowrap;
 }
 
@@ -93,7 +93,7 @@ main .section .tabs {
 }
 
 .tabs .tabs-list button:focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-rust);
   outline-offset: -2px;
 }
 
@@ -118,8 +118,8 @@ main .section .tabs {
 }
 
 .tabs .tab .section h2 {
-  font-family: var(--font-family-serif);
-  font-weight: 500;
+  font-family: var(--font-family);
+  font-weight: 700;
   font-size: var(--heading-font-size-m);
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
@@ -150,7 +150,7 @@ main .section .tabs {
 .tabs .columns .embed {
   max-width: 100%;
   border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
+  border-radius: 0;
   overflow: hidden;
   background: light-dark(transparent, var(--color-card-dark));
 }

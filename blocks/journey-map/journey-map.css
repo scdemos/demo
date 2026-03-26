@@ -87,7 +87,7 @@
 
 .journey-map .journey-map-step {
   border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 12px;
+  border-radius: 0;
   border-inline-start: 3px solid light-dark(var(--color-gray-300), var(--color-gray-600));
   padding: var(--space-l);
   background: light-dark(var(--color-light), var(--color-gray-900));
@@ -142,7 +142,7 @@
   border-right: 2px solid light-dark(var(--color-gray-500), var(--color-gray-300));
   border-bottom: 2px solid light-dark(var(--color-gray-500), var(--color-gray-300));
   transform: rotate(45deg);
-  transition: transform 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 .journey-map .journey-map-step.is-active .journey-map-step-toggle-icon {

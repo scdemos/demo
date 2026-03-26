@@ -11,7 +11,7 @@
  */
 
 /* ==========================================================================
-   Design tokens – use these variables across blocks for consistent styling.
+   Design tokens – Brutalist Street
    ========================================================================== */
 
 :root,
@@ -26,12 +26,12 @@
   --grid-column-width: calc(var(--grid-container-width) / 12);
   --grid-gutter-width: 8.3%;
 
-  /* minimal spacing scale for consistent global layout */
+  /* spacing scale – brutalist rhythm */
   --space-xs: 4px;
   --space-s: 8px;
   --space-m: 16px;
-  --space-l: 24px;
-  --space-xl: 32px;
+  --space-l: 28px;
+  --space-xl: 40px;
 
   /* global layout rhythm */
   --content-padding-inline: var(--space-m);
@@ -41,92 +41,92 @@
   /* color scheme */
   color-scheme: light dark;
 
-  /* heritage palette */
-  --color-rust: #a14f2b;
-  --color-gold: #c5a059;
-  --color-parchment: #f5f2ed;
-  --color-ink: #1a1a1a;
+  /* brutalist street palette – light */
+  --color-rust: #cdff00;
+  --color-gold: #ff2d6f;
+  --color-parchment: #fff;
+  --color-ink: #0a0a0a;
 
-  /* heritage dark palette */
-  --color-obsidian: #0d1414;
-  --color-card-dark: #162121;
-  --color-rust-bright: #d16a3e;
-  --color-muted: #8b9a9a;
+  /* brutalist street palette – dark */
+  --color-obsidian: #0a0a0a;
+  --color-card-dark: #141414;
+  --color-rust-bright: #e0ff4f;
+  --color-muted: #888;
 
-  /* color tokens – grays and palette */
-  --color-gray-100: #f1f1f1;
-  --color-gray-200: #d3d3d3;
-  --color-gray-300: #b5b5b5;
-  --color-gray-400: #999;
-  --color-gray-500: #7d7d7d;
-  --color-gray-600: #636363;
-  --color-gray-700: #494949;
-  --color-gray-800: #313131;
-  --color-gray-900: #1b1b1b;
-  --color-green-100: #e1f5e3;
-  --color-green-200: #a3e1a8;
-  --color-green-300: #60cb6a;
-  --color-green-400: #24b032;
-  --color-green-500: #1e9029;
-  --color-green-600: #187220;
-  --color-teal-100: #e4f3f5;
-  --color-teal-200: #acdbdf;
-  --color-teal-300: #71c1c9;
-  --color-teal-400: #36a7b3;
-  --color-teal-500: #108a96;
-  --color-blue-100: #eaf2ff;
-  --color-blue-200: #b9d4ff;
-  --color-blue-300: #88b6ff;
-  --color-blue-400: #5898ff;
-  --color-blue-500: #2176ff;
-  --color-blue-600: #0058e4;
-  --color-blue-700: #0041a9;
-  --color-purple-100: #f4edfb;
-  --color-purple-200: #dfcbf2;
-  --color-purple-300: #c9a7ea;
-  --color-purple-400: #b385e1;
-  --color-purple-500: #9d60d8;
-  --color-purple-600: #843ccb;
-  --color-red-100: #ffecea;
-  --color-red-200: #ffc4be;
-  --color-red-300: #ff9990;
-  --color-red-400: #ff6759;
-  --color-red-500: #f81400;
-  --color-red-600: #c71000;
-  --color-orange-100: #ffeddc;
-  --color-orange-200: #ffc895;
-  --color-orange-300: #ff9e43;
-  --color-orange-400: #f37500;
-  --color-orange-500: #c76000;
-  --color-yellow-100: #fff48e;
-  --color-yellow-200: #ebd400;
-  --color-yellow-300: #cab600;
+  /* color tokens – grays (high contrast neutral) */
+  --color-gray-100: #f2f2f2;
+  --color-gray-200: #d4d4d4;
+  --color-gray-300: #a3a3a3;
+  --color-gray-400: #737373;
+  --color-gray-500: #525252;
+  --color-gray-600: #404040;
+  --color-gray-700: #2e2e2e;
+  --color-gray-800: #1a1a1a;
+  --color-gray-900: #0f0f0f;
+  --color-green-100: #d4ffd6;
+  --color-green-200: #80ff86;
+  --color-green-300: #30e638;
+  --color-green-400: #00c908;
+  --color-green-500: #00a307;
+  --color-green-600: #007d05;
+  --color-teal-100: #d0fbff;
+  --color-teal-200: #80f0ff;
+  --color-teal-300: #30e4ff;
+  --color-teal-400: #00cfeb;
+  --color-teal-500: #00a8bf;
+  --color-blue-100: #dceeff;
+  --color-blue-200: #9cf;
+  --color-blue-300: #5af;
+  --color-blue-400: #18f;
+  --color-blue-500: #06d;
+  --color-blue-600: #004daa;
+  --color-blue-700: #003577;
+  --color-purple-100: #f0e0ff;
+  --color-purple-200: #d4a0ff;
+  --color-purple-300: #b860ff;
+  --color-purple-400: #9c20ff;
+  --color-purple-500: #7d00dd;
+  --color-purple-600: #5e00aa;
+  --color-red-100: #ffe0e0;
+  --color-red-200: #f99;
+  --color-red-300: #f55;
+  --color-red-400: #f11;
+  --color-red-500: #d00;
+  --color-red-600: #a00;
+  --color-orange-100: #fff0d0;
+  --color-orange-200: #ffd080;
+  --color-orange-300: #ffb030;
+  --color-orange-400: #ee9000;
+  --color-orange-500: #c07500;
+  --color-yellow-100: #ffff80;
+  --color-yellow-200: #ee0;
+  --color-yellow-300: #cc0;
 
   /* semantic / named colors */
   --color-light: rgb(255 255 255);
   --color-dark: rgb(0 0 0);
-  --color-text: light-dark(var(--color-ink), var(--color-parchment));
-  --color-link: light-dark(var(--color-ink), var(--color-parchment));
-  --color-link-hover: light-dark(var(--color-rust), var(--color-gold));
+  --color-text: light-dark(var(--color-ink), #f2f2f2);
+  --color-link: light-dark(var(--color-ink), #f2f2f2);
+  --color-link-hover: light-dark(var(--color-gold), var(--color-rust-bright));
   --color-brand: var(--color-rust);
   --color-accent: var(--color-gold);
-  --color-shaded: light-dark(var(--color-parchment), var(--color-card-dark));
+  --color-shaded: light-dark(var(--color-gray-100), var(--color-card-dark));
 
-  /* fonts */
-  --font-family: montserrat, "Trebuchet MS", sans-serif;
-  --font-family-serif: "EB Garamond", georgia, serif;
-  --font-family-mono: "JetBrains Mono", "Courier New", monospace;
+  /* fonts – chunky grotesque */
+  --font-family: 'Space Grotesk', 'Trebuchet MS', sans-serif;
+  --font-family-serif: 'Space Grotesk', 'Trebuchet MS', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Courier New', monospace;
   --body-font-family: var(--font-family);
-  --heading-font-family: var(--font-family-serif);
+  --heading-font-family: var(--font-family);
 
-  /* heading sizes */
-  --heading-font-size-xxl: 32.44px;
-  --heading-font-size-xl: 28.83px;
-  --heading-font-size-l: 25.63px;
-  --heading-font-size-m: 22.78px;
-  --heading-font-size-s: 20.25px;
+  /* heading sizes – oversized brutalist */
+  --heading-font-size-xxl: 36px;
+  --heading-font-size-xl: 32px;
+  --heading-font-size-l: 28px;
+  --heading-font-size-m: 23px;
+  --heading-font-size-s: 20px;
   --heading-font-size-xs: 18px;
-  --heading-line-height: 1.15;
+  --heading-line-height: 1.0;
 
   /* body sizes */
   --body-font-size-xxxl: 25px;
@@ -136,10 +136,10 @@
   --body-font-size-m: 16px;
   --body-font-size-s: 14px;
   --body-font-size-xs: 12px;
-  --body-line-height: 1.6;
+  --body-line-height: 1.5;
 
   /* nav / layout */
-  --nav-height: 64px;
+  --nav-height: 72px;
   --header-height: var(--nav-height);
 
   /* boilerplate compatibility – map to design tokens */
@@ -150,9 +150,9 @@
   --link-color: var(--color-link);
   --link-hover-color: var(--color-link-hover);
 
-  /* heritage border */
-  --border-heritage: 2px solid light-dark(rgb(161 79 43 / 20%), rgb(245 242 237 / 20%));
-  --border-radius-heritage: 24px;
+  /* brutalist border */
+  --border-heritage: 2px solid light-dark(rgb(0 0 0 / 12%), rgb(255 255 255 / 12%));
+  --border-radius-heritage: 0;
 }
 
 :root[data-theme='light'],
@@ -180,10 +180,10 @@
     --body-font-size-m: 18px;
     --body-font-size-s: 16px;
     --body-font-size-xs: 14px;
-    --heading-font-size-xxl: 45px;
-    --heading-font-size-xl: 36px;
-    --heading-font-size-l: 28px;
-    --heading-font-size-m: 22px;
+    --heading-font-size-xxl: 52px;
+    --heading-font-size-xl: 42px;
+    --heading-font-size-l: 32px;
+    --heading-font-size-m: 24px;
     --heading-font-size-s: 20px;
     --heading-font-size-xs: 18px;
     --content-padding-inline: var(--space-xl);
@@ -230,6 +230,13 @@ body.theme-dark {
   src: local('Arial');
 }
 
+/* Space Grotesk fallback for CLS reduction */
+@font-face {
+  font-family: space-grotesk-fallback;
+  size-adjust: 107%;
+  src: local('Arial');
+}
+
 /* ==========================================================================
    Base layout and LCP-critical styles (boilerplate structure preserved)
    ========================================================================== */
@@ -272,7 +279,7 @@ footer .footer[data-block-status="loaded"] {
   visibility: visible;
 }
 
-/* typography */
+/* typography – brutalist chunky */
 h1,
 h2,
 h3,
@@ -282,8 +289,10 @@ h6 {
   margin-top: 0.8em;
   margin-bottom: 0.25em;
   font-family: var(--heading-font-family);
-  font-weight: 500;
+  font-weight: 700;
   line-height: var(--heading-line-height);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
   scroll-margin: 40px;
 }
 
@@ -333,21 +342,25 @@ pre {
 
 pre {
   padding: var(--space-l);
-  border-radius: var(--space-s);
+  border-radius: 0;
   background-color: var(--light-color);
   overflow-x: auto;
   white-space: pre;
+  border: 2px solid light-dark(var(--color-gray-800), var(--color-gray-300));
 }
 
 strong {
-  font-weight: 600;
+  font-weight: 700;
 }
 
-/* links */
+/* links – brutalist underline */
 a:any-link {
   color: var(--link-color);
   text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.15em;
   overflow-wrap: break-word;
+  transition: color 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 a:hover {
@@ -355,7 +368,7 @@ a:hover {
   text-decoration: underline;
 }
 
-/* buttons (AEM default content: links in standalone paragraphs) */
+/* buttons – hard edges, bold, brutalist */
 p.button-container {
   margin: var(--space-m) 0;
 }
@@ -369,9 +382,9 @@ button.button {
   gap: var(--space-xs);
   max-width: 100%;
   margin: 0;
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
-  border-radius: 4px;
-  padding: 20px 50px;
+  border: 2px solid light-dark(var(--color-ink), var(--color-rust-bright));
+  border-radius: 0;
+  padding: 18px 44px;
   font: inherit;
   font-weight: 700;
   font-size: 0.85rem;
@@ -379,14 +392,14 @@ button.button {
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  background-color: light-dark(var(--color-rust), var(--color-rust-bright));
-  color: var(--color-light);
+  letter-spacing: 3px;
+  background-color: light-dark(var(--color-ink), var(--color-rust-bright));
+  color: light-dark(var(--color-rust), var(--color-ink));
   cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: all 0.4s;
+  transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 input,
@@ -401,7 +414,7 @@ a.button.primary:any-link,
 button.button.primary {
   border-color: var(--color-rust);
   background-color: var(--color-rust);
-  color: var(--color-light);
+  color: var(--color-ink);
 }
 
 a.button:any-link:hover,
@@ -410,8 +423,9 @@ button.button:hover,
 button.button:focus-visible {
   background-color: var(--color-gold);
   border-color: var(--color-gold);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px light-dark(rgb(161 79 43 / 20%), rgb(209 106 62 / 25%));
+  color: var(--color-light);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 light-dark(var(--color-ink), var(--color-rust-bright));
   cursor: pointer;
   text-decoration: none;
 }
@@ -427,7 +441,7 @@ button.button.primary:focus-visible {
 
 a.button:any-link:focus-visible,
 button.button:focus-visible {
-  outline: 2px solid var(--link-color);
+  outline: 2px solid var(--color-rust);
   outline-offset: 2px;
 }
 
@@ -438,17 +452,19 @@ button.button:disabled,
 button.button:disabled:hover,
 button.button:disabled:focus-visible {
   background-color: var(--light-color);
-  border-color: var(--light-color);
-  color: var(--dark-color);
+  border-color: var(--color-gray-300);
+  color: var(--color-gray-400);
   cursor: not-allowed;
   pointer-events: none;
+  transform: none;
+  box-shadow: none;
 }
 
 a.button.secondary,
 button.button.secondary {
-  border: 1.5px solid var(--color-rust);
+  border: 2px solid light-dark(var(--color-ink), var(--color-rust-bright));
   background-color: transparent;
-  color: var(--color-rust);
+  color: light-dark(var(--color-ink), var(--color-rust-bright));
 }
 
 a.button.secondary:hover,
@@ -456,8 +472,8 @@ a.button.secondary:focus-visible,
 button.button.secondary:hover,
 button.button.secondary:focus-visible {
   border-color: var(--color-gold);
-  background-color: transparent;
-  color: var(--color-gold);
+  background-color: var(--color-gold);
+  color: var(--color-light);
 }
 
 /* main content area – use design tokens for rhythm */
@@ -502,14 +518,10 @@ main img:not([width], [height]) {
   object-fit: cover;
 }
 
-/* sections – boilerplate structure with design tokens */
+/* sections – brutalist structure */
 main > .section {
   margin: inherit;
   padding-block: var(--space-xl);
-
-  /* Reduce CLS: contain layout so section appearance causes less reflow.
-     Exclude social-share section: contain creates a containing block for position:fixed,
-     which would break the sticky share buttons. */
   contain: layout;
 }
 
@@ -542,14 +554,14 @@ main > .section.divider::after {
   max-width: var(--grid-container-width);
   padding: 12px 0 24px;
   margin: 0 auto;
-  border-bottom: 1px solid var(--color-gray-200);
+  border-bottom: 2px solid light-dark(var(--color-ink), var(--color-gray-600));
 }
 
 main > .section.divider.center {
-    text-align: center;
+  text-align: center;
 }
 
-/* section-metadata or block style: spacer utilities – add to section metadata or block styles for readability gaps */
+/* section-metadata or block style: spacer utilities */
 .spacer-top-s { margin-top: var(--space-s); }
 .spacer-top-m { margin-top: var(--space-m); }
 .spacer-top-l { margin-top: var(--space-l); }

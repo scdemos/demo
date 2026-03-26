@@ -16,7 +16,7 @@ main .form form {
   display: grid;
   gap: var(--space-s);
   border: 1px solid currentcolor;
-  border-radius: 12px;
+  border-radius: 0;
   padding: var(--space-m);
   background: transparent;
   color: inherit;
@@ -45,7 +45,7 @@ main .form form {
   width: 100%;
   min-width: 0;
   border: 1px solid currentcolor;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 10px 12px;
   background: transparent;
   color: inherit;
@@ -67,7 +67,7 @@ main .form form {
 .form input:hover,
 .form textarea:hover,
 .form select:hover {
-  opacity: 0.9;
+  border-color: light-dark(var(--color-gray-600), var(--color-gray-400));
 }
 
 .form input:focus,
@@ -166,18 +166,18 @@ main .form form {
 .form .form-field.toggle-field label input {
   width: 2em;
   opacity: 0;
-  border-radius: 50%;
+  border-radius: 0;
 }
 
 .form .form-field.toggle-field label span {
   position: relative;
   width: calc(2em + 2px);
   height: calc(1em + 2px);
-  border-radius: 1em;
+  border-radius: 0;
   border: 1px solid currentcolor;
   background: currentcolor;
   opacity: 0.4;
-  transition: opacity 0.2s;
+  transition: opacity 0.15s cubic-bezier(0, 0, 0.2, 1);
   cursor: pointer;
 }
 
@@ -189,9 +189,9 @@ main .form form {
   transform: translateY(-50%);
   width: 1em;
   height: 1em;
-  border-radius: 50%;
+  border-radius: 0;
   background: inherit;
-  transition: left 0.2s;
+  transition: left 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 .form .form-field.toggle-field label input:checked + span {
@@ -231,7 +231,7 @@ main .form form {
 }
 
 .form .button-wrapper button.button {
-  border-radius: 8px;
+  border-radius: 0;
   padding: 8px 16px;
   font-weight: 600;
   cursor: pointer;
@@ -250,7 +250,7 @@ main .form form {
 }
 
 .form .button-wrapper button.button:not(.secondary):hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .form .button-wrapper button.button.secondary {
@@ -260,5 +260,5 @@ main .form form {
 }
 
 .form .button-wrapper button.button.secondary:hover {
-  opacity: 0.9;
+  opacity: 0.85;
 }

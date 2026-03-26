@@ -1,11 +1,11 @@
-/* Teaser block – Heritage Elite */
+/* Teaser block – Brutalist Street */
 
 main .teaser {
   background: light-dark(var(--color-parchment), var(--color-card-dark));
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
+  border: 2px solid light-dark(var(--color-ink), var(--color-gray-600));
+  border-radius: 0;
   text-align: center;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-m);
   font-weight: 500;
   color: light-dark(var(--color-ink), var(--color-parchment));
@@ -23,7 +23,7 @@ main .teaser > div > div a {
   text-underline-offset: 0.15em;
   text-decoration-color: var(--color-gold);
   padding-inline-start: 0.5em;
-  transition: color 0.3s;
+  transition: color 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 main .teaser > div > div a:hover {

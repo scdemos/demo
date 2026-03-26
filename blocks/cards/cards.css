@@ -12,18 +12,18 @@
 }
 
 .cards > ul > li {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+  border: 2px solid light-dark(var(--color-gray-200), rgb(255 255 255 / 10%));
   background: light-dark(var(--color-light), var(--color-card-dark));
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 .cards > ul > li:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 35%));
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 light-dark(var(--color-ink), var(--color-rust));
 }
 
 /* Card link */
@@ -93,24 +93,24 @@
 }
 
 .cards.bento > ul > li {
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
+  border: 2px solid light-dark(rgb(0 0 0 / 12%), rgb(255 255 255 / 12%));
+  border-radius: 0;
   padding: 45px;
   background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.15s cubic-bezier(0, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0, 0, 0.2, 1), border-color 0.15s cubic-bezier(0, 0, 0.2, 1);
 }
 
 .cards.bento > ul > li:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
-  border-color: var(--color-gold);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 light-dark(var(--color-ink), var(--color-rust));
+  border-color: var(--color-rust);
 }
 
 /* Featured card */
 .cards.bento > ul > li.cards-card-featured {
   border: none;
   background-color: var(--color-rust);
-  color: var(--color-parchment);
+  color: var(--color-ink);
 }
 
 /* Tag */
@@ -126,11 +126,12 @@
 
 /* Headings */
 .cards.bento .cards-card-body :is(h2, h3) {
-  font-family: var(--font-family-serif);
-  font-weight: 500;
+  font-family: var(--font-family);
+  font-weight: 700;
   font-size: 2.2rem;
   line-height: 1.1;
-  letter-spacing: -1px;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
   margin: 0;
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
@@ -145,7 +146,7 @@
 }
 
 .cards.bento .cards-card-featured .cards-card-body p:not(.cards-card-tag) {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.2rem;
   opacity: 0.9;
   margin-top: 35px;
@@ -160,16 +161,16 @@
 
 /* Focus */
 .cards.bento .cards-card-link:focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-rust);
   outline-offset: -2px;
-  border-radius: var(--border-radius-heritage);
+  border-radius: 0;
 }
 
 /* Image — stretch to card edges */
 .cards.bento .cards-card-image {
   margin: -45px -45px 24px;
   width: calc(100% + 90px);
-  border-radius: var(--border-radius-heritage);
+  border-radius: 0;
 }
 
 /* Body — no extra padding, card has its own */
