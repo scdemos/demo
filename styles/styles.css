@@ -42,7 +42,7 @@
   color-scheme: light dark;
 
   /* brutalist street palette – light */
-  --color-rust: #cdff00;
+  --color-rust: #32de84;
   --color-gold: #ff2d6f;
   --color-parchment: #fff;
   --color-ink: #0a0a0a;
@@ -50,7 +50,7 @@
   /* brutalist street palette – dark */
   --color-obsidian: #0a0a0a;
   --color-card-dark: #141414;
-  --color-rust-bright: #e0ff4f;
+  --color-rust-bright: #32de84;
   --color-muted: #888;
 
   /* color tokens – grays (high contrast neutral) */
