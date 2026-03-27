@@ -1,10 +1,8 @@
-// Delayed functionality – martech, social share (injected on every page)
+// Delayed functionality – martech and the global social share dock
 import {
   buildBlock, decorateBlock, loadBlock, loadScript,
 } from './aem.js';
 import { createTag } from './shared.js';
-
-const SHARE_THIS_SRC = 'https://platform-api.sharethis.com/js/sharethis.js';
 
 async function injectSocialShareBlock() {
   const main = document.querySelector('main');
@@ -27,11 +25,6 @@ async function injectSocialShareBlock() {
   await loadBlock(block);
 }
 
-async function loadShareThis() {
-  if (!document.querySelector('.sharethis-share-buttons')) return;
-  await loadScript(SHARE_THIS_SRC, { async: '' });
-}
-
 async function loadCloudflareAnalytics() {
   if (!window.location.hostname.includes('bbird.live')) return;
 
@@ -44,7 +37,6 @@ async function loadCloudflareAnalytics() {
 async function init() {
   await loadCloudflareAnalytics();
   await injectSocialShareBlock();
-  await loadShareThis();
 }
 
 init();
