@@ -44,10 +44,10 @@ main .form form {
   scroll-margin: 1em;
   width: 100%;
   min-width: 0;
-  border: 1px solid light-dark(rgb(26 26 26 / 20%), rgb(245 242 237 / 20%));
+  border: 1px solid light-dark(rgb(26 26 46 / 20%), rgb(255 255 255 / 20%));
   border-radius: 8px;
   padding: 12px 14px;
-  background: light-dark(var(--color-light), rgb(6 13 13 / 60%));
+  background: light-dark(var(--color-light), rgb(10 10 26 / 60%));
   color: inherit;
   font-size: var(--body-font-size-s);
   transition: border-color 0.25s, box-shadow 0.25s;
@@ -68,16 +68,16 @@ main .form form {
 .form input:hover,
 .form textarea:hover,
 .form select:hover {
-  border-color: light-dark(var(--color-rust), var(--color-rust-bright));
+  border-color: light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
 }
 
 .form input:focus,
 .form textarea:focus,
 .form select:focus {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-nice-mid-blue);
   outline-offset: 2px;
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 12%);
+  border-color: var(--color-nice-mid-blue);
+  box-shadow: 0 0 0 4px rgb(81 146 244 / 12%);
 }
 
 .form input:disabled,
@@ -242,8 +242,8 @@ main .form form {
 }
 
 .form .button-wrapper button.button:not(.secondary) {
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
-  background: light-dark(var(--color-rust), var(--color-rust-bright));
+  border: 1px solid light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
+  background: light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
   color: var(--color-parchment);
 }
 
@@ -254,20 +254,20 @@ main .form form {
 }
 
 .form .button-wrapper button.button:not(.secondary):hover {
-  background: var(--color-gold);
-  border-color: var(--color-gold);
+  background: var(--color-nice-mid-blue);
+  border-color: var(--color-nice-mid-blue);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 25%));
+  box-shadow: 0 8px 20px light-dark(rgb(47 51 245 / 25%), rgb(81 146 244 / 25%));
 }
 
 .form .button-wrapper button.button.secondary {
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
+  border: 1px solid light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
   background: transparent;
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
 }
 
 .form .button-wrapper button.button.secondary:hover {
-  border-color: var(--color-gold);
-  color: var(--color-gold);
+  border-color: var(--color-nice-mid-blue);
+  color: var(--color-nice-mid-blue);
   transform: translateY(-2px);
 }

@@ -63,8 +63,8 @@ a:any-link {
 main blockquote {
   margin: var(--space-2xl, 48px) 0;
   padding: var(--space-l) var(--space-xl);
-  border-left: 3px solid var(--color-gold);
-  font-family: var(--font-family-serif);
+  border-left: 3px solid var(--color-nice-electric);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-xl);
   font-style: italic;
   line-height: 1.55;
@@ -93,7 +93,7 @@ main hr {
 .dark-scheme main > .section.highlight,
 :root[data-theme='dark'] main > .section.light,
 :root[data-theme='dark'] main > .section.highlight {
-  box-shadow: inset 0 1px 0 rgb(197 160 89 / 10%), inset 0 -1px 0 rgb(197 160 89 / 10%);
+  box-shadow: inset 0 1px 0 rgb(81 146 244 / 8%), inset 0 -1px 0 rgb(81 146 244 / 8%);
 }
 
 /* Divider sections: slightly larger padding for visual breathing room */
@@ -126,7 +126,7 @@ header .nav-wrapper.scrolled {
 
 .dark-scheme main .teaser,
 :root[data-theme='dark'] main .teaser {
-  box-shadow: 0 0 0 1px rgb(197 160 89 / 12%), 0 8px 32px rgb(0 0 0 / 25%);
+  box-shadow: 0 0 0 1px rgb(81 146 244 / 10%), 0 4px 16px rgb(0 0 0 / 20%);
 }
 
 /* ==========================================================================
@@ -150,7 +150,7 @@ main > .section > div > p > picture img {
 
 /* Focus-visible on all interactive elements: consistent brand ring */
 main :is(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-gold);
+  outline: 2px solid var(--color-nice-mid-blue);
   outline-offset: 3px;
   border-radius: 2px;
 }

@@ -1,7 +1,7 @@
-const FEED_TITLE = 'diyFIRE Articles';
-const FEED_DESCRIPTION = 'Latest diyFIRE article updates';
-const FEED_LANGUAGE = 'en-ca';
-const FEED_AUTHOR_NAME = 'diyFIRE';
+const FEED_TITLE = 'NICE CXone Resources';
+const FEED_DESCRIPTION = 'Latest NICE CXone resources and insights';
+const FEED_LANGUAGE = 'en-us';
+const FEED_AUTHOR_NAME = 'NICE';
 const PAGE_SIZE = 200;
 
 /**
@@ -43,7 +43,7 @@ async function fetchAllArticles(origin, siteUrl, env) {
 
 /**
  * Filter to article pages: paths under /learn/ with 3+ segments.
- * e.g. /learn/fire/whats-fire -> yes, /learn/fire -> no
+ * e.g. /learn/pipeline/whats-discovery-pipeline -> yes, /learn/pipeline -> no
  */
 function isArticle(row) {
   const { path } = row;
@@ -146,7 +146,7 @@ ${enclosure}
     <description>${escapeXml(FEED_DESCRIPTION)}</description>
     <lastBuildDate>${now}</lastBuildDate>
     <language>${FEED_LANGUAGE}</language>
-    <generator>diyFIRE RSS Worker</generator>
+    <generator>NICE CXone RSS Worker</generator>
     <atom:link href="${escapeXml(selfLink)}" rel="self" type="application/rss+xml"/>
     ${items.join('\n    ')}
   </channel>

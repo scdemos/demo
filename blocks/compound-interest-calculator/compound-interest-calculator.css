@@ -121,7 +121,7 @@ main .compound-interest-calculator .compound-interest-calculator-output {
 }
 
 main .compound-interest-calculator .compound-interest-calculator-metric {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(255 255 255 / 10%));
   border-radius: 12px;
   padding: var(--space-m);
   background: light-dark(var(--color-light), var(--color-card-dark));
@@ -129,8 +129,8 @@ main .compound-interest-calculator .compound-interest-calculator-metric {
 }
 
 main .compound-interest-calculator .compound-interest-calculator-metric:hover {
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 35%));
-  box-shadow: 0 8px 24px light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 8%));
+  border-color: light-dark(var(--color-nice-mid-blue), rgb(81 146 244 / 35%));
+  box-shadow: 0 8px 24px light-dark(rgb(47 51 245 / 10%), rgb(81 146 244 / 8%));
 }
 
 main .compound-interest-calculator .compound-interest-calculator-metric h3 {
@@ -196,7 +196,7 @@ main .compound-interest-calculator .compound-interest-calculator-table thead th 
   font-size: 0.85em;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 12%));
+  background: light-dark(rgb(47 51 245 / 10%), rgb(81 146 244 / 12%));
   color: light-dark(var(--color-ink), var(--color-parchment));
   white-space: nowrap;
 }

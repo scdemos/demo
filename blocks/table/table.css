@@ -1,5 +1,5 @@
 .table {
-  --table-border-color: light-dark(var(--color-gray-200), rgb(245 242 237 / 12%));
+  --table-border-color: light-dark(var(--color-gray-200), rgb(255 255 255 / 12%));
 
   width: 100%;
   overflow-x: auto;
@@ -55,7 +55,7 @@
 }
 
 .table table tbody tr:hover {
-  background-color: light-dark(rgb(161 79 43 / 4%), rgb(197 160 89 / 5%));
+  background-color: light-dark(rgb(47 51 245 / 4%), rgb(81 146 244 / 5%));
 }
 
 .table table th p,
@@ -78,7 +78,7 @@
 }
 
 .table.striped tbody tr:nth-child(odd):hover {
-  background-color: light-dark(rgb(161 79 43 / 6%), rgb(197 160 89 / 8%));
+  background-color: light-dark(rgb(47 51 245 / 6%), rgb(81 146 244 / 8%));
 }
 
 /* bordered variant */

@@ -65,7 +65,7 @@
 .embed .embed-placeholder-play button:hover {
   transform: scale(1.12);
   background: rgb(0 0 0 / 45%);
-  border-color: var(--color-gold);
+  border-color: var(--color-nice-mid-blue);
 }
 
 .embed .embed-placeholder-play button::before {

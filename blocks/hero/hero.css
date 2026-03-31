@@ -1,4 +1,4 @@
-/* Hero block – Heritage Elite, mobile-first */
+/* Hero block – NICE brand, mobile-first */
 
 .hero-container .hero-wrapper {
   max-width: unset;
@@ -109,10 +109,10 @@
 
 /* Tagline */
 .hero .hero-tagline {
-  font-family: var(--font-family-mono);
+  font-family: var(--font-family);
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-gold);
+  color: var(--color-nice-mid-blue);
   text-transform: uppercase;
   letter-spacing: 5px;
   margin: 0;
@@ -121,7 +121,7 @@
 /* Heading */
 .hero h1 {
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: clamp(2rem, 8vw, 4.5rem);
   font-weight: 500;
   line-height: 1.05;
@@ -131,14 +131,14 @@
 .hero h1 em {
   font-weight: 400;
   font-style: italic;
-  background: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
+  background: linear-gradient(135deg, var(--color-nice-electric), var(--color-nice-purple));
   background-clip: text;
   color: transparent;
 }
 
 .dark-scheme .hero h1 em,
 :root[data-theme='dark'] .hero h1 em {
-  background: linear-gradient(135deg, var(--color-rust-bright) 0%, var(--color-gold) 100%);
+  background: linear-gradient(135deg, var(--color-nice-mid-blue), var(--color-nice-purple-light));
   background-clip: text;
   color: transparent;
 }
@@ -148,7 +148,7 @@
   display: none;
   max-width: 550px;
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.15rem;
   color: light-dark(var(--color-ink), var(--color-muted));
   line-height: 1.7;
@@ -251,7 +251,7 @@
 
 /* Background color variants */
 .hero.rust {
-  background-color: var(--color-rust);
+  background-color: var(--color-nice-electric);
 }
 
 .hero.rust h1,
@@ -263,11 +263,11 @@
 :root .hero.rust h1 em {
   background: none;
   background-clip: unset;
-  color: var(--color-gold);
+  color: var(--color-nice-mid-blue);
 }
 
 .hero.gold {
-  background-color: var(--color-gold);
+  background-color: var(--color-nice-mid-blue);
 }
 
 .hero.gold h1,
@@ -285,7 +285,7 @@
 }
 
 :root .hero.ink h1 em {
-  background: none;
-  background-clip: unset;
-  color: var(--color-rust);
+  background: linear-gradient(135deg, var(--color-nice-electric), var(--color-nice-purple));
+  background-clip: text;
+  color: transparent;
 }

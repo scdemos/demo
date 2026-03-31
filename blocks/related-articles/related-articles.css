@@ -94,8 +94,8 @@ main .related-articles .related-articles-card-date {
 main .related-articles .related-articles-card:hover,
 main .related-articles .related-articles-card:focus-within {
   transform: translateY(-6px);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
-  box-shadow: 0 20px 40px light-dark(rgb(161 79 43 / 14%), rgb(197 160 89 / 14%));
+  border-color: light-dark(var(--color-nice-mid-blue), rgb(81 146 244 / 40%));
+  box-shadow: 0 20px 40px light-dark(rgb(47 51 245 / 14%), rgb(81 146 244 / 14%));
 }
 
 /* Empty state */
@@ -139,7 +139,7 @@ main .related-articles .related-articles-arrow:disabled {
 }
 
 main .related-articles .related-articles-arrow:hover:not(:disabled) {
-  border-color: var(--color-gold);
+  border-color: var(--color-nice-mid-blue);
   transform: scale(1.08);
 }
 
@@ -177,7 +177,7 @@ main .related-articles .related-articles-arrow.is-hidden {
 }
 
 /* ==========================================================================
-   Bento variant – Heritage Elite grid layout
+   Bento variant – NICE brand grid layout
    ========================================================================== */
 
 main .related-articles.bento .related-articles-list {
@@ -191,15 +191,15 @@ main .related-articles.bento .related-articles-list {
 
 main .related-articles.bento .related-articles-card {
   flex: none;
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
+  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
+  border-radius: var(--space-m);
   background: light-dark(var(--color-parchment), var(--color-card-dark));
   transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 main .related-articles.bento .related-articles-card-link:focus-visible {
-  outline-color: var(--color-gold);
-  border-radius: var(--border-radius-heritage);
+  outline-color: var(--color-nice-mid-blue);
+  border-radius: var(--space-m);
 }
 
 main .related-articles.bento .related-articles-card-content {
@@ -209,18 +209,18 @@ main .related-articles.bento .related-articles-card-content {
 /* Keyword tag */
 main .related-articles.bento .related-articles-card-tag {
   display: block;
-  font-family: var(--font-family-mono);
+  font-family: var(--font-family);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: var(--color-gold);
+  color: var(--color-nice-mid-blue);
   margin: 0 0 var(--space-xs);
 }
 
 /* Heading */
 main .related-articles.bento .related-articles-card h3 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-weight: 500;
   font-size: 1.4rem;
   line-height: 1.15;
@@ -238,7 +238,7 @@ main .related-articles.bento .related-articles-card-description {
 
 /* Date */
 main .related-articles.bento .related-articles-card-date {
-  font-family: var(--font-family-mono);
+  font-family: var(--font-family);
   color: light-dark(var(--color-gray-500), var(--color-gray-400));
   letter-spacing: 1px;
 }
@@ -247,8 +247,8 @@ main .related-articles.bento .related-articles-card-date {
 main .related-articles.bento .related-articles-card:hover,
 main .related-articles.bento .related-articles-card:focus-within {
   transform: translateY(-8px);
-  border-color: var(--color-gold);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+  border-color: var(--color-nice-mid-blue);
+  box-shadow: 0 30px 60px -12px rgb(47 51 245 / 15%);
 }
 
 /* Featured (first) card */

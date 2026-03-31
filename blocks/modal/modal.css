@@ -43,9 +43,9 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 15%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(255 255 255 / 15%));
   border-radius: 999px;
-  background: light-dark(var(--color-parchment), var(--color-obsidian));
+  background: light-dark(var(--color-light), var(--color-obsidian));
   color: inherit;
   font-size: 20px;
   line-height: 1;
@@ -55,7 +55,7 @@
 
 .modal .modal-close:hover {
   background-color: light-dark(var(--color-gray-100), var(--color-gray-800));
-  border-color: var(--color-gold);
+  border-color: var(--color-nice-mid-blue);
   transform: scale(1.08);
 }
 

@@ -26,7 +26,7 @@
           "component": "text",
           "name": "keywords",
           "label": "Keywords",
-          "description": "Comma-separated keywords to match articles (e.g. fire, tfsa, rrsp). Use 'random' for random articles."
+          "description": "Comma-separated keywords to match articles (e.g. cx, ai, workforce). Use 'random' for random articles."
         },
         {
           "component": "text",

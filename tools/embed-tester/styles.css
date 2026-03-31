@@ -102,7 +102,7 @@ body {
 
 button {
   padding: 8px 20px;
-  background: #a14f2b;
+  background: #2f33f5;
   color: white;
   border: none;
   border-radius: 6px;
@@ -113,7 +113,7 @@ button {
 }
 
 button:hover {
-  background: #8a3f21;
+  background: #2929d4;
 }
 
 .preview-container {
@@ -145,5 +145,5 @@ button:hover {
 }
 
 .bottom-content a {
-  color: #a14f2b;
+  color: #2f33f5;
 }

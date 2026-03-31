@@ -1,30 +1,30 @@
 /*
- * Colors align with styles/styles.css design tokens (heritage rust / gold / parchment).
+ * Colors align with styles/styles.css design tokens (NICE electric blue / mid blue / white).
  * We do not import styles.css here — it sets body { display: none } until the main app adds .appear.
  */
 :root {
   color-scheme: light;
 
-  /* Heritage palette — same hex as styles/styles.css */
-  --color-rust: #a14f2b;
-  --color-gold: #c5a059;
-  --color-parchment: #f5f2ed;
+  /* NICE palette — same hex as styles/styles.css */
+  --color-rust: #2f33f5;
+  --color-gold: #5192f4;
+  --color-parchment: #ffffff;
   --color-ink: #1a1a1a;
-  --color-rust-bright: #d16a3e;
+  --color-rust-bright: #5192f4;
   --color-gray-200: #d3d3d3;
   --color-gray-300: #b5b5b5;
   --color-gray-400: #999;
   --color-gray-600: #636363;
   --ink: var(--color-ink);
   --muted: var(--color-gray-600);
-  --line: rgb(161 79 43 / 12%);
+  --line: rgb(47 51 245 / 12%);
   --surface: #fff;
   --canvas: var(--color-parchment);
   --accent: var(--color-rust);
   --accent-hover: var(--color-rust-bright);
-  --accent-soft: rgb(161 79 43 / 10%);
+  --accent-soft: rgb(47 51 245 / 10%);
   --gradient-brand: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
-  --shadow-rust: 0 4px 16px rgb(161 79 43 / 28%);
+  --shadow-rust: 0 4px 16px rgb(47 51 245 / 28%);
   --radius: 12px;
   --radius-sm: 8px;
 
@@ -44,7 +44,7 @@
 }
 
 ::selection {
-  background: rgb(161 79 43 / 20%);
+  background: rgb(47 51 245 / 20%);
   color: inherit;
 }
 
@@ -57,7 +57,7 @@ body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font-family: montserrat, "Trebuchet MS", system-ui, sans-serif;
+  font-family: "Be Vietnam Pro", "Trebuchet MS", system-ui, sans-serif;
   font-size: 1rem;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -226,7 +226,7 @@ button:disabled {
   height: 4px;
   margin-bottom: var(--s-6);
   border-radius: 999px;
-  background: rgb(161 79 43 / 10%);
+  background: rgb(47 51 245 / 10%);
   overflow: hidden;
 }
 

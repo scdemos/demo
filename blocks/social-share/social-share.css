@@ -27,8 +27,8 @@ main .social-share .social-share-dock::before {
   z-index: -1;
   border-radius: 999px;
   background:
-    radial-gradient(circle at top, rgb(197 160 89 / 20%), transparent 58%),
-    radial-gradient(circle at bottom, rgb(161 79 43 / 20%), transparent 60%);
+    radial-gradient(circle at top, rgb(81 146 244 / 20%), transparent 58%),
+    radial-gradient(circle at bottom, rgb(47 51 245 / 20%), transparent 60%);
   filter: blur(20px);
   opacity: 0.8;
   pointer-events: none;
@@ -41,13 +41,13 @@ main .social-share .social-share-list {
   margin: 0;
   padding: 0.55rem;
   list-style: none;
-  border: 1px solid light-dark(rgb(161 79 43 / 16%), rgb(245 242 237 / 12%));
+  border: 1px solid light-dark(rgb(47 51 245 / 16%), rgb(255 255 255 / 12%));
   border-radius: 999px;
   background:
     linear-gradient(
       180deg,
-      light-dark(rgb(255 255 255 / 84%), rgb(15 24 24 / 88%)),
-      light-dark(rgb(255 255 255 / 72%), rgb(15 24 24 / 78%))
+      light-dark(rgb(255 255 255 / 84%), rgb(10 10 26 / 88%)),
+      light-dark(rgb(255 255 255 / 72%), rgb(10 10 26 / 78%))
     );
   box-shadow:
     0 24px 50px -24px rgb(0 0 0 / 42%),
@@ -73,7 +73,7 @@ main .social-share .social-share-action {
     linear-gradient(
       180deg,
       light-dark(rgb(255 255 255 / 72%), rgb(255 255 255 / 9%)),
-      light-dark(rgb(245 242 237 / 42%), rgb(255 255 255 / 4%))
+      light-dark(rgb(255 255 255 / 42%), rgb(255 255 255 / 4%))
     );
   box-shadow:
     inset 0 1px 0 light-dark(rgb(255 255 255 / 65%), rgb(255 255 255 / 10%)),
@@ -91,13 +91,13 @@ main .social-share .social-share-action {
 
 main .social-share .social-share-action:hover,
 main .social-share .social-share-action:focus-visible {
-  color: light-dark(var(--color-rust), var(--color-gold));
-  border-color: light-dark(rgb(161 79 43 / 22%), rgb(197 160 89 / 28%));
+  color: light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
+  border-color: light-dark(rgb(47 51 245 / 22%), rgb(81 146 244 / 28%));
   transform: translateX(-2px) scale(1.04);
   outline: none;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 72%),
-    0 18px 24px -18px rgb(161 79 43 / 55%);
+    0 18px 24px -18px rgb(47 51 245 / 55%);
 }
 
 main .social-share .social-share-action svg {
@@ -106,7 +106,7 @@ main .social-share .social-share-action svg {
 }
 
 main .social-share .social-share-action-copy {
-  color: light-dark(var(--color-rust), var(--color-gold));
+  color: light-dark(var(--color-nice-electric), var(--color-nice-mid-blue));
 }
 
 main .social-share.is-copied .social-share-action-copy {

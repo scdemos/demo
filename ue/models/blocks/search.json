@@ -53,7 +53,7 @@
           "name": "category",
           "label": "Category Filter",
           "valueType": "string",
-          "description": "Comma-separated category options (e.g. FIRE, TFSA, RRSP, FHSA, Others)"
+          "description": "Comma-separated category options (e.g. CX, AI, Workforce, Analytics, Others)"
         },
         {
           "component": "text",
