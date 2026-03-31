@@ -1,4 +1,4 @@
-const AUTH_ORIGIN = 'https://demo-bbird-auth.aem-poc-lab.workers.dev';
+const AUTH_ORIGIN = 'https://demo.bbird.live';
 const AUTH_PATHS = {
   login: '/auth/login',
   logout: '/auth/logout',
