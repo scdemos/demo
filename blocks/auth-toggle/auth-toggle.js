@@ -1,5 +1,6 @@
 import { loadCSS } from '../../scripts/aem.js';
 import { createTag } from '../../scripts/shared.js';
+import { isGatedPage } from '../../scripts/shared.js';
 
 const CSS_CLASSES = {
   TOGGLE: 'auth-toggle',
@@ -32,6 +33,11 @@ function getAuthState() {
  * @returns {Element}
  */
 export default function decorate(block) {
+  if (!isGatedPage()) {
+    block.remove();
+    return block;
+  }
+
   const currentState = getAuthState();
   let isExpanded = false;
 
@@ -200,9 +206,11 @@ export default function decorate(block) {
 }
 
 /**
- * @returns {Promise<HTMLElement>}
+ * @returns {Promise<HTMLElement|undefined>}
  */
 export async function createAuthToggle() {
+  if (!isGatedPage()) return undefined;
+
   await loadCSS(`${window.hlx.codeBasePath}/blocks/auth-toggle/auth-toggle.css`);
   const block = createTag('div', { class: CSS_CLASSES.TOGGLE });
   document.body.append(block);

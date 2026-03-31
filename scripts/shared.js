@@ -1,3 +1,13 @@
+import { getMetadata } from './aem.js';
+
+/**
+ * Page metadata `gated=true` — same signal as CDN worker HTML gating; author preview uses this too.
+ * @returns {boolean}
+ */
+export function isGatedPage() {
+  return String(getMetadata('gated') || '').trim().toLowerCase() === 'true';
+}
+
 /**
  * Create an element with attributes and optional content.
  * @param {string} tag - Tag name

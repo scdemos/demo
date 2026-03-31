@@ -1,4 +1,5 @@
 import { createAuthToggle } from '../../blocks/auth-toggle/auth-toggle.js';
+import { isGatedPage } from '../shared.js';
 
 function normalize(value) {
   return String(value || '').trim().toLowerCase();
@@ -12,7 +13,7 @@ function normalizeViewRestriction(value) {
 }
 
 /**
- * Author/dev environments only; production gating is server-side (CDN Worker + Cloudflare Access headers).
+ * Author/dev environments only; production gating is server-side (CDN Worker + Cloudflare Access).
  * @returns {boolean}
  */
 function isAuthorEnvironment() {
@@ -32,19 +33,9 @@ function getAuthState() {
   return authValue === 'true';
 }
 
-/**
- * Page-level gate switch via page metadata: gated=true
- * @returns {boolean}
- */
+/** @returns {boolean} */
 function hasGatedContent() {
-  const gatedMeta = document.querySelector('meta[name="gated"]');
-  const gatedFlag = normalize(gatedMeta?.getAttribute('content')) === 'true';
-  if (gatedFlag) return true;
-
-  // Fallback: if authored restrictions exist, still apply local author gating.
-  const hasSectionRestrictions = !!document.querySelector('main > .section[data-view]');
-  const hasBlockRestrictions = !!document.querySelector('main .logged-in, main .logged-out');
-  return hasSectionRestrictions || hasBlockRestrictions;
+  return isGatedPage();
 }
 
 /**
@@ -121,10 +112,10 @@ function applySectionLevelProtection(protectionMetadata, isAuthenticated) {
 }
 
 /**
- * Apply content protection in author/dev environments only.
+ * Apply content protection in author/dev environments when the page is gated (`meta gated=true`).
  */
 function applyContentProtection() {
-  if (!isAuthorEnvironment() || !hasGatedContent()) return;
+  if (!isAuthorEnvironment() || !isGatedPage()) return;
 
   const isAuthenticated = getAuthState();
   const sectionProtectionMetadata = checkSectionLevelProtection(isAuthenticated);
@@ -132,14 +123,16 @@ function applyContentProtection() {
 }
 
 async function createAuthorToggle() {
-  if (!isAuthorEnvironment()) return undefined;
+  if (!isAuthorEnvironment() || !isGatedPage()) return undefined;
   return createAuthToggle();
 }
 
 /**
- * Initialize content protection + auth toggle.
+ * Register author-only gated preview (protection + floating toggle). No-op if not gated or not author env.
  */
 function initContentProtection() {
+  if (!isAuthorEnvironment() || !isGatedPage()) return;
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
       applyContentProtection();
@@ -156,6 +149,7 @@ export {
   isAuthorEnvironment,
   getAuthState,
   hasGatedContent,
+  isGatedPage,
   applyContentProtection,
   initContentProtection,
 };
