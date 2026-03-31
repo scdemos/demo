@@ -46,3 +46,84 @@ main .teaser > div > div a:hover {
     padding: var(--space-xl) var(--space-2xl, 48px);
   }
 }
+
+/* Login teaser variant: image backdrop + overlapping teaser card */
+main .section.login-teaser-image {
+    position: relative;
+    min-height: 18.75rem;
+    max-width: var(--grid-container-width);
+    margin: var(--main-block-space) auto;
+    padding: 0 var(--content-padding-inline);
+    overflow: hidden;
+    border-radius: var(--border-radius-heritage);
+  }
+  
+  main .section.login-teaser-image > .default-content-wrapper {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  main .section.login-teaser-image > .default-content-wrapper p {
+    margin: 0;
+    height: 100%;
+  }
+  
+  main .section.login-teaser-image > .default-content-wrapper picture {
+    display: block;
+    height: 100%;
+  }
+  
+  main .section.login-teaser-image > .default-content-wrapper picture img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+  
+  main .section.login-teaser-image > .teaser-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18.75rem;
+    padding: var(--space-l);
+  }
+  
+  main .section.login-teaser-image > .teaser-wrapper .teaser {
+    max-width: min(40rem, 100%);
+    margin: 0 auto;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+  }
+  
+  main .section.login-teaser-image > .teaser-wrapper .teaser h4 {
+    margin-top: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+  
+  main .section.login-teaser-image > .teaser-wrapper .teaser .icon-lock {
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    vertical-align: baseline;
+  }
+  
+  @media (width >= 900px) {
+    main .section.login-teaser-image,
+    main .section.login-teaser-image > .teaser-wrapper {
+      min-height: 25rem;
+    }
+  
+    main .section.login-teaser-image > .teaser-wrapper {
+      padding: var(--space-xl);
+    }
+  }
