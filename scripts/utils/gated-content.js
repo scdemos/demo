@@ -1,15 +1,23 @@
 import { createAuthToggle } from '../../blocks/auth-toggle/auth-toggle.js';
 import { isGatedPage } from '../shared.js';
 
-function normalize(value) {
-  return String(value || '').trim().toLowerCase();
-}
+/**
+ * Mirrors `workers/cdn/handlers/gating.js` `audience()`.
+ * @param {Element} section
+ * @returns {'logged-in'|'logged-out'|null}
+ */
+function audience(section) {
+  const a = String(section.dataset?.view || '').trim().toLowerCase();
+  if (a === 'logged-in' || a === 'logged-out') return a;
 
-function normalizeViewRestriction(value) {
-  const normalized = normalize(value);
-  if (normalized === 'loggedin') return 'logged-in';
-  if (normalized === 'loggedout') return 'logged-out';
-  return normalized;
+  const meta = section.querySelector('.section-metadata');
+  if (!meta) return null;
+  const viewDiv = [...meta.querySelectorAll('div')].find(
+    (div) => div.textContent.trim().toLowerCase() === 'view',
+  );
+  if (!viewDiv) return null;
+  const v = String(viewDiv.nextElementSibling?.textContent || '').trim().toLowerCase();
+  return v === 'logged-in' || v === 'logged-out' ? v : null;
 }
 
 /**
@@ -40,20 +48,11 @@ function hasGatedContent() {
 
 /**
  * @param {Element} section
- * @returns {string|null}
- */
-function getSectionViewRestriction(section) {
-  const view = normalizeViewRestriction(section.dataset.view);
-  return view || null;
-}
-
-/**
- * @param {Element} section
  * @param {boolean} isAuthenticated
  * @param {Array<{element: Element}>} sectionsToRemove
  */
 function processSectionViewRestriction(section, isAuthenticated, sectionsToRemove) {
-  const viewRestriction = getSectionViewRestriction(section);
+  const viewRestriction = audience(section);
   const shouldRemove = (
     (!isAuthenticated && viewRestriction === 'logged-in')
     || (isAuthenticated && viewRestriction === 'logged-out')
@@ -103,7 +102,7 @@ function applySectionLevelProtection(protectionMetadata, isAuthenticated) {
 
   const remainingSections = document.querySelectorAll('main > div');
   const publicSections = Array.from(remainingSections).filter((section) => (
-    getSectionViewRestriction(section) === null
+    audience(section) === null
   ));
 
   publicSections.forEach((section) => {
