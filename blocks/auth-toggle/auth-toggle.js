@@ -12,7 +12,6 @@ const CSS_CLASSES = {
   OPTION_BUTTON: 'auth-option-button',
   EXPANDED: 'expanded',
   HIDDEN: 'hidden',
-  DRAGGING: 'dragging',
   VISIBLE: 'visible',
   BOUNCE: 'bounce',
   CURRENT_STATE: 'current-state',
@@ -46,9 +45,12 @@ export default function decorate(block) {
   block.classList.add(CSS_CLASSES.TOGGLE);
 
   const handleIcon = createTag('div', { class: CSS_CLASSES.HANDLE_ICON }, 'AUTH STATE');
-  const handle = createTag('div', {
+  const handle = createTag('button', {
+    type: 'button',
     class: CSS_CLASSES.HANDLE,
-    title: 'Click to expand or drag to move',
+    title: 'Open or close auth preview',
+    'aria-label': 'Auth preview panel',
+    'aria-expanded': 'false',
   }, handleIcon);
 
   const headerText = createTag('span', {}, 'Auth State');
@@ -58,6 +60,11 @@ export default function decorate(block) {
     'aria-label': 'Close auth panel',
   }, 'x');
   const header = createTag('div', { class: CSS_CLASSES.HEADER }, [headerText, closeBtn]);
+
+  const panelBody = createTag('div', { class: 'auth-toggle-body', id: `${block.id || CSS_CLASSES.TOGGLE}-panel` });
+  panelBody.setAttribute('role', 'region');
+  panelBody.setAttribute('aria-label', 'Auth preview');
+  handle.setAttribute('aria-controls', panelBody.id);
 
   const optionsContainer = createTag('div', { class: CSS_CLASSES.OPTIONS });
   const currentStateIndicator = createTag('div', {
@@ -71,6 +78,7 @@ export default function decorate(block) {
   }, currentState ? 'Switch to Anonymous' : 'Switch to Authenticated');
 
   optionsContainer.append(currentStateIndicator, switchButton);
+  panelBody.append(header, optionsContainer);
 
   function handleClickOutside(event) {
     if (block.contains(event.target)) return;
@@ -78,6 +86,7 @@ export default function decorate(block) {
       isExpanded = false;
       block.classList.remove(CSS_CLASSES.EXPANDED);
       handle.classList.remove(CSS_CLASSES.HIDDEN);
+      handle.setAttribute('aria-expanded', 'false');
       document.removeEventListener('click', handleClickOutside);
     }
   }
@@ -86,6 +95,7 @@ export default function decorate(block) {
     isExpanded = !isExpanded;
     block.classList.toggle(CSS_CLASSES.EXPANDED, isExpanded);
     handle.classList.toggle(CSS_CLASSES.HIDDEN, isExpanded);
+    handle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
     if (isExpanded) {
       setTimeout(() => {
         document.addEventListener('click', handleClickOutside);
@@ -93,78 +103,6 @@ export default function decorate(block) {
     } else {
       document.removeEventListener('click', handleClickOutside);
     }
-  }
-
-  let isDragging = false;
-  let dragController = null;
-
-  function getClientCoords(event) {
-    return {
-      x: event.clientX || event.touches?.[0]?.clientX || 0,
-      y: event.clientY || event.touches?.[0]?.clientY || 0,
-    };
-  }
-
-  function onDrag(event, dragState) {
-    event.preventDefault();
-    const { x: clientX, y: clientY } = getClientCoords(event);
-    const deltaX = clientX - dragState.startX;
-    const deltaY = clientY - dragState.startY;
-    const dragThreshold = 5;
-
-    if (!isDragging && (Math.abs(deltaX) > dragThreshold || Math.abs(deltaY) > dragThreshold)) {
-      isDragging = true;
-      block.classList.add(CSS_CLASSES.DRAGGING);
-    }
-
-    if (!isDragging) return;
-
-    const newX = dragState.initialX + deltaX;
-    const newY = dragState.initialY + deltaY;
-    const maxX = window.innerWidth - block.offsetWidth;
-    const maxY = window.innerHeight - block.offsetHeight;
-    const constrainedX = Math.max(0, Math.min(newX, maxX));
-    const constrainedY = Math.max(0, Math.min(newY, maxY));
-
-    block.style.left = `${constrainedX}px`;
-    block.style.top = `${constrainedY}px`;
-    block.style.right = 'auto';
-  }
-
-  function endDrag() {
-    if (dragController) {
-      dragController.abort();
-      dragController = null;
-    }
-
-    if (isDragging) {
-      block.classList.remove(CSS_CLASSES.DRAGGING);
-      isDragging = false;
-      return;
-    }
-
-    togglePanel();
-  }
-
-  function startDrag(event) {
-    event.preventDefault();
-    isDragging = false;
-
-    const { x: clientX, y: clientY } = getClientCoords(event);
-    const rect = block.getBoundingClientRect();
-    const dragState = {
-      startX: clientX,
-      startY: clientY,
-      initialX: rect.left,
-      initialY: rect.top,
-    };
-
-    dragController = new AbortController();
-    const { signal } = dragController;
-    document.addEventListener('mousemove', (e) => onDrag(e, dragState), { signal });
-    document.addEventListener('mouseup', endDrag, { signal });
-    document.addEventListener('touchmove', (e) => onDrag(e, dragState), { signal });
-    document.addEventListener('touchend', endDrag, { signal });
   }
 
   function handleOptionClick(targetState) {
@@ -177,30 +115,28 @@ export default function decorate(block) {
     window.location.href = url.toString();
   }
 
-  handle.addEventListener('mousedown', startDrag);
-  handle.addEventListener('touchstart', startDrag);
+  handle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePanel();
+  });
   closeBtn.addEventListener('click', togglePanel);
   switchButton.addEventListener('click', () => {
     handleOptionClick(switchButton.getAttribute('data-auth-state'));
   });
 
-  block.append(handle, header, optionsContainer);
+  block.append(handle, panelBody);
 
   block.cleanup = () => {
     document.removeEventListener('click', handleClickOutside);
-    if (dragController) {
-      dragController.abort();
-      dragController = null;
-    }
   };
 
-  setTimeout(() => {
+  requestAnimationFrame(() => {
     block.classList.add(CSS_CLASSES.VISIBLE);
     setTimeout(() => {
       handle.classList.add(CSS_CLASSES.BOUNCE);
       setTimeout(() => handle.classList.remove(CSS_CLASSES.BOUNCE), 400);
-    }, 500);
-  }, 1000);
+    }, 300);
+  });
 
   return block;
 }
