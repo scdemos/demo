@@ -225,12 +225,15 @@ async function loadLazy(doc) {
   }
 
   const main = doc.querySelector('main');
+  const { initContentProtection, applyContentProtection } = await import('./utils/gated-content.js');
+  initContentProtection();
   const sections = main ? [...main.querySelectorAll('div.section')] : [];
   for (let i = 0; i < sections.length; i += 1) {
     await loadSection(sections[i], loadFragments);
     if (i === 0 && sampleRUM.enhance) sampleRUM.enhance();
   }
   await dynamicBlocks(main);
+  applyContentProtection();
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;

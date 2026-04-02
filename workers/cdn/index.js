@@ -10,7 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-'use strict';
+import { applyGatingIfNeeded } from './handlers/gating.js';
+
+const AEM_HOST = /^main--.+--.+\.(?:aem|hlx)\.live$/;
 
 const getExtension = (path) => {
   const basename = path.split('/').pop();
@@ -54,10 +56,6 @@ const handleRequest = async (request, env) => {
     });
   }
 
-  if (url.pathname.startsWith('/drafts/')) {
-    return new Response('Not Found', { status: 404 });
-  }
-
   if(isRUMRequest(url)) {
     // only allow GET, POST, OPTIONS
     if(!['GET', 'POST', 'OPTIONS'].includes(request.method)) {
@@ -89,11 +87,14 @@ const handleRequest = async (request, env) => {
     url.search = '';
   }
   searchParams.sort();
-  
-  url.hostname = env.ORIGIN_HOSTNAME;
-  if (!url.origin.match(/^https:\/\/main--.*--.*\.(?:aem|hlx)\.live/)) {
-    return new Response('Invalid ORIGIN_HOSTNAME', { status: 500 });
+
+  const originHostname = String(env.ORIGIN_HOSTNAME || '').trim();
+  if (!AEM_HOST.test(originHostname)) {
+    return new Response('Misconfigured origin hostname', { status: 500 });
   }
+  url.hostname = originHostname;
+  url.protocol = 'https:';
+  url.port = '';
   const req = new Request(url, request);
   req.headers.set('x-forwarded-host', req.headers.get('host'));
   req.headers.set('x-byo-cdn-type', 'cloudflare');
@@ -127,6 +128,8 @@ const handleRequest = async (request, env) => {
     }
   }
   // html2json - end
+
+  resp = await applyGatingIfNeeded(request, requestURL, resp);
 
   resp = new Response(resp.body, resp);
   if (resp.status === 301 && savedSearch) {

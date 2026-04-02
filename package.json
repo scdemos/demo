@@ -22,8 +22,8 @@
     "dev:feed": "wrangler dev --config ./workers/feed/wrangler.toml",
     "deploy:feed": "wrangler deploy --config ./workers/feed/wrangler.toml",
     "tail:feed": "wrangler tail --config ./workers/feed/wrangler.toml",
-    "dev:cdn": "wrangler dev --config ./workers/cdn/wrangler.toml",
-    "deploy:cdn": "wrangler deploy --config ./workers/cdn/wrangler.toml",
+    "dev:cdn": "npm install --prefix ./workers/cdn && wrangler dev --config ./workers/cdn/wrangler.toml",
+    "deploy:cdn": "npm install --prefix ./workers/cdn && wrangler deploy --config ./workers/cdn/wrangler.toml",
     "tail:cdn": "wrangler tail --config ./workers/cdn/wrangler.toml"
   },
   "repository": {
