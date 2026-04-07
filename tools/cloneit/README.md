@@ -16,7 +16,7 @@ After a successful clone, use **Copy handoff** to copy a plain-text block (Previ
 
 The new site shares the same codebase (demo) and uses `https://content.da.live/scdemos/{sitename}/` as its content source.
 
-**Edit in DA:** Open your site in Document Authoring at `https://da.live/edit#/scdemos/{sitename}`
+**Edit in DA:** `https://da.live/#/scdemos/{sitename}`
 
 ## How to Use
 

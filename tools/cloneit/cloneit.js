@@ -174,7 +174,7 @@ function showResult(success, siteName, errorMessage, options = {}) {
     }
 
     const siteUrl = `https://main--${siteName}--${ORG}.aem.page`;
-    const daUrl = `https://da.live/edit#/${ORG}/${siteName}`;
+    const daUrl = `https://da.live/#/${ORG}/${siteName}`;
 
     const siteLink = document.getElementById('result-site-link');
     const daLink = document.getElementById('result-da-link');
@@ -424,7 +424,7 @@ function escapeHtml(s) {
  */
 function buildHandoffText(siteName, githubUrl) {
   const preview = `https://main--${siteName}--${ORG}.aem.page`;
-  const da = `https://da.live/edit#/${ORG}/${siteName}`;
+  const da = `https://da.live/#/${ORG}/${siteName}`;
   return `Preview URL: ${preview}
 DA content: ${da}
 Code: ${githubUrl}`;
@@ -433,7 +433,7 @@ Code: ${githubUrl}`;
 function getDefaultIndexHtml(siteName) {
   return `<body><header></header><main>
   <h1>Welcome to ${siteName}</h1>
-  <p>Your new site has been created. Edit this page in <a href="https://da.live/edit#/${ORG}/${siteName}">Document Authoring</a>.</p>
+  <p>Your new site has been created. Edit this page in <a href="https://da.live/#/${ORG}/${siteName}">Document Authoring</a>.</p>
 </main><footer></footer></body>`;
 }
 
