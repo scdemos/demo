@@ -365,7 +365,7 @@ async function fetchBaselineQueryIndex(token) {
 }
 
 /**
- * GET query.yaml for a site (same Admin API path used after PUT).
+ * GET query.yaml for a site (same Admin API path used after POST create).
  */
 async function fetchSiteQueryIndex(token, siteName) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
@@ -378,7 +378,7 @@ async function fetchSiteQueryIndex(token, siteName) {
 }
 
 /**
- * After PUT, confirm query.yaml is readable (retries for propagation lag).
+ * After POST create, confirm query.yaml is readable (retries for propagation lag).
  * @returns {Promise<boolean>}
  */
 async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, delayMs = 700) {
@@ -394,7 +394,7 @@ async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, del
 
 /**
  * Create or update index config (query.yaml) for new site.
- * PUT creates; if 409 (already exists), retry with POST to update.
+ * Uses POST only — PUT to this path has been unreliable for new repoless sites; POST is accepted by the Admin API for this resource.
  * @see https://www.aem.live/docs/admin.html#tag/indexConfig
  */
 async function createQueryIndex(token, newSiteName, yamlContent) {
@@ -404,10 +404,7 @@ async function createQueryIndex(token, newSiteName, yamlContent) {
     'Content-Type': 'text/yaml',
   };
 
-  let response = await fetch(url, { method: 'PUT', headers, body: yamlContent });
-  if (response.status === 409) {
-    response = await fetch(url, { method: 'POST', headers, body: yamlContent });
-  }
+  const response = await fetch(url, { method: 'POST', headers, body: yamlContent });
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to create query index config: ${response.status} ${response.statusText} - ${text}`);
