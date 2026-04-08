@@ -2,15 +2,21 @@
 
 /**
  * CloneIt - Clone demo site to create a new repoless AEM site
- * Uses AEM Admin API and DA Admin API with token from DA SDK
+ * Uses AEM Admin API and DA Admin API with Developer console token (CAS Hub org)
  */
-
-import DA_SDK from 'https://da.live/nx/utils/sdk.js';
 
 const ORG = 'scdemos';
 const BASELINE_SITE = 'demo';
 const CODE_OWNER = 'scdemos';
 const CODE_REPO = 'demo';
+const TOKEN_WORKER_URL = 'https://demo-cloneit-token.aem-poc-lab.workers.dev';
+
+async function fetchToken() {
+  const resp = await fetch(TOKEN_WORKER_URL, { method: 'POST' });
+  if (!resp.ok) throw new Error(`Token fetch failed: ${resp.status}`);
+  const { access_token: token } = await resp.json();
+  return token;
+}
 
 const API = {
   AEM_CONFIG: 'https://admin.hlx.page/config',
@@ -811,21 +817,19 @@ function setupEventListeners() {
 }
 
 async function init() {
+  setupEventListeners();
+
+  const siteInput = document.getElementById('site-name-input');
+  const cloneBtn = document.getElementById('clone-btn');
+  if (siteInput) siteInput.focus();
+  if (cloneBtn) cloneBtn.disabled = true;
+
   try {
-    const { token } = await DA_SDK;
-    app.token = token;
-
-    setupEventListeners();
-
-    const siteInput = document.getElementById('site-name-input');
-    const cloneBtn = document.getElementById('clone-btn');
-    if (siteInput) siteInput.focus();
-    if (cloneBtn) cloneBtn.disabled = true;
-
+    app.token = await fetchToken();
     showToast('CloneIt is ready. Enter a site name to clone the demo site.', 'success');
   } catch (error) {
     console.error('Init failed:', error);
-    showToast('Failed to initialize. Open from DA for authentication.', 'error');
+    showToast('Failed to authenticate. Check worker configuration.', 'error');
   }
 }
 
