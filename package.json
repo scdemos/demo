@@ -24,7 +24,10 @@
     "tail:feed": "wrangler tail --config ./workers/feed/wrangler.toml",
     "dev:cdn": "npm install --prefix ./workers/cdn && wrangler dev --config ./workers/cdn/wrangler.toml",
     "deploy:cdn": "npm install --prefix ./workers/cdn && wrangler deploy --config ./workers/cdn/wrangler.toml",
-    "tail:cdn": "wrangler tail --config ./workers/cdn/wrangler.toml"
+    "tail:cdn": "wrangler tail --config ./workers/cdn/wrangler.toml",
+    "dev:cloneit-token": "wrangler dev --config ./workers/cloneit_token/wrangler.toml",
+    "deploy:cloneit-token": "wrangler deploy --config ./workers/cloneit_token/wrangler.toml",
+    "tail:cloneit-token": "wrangler tail --config ./workers/cloneit_token/wrangler.toml"
   },
   "repository": {
     "type": "git",

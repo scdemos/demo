@@ -9,6 +9,7 @@ helix-importer-ui
 .idea
 .playwright-mcp
 .wrangler
+.dev.vars
 
 # Ensure these files are tracked
 !CLAUDE.md
