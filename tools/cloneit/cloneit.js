@@ -270,7 +270,10 @@ function handleBulkAction() {
 async function siteExistsInAem(token, siteName) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}.json`;
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-content-source-authorization': `Bearer ${token}`,
+    },
   });
   return response.ok;
 }
@@ -293,7 +296,10 @@ async function folderExistsInDa(token, siteName) {
 async function fetchBaselineConfig(token) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${BASELINE_SITE}.json`;
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-content-source-authorization': `Bearer ${token}`,
+    },
   });
   if (!response.ok) {
     const text = await response.text();
@@ -345,6 +351,7 @@ async function createAemSiteConfig(token, newSiteName, config) {
     method: 'PUT',
     headers: {
       Authorization: `Bearer ${token}`,
+      'x-content-source-authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(config),
@@ -364,7 +371,10 @@ async function createAemSiteConfig(token, newSiteName, config) {
 async function fetchBaselineQueryIndex(token) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${BASELINE_SITE}/content/query.yaml`;
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-content-source-authorization': `Bearer ${token}`,
+    },
   });
   if (!response.ok) return null;
   return response.text();
@@ -376,7 +386,10 @@ async function fetchBaselineQueryIndex(token) {
 async function fetchSiteQueryIndex(token, siteName) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
   const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-content-source-authorization': `Bearer ${token}`,
+    },
   });
   if (!response.ok) return null;
   const text = await response.text();
@@ -407,6 +420,7 @@ async function createQueryIndex(token, newSiteName, yamlContent) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${newSiteName}/content/query.yaml`;
   const headers = {
     Authorization: `Bearer ${token}`,
+    'x-content-source-authorization': `Bearer ${token}`,
     'Content-Type': 'text/yaml',
   };
 
