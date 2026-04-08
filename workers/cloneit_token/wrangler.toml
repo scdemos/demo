@@ -4,7 +4,7 @@ compatibility_date = "2026-02-16"
 account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
 
 [vars]
-ALLOWED_ORIGINS = "https://da.live"
+ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live"
 
 [observability.logs]
 enabled = true
