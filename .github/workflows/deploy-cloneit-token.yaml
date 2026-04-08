@@ -1,0 +1,14 @@
+name: Deploy CloneIt Token Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/cloneit_token/**'
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-worker.yaml
+    secrets: inherit
+    with:
+      working-directory: workers/cloneit_token
