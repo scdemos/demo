@@ -371,7 +371,7 @@ async function fetchBaselineQueryIndex(token) {
 }
 
 /**
- * GET query.yaml for a site (same Admin API path used after POST create).
+ * GET query.yaml for a site (same path after PUT/POST write).
  */
 async function fetchSiteQueryIndex(token, siteName) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
@@ -384,7 +384,7 @@ async function fetchSiteQueryIndex(token, siteName) {
 }
 
 /**
- * After POST create, confirm query.yaml is readable (retries for propagation lag).
+ * After PUT/POST write, confirm query.yaml is readable (retries for propagation lag).
  * @returns {Promise<boolean>}
  */
 async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, delayMs = 700) {
@@ -400,8 +400,8 @@ async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, del
 
 /**
  * Create or update index config (query.yaml) for new site.
- * Uses POST only — PUT to this path has been unreliable for new repoless sites; POST is accepted by the Admin API for this resource.
- * @see https://www.aem.live/docs/admin.html#tag/indexConfig
+ * Per AEM Admin API: putCreate Index Configuration, postUpdate Index Configuration.
+ * @see https://www.aem.live/docs/admin.html#schema/IndexConfig — PUT = create, POST = update.
  */
 async function createQueryIndex(token, newSiteName, yamlContent) {
   const url = `${API.AEM_CONFIG}/${ORG}/sites/${newSiteName}/content/query.yaml`;
@@ -410,7 +410,10 @@ async function createQueryIndex(token, newSiteName, yamlContent) {
     'Content-Type': 'text/yaml',
   };
 
-  const response = await fetch(url, { method: 'POST', headers, body: yamlContent });
+  let response = await fetch(url, { method: 'PUT', headers, body: yamlContent });
+  if (response.status === 409) {
+    response = await fetch(url, { method: 'POST', headers, body: yamlContent });
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to create query index config: ${response.status} ${response.statusText} - ${text}`);
