@@ -1,0 +1,49 @@
+# Pushes workers/adobe/config/ → Cloud Manager repo config/.
+# Secret: CLOUDMANAGER_GIT_PAT. Branch + clone URL: vars or secrets CLOUDMANAGER_GIT_BRANCH, CLOUDMANAGER_GIT_CLONE_URL (required).
+
+name: Deploy Adobe CDN
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/adobe/config/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-adobe-cdn
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Sync config to Cloud Manager Git
+        env:
+          PAT: ${{ secrets.CLOUDMANAGER_GIT_PAT }}
+          BRANCH: ${{ vars.CLOUDMANAGER_GIT_BRANCH || secrets.CLOUDMANAGER_GIT_BRANCH }}
+          CLONE_URL: ${{ vars.CLOUDMANAGER_GIT_CLONE_URL || secrets.CLOUDMANAGER_GIT_CLONE_URL }}
+        run: |
+          set -euo pipefail
+          : "${PAT:?Set CLOUDMANAGER_GIT_PAT secret}"
+          : "${BRANCH:?Set CLOUDMANAGER_GIT_BRANCH (variable or secret)}"
+          : "${CLONE_URL:?Set CLOUDMANAGER_GIT_CLONE_URL (variable or secret)}"
+
+          B64="$(printf ':%s' "$PAT" | base64 -w0)"
+          git config --global http.https://git.cloudmanager.adobe.com/.extraheader "Authorization: Basic ${B64}"
+
+          git clone --depth 1 -b "$BRANCH" "$CLONE_URL" cm-remote
+          rsync -av --delete ./workers/adobe/config/ ./cm-remote/config/
+
+          cd cm-remote
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add config
+          if git diff --cached --quiet; then
+            echo "No changes to push."
+            exit 0
+          fi
+          git commit -m "Sync config from demo (${{ github.sha }})"
+          git push origin "$BRANCH"
