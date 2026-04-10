@@ -3,15 +3,7 @@ import { getMetadata } from './aem.js';
 const graph = [];
 let scriptEl;
 
-/**
- * Adds a schema object to the page's LD+JSON @graph and updates the
- * single shared script element in the document head.
- * @param {object} schema - schema.org structured data object (without @context)
- */
-export function addSchema(schema) {
-  if (!schema?.['@type']) return;
-  graph.push(schema);
-
+function flush() {
   const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
   if (!scriptEl) {
     scriptEl = document.createElement('script');
@@ -19,6 +11,29 @@ export function addSchema(schema) {
     document.head.append(scriptEl);
   }
   scriptEl.textContent = json;
+}
+
+/**
+ * Adds a schema object to the page's LD+JSON @graph.
+ * @param {object} schema - schema.org structured data object (without @context)
+ */
+export function addSchema(schema) {
+  if (!schema?.['@type']) return;
+  graph.push(schema);
+  flush();
+}
+
+/**
+ * Finds an existing graph entry by @type and merges properties into it.
+ * Optionally changes the @type (e.g. WebPage -> FAQPage).
+ * @param {string} type - the @type to find in the graph
+ * @param {object} updates - properties to merge (including optional @type override)
+ */
+export function extendSchema(type, updates) {
+  const entry = graph.find((s) => s['@type'] === type);
+  if (!entry) return;
+  Object.assign(entry, updates);
+  flush();
 }
 
 function getCanonicalUrl() {

@@ -1,5 +1,5 @@
 import { createTag } from '../../scripts/shared.js';
-import { addSchema } from '../../scripts/schema.js';
+import { extendSchema } from '../../scripts/schema.js';
 
 const FAQ_INDEX_PATH = '/faq-index.json';
 
@@ -78,7 +78,7 @@ export default async function decorate(block) {
     block.append(buildCategoryGroup(category, grouped[category]));
   });
 
-  addSchema({
+  extendSchema('WebPage', {
     '@type': 'FAQPage',
     mainEntity: filtered.map((faq) => ({
       '@type': 'Question',
