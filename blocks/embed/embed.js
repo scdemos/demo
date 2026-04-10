@@ -4,8 +4,7 @@
  * https://www.hlx.live/developer/block-collection/embed
  */
 
-import { loadScript, getMetadata } from '../../scripts/aem.js';
-import { addSchema } from '../../scripts/schema.js';
+import { loadScript } from '../../scripts/aem.js';
 
 const getEmbedContainerStyle = (fixedHeight) => (fixedHeight
   ? `left: 0; width: 100%; height: ${fixedHeight}px; position: relative;`
@@ -92,57 +91,10 @@ const loadEmbed = (block, link, autoplay, fixedHeight) => {
   block.classList.add('embed-is-loaded');
 };
 
-function injectVideoSchema(link) {
-  let url;
-  try {
-    url = new URL(link);
-  } catch {
-    return;
-  }
-
-  const isYoutube = ['youtube.com', 'www.youtube.com', 'youtu.be'].some(
-    (h) => url.hostname === h,
-  );
-  const isVimeo = url.hostname.includes('vimeo');
-  if (!isYoutube && !isVimeo) return;
-
-  const schema = {
-    '@type': 'VideoObject',
-    url: url.href,
-  };
-
-  if (isYoutube) {
-    const vid = url.searchParams.get('v') || url.pathname.split('/').pop();
-    if (vid) {
-      schema.embedUrl = `https://www.youtube.com/embed/${vid}`;
-      schema.thumbnailUrl = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`;
-    }
-  } else if (isVimeo) {
-    const [, video] = url.pathname.split('/');
-    if (video) schema.embedUrl = `https://player.vimeo.com/video/${video}`;
-  }
-
-  schema.name = document.title;
-
-  const date = getMetadata('date');
-  if (date) {
-    const parsed = new Date(String(date).trim());
-    if (!Number.isNaN(parsed.getTime())) {
-      schema.uploadDate = parsed.toISOString();
-    }
-  }
-
-  const description = getMetadata('description');
-  if (description) schema.description = description;
-
-  addSchema(schema);
-}
-
 export default function decorate(block) {
   const placeholder = block.querySelector('picture');
   const link = block.querySelector('a').href;
   const fixedHeight = getFixedHeight(block);
-  injectVideoSchema(link);
   block.textContent = '';
 
   if (placeholder) {
