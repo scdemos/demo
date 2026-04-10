@@ -1,4 +1,5 @@
 import { createTag } from '../../scripts/shared.js';
+import { injectJsonLd } from '../../scripts/schema.js';
 
 const FAQ_INDEX_PATH = '/faq-index.json';
 
@@ -75,5 +76,18 @@ export default async function decorate(block) {
 
   Object.keys(grouped).forEach((category) => {
     block.append(buildCategoryGroup(category, grouped[category]));
+  });
+
+  injectJsonLd({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: filtered.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
   });
 }

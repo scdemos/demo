@@ -18,6 +18,7 @@ import {
   toClassName,
 } from './aem.js';
 import { getAllMetadata } from './shared.js';
+import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
 const AUDIENCES = {
@@ -168,6 +169,7 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
+  initPageSchemas();
 }
 
 async function loadTemplate(main) {
