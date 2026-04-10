@@ -4,7 +4,7 @@
  * https://www.hlx.live/developer/block-collection/embed
  */
 
-import { loadScript } from '../../scripts/aem.js';
+import { loadScript, getMetadata } from '../../scripts/aem.js';
 import { injectJsonLd } from '../../scripts/schema.js';
 
 const getEmbedContainerStyle = (fixedHeight) => (fixedHeight
@@ -124,6 +124,18 @@ function injectVideoSchema(link) {
   }
 
   schema.name = document.title;
+
+  const date = getMetadata('date');
+  if (date) {
+    const parsed = new Date(String(date).trim());
+    if (!Number.isNaN(parsed.getTime())) {
+      schema.uploadDate = parsed.toISOString();
+    }
+  }
+
+  const description = getMetadata('description');
+  if (description) schema.description = description;
+
   injectJsonLd(schema);
 }
 

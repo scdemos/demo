@@ -134,6 +134,17 @@ function buildEventSchema() {
     }
   }
 
+  schema.eventStatus = 'https://schema.org/EventScheduled';
+
+  const location = getMetadata('location');
+  if (location) {
+    schema.location = {
+      '@type': 'Place',
+      name: location,
+      address: getMetadata('address') || location,
+    };
+  }
+
   schema.organizer = {
     '@type': 'Organization',
     name: 'diyFIRE',
