@@ -169,7 +169,7 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
-  initPageSchemas();
+  if (document.contains(main)) initPageSchemas();
 }
 
 async function loadTemplate(main) {

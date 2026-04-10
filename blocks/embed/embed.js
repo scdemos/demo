@@ -5,7 +5,7 @@
  */
 
 import { loadScript, getMetadata } from '../../scripts/aem.js';
-import { injectJsonLd } from '../../scripts/schema.js';
+import { addSchema } from '../../scripts/schema.js';
 
 const getEmbedContainerStyle = (fixedHeight) => (fixedHeight
   ? `left: 0; width: 100%; height: ${fixedHeight}px; position: relative;`
@@ -107,7 +107,6 @@ function injectVideoSchema(link) {
   if (!isYoutube && !isVimeo) return;
 
   const schema = {
-    '@context': 'https://schema.org',
     '@type': 'VideoObject',
     url: url.href,
   };
@@ -136,7 +135,7 @@ function injectVideoSchema(link) {
   const description = getMetadata('description');
   if (description) schema.description = description;
 
-  injectJsonLd(schema);
+  addSchema(schema);
 }
 
 export default function decorate(block) {

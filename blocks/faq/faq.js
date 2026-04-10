@@ -1,5 +1,5 @@
 import { createTag } from '../../scripts/shared.js';
-import { injectJsonLd } from '../../scripts/schema.js';
+import { addSchema } from '../../scripts/schema.js';
 
 const FAQ_INDEX_PATH = '/faq-index.json';
 
@@ -78,8 +78,7 @@ export default async function decorate(block) {
     block.append(buildCategoryGroup(category, grouped[category]));
   });
 
-  injectJsonLd({
-    '@context': 'https://schema.org',
+  addSchema({
     '@type': 'FAQPage',
     mainEntity: filtered.map((faq) => ({
       '@type': 'Question',

@@ -1,24 +1,24 @@
 import { getMetadata } from './aem.js';
 
+const graph = [];
+let scriptEl;
+
 /**
- * Injects a JSON-LD script element into the document head.
- * Uses data-schema-type to prevent duplicate injection of the same type.
- * @param {object} schema - schema.org structured data object
- * @returns {HTMLScriptElement|null}
+ * Adds a schema object to the page's LD+JSON @graph and updates the
+ * single shared script element in the document head.
+ * @param {object} schema - schema.org structured data object (without @context)
  */
-export function injectJsonLd(schema) {
-  const type = schema?.['@type'];
-  if (!type) return null;
+export function addSchema(schema) {
+  if (!schema?.['@type']) return;
+  graph.push(schema);
 
-  const existing = document.head.querySelector(`script[data-schema-type="${type}"]`);
-  if (existing) existing.remove();
-
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.dataset.schemaType = type;
-  script.textContent = JSON.stringify(schema);
-  document.head.append(script);
-  return script;
+  const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
+  if (!scriptEl) {
+    scriptEl = document.createElement('script');
+    scriptEl.type = 'application/ld+json';
+    document.head.append(scriptEl);
+  }
+  scriptEl.textContent = json;
 }
 
 function getCanonicalUrl() {
@@ -36,7 +36,6 @@ function getAbsoluteUrl(value) {
 
 function buildOrganizationSchema() {
   return {
-    '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'diyFIRE',
     url: 'https://demo.bbird.live',
@@ -48,7 +47,6 @@ function buildOrganizationSchema() {
 
 function buildWebPageSchema() {
   const schema = {
-    '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: document.title,
     url: getCanonicalUrl(),
@@ -65,7 +63,6 @@ function buildArticleSchema() {
   if (template !== 'article') return null;
 
   const schema = {
-    '@context': 'https://schema.org',
     '@type': 'Article',
     headline: document.title,
     url: getCanonicalUrl(),
@@ -114,7 +111,6 @@ function buildEventSchema() {
   if (!isEventPage()) return null;
 
   const schema = {
-    '@context': 'https://schema.org',
     '@type': 'Event',
     name: document.title,
     url: getCanonicalUrl(),
@@ -156,14 +152,14 @@ function buildEventSchema() {
 
 export function initPageSchemas() {
   if (window.location.pathname === '/') {
-    injectJsonLd(buildOrganizationSchema());
+    addSchema(buildOrganizationSchema());
   }
 
-  injectJsonLd(buildWebPageSchema());
+  addSchema(buildWebPageSchema());
 
   const article = buildArticleSchema();
-  if (article) injectJsonLd(article);
+  if (article) addSchema(article);
 
   const event = buildEventSchema();
-  if (event) injectJsonLd(event);
+  if (event) addSchema(event);
 }
