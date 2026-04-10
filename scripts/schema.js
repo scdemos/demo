@@ -170,11 +170,10 @@ export function initPageSchemas() {
     addSchema(buildOrganizationSchema());
   }
 
-  addSchema(buildWebPageSchema());
-
   const article = buildArticleSchema();
-  if (article) addSchema(article);
-
   const event = buildEventSchema();
-  if (event) addSchema(event);
+
+  // Only emit WebPage when no more specific type applies.
+  // FAQ block upgrades WebPage to FAQPage via extendSchema().
+  addSchema(article || event || buildWebPageSchema());
 }
