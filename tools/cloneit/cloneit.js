@@ -1,39 +1,80 @@
 /* eslint-disable no-console */
 
-/**
- * CloneIt - Clone demo site to create a new repoless AEM site
- * Uses AEM Admin API and DA Admin API with Developer console token (CAS Hub org)
- */
+// CloneIt: copy baseline DA + AEM config to a new repoless site (init → cloneSite → worker).
 
 const ORG = 'scdemos';
 const BASELINE_SITE = 'demo';
 const CODE_OWNER = 'scdemos';
 const CODE_REPO = 'demo';
-const TOKEN_WORKER_URL = 'https://demo-cloneit-token.aem-poc-lab.workers.dev';
+const CLONEIT_WORKER_URL = 'https://demo.bbird.live/cloneit/';
+const CLONEIT_WORKER_ERROR_SOURCE = 'cloneit-worker';
 
-async function fetchToken() {
-  const resp = await fetch(TOKEN_WORKER_URL, { method: 'POST' });
-  if (!resp.ok) throw new Error(`Token fetch failed: ${resp.status}`);
-  const { access_token: token } = await resp.json();
-  return token;
+// Paths must stay aligned with workers/cloneit_token isAllowedProxyPath().
+const Paths = {
+  helixSiteJson: (site) => `/config/${ORG}/sites/${site}.json`,
+  helixQueryYaml: (site) => `/config/${ORG}/sites/${site}/content/query.yaml`,
+  daList: (repo, basePath = '') => {
+    const part = basePath ? (basePath.startsWith('/') ? basePath : `/${basePath}`) : '';
+    return `/list/${ORG}/${repo}${part}`;
+  },
+  daConfig: (org, repo) => `/config/${org}/${repo}`,
+  daCopyFromBaseline: (sourcePath) => `/copy/${ORG}/${BASELINE_SITE}/${sourcePath}`,
+  daSource: (site, cleanPath) => `/source/${ORG}/${site}/${cleanPath}`,
+};
+
+async function ensureWorkerReady() {
+  const response = await fetch(CLONEIT_WORKER_URL, { method: 'POST' });
+  if (!response.ok) {
+    throw new Error(`Worker: ${response.status}`);
+  }
+  const data = await response.json().catch(() => ({}));
+  if (typeof data.access_token !== 'string' || !data.access_token) {
+    throw new Error('Worker did not return an access token');
+  }
+}
+
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return btoa(binary);
+}
+
+async function cloneitProcessFetch(kind, path, opts = {}) {
+  const response = await fetch(`${CLONEIT_WORKER_URL}cloneprocess`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      kind,
+      path,
+      method: opts.method || 'GET',
+      body: opts.body,
+      contentType: opts.contentType,
+      form: opts.form,
+      file: opts.file,
+    }),
+  });
+  const ct = response.headers.get('Content-Type') || '';
+  if (!response.ok && ct.includes('application/json')) {
+    const err = await response.clone().json().catch(() => ({}));
+    if (err?.source === CLONEIT_WORKER_ERROR_SOURCE && typeof err.error === 'string') {
+      throw new Error(err.error);
+    }
+  }
+  return response;
 }
 
 const API = {
   AEM_CONFIG: 'https://admin.hlx.page/config',
-  DA_SOURCE: 'https://admin.da.live/source',
-  DA_COPY: 'https://admin.da.live/copy',
-  DA_LIST: 'https://admin.da.live/list',
-  DA_CONFIG: 'https://admin.da.live/config',
 };
 
 const app = {
-  token: null,
+  workerReady: false,
 };
 
 const SITE_NAME_MAX_LENGTH = 50;
 const RESERVED_NAMES = ['admin', 'api', 'config', 'main', 'live', 'preview', 'status', 'job'];
 
-/** Locale / language folder segments — not cloned (e.g. /en/, /fr/blog/…). */
 const LOCALE_EXCLUDED_FOLDER_NAMES = new Set([
   'ar', 'bg', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko',
   'lt', 'lv', 'ms', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'uk', 'vi', 'zh',
@@ -45,7 +86,6 @@ function isExcludedLocaleFolderName(name) {
   return LOCALE_EXCLUDED_FOLDER_NAMES.has(name.toLowerCase());
 }
 
-/** True if relative path starts with a locale segment (e.g. en/index.html). */
 function pathStartsWithExcludedLocale(relPath) {
   if (!relPath) return false;
   const first = relPath.split('/').filter(Boolean)[0];
@@ -116,16 +156,6 @@ function setButtonLoading(loading) {
   if (loadingEl) loadingEl.style.display = loading ? 'inline-flex' : 'none';
 }
 
-/**
- * @param {boolean} success
- * @param {string} siteName
- * @param {string|null} errorMessage
- * @param {object} [options]
- * @param {object} [options.codeConfig]
- * @param {string[]} [options.contentPaths]
- * @param {boolean} [options.daConfigCopied]
- * @param {object} [options.queryIndex] copied, verified, skippedNoBaseline, error
- */
 function showResult(success, siteName, errorMessage, options = {}) {
   const container = document.getElementById('result-container');
   const successCard = document.getElementById('result-success');
@@ -206,7 +236,6 @@ function showResult(success, siteName, errorMessage, options = {}) {
       handoffEl.textContent = buildHandoffText(siteName, githubUrl);
     }
 
-    // Bulk actions: store paths, show buttons, reset state
     app.lastClonedSite = siteName;
     app.contentPaths = contentPaths;
     app.lastHandoffText = buildHandoffText(siteName, githubUrl);
@@ -267,40 +296,21 @@ function handleBulkAction() {
   openBulkAppWithUrls(app.lastClonedSite, app.contentPaths);
 }
 
-async function siteExistsInAem(token, siteName) {
-  const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}.json`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-content-source-authorization': `Bearer ${token}`,
-    },
-  });
+async function siteExistsInAem(siteName) {
+  const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
   return response.ok;
 }
 
-/**
- * Check if DA folder has content. Returns true only if folder exists AND has at least one item.
- * DA List API returns 200 with [] for non-existent repos, so we treat empty as "doesn't exist".
- */
-async function folderExistsInDa(token, siteName) {
-  const url = `${API.DA_LIST}/${ORG}/${siteName}`;
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+async function folderExistsInDa(siteName) {
+  const response = await cloneitProcessFetch('da', Paths.daList(siteName));
   if (!response.ok) return false;
   const data = await response.json();
   const items = Array.isArray(data) ? data : (data.sources || data.children || []);
   return items.length > 0;
 }
 
-async function fetchBaselineConfig(token) {
-  const url = `${API.AEM_CONFIG}/${ORG}/sites/${BASELINE_SITE}.json`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-content-source-authorization': `Bearer ${token}`,
-    },
-  });
+async function fetchBaselineConfig() {
+  const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(BASELINE_SITE));
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to fetch baseline config: ${response.status} ${response.statusText} - ${text}`);
@@ -345,16 +355,11 @@ function buildNewSiteConfig(baselineConfig, newSiteName) {
   return config;
 }
 
-async function createAemSiteConfig(token, newSiteName, config) {
-  const url = `${API.AEM_CONFIG}/${ORG}/sites/${newSiteName}.json`;
-  const response = await fetch(url, {
+async function createAemSiteConfig(newSiteName, config) {
+  const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-content-source-authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify(config),
+    contentType: 'application/json',
   });
   if (!response.ok) {
     const text = await response.text();
@@ -364,45 +369,22 @@ async function createAemSiteConfig(token, newSiteName, config) {
   return text.trim() ? JSON.parse(text) : {};
 }
 
-/**
- * Fetch index config (query.yaml) from baseline site.
- * @see https://admin.hlx.page/config/{org}/sites/{site}/content/query.yaml
- */
-async function fetchBaselineQueryIndex(token) {
-  const url = `${API.AEM_CONFIG}/${ORG}/sites/${BASELINE_SITE}/content/query.yaml`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-content-source-authorization': `Bearer ${token}`,
-    },
-  });
+async function fetchBaselineQueryIndex() {
+  const response = await cloneitProcessFetch('helix', Paths.helixQueryYaml(BASELINE_SITE));
   if (!response.ok) return null;
   return response.text();
 }
 
-/**
- * GET query.yaml for a site (same path after PUT/POST write).
- */
-async function fetchSiteQueryIndex(token, siteName) {
-  const url = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'x-content-source-authorization': `Bearer ${token}`,
-    },
-  });
+async function fetchSiteQueryIndex(siteName) {
+  const response = await cloneitProcessFetch('helix', Paths.helixQueryYaml(siteName));
   if (!response.ok) return null;
   const text = await response.text();
   return text?.trim() ? text : null;
 }
 
-/**
- * After PUT/POST write, confirm query.yaml is readable (retries for propagation lag).
- * @returns {Promise<boolean>}
- */
-async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, delayMs = 700) {
+async function verifyQueryIndexAfterCreate(siteName, maxAttempts = 6, delayMs = 700) {
   for (let i = 0; i < maxAttempts; i += 1) {
-    const body = await fetchSiteQueryIndex(token, siteName);
+    const body = await fetchSiteQueryIndex(siteName);
     if (body != null && body.trim().length > 0) return true;
     if (i < maxAttempts - 1) {
       await new Promise((r) => setTimeout(r, delayMs));
@@ -411,26 +393,25 @@ async function verifyQueryIndexAfterCreate(token, siteName, maxAttempts = 6, del
   return false;
 }
 
-/**
- * Create or update index config (query.yaml) for new site.
- * Per AEM Admin API: putCreate Index Configuration, postUpdate Index Configuration.
- * @see https://www.aem.live/docs/admin.html#schema/IndexConfig — PUT = create, POST = update.
- */
-async function createQueryIndex(token, newSiteName, yamlContent) {
-  const url = `${API.AEM_CONFIG}/${ORG}/sites/${newSiteName}/content/query.yaml`;
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    'x-content-source-authorization': `Bearer ${token}`,
-    'Content-Type': 'text/yaml',
-  };
-
-  let response = await fetch(url, { method: 'PUT', headers, body: yamlContent });
+async function createQueryIndex(newSiteName, yamlContent) {
+  const path = Paths.helixQueryYaml(newSiteName);
+  let response = await cloneitProcessFetch('helix', path, {
+    method: 'PUT',
+    body: yamlContent,
+    contentType: 'text/yaml',
+  });
   if (response.status === 409) {
-    response = await fetch(url, { method: 'POST', headers, body: yamlContent });
+    response = await cloneitProcessFetch('helix', path, {
+      method: 'POST',
+      body: yamlContent,
+      contentType: 'text/yaml',
+    });
   }
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to create query index config: ${response.status} ${response.statusText} - ${text}`);
+    const text = await response.text().catch(() => '');
+    const xError = response.headers.get('x-error') || '';
+    const detail = [text, xError].filter(Boolean).join(' — ') || response.statusText;
+    throw new Error(`Failed to create query index config: ${response.status} — ${detail}`);
   }
 }
 
@@ -442,9 +423,6 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-/**
- * Plain-text block for email / Slack handoff.
- */
 function buildHandoffText(siteName, githubUrl) {
   const preview = `https://main--${siteName}--${ORG}.aem.page`;
   const da = `https://da.live/#/${ORG}/${siteName}`;
@@ -460,42 +438,22 @@ function getDefaultIndexHtml(siteName) {
 </main><footer></footer></body>`;
 }
 
-/**
- * Fetch DA config from baseline repo (repo root).
- * @see https://opensource.adobe.com/da-admin/#tag/Config/operation/getConfig
- */
-async function fetchDaConfig(token, org, repo) {
-  const url = `${API.DA_CONFIG}/${org}/${repo}`;
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+async function fetchDaConfig(org, repo) {
+  const response = await cloneitProcessFetch('da', Paths.daConfig(org, repo));
   if (!response.ok) return null;
   return response.text();
 }
 
-/**
- * Rewrite config JSON: replace baseline org/repo with new site (e.g. library paths, app paths).
- */
 function rewriteDaConfigForNewSite(configJson, newSiteName) {
   const baselineRef = `${ORG}/${BASELINE_SITE}`;
   const newRef = `${ORG}/${newSiteName}`;
   return configJson.replace(new RegExp(baselineRef.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newRef);
 }
 
-/**
- * Create DA config for new repo.
- * Uses form field 'config' (not 'data') per docs.da.live. Path '' for repo root.
- * @see https://docs.da.live/developers/api/config
- */
-async function createDaConfig(token, org, repo, content) {
-  const url = `${API.DA_CONFIG}/${org}/${repo}`;
-  const formData = new FormData();
-  formData.append('config', content);
-
-  const response = await fetch(url, {
+async function createDaConfig(org, repo, content) {
+  const response = await cloneitProcessFetch('da', Paths.daConfig(org, repo), {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
+    form: { config: content },
   });
   if (!response.ok) {
     const text = await response.text();
@@ -503,16 +461,8 @@ async function createDaConfig(token, org, repo, content) {
   }
 }
 
-/**
- * List children of a DA folder. Returns array of { path, name, ext, lastModified }.
- * @see https://admin.da.live/list/{org}/{repo}/{path}
- */
-async function listDaFolder(token, basePath = '') {
-  const pathPart = basePath ? (basePath.startsWith('/') ? basePath : `/${basePath}`) : '';
-  const url = `${API.DA_LIST}/${ORG}/${BASELINE_SITE}${pathPart}`;
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+async function listDaFolder(basePath = '') {
+  const response = await cloneitProcessFetch('da', Paths.daList(BASELINE_SITE, basePath));
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to list DA folder: ${response.status} ${response.statusText} - ${text}`);
@@ -521,12 +471,8 @@ async function listDaFolder(token, basePath = '') {
   return Array.isArray(data) ? data : (data.sources || []);
 }
 
-/**
- * Recursively collect all file paths from the baseline DA repo.
- * Files have ext and lastModified; folders do not.
- */
-async function collectAllFilePaths(token, basePath = '', files = []) {
-  const items = await listDaFolder(token, basePath);
+async function collectAllFilePaths(basePath = '', files = []) {
+  const items = await listDaFolder(basePath);
   const prefix = `${ORG}/${BASELINE_SITE}`;
 
   for (const item of items) {
@@ -550,25 +496,16 @@ async function collectAllFilePaths(token, basePath = '', files = []) {
       files.push(normalized);
     } else if (isFolder) {
       const subPath = basePath ? `${basePath}/${item.name}` : item.name;
-      await collectAllFilePaths(token, subPath, files);
+      await collectAllFilePaths(subPath, files);
     }
   }
   return files;
 }
 
-/**
- * Copy a single file from baseline to new site using DA Copy API.
- * @see https://opensource.adobe.com/da-admin/#tag/Copy
- */
-async function copyDaFile(token, sourcePath, newSiteName) {
-  const url = `${API.DA_COPY}/${ORG}/${BASELINE_SITE}/${sourcePath}`;
-  const formData = new FormData();
-  formData.append('destination', `/${ORG}/${newSiteName}/${sourcePath}`);
-
-  const response = await fetch(url, {
+async function copyDaFile(sourcePath, newSiteName) {
+  const response = await cloneitProcessFetch('da', Paths.daCopyFromBaseline(sourcePath), {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
+    form: { destination: `/${ORG}/${newSiteName}/${sourcePath}` },
   });
 
   if (!response.ok) {
@@ -578,29 +515,19 @@ async function copyDaFile(token, sourcePath, newSiteName) {
   return response;
 }
 
-/**
- * Copy full content from baseline DA folder to new site folder.
- * Uses List API to discover all files, then Copy API per file (DA Copy does not recurse).
- * @returns {Promise<string[]>} List of copied file paths (e.g. index.html, blog/foo.html)
- */
-async function copyDaFolder(token, newSiteName, onProgress) {
-  const files = await collectAllFilePaths(token);
+async function copyDaFolder(newSiteName, onProgress) {
+  const files = await collectAllFilePaths();
   if (files.length === 0) {
     throw new Error('No files found in baseline DA folder');
   }
 
   for (let i = 0; i < files.length; i += 1) {
     if (onProgress) onProgress(i + 1, files.length, files[i]);
-    await copyDaFile(token, files[i], newSiteName);
+    await copyDaFile(files[i], newSiteName);
   }
   return files;
 }
 
-/**
- * Convert DA file paths to Admin API paths for bulk preview/publish.
- * Includes all content: HTML pages (index.html → /, others → /path/without/ext),
- * plus assets (SVG, PNG, JPG, etc.) as /path/to/file.ext
- */
 function daPathsToApiPaths(daFiles) {
   return daFiles.map((f) => {
     if (f.endsWith('.html')) {
@@ -611,18 +538,16 @@ function daPathsToApiPaths(daFiles) {
   });
 }
 
-async function createDaSource(token, siteName, path, content) {
+async function createDaSource(siteName, path, content) {
   const cleanPath = (path.startsWith('/') ? path.slice(1) : path).replace(/\/+/g, '/');
-  const url = `${API.DA_SOURCE}/${ORG}/${siteName}/${cleanPath}`;
-
-  const formData = new FormData();
-  const blob = new Blob([content], { type: path.endsWith('.json') ? 'application/json' : 'text/html' });
-  formData.append('data', blob);
-
-  const response = await fetch(url, {
+  const response = await cloneitProcessFetch('da', Paths.daSource(siteName, cleanPath), {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
+    file: {
+      field: 'data',
+      filename: cleanPath.split('/').pop() || 'index.html',
+      base64: utf8ToBase64(content),
+      contentType: path.endsWith('.json') ? 'application/json' : 'text/html',
+    },
   });
 
   if (!response.ok) {
@@ -633,9 +558,8 @@ async function createDaSource(token, siteName, path, content) {
 }
 
 async function cloneSite(siteName) {
-  const { token } = app;
-  if (!token) {
-    showToast('Please open this app from DA to authenticate', 'error');
+  if (!app.workerReady) {
+    showToast('CloneIt worker is not ready. Refresh the page or check worker configuration.', 'error');
     return;
   }
 
@@ -648,8 +572,8 @@ async function cloneSite(siteName) {
   try {
     setProgress(true, 5, 'Checking if site name is available…', null, 'Checking', '');
     const [aemExists, daExists] = await Promise.all([
-      siteExistsInAem(token, siteName),
-      folderExistsInDa(token, siteName),
+      siteExistsInAem(siteName),
+      folderExistsInDa(siteName),
     ]);
 
     if (aemExists) {
@@ -665,15 +589,15 @@ async function cloneSite(siteName) {
 
     setProgress(true, 8, 'Creating DA folder…', null, 'Setup', '');
     const indexContent = getDefaultIndexHtml(siteName);
-    await createDaSource(token, siteName, 'index.html', indexContent);
+    await createDaSource(siteName, 'index.html', indexContent);
 
     setProgress(true, 10, 'Copying DA config…', null, 'Setup', '');
     let daConfigCopied = false;
-    const daConfigContent = await fetchDaConfig(token, ORG, BASELINE_SITE);
+    const daConfigContent = await fetchDaConfig(ORG, BASELINE_SITE);
     if (daConfigContent?.trim()) {
       try {
         const rewrittenConfig = rewriteDaConfigForNewSite(daConfigContent, siteName);
-        await createDaConfig(token, ORG, siteName, rewrittenConfig);
+        await createDaConfig(ORG, siteName, rewrittenConfig);
         daConfigCopied = true;
       } catch (configErr) {
         console.warn('DA config copy skipped:', configErr);
@@ -683,22 +607,22 @@ async function cloneSite(siteName) {
     setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
     let copiedFiles = [];
     try {
-      copiedFiles = await copyDaFolder(token, siteName, (current, total, fileName) => {
+      copiedFiles = await copyDaFolder(siteName, (current, total, fileName) => {
         const pct = 15 + Math.floor((current / total) * 25);
         setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
       });
     } catch (copyError) {
       setProgress(true, 35, 'Copy failed, updating index.html…', null, 'Fallback', '');
-      await createDaSource(token, siteName, 'index.html', indexContent);
+      await createDaSource(siteName, 'index.html', indexContent);
       copiedFiles = ['index.html'];
     }
 
     setProgress(true, 50, 'Fetching baseline config…', null, 'Configuring', '');
-    const baselineConfig = await fetchBaselineConfig(token);
+    const baselineConfig = await fetchBaselineConfig();
 
     setProgress(true, 70, 'Creating site config…', null, 'Configuring', '');
     const newConfig = buildNewSiteConfig(baselineConfig, siteName);
-    await createAemSiteConfig(token, siteName, newConfig);
+    await createAemSiteConfig(siteName, newConfig);
 
     const queryIndex = {
       copied: false,
@@ -706,16 +630,16 @@ async function cloneSite(siteName) {
       skippedNoBaseline: false,
       error: null,
     };
-    const queryYaml = await fetchBaselineQueryIndex(token);
+    const queryYaml = await fetchBaselineQueryIndex();
     if (!queryYaml?.trim()) {
       queryIndex.skippedNoBaseline = true;
     } else {
       setProgress(true, 85, 'Copying query index config…', null, 'Configuring', '');
       try {
-        await createQueryIndex(token, siteName, queryYaml);
+        await createQueryIndex(siteName, queryYaml);
         queryIndex.copied = true;
         setProgress(true, 88, 'Verifying query index (query.yaml)…', null, 'Configuring', '');
-        queryIndex.verified = await verifyQueryIndexAfterCreate(token, siteName);
+        queryIndex.verified = await verifyQueryIndexAfterCreate(siteName);
         if (!queryIndex.verified) {
           console.warn('Query index GET verification failed after upload; Admin API may still be propagating.');
         }
@@ -842,11 +766,12 @@ async function init() {
   if (cloneBtn) cloneBtn.disabled = true;
 
   try {
-    app.token = await fetchToken();
+    await ensureWorkerReady();
+    app.workerReady = true;
     showToast('CloneIt is ready. Enter a site name to clone the demo site.', 'success');
   } catch (error) {
     console.error('Init failed:', error);
-    showToast('Failed to authenticate. Check worker configuration.', 'error');
+    showToast('CloneIt worker unavailable. Check ALLOWED_ORIGINS and deployment.', 'error');
   }
 }
 

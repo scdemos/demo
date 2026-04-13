@@ -71,10 +71,12 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 | AEM Admin | `PUT /config/scdemos/sites/{site}.json` | Create repoless site |
 | AEM Admin | `GET /config/scdemos/sites/demo/content/query.yaml` | Fetch baseline index config |
 | AEM Admin | `PUT /config/scdemos/sites/{site}/content/query.yaml` | Create index config (or `POST` if 409 = update) |
+| CloneIt worker | `POST …/` | On load: IMS **client_credentials** ping (proves CORS, secrets, and token endpoint) |
+| CloneIt worker | `POST …/cloneprocess` | **All** Helix + DA Admin calls — worker adds IMS token and forwards to allowlisted paths only (`/config/{org}/sites/…` on Helix; `/list|config|copy|source/{org}/…` on DA). The browser never stores an API token. |
 
 ## Authentication
 
-Uses the [DA SDK](https://da.live/nx/utils/sdk.js) to obtain a bearer token. The same token works for both AEM Admin API and DA Admin API when the user is authenticated in the DA context.
+The **Cloudflare Worker** (`workers/cloneit_token`) uses OAuth **client_credentials** to obtain an **IMS access token** server-side. The CloneIt UI calls **`POST /`** once on load (readiness) and **`POST /cloneprocess`** for every Admin request; it does **not** call `admin.hlx.page` or `admin.da.live` directly.
 
 ## References
 
