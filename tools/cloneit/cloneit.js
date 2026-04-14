@@ -123,6 +123,28 @@ function validateSiteName(name) {
   return { valid: true, value: trimmed };
 }
 
+function setCloneStep(step) {
+  const stepper = document.getElementById('cloneit-stepper');
+  const main = document.getElementById('cloneit-main');
+  if (stepper) {
+    stepper.dataset.step = String(step);
+    stepper.querySelectorAll('.cloneit-steps-step').forEach((el) => {
+      const n = Number(el.dataset.stepIndex, 10);
+      el.removeAttribute('aria-current');
+      if (n === step) el.setAttribute('aria-current', 'step');
+    });
+  }
+  if (main) {
+    main.dataset.step = String(step);
+  }
+
+  if (step === 2) {
+    document.getElementById('progress-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else if (step === 3) {
+    document.getElementById('result-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function setProgress(visible, percent, text, fileName, phase, count) {
   const container = document.getElementById('progress-container');
   const fill = document.getElementById('progress-fill');
@@ -130,6 +152,7 @@ function setProgress(visible, percent, text, fileName, phase, count) {
   const filesEl = document.getElementById('progress-files');
   const phaseEl = document.getElementById('progress-phase');
   const countEl = document.getElementById('progress-count');
+  if (visible) setCloneStep(2);
   if (container) container.style.display = visible ? 'block' : 'none';
   if (fill) fill.style.width = `${percent}%`;
   if (textEl) textEl.textContent = text || '';
@@ -156,25 +179,80 @@ function setButtonLoading(loading) {
   if (loadingEl) loadingEl.style.display = loading ? 'inline-flex' : 'none';
 }
 
-function showResult(success, siteName, errorMessage, options = {}) {
-  const container = document.getElementById('result-container');
-  const successCard = document.getElementById('result-success');
-  const errorCard = document.getElementById('result-error');
-  if (!container) return;
-
-  const {
-    codeConfig,
-    contentPaths = [],
-    daConfigCopied = false,
-    queryIndex = {},
-  } = options;
-
+/**
+ * @returns {{ html: string, plainLines: string[] }}
+ */
+function buildResultSummaryHtmlAndPlainLines(siteName, options) {
+  const { daConfigCopied = false, queryIndex = {} } = options;
   const {
     copied: queryIndexCopied = false,
     verified: queryIndexVerified = false,
     skippedNoBaseline = false,
     error: queryIndexError = null,
   } = queryIndex;
+
+  const plainLines = [];
+  plainLines.push(`DA content: ${ORG}/${BASELINE_SITE}/ → ${ORG}/${siteName}/`);
+  if (daConfigCopied) plainLines.push('DA config copied');
+  plainLines.push('AEM site config created');
+
+  const queryYamlUrl = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
+  let queryLine = '';
+  if (skippedNoBaseline) {
+    queryLine = `<li>Query index (<code>query.yaml</code>): skipped — baseline <code>${BASELINE_SITE}</code> has no <code>query.yaml</code> in Admin API (nothing to copy)</li>`;
+    plainLines.push(`Query index (query.yaml): skipped — baseline ${BASELINE_SITE} has no query.yaml in Admin API`);
+  } else if (queryIndexError) {
+    queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): <strong>not copied</strong> — ${escapeHtml(queryIndexError)}</li>`;
+    plainLines.push(`Query index (query.yaml): not copied — ${queryIndexError}`);
+  } else if (queryIndexCopied && queryIndexVerified) {
+    queryLine = `<li>Query index (<code>query.yaml</code>): copied and <strong>verified</strong></li>`;
+    plainLines.push('Query index (query.yaml): copied and verified');
+  } else if (queryIndexCopied && !queryIndexVerified) {
+    queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): upload reported OK but <strong>verification failed</strong> (GET still empty after retries). Check Admin API or re-upload <code>query.yaml</code> for <code>${ORG}/${siteName}</code> — <a href="${queryYamlUrl}" target="_blank" rel="noopener noreferrer">direct link</a></li>`;
+    plainLines.push(`Query index (query.yaml): verification failed — ${queryYamlUrl}`);
+  } else {
+    queryLine = `<li>Query index (<code>query.yaml</code>): not configured</li>`;
+    plainLines.push('Query index (query.yaml): not configured');
+  }
+  plainLines.push(`Content: content.da.live/${ORG}/${siteName}/`);
+
+  const html = `
+    <li>DA content: <code>${ORG}/${BASELINE_SITE}/</code> → <code>${ORG}/${siteName}/</code></li>
+    ${daConfigCopied ? '<li>DA config copied</li>' : ''}
+    <li>AEM site config created</li>
+    ${queryLine}
+    <li>Content: <code>content.da.live/${ORG}/${siteName}/</code></li>
+  `;
+
+  return { html, plainLines };
+}
+
+function buildDetailsClipboardText(siteName, siteUrl, daUrl, githubUrl, plainLines) {
+  return [
+    `Site: ${siteName}`,
+    '',
+    'Summary:',
+    ...plainLines.map((line) => `• ${line}`),
+    '',
+    'Links:',
+    `AEM preview: ${siteUrl}`,
+    `Document Authoring: ${daUrl}`,
+    `Code repository: ${githubUrl}`,
+  ].join('\n');
+}
+
+function showResult(success, siteName, errorMessage, options = {}) {
+  const container = document.getElementById('result-container');
+  const successCard = document.getElementById('result-success');
+  const errorCard = document.getElementById('result-error');
+  if (!container) return;
+
+  setCloneStep(3);
+
+  const {
+    codeConfig,
+    contentPaths = [],
+  } = options;
 
   container.style.display = 'block';
   if (success) {
@@ -184,30 +262,9 @@ function showResult(success, siteName, errorMessage, options = {}) {
     const code = codeConfig || { owner: CODE_OWNER, repo: CODE_REPO };
     const githubUrl = code.source?.url || `https://github.com/${code.owner}/${code.repo}`;
 
-    let queryLine = '';
-    if (skippedNoBaseline) {
-      queryLine = `<li>Query index (<code>query.yaml</code>): skipped — baseline <code>${BASELINE_SITE}</code> has no <code>query.yaml</code> in Admin API (nothing to copy)</li>`;
-    } else if (queryIndexError) {
-      queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): <strong>not copied</strong> — ${escapeHtml(queryIndexError)}</li>`;
-    } else if (queryIndexCopied && queryIndexVerified) {
-      queryLine = `<li>Query index (<code>query.yaml</code>): copied and <strong>verified</strong> (GET after upload)</li>`;
-    } else if (queryIndexCopied && !queryIndexVerified) {
-      queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): upload reported OK but <strong>verification failed</strong> (GET still empty after retries). Check Admin API or re-upload <code>query.yaml</code> for <code>${ORG}/${siteName}</code> — <a href="${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml" target="_blank" rel="noopener noreferrer">direct link</a></li>`;
-    } else {
-      queryLine = `<li>Query index (<code>query.yaml</code>): not configured</li>`;
-    }
-
+    const { html, plainLines } = buildResultSummaryHtmlAndPlainLines(siteName, options);
     const summaryList = document.getElementById('result-summary-list');
-    if (summaryList) {
-      const daConfigItem = daConfigCopied ? '<li>DA config copied</li>' : '';
-      summaryList.innerHTML = `
-        <li>DA content: <code>${ORG}/${BASELINE_SITE}/</code> → <code>${ORG}/${siteName}/</code></li>
-        ${daConfigItem}
-        <li>AEM site config created</li>
-        ${queryLine}
-        <li>Content: <code>content.da.live/${ORG}/${siteName}/</code></li>
-      `;
-    }
+    if (summaryList) summaryList.innerHTML = html;
 
     const siteUrl = `https://main--${siteName}--${ORG}.aem.page`;
     const daUrl = `https://da.live/#/${ORG}/${siteName}`;
@@ -231,14 +288,9 @@ function showResult(success, siteName, errorMessage, options = {}) {
       if (urlEl) urlEl.textContent = githubUrl;
     }
 
-    const handoffEl = document.getElementById('result-handoff-text');
-    if (handoffEl) {
-      handoffEl.textContent = buildHandoffText(siteName, githubUrl);
-    }
-
     app.lastClonedSite = siteName;
     app.contentPaths = contentPaths;
-    app.lastHandoffText = buildHandoffText(siteName, githubUrl);
+    app.lastDetailsCopyText = buildDetailsClipboardText(siteName, siteUrl, daUrl, githubUrl, plainLines);
     updateBulkActionButtons();
   } else {
     successCard.style.display = 'none';
@@ -261,7 +313,7 @@ function updateBulkActionButtons() {
   if (bulkBtn) bulkBtn.disabled = !hasPaths;
   if (bulkHint) {
     bulkHint.textContent = hasPaths
-      ? 'Copies all content URLs (pages, images, SVGs, etc.) to clipboard – paste in the DA Bulk app to preview or publish.'
+      ? 'Use the DA Bulk app below to preview/publish all content. All content URLs (pages, images, SVGs) should be available in the clipboard.'
       : 'No content. No files were copied.';
   }
 }
@@ -421,14 +473,6 @@ function escapeHtml(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
-}
-
-function buildHandoffText(siteName, githubUrl) {
-  const preview = `https://main--${siteName}--${ORG}.aem.page`;
-  const da = `https://da.live/#/${ORG}/${siteName}`;
-  return `Preview URL: ${preview}
-DA content: ${da}
-Code: ${githubUrl}`;
 }
 
 function getDefaultIndexHtml(siteName) {
@@ -741,20 +785,21 @@ function setupEventListeners() {
   const bulkBtn = document.getElementById('bulk-btn');
   if (bulkBtn) bulkBtn.addEventListener('click', handleBulkAction);
 
-  const copyHandoffBtn = document.getElementById('copy-handoff-btn');
-  if (copyHandoffBtn) {
-    copyHandoffBtn.addEventListener('click', () => {
-      const text = app.lastHandoffText || document.getElementById('result-handoff-text')?.textContent;
+  const copyDetailsBtn = document.getElementById('copy-details-btn');
+  if (copyDetailsBtn) {
+    copyDetailsBtn.addEventListener('click', () => {
+      const text = app.lastDetailsCopyText;
       if (!text) {
         showToast('Nothing to copy yet.', 'error');
         return;
       }
       navigator.clipboard.writeText(text).then(
-        () => showToast('Handoff copied to clipboard.', 'success'),
-        () => showToast('Could not copy — select the text manually.', 'error'),
+        () => showToast('Details copied to clipboard.', 'success'),
+        () => showToast('Could not copy — select text in your browser.', 'error'),
       );
     });
   }
+
 }
 
 async function init() {
@@ -764,6 +809,7 @@ async function init() {
   const cloneBtn = document.getElementById('clone-btn');
   if (siteInput) siteInput.focus();
   if (cloneBtn) cloneBtn.disabled = true;
+  setCloneStep(1);
 
   try {
     await ensureWorkerReady();
