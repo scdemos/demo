@@ -3,11 +3,23 @@
 // CloneIt: copy baseline DA + AEM config to a new repoless site (init → cloneSite → worker).
 
 const ORG = 'scdemos';
-const BASELINE_SITE = 'demo';
 const CODE_OWNER = 'scdemos';
 const CODE_REPO = 'demo';
 const CLONEIT_WORKER_URL = 'https://demo.bbird.live/cloneit/';
 const CLONEIT_WORKER_ERROR_SOURCE = 'cloneit-worker';
+
+const DA_SDK_URL = 'https://da.live/nx/utils/sdk.js';
+const DA_CONSTANTS_URL = 'https://da.live/nx/public/utils/constants.js';
+
+/** User-facing messages (avoid scattering literals). */
+const UI = {
+  toastSdkFailed:
+    'Sign in to Document Authoring and open CloneIt from DA, then refresh.',
+  toastDemositesEmpty:
+    'No demo templates found. Add rows to the demosites sheet in scdemos org config.',
+  toastReady: 'CloneIt is ready. Choose a template and enter a site name.',
+  toastPickTemplate: 'Choose a template before cloning.',
+};
 
 // Paths must stay aligned with workers/cloneit_token isAllowedProxyPath().
 const Paths = {
@@ -18,7 +30,7 @@ const Paths = {
     return `/list/${ORG}/${repo}${part}`;
   },
   daConfig: (org, repo) => `/config/${org}/${repo}`,
-  daCopyFromBaseline: (sourcePath) => `/copy/${ORG}/${BASELINE_SITE}/${sourcePath}`,
+  daCopyFromBaseline: (baselineSite, sourcePath) => `/copy/${ORG}/${baselineSite}/${sourcePath}`,
   daSource: (site, cleanPath) => `/source/${ORG}/${site}/${cleanPath}`,
 };
 
@@ -70,6 +82,7 @@ const API = {
 
 const app = {
   workerReady: false,
+  demositesReady: false,
 };
 
 const SITE_NAME_MAX_LENGTH = 50;
@@ -104,7 +117,106 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
-function validateSiteName(name) {
+function normalizeBaselineSiteSegment(raw) {
+  const trimmed = (raw || '').trim().toLowerCase();
+  if (!trimmed) return '';
+  const pattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  return pattern.test(trimmed) ? trimmed : '';
+}
+
+/**
+ * @param {unknown} json — org config JSON from GET /config/{org}/
+ * @returns {{ name: string, site: string }[]}
+ */
+function parseDemositesSheet(json) {
+  if (!json || typeof json !== 'object') return [];
+  const sheet = /** @type {Record<string, { data?: unknown[] }>} */ (json).demosites;
+  const data = sheet?.data;
+  if (!Array.isArray(data)) return [];
+  const out = [];
+  data.forEach((row) => {
+    if (!row || typeof row !== 'object') return;
+    const r = /** @type {Record<string, string>} */ (row);
+    const label = (r.name ?? r.Name ?? '').trim();
+    const site = normalizeBaselineSiteSegment(String(r.site ?? r.Site ?? ''));
+    if (!site) return;
+    out.push({ name: label || site, site });
+  });
+  return out;
+}
+
+async function loadDemositesMapping() {
+  const select = document.getElementById('baseline-select');
+  if (!select) return;
+
+  select.innerHTML = '';
+  const loadingOpt = document.createElement('option');
+  loadingOpt.value = '';
+  loadingOpt.textContent = 'Loading templates…';
+  select.appendChild(loadingOpt);
+  select.disabled = true;
+  app.demositesReady = false;
+
+  try {
+    const [{ default: DA_SDK }, { DA_ORIGIN }] = await Promise.all([
+      import(DA_SDK_URL),
+      import(DA_CONSTANTS_URL),
+    ]);
+    const sdk = await DA_SDK;
+    const { actions } = sdk;
+    if (!actions?.daFetch) {
+      throw new Error('no_da_fetch');
+    }
+    const resp = await actions.daFetch(`${DA_ORIGIN}/config/${ORG}/`);
+    if (!resp.ok) {
+      throw new Error(`config_${resp.status}`);
+    }
+    const json = await resp.json();
+    const rows = parseDemositesSheet(json);
+    select.innerHTML = '';
+    if (rows.length === 0) {
+      const o = document.createElement('option');
+      o.value = '';
+      o.textContent = 'No templates';
+      select.appendChild(o);
+      showToast(UI.toastDemositesEmpty, 'error');
+      return;
+    }
+    rows.forEach(({ name, site }) => {
+      const o = document.createElement('option');
+      o.value = site;
+      o.textContent = name;
+      select.appendChild(o);
+    });
+    select.disabled = false;
+    app.demositesReady = true;
+  } catch (e) {
+    console.error('Demosites load failed:', e);
+    select.innerHTML = '';
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = 'Unavailable';
+    select.appendChild(o);
+    showToast(UI.toastSdkFailed, 'error');
+  }
+}
+
+function getSelectedBaselineSite() {
+  const sel = document.getElementById('baseline-select');
+  const v = sel?.value;
+  return normalizeBaselineSiteSegment(v || '');
+}
+
+/** Visible template name from the baseline select (demosites sheet name column). */
+function getSelectedBaselineLabel() {
+  const sel = document.getElementById('baseline-select');
+  const opt = sel?.selectedOptions?.[0];
+  if (!opt || !opt.value) return '';
+  const t = (opt.textContent || '').trim();
+  return t || '';
+}
+
+function validateSiteName(name, baselineSite) {
   const trimmed = (name || '').trim().toLowerCase();
   if (!trimmed) return { valid: false, error: 'Site name is required' };
   if (trimmed.length > SITE_NAME_MAX_LENGTH) {
@@ -114,8 +226,9 @@ function validateSiteName(name) {
   if (!pattern.test(trimmed)) {
     return { valid: false, error: 'Use lowercase letters, numbers, and hyphens only' };
   }
-  if (trimmed === BASELINE_SITE) {
-    return { valid: false, error: 'Cannot clone to the same site name' };
+  const base = (baselineSite || '').trim().toLowerCase();
+  if (base && trimmed === base) {
+    return { valid: false, error: 'Cannot use the same name as the template site' };
   }
   if (RESERVED_NAMES.includes(trimmed)) {
     return { valid: false, error: `"${trimmed}" is a reserved name` };
@@ -183,7 +296,14 @@ function setButtonLoading(loading) {
  * @returns {{ html: string, plainLines: string[] }}
  */
 function buildResultSummaryHtmlAndPlainLines(siteName, options) {
-  const { daConfigCopied = false, queryIndex = {} } = options;
+  const {
+    daConfigCopied = false,
+    queryIndex = {},
+    baselineSite: baselineSiteOpt = '',
+    templateLabel: templateLabelOpt = '',
+  } = options;
+  const baselineSite = baselineSiteOpt || '—';
+  const templateLabel = (templateLabelOpt || '').trim() || baselineSiteOpt || '—';
   const {
     copied: queryIndexCopied = false,
     verified: queryIndexVerified = false,
@@ -192,15 +312,16 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   } = queryIndex;
 
   const plainLines = [];
-  plainLines.push(`DA content: ${ORG}/${BASELINE_SITE}/ → ${ORG}/${siteName}/`);
+  plainLines.push(`Template: ${templateLabel}`);
+  plainLines.push(`DA content: ${ORG}/${baselineSite}/ → ${ORG}/${siteName}/`);
   if (daConfigCopied) plainLines.push('DA config copied');
   plainLines.push('AEM site config created');
 
   const queryYamlUrl = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
   let queryLine = '';
   if (skippedNoBaseline) {
-    queryLine = `<li>Query index (<code>query.yaml</code>): skipped — baseline <code>${BASELINE_SITE}</code> has no <code>query.yaml</code> in Admin API (nothing to copy)</li>`;
-    plainLines.push(`Query index (query.yaml): skipped — baseline ${BASELINE_SITE} has no query.yaml in Admin API`);
+    queryLine = `<li>Query index (<code>query.yaml</code>): skipped — baseline <code>${escapeHtml(baselineSite)}</code> has no <code>query.yaml</code> in Admin API (nothing to copy)</li>`;
+    plainLines.push(`Query index (query.yaml): skipped — baseline ${baselineSite} has no query.yaml in Admin API`);
   } else if (queryIndexError) {
     queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): <strong>not copied</strong> — ${escapeHtml(queryIndexError)}</li>`;
     plainLines.push(`Query index (query.yaml): not copied — ${queryIndexError}`);
@@ -214,14 +335,13 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     queryLine = `<li>Query index (<code>query.yaml</code>): not configured</li>`;
     plainLines.push('Query index (query.yaml): not configured');
   }
-  plainLines.push(`Content: content.da.live/${ORG}/${siteName}/`);
 
   const html = `
-    <li>DA content: <code>${ORG}/${BASELINE_SITE}/</code> → <code>${ORG}/${siteName}/</code></li>
+    <li>Template: ${escapeHtml(templateLabel)}</li>
+    <li>DA content: <code>${ORG}/${escapeHtml(baselineSite)}/</code> → <code>${ORG}/${siteName}/</code></li>
     ${daConfigCopied ? '<li>DA config copied</li>' : ''}
     <li>AEM site config created</li>
     ${queryLine}
-    <li>Content: <code>content.da.live/${ORG}/${siteName}/</code></li>
   `;
 
   return { html, plainLines };
@@ -361,8 +481,8 @@ async function folderExistsInDa(siteName) {
   return items.length > 0;
 }
 
-async function fetchBaselineConfig() {
-  const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(BASELINE_SITE));
+async function fetchBaselineConfig(baselineSite) {
+  const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(baselineSite));
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to fetch baseline config: ${response.status} ${response.statusText} - ${text}`);
@@ -372,6 +492,17 @@ async function fetchBaselineConfig() {
     throw new Error('Baseline config returned empty response');
   }
   return JSON.parse(text);
+}
+
+/**
+ * Final pass on the cloned site config before PUT. Strip baseline-only fields, fixups for new site, etc.
+ * @param {Record<string, unknown>} config
+ */
+function cleanupSiteConfig(config) {
+  if (config.sidekick && typeof config.sidekick === 'object') {
+    delete config.sidekick.previewHost;
+    delete config.sidekick.liveHost;
+  }
 }
 
 function buildNewSiteConfig(baselineConfig, newSiteName) {
@@ -404,6 +535,7 @@ function buildNewSiteConfig(baselineConfig, newSiteName) {
     config.headers = { ...baselineConfig.headers };
   }
 
+  cleanupSiteConfig(config);
   return config;
 }
 
@@ -421,8 +553,8 @@ async function createAemSiteConfig(newSiteName, config) {
   return text.trim() ? JSON.parse(text) : {};
 }
 
-async function fetchBaselineQueryIndex() {
-  const response = await cloneitProcessFetch('helix', Paths.helixQueryYaml(BASELINE_SITE));
+async function fetchBaselineQueryIndex(baselineSite) {
+  const response = await cloneitProcessFetch('helix', Paths.helixQueryYaml(baselineSite));
   if (!response.ok) return null;
   return response.text();
 }
@@ -488,8 +620,8 @@ async function fetchDaConfig(org, repo) {
   return response.text();
 }
 
-function rewriteDaConfigForNewSite(configJson, newSiteName) {
-  const baselineRef = `${ORG}/${BASELINE_SITE}`;
+function rewriteDaConfigForNewSite(configJson, newSiteName, baselineSite) {
+  const baselineRef = `${ORG}/${baselineSite}`;
   const newRef = `${ORG}/${newSiteName}`;
   return configJson.replace(new RegExp(baselineRef.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newRef);
 }
@@ -505,8 +637,8 @@ async function createDaConfig(org, repo, content) {
   }
 }
 
-async function listDaFolder(basePath = '') {
-  const response = await cloneitProcessFetch('da', Paths.daList(BASELINE_SITE, basePath));
+async function listDaFolder(basePath, baselineSite) {
+  const response = await cloneitProcessFetch('da', Paths.daList(baselineSite, basePath));
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to list DA folder: ${response.status} ${response.statusText} - ${text}`);
@@ -515,9 +647,11 @@ async function listDaFolder(basePath = '') {
   return Array.isArray(data) ? data : (data.sources || []);
 }
 
-async function collectAllFilePaths(basePath = '', files = []) {
-  const items = await listDaFolder(basePath);
-  const prefix = `${ORG}/${BASELINE_SITE}`;
+async function collectAllFilePaths(basePath, files, baselineSite) {
+  const bp = basePath === undefined || basePath === null ? '' : basePath;
+  const fileList = files || [];
+  const items = await listDaFolder(bp, baselineSite);
+  const prefix = `${ORG}/${baselineSite}`;
 
   for (const item of items) {
     const isFile = item.lastModified != null && (item.ext || /\.(html|json|png|jpg|jpeg|gif|svg|webp|pdf)$/i.test(item.name || ''));
@@ -534,20 +668,20 @@ async function collectAllFilePaths(basePath = '', files = []) {
       const itemPath = (item.path || '').replace(/^\/+/, '');
       const relPath = itemPath.startsWith(prefix)
         ? itemPath.slice(prefix.length).replace(/^\/+/, '')
-        : (basePath ? `${basePath}/${item.name}` : (item.name || itemPath));
+        : (bp ? `${bp}/${item.name}` : (item.name || itemPath));
       const normalized = relPath || item.name;
       if (pathStartsWithExcludedLocale(normalized)) continue;
-      files.push(normalized);
+      fileList.push(normalized);
     } else if (isFolder) {
-      const subPath = basePath ? `${basePath}/${item.name}` : item.name;
-      await collectAllFilePaths(subPath, files);
+      const subPath = bp ? `${bp}/${item.name}` : item.name;
+      await collectAllFilePaths(subPath, fileList, baselineSite);
     }
   }
-  return files;
+  return fileList;
 }
 
-async function copyDaFile(sourcePath, newSiteName) {
-  const response = await cloneitProcessFetch('da', Paths.daCopyFromBaseline(sourcePath), {
+async function copyDaFile(sourcePath, newSiteName, baselineSite) {
+  const response = await cloneitProcessFetch('da', Paths.daCopyFromBaseline(baselineSite, sourcePath), {
     method: 'POST',
     form: { destination: `/${ORG}/${newSiteName}/${sourcePath}` },
   });
@@ -559,15 +693,15 @@ async function copyDaFile(sourcePath, newSiteName) {
   return response;
 }
 
-async function copyDaFolder(newSiteName, onProgress) {
-  const files = await collectAllFilePaths();
+async function copyDaFolder(newSiteName, baselineSite, onProgress) {
+  const files = await collectAllFilePaths('', [], baselineSite);
   if (files.length === 0) {
     throw new Error('No files found in baseline DA folder');
   }
 
   for (let i = 0; i < files.length; i += 1) {
     if (onProgress) onProgress(i + 1, files.length, files[i]);
-    await copyDaFile(files[i], newSiteName);
+    await copyDaFile(files[i], newSiteName, baselineSite);
   }
   return files;
 }
@@ -601,9 +735,13 @@ async function createDaSource(siteName, path, content) {
   return response;
 }
 
-async function cloneSite(siteName) {
+async function cloneSite(siteName, baselineSite) {
   if (!app.workerReady) {
     showToast('CloneIt worker is not ready. Refresh the page or check worker configuration.', 'error');
+    return;
+  }
+  if (!baselineSite) {
+    showToast(UI.toastPickTemplate, 'error');
     return;
   }
 
@@ -637,10 +775,10 @@ async function cloneSite(siteName) {
 
     setProgress(true, 10, 'Copying DA config…', null, 'Setup', '');
     let daConfigCopied = false;
-    const daConfigContent = await fetchDaConfig(ORG, BASELINE_SITE);
+    const daConfigContent = await fetchDaConfig(ORG, baselineSite);
     if (daConfigContent?.trim()) {
       try {
-        const rewrittenConfig = rewriteDaConfigForNewSite(daConfigContent, siteName);
+        const rewrittenConfig = rewriteDaConfigForNewSite(daConfigContent, siteName, baselineSite);
         await createDaConfig(ORG, siteName, rewrittenConfig);
         daConfigCopied = true;
       } catch (configErr) {
@@ -651,7 +789,7 @@ async function cloneSite(siteName) {
     setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
     let copiedFiles = [];
     try {
-      copiedFiles = await copyDaFolder(siteName, (current, total, fileName) => {
+      copiedFiles = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
         const pct = 15 + Math.floor((current / total) * 25);
         setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
       });
@@ -662,7 +800,7 @@ async function cloneSite(siteName) {
     }
 
     setProgress(true, 50, 'Fetching baseline config…', null, 'Configuring', '');
-    const baselineConfig = await fetchBaselineConfig();
+    const baselineConfig = await fetchBaselineConfig(baselineSite);
 
     setProgress(true, 70, 'Creating site config…', null, 'Configuring', '');
     const newConfig = buildNewSiteConfig(baselineConfig, siteName);
@@ -674,7 +812,7 @@ async function cloneSite(siteName) {
       skippedNoBaseline: false,
       error: null,
     };
-    const queryYaml = await fetchBaselineQueryIndex();
+    const queryYaml = await fetchBaselineQueryIndex(baselineSite);
     if (!queryYaml?.trim()) {
       queryIndex.skippedNoBaseline = true;
     } else {
@@ -695,11 +833,14 @@ async function cloneSite(siteName) {
 
     setProgress(true, 100, 'Done', null, 'Done', '');
     const contentPaths = daPathsToApiPaths(copiedFiles);
+    const templateLabel = getSelectedBaselineLabel() || baselineSite;
     showResult(true, siteName, null, {
       codeConfig: newConfig.code,
       contentPaths,
       daConfigCopied,
       queryIndex,
+      baselineSite,
+      templateLabel,
     });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
@@ -712,9 +853,20 @@ async function cloneSite(siteName) {
   }
 }
 
+function updateCloneButtonState() {
+  const cloneBtn = document.getElementById('clone-btn');
+  const siteInput = document.getElementById('site-name-input');
+  const baseline = getSelectedBaselineSite();
+  const { value } = validateSiteName(siteInput?.value || '', baseline);
+  if (cloneBtn) {
+    cloneBtn.disabled = !app.workerReady || !app.demositesReady || !value || !baseline;
+  }
+}
+
 function setupEventListeners() {
   const siteInput = document.getElementById('site-name-input');
   const cloneBtn = document.getElementById('clone-btn');
+  const baselineSelect = document.getElementById('baseline-select');
   const previewEl = document.getElementById('site-preview');
   const helpBtn = document.getElementById('help-btn');
   const modal = document.getElementById('help-modal');
@@ -723,9 +875,10 @@ function setupEventListeners() {
 
   if (siteInput) {
     siteInput.addEventListener('input', () => {
-      const { value } = validateSiteName(siteInput.value);
+      const baseline = getSelectedBaselineSite();
+      const { value } = validateSiteName(siteInput.value, baseline);
       if (previewEl) previewEl.textContent = value || 'yoursite';
-      if (cloneBtn) cloneBtn.disabled = !value;
+      updateCloneButtonState();
     });
     siteInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -735,14 +888,25 @@ function setupEventListeners() {
     });
   }
 
+  if (baselineSelect) {
+    baselineSelect.addEventListener('change', () => {
+      updateCloneButtonState();
+    });
+  }
+
   if (cloneBtn) {
     cloneBtn.addEventListener('click', () => {
-      const { valid, value, error } = validateSiteName(siteInput?.value);
+      const baselineSite = getSelectedBaselineSite();
+      if (!baselineSite) {
+        showToast(UI.toastPickTemplate, 'error');
+        return;
+      }
+      const { valid, value, error } = validateSiteName(siteInput?.value, baselineSite);
       if (!valid) {
         showToast(error, 'error');
         return;
       }
-      cloneSite(value);
+      cloneSite(value, baselineSite);
     });
   }
 
@@ -814,10 +978,15 @@ async function init() {
   try {
     await ensureWorkerReady();
     app.workerReady = true;
-    showToast('CloneIt is ready. Enter a site name to clone the demo site.', 'success');
   } catch (error) {
     console.error('Init failed:', error);
     showToast('CloneIt worker unavailable. Check ALLOWED_ORIGINS and deployment.', 'error');
+  }
+
+  await loadDemositesMapping();
+  updateCloneButtonState();
+  if (app.workerReady && app.demositesReady) {
+    showToast(UI.toastReady, 'success');
   }
 }
 

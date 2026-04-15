@@ -3,7 +3,7 @@
   <head>
     <title>Clone IT</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Clone the demo site to create a new repoless site with DA content">
+    <meta name="description" content="Clone a template site to create a new repoless AEM site with DA content">
     <meta name="theme-color" content="#f1f5f9"/>
     <base href="/tools/">
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -31,11 +31,10 @@
             alt=""
           >
         </div>
-        <div class="cloneit-aside-meta" aria-label="Target org and site">
+        <div class="cloneit-aside-meta" aria-label="Target org">
           <span class="cloneit-pill">org: scdemos</span>
-          <span class="cloneit-pill cloneit-pill-muted">site: demo</span>
         </div>
-        <p class="cloneit-aside-lede">Spin up a new <strong>repoless</strong> AEM site from the <strong>demo</strong> baseline—content, config, and index in one run.</p>
+        <p class="cloneit-aside-lede">Spin up a new <strong>repoless</strong> AEM site from a <strong>template</strong> you pick—content, config, and index in one run.</p>
         <ul class="cloneit-aside-facts">
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
@@ -43,7 +42,7 @@
           </li>
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
-            Same codebase as <code>scdemos/demo</code>
+            Same code as the selected template baseline
           </li>
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
@@ -92,37 +91,45 @@
           <section class="surface-card" id="config-card">
             <div class="surface-card-head">
               <span class="surface-eyebrow">Site identity</span>
-              <h2 class="card-title">Choose a site name</h2>
+              <h2 class="card-title">Choose template and site name</h2>
               <p class="card-desc">
-                Clones <strong>demo</strong> content (skips drafts, demo-docs, locale roots) and creates a repoless AEM site on the same GitHub code.
+                Content copy skips drafts, demo-docs, and locale roots
               </p>
             </div>
             <div class="card-content">
-              <div class="input-group">
-                <label for="site-name-input" class="input-label">
-                  <span class="label-text">Site slug</span>
-                  <span class="label-hint" id="site-name-hint">Lowercase letters, numbers, hyphens · max 50 characters</span>
-                </label>
-                <div class="input-wrap">
-                  <span class="input-affix" aria-hidden="true">main--</span>
-                  <input
-                    type="text"
-                    id="site-name-input"
-                    class="input-field"
-                    placeholder="yoursite"
-                    autocomplete="off"
-                    maxlength="50"
-                    pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-                    aria-describedby="site-name-hint"
-                  >
-                  <span class="input-affix input-affix-end" aria-hidden="true">--scdemos</span>
+              <div class="cloneit-config-inline">
+                <div class="cloneit-config-field">
+                  <label for="baseline-select" class="cloneit-config-label">Template</label>
+                  <span class="cloneit-config-colon" aria-hidden="true">:</span>
+                  <select id="baseline-select" class="cloneit-baseline-select" disabled>
+                    <option value="">Loading templates…</option>
+                  </select>
                 </div>
-                <div class="preview-panel">
-                  <span class="preview-panel-label">Preview URL</span>
-                  <p class="input-preview">
-                    <code>https://main--<span id="site-preview">yoursite</span>--scdemos.aem.page</code>
-                  </p>
+                <div class="cloneit-config-field">
+                  <label for="site-name-input" class="cloneit-config-label">Site name</label>
+                  <span class="cloneit-config-colon" aria-hidden="true">:</span>
+                  <div class="input-wrap cloneit-site-input-wrap">
+                    <span class="input-affix" aria-hidden="true">main--</span>
+                    <input
+                      type="text"
+                      id="site-name-input"
+                      class="input-field"
+                      placeholder="yoursite"
+                      autocomplete="off"
+                      maxlength="50"
+                      pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                      aria-describedby="site-name-hint"
+                    >
+                    <span class="input-affix input-affix-end" aria-hidden="true">--scdemos</span>
+                  </div>
                 </div>
+              </div>
+              <p id="site-name-hint" class="cloneit-sr-only">Site slug: lowercase letters, numbers, hyphens only. Max 50 characters.</p>
+              <div class="preview-panel">
+                <span class="preview-panel-label">Preview URL</span>
+                <p class="input-preview">
+                  <code>https://main--<span id="site-preview">yoursite</span>--scdemos.aem.page</code>
+                </p>
               </div>
               <button id="clone-btn" class="btn btn-primary" type="button" disabled aria-busy="false">
                 <span class="btn-text">Start clone</span>
@@ -307,7 +314,7 @@
               <h3>What does CloneIt do?</h3>
               <p>CloneIt creates a new repoless AEM site by:</p>
               <ol>
-                <li><strong>Creating the AEM site config</strong> – Copies the demo site configuration and points it to a new content source</li>
+                <li><strong>Creating the AEM site config</strong> – Copies the template site configuration and points it to a new content source</li>
                 <li><strong>Creating the DA content repo</strong> – Creates a new folder in Document Authoring (DA) for your site's content</li>
               </ol>
             </div>
@@ -317,7 +324,7 @@
             </div>
             <div class="help-section">
               <h3>After cloning</h3>
-              <p>Your new site shares the same codebase as demo. Add content in DA and preview/publish to see it live.</p>
+              <p>Your new site shares the same codebase as the template. Add content in DA and preview/publish to see it live.</p>
             </div>
             <div class="help-section">
               <h3>Bulk Preview / Publish</h3>
