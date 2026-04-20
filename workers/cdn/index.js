@@ -15,8 +15,9 @@ import { applyGatingIfNeeded } from './handlers/gating.js';
 const AEM_HOST = /^main--.+--.+\.(?:aem|hlx)\.live$/;
 
 const getExtension = (path) => {
-  const basename = path.split('/').pop();
+  const basename = path.split('/').pop() || '';
   const pos = basename.lastIndexOf('.');
+  if (basename === '.json') return 'json';
   return (basename === '' || pos < 1) ? '' : basename.slice(pos + 1);
 };
 
@@ -54,6 +55,11 @@ const handleRequest = async (request, env) => {
         location: redirectTo.href
       }
     });
+  }
+
+  if (requestURL.pathname === '/index.json') {
+    requestURL.pathname = '/.json';
+    url.pathname = '/.json';
   }
 
   if(isRUMRequest(url)) {
