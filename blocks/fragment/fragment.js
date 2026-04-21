@@ -12,6 +12,7 @@ import {
   loadSections,
 } from '../../scripts/aem.js';
 
+import { isUE } from '../../scripts/shared.js';
 import dynamicBlocks from '../dynamic/index.js';
 
 /**
@@ -49,6 +50,15 @@ export default async function decorate(block) {
   const fragment = await loadFragment(path);
   if (fragment) {
     block.replaceChildren(...fragment.childNodes);
+
+    if (isUE()) {
+      block.querySelectorAll('[data-aue-resource]').forEach((el) => {
+        [...el.attributes]
+          .filter((attr) => attr.name.startsWith('data-aue-') || attr.name.startsWith('data-richtext-'))
+          .forEach((attr) => el.removeAttribute(attr.name));
+      });
+    }
+
     const main = block.closest('main');
     if (main) await dynamicBlocks(main);
   }

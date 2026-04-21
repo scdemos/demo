@@ -41,7 +41,10 @@
           "label": "Variant",
           "options": [
             { "name": "Default", "value": "" },
-            { "name": "Links", "value": "links" }
+            { "name": "Links", "value": "links" },
+            { "name": "Bento", "value": "bento" },
+            { "name": "Text on Top", "value": "text-on-top" },
+            { "name": "Text Centered", "value": "text-centered" }
           ]
         }
       ]

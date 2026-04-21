@@ -48,6 +48,10 @@
     ]
   },
   {
+    "id": "fragment",
+    "components": []
+  },
+  {
     "id": "journey-map",
     "components": [
       "journey-map-step"

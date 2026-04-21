@@ -17,20 +17,52 @@
       "id": "section",
       "fields": [
         {
-          "component": "multiselect",
+          "component": "select",
           "name": "style",
-          "label": "Style",
+          "label": "Section Style",
           "options": [
+            { "name": "Default", "value": "" },
             { "name": "Highlight", "value": "highlight" },
-            { "name": "Tabs", "value": "tabs" },
-            { "name": "Divider", "value": "divider" },
-            { "name": "Spacer Top (Small)", "value": "spacer-top-s" },
-            { "name": "Spacer Top (Medium)", "value": "spacer-top-m" },
-            { "name": "Spacer Top (Large)", "value": "spacer-top-l" },
-            { "name": "Spacer Bottom (Small)", "value": "spacer-bottom-s" },
-            { "name": "Spacer Bottom (Medium)", "value": "spacer-bottom-m" },
-            { "name": "Spacer Bottom (Large)", "value": "spacer-bottom-l" }
+            { "name": "Gradient", "value": "gradient" },
+            { "name": "Ink", "value": "ink" },
+            { "name": "Divider", "value": "divider" }
           ]
+        },
+        {
+          "component": "select",
+          "name": "style_alignment",
+          "label": "Text Alignment",
+          "options": [
+            { "name": "Default", "value": "" },
+            { "name": "Center", "value": "center" }
+          ]
+        },
+        {
+          "component": "select",
+          "name": "style_spacerTop",
+          "label": "Spacer Top",
+          "options": [
+            { "name": "None", "value": "" },
+            { "name": "Small", "value": "spacer-top-s" },
+            { "name": "Medium", "value": "spacer-top-m" },
+            { "name": "Large", "value": "spacer-top-l" }
+          ]
+        },
+        {
+          "component": "select",
+          "name": "style_spacerBottom",
+          "label": "Spacer Bottom",
+          "options": [
+            { "name": "None", "value": "" },
+            { "name": "Small", "value": "spacer-bottom-s" },
+            { "name": "Medium", "value": "spacer-bottom-m" },
+            { "name": "Large", "value": "spacer-bottom-l" }
+          ]
+        },
+        {
+          "component": "boolean",
+          "name": "style_tabs",
+          "label": "Tabs"
         },
         {
           "component": "text",

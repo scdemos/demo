@@ -11,7 +11,7 @@
           "plugins": {
             "da": {
               "name": "text",
-              "type": "text"
+              "type": "richtext"
             }
           }
         },
@@ -194,6 +194,7 @@
           "title": "Fragment",
           "id": "fragment",
           "model": "fragment",
+          "filter": "fragment",
           "plugins": {
             "da": {
               "unsafeHTML": "<div class=\"fragment\"><div><div><p><a href=\"\">Fragment URL</a></p></div></div></div>",

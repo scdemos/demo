@@ -606,8 +606,8 @@ main > .section.divider::after {
   border-bottom: 1px solid var(--color-gray-200);
 }
 
-main > .section.divider.center {
-    text-align: center;
+main > .section.center {
+  text-align: center;
 }
 
 /* section-metadata or block style: spacer utilities – add to section metadata or block styles for readability gaps */

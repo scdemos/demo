@@ -4,6 +4,7 @@
       "title": "Fragment",
       "id": "fragment",
       "model": "fragment",
+      "filter": "fragment",
       "plugins": {
         "da": {
           "unsafeHTML": "<div class=\"fragment\"><div><div><p><a href=\"\">Fragment URL</a></p></div></div></div>",
@@ -33,5 +34,10 @@
       ]
     }
   ],
-  "filters": []
+  "filters": [
+    {
+      "id": "fragment",
+      "components": []
+    }
+  ]
 }

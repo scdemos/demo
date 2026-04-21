@@ -247,3 +247,27 @@
     max-height: 300px;
   }
 }
+
+/* stylelint-disable no-descending-specificity -- independent variant scopes */
+
+.cards.text-on-top > ul > li {
+  flex-direction: column-reverse;
+}
+
+.cards.text-on-top .cards-card-link {
+  flex-direction: column-reverse;
+}
+
+.cards.text-on-top .cards-card-image img {
+  border-radius: 0 0 12px 12px;
+}
+
+.cards.text-centered .cards-card-body {
+  text-align: center;
+}
+
+.cards.text-centered .cards-card-body .button-container {
+  justify-content: center;
+}
+
+/* stylelint-enable no-descending-specificity */

@@ -7,7 +7,7 @@
       "plugins": {
         "da": {
           "name": "text",
-          "type": "text"
+          "type": "richtext"
         }
       }
     }
