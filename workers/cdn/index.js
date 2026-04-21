@@ -12,7 +12,7 @@
 
 import { applyGatingIfNeeded } from './handlers/gating.js';
 
-const AEM_HOST = /^main--.+--.+\.(?:aem|hlx)\.live$/;
+const AEM_HOST = /^main--.+--.+\.(?:aem|hlx)\.(?:live|network)$/;
 
 const getExtension = (path) => {
   const basename = path.split('/').pop() || '';
