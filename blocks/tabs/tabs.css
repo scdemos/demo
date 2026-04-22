@@ -127,6 +127,27 @@ main .section .tabs {
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
 
+/* Override header-section styles that bleed into tab panel content.
+   .tabs .tabs-wrapper .section h2/p rules target ALL sections inside tabs-wrapper
+   (including tab panels), but they were designed only for an optional intro-header
+   section above the tab list. Reset them here for actual tab panel content. */
+.tabs .tab .section p {
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-m);
+  opacity: 1;
+  text-align: left;
+  color: inherit;
+  margin-top: 0;
+  line-height: 1.65;
+}
+
+.tabs .tab .section h2,
+.tabs .tab .section h3 {
+  text-align: left;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+  letter-spacing: normal;
+}
+
 .tabs .tab .section > :is(.default-content, .default-content-wrapper, .block-content) {
   max-width: var(--grid-container-width);
   margin-inline: auto;
@@ -197,12 +218,17 @@ main .section .tabs {
   .tabs .tabs-wrapper .section p {
     font-size: 1.3rem;
   }
+
+  /* Re-assert body font size for tab panel content — the rule above wins
+     cascade order over the base reset when at tablet+ breakpoint */
+  .tabs .tab .section p {
+    font-size: var(--body-font-size-m);
+  }
 }
 
 @media (width >= 900px) {
   .tabs {
     padding-block: var(--space-xl);
-    border-top: var(--border-heritage);
   }
 
   .tabs .tabs-list {
@@ -210,7 +236,7 @@ main .section .tabs {
     overflow-x: visible;
     padding: 0 var(--content-padding-inline);
     gap: var(--space-l);
-    margin-bottom: 60px;
+    margin-bottom: var(--space-xl);
   }
 
   .tabs .tabs-list button {
