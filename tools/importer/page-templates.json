@@ -1,0 +1,38 @@
+{
+  "templates": [
+    {
+      "name": "copenhagen-products",
+      "urls": [
+        "https://6cad-108-6-175-67.ngrok-free.app/Copenhagen_Products.html"
+      ],
+      "description": "Copenhagen tobacco products page with product category sections and product card grids",
+      "blocks": [
+        {
+          "name": "cards",
+          "instances": [".gallery-items.grid"]
+        }
+      ],
+      "sections": [
+        {
+          "id": "section-1",
+          "name": "Page Title",
+          "selector": ".productgallery-wrapper",
+          "style": "dark",
+          "blocks": [],
+          "defaultContent": [".productgallery-wrapper h1"]
+        },
+        {
+          "id": "section-2",
+          "name": "Product Categories",
+          "selector": [".list-container.grid", ".columncontrol-wrapper"],
+          "style": "dark",
+          "blocks": ["cards"],
+          "defaultContent": [
+            ".sub-category-title.ff-typographyFontBrandPrimary",
+            ".sub-category-title .h2.utility"
+          ]
+        }
+      ]
+    }
+  ]
+}

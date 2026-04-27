@@ -188,6 +188,8 @@ async function loadTemplate(main) {
 
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
+  const bodyMeta = doc.querySelector('main meta[name="template"]');
+  if (bodyMeta) document.head.appendChild(bodyMeta);
   decorateTemplateAndTheme();
   applyTheme();
   const main = doc.querySelector('main');

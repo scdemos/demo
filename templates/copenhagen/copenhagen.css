@@ -1,0 +1,167 @@
+/* Copenhagen dark brand template */
+
+body.copenhagen {
+  background: #000;
+  color: #fff;
+}
+
+body.copenhagen header {
+  background: #000;
+}
+
+body.copenhagen footer {
+  background: #000;
+}
+
+body.copenhagen main {
+  background: #000;
+  color: #fff;
+  font-family: roboto, 'Helvetica Neue', arial, sans-serif;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+body.copenhagen main > .section {
+  background: #000;
+  color: #fff;
+  padding: 0;
+}
+
+/* Page title */
+body.copenhagen main h1 {
+  font-family: roboto, 'Helvetica Neue', arial, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-align: center;
+  color: #c5a059;
+  padding: 24px 0 16px;
+  margin: 0;
+  border-top: 3px solid;
+  border-image: linear-gradient(90deg, #e31837, #c5a059, #4caf50, #2196f3) 1;
+}
+
+/* Category headings */
+body.copenhagen main h2 {
+  font-family: roboto, 'Helvetica Neue', arial, sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #c5a059;
+  font-size: 16px;
+  letter-spacing: 1.5px;
+  margin: 40px 0 4px;
+  padding-top: 16px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+/* Category descriptions */
+body.copenhagen main p {
+  font-family: roboto, 'Helvetica Neue', arial, sans-serif;
+  color: #999;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+body.copenhagen main a:any-link {
+  color: #c5a059;
+}
+
+/* Cards - product grids */
+body.copenhagen .cards-wrapper {
+  max-width: 100%;
+  padding: 0;
+}
+
+body.copenhagen .cards > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 24px;
+  max-width: 100%;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+body.copenhagen .cards > ul > li {
+  border: none;
+  background: transparent;
+  text-align: center;
+  border-radius: 0;
+}
+
+body.copenhagen .cards > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+body.copenhagen .cards .cards-card-image {
+  padding: 0;
+  overflow: visible;
+}
+
+body.copenhagen .cards img,
+body.copenhagen .cards .cards-card-image img {
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  margin: 0 auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+  display: block;
+}
+
+body.copenhagen .cards .cards-card-body {
+  padding: 8px 0;
+}
+
+body.copenhagen .cards .cards-card-body strong,
+body.copenhagen .cards .cards-card-body p {
+  font-family: roboto, 'Helvetica Neue', arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #c5a059;
+  text-align: center;
+  margin: 0;
+  display: block;
+}
+
+/* Section separator line */
+body.copenhagen main > .section + h2 {
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+/* Hide share, metadata, section-metadata blocks */
+body.copenhagen .social-share-container,
+body.copenhagen .metadata-container,
+body.copenhagen .section-metadata-wrapper {
+  display: none;
+}
+
+/* Tablet: 4 columns */
+@media (width >= 600px) {
+  body.copenhagen .cards > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Desktop */
+@media (width >= 900px) {
+  body.copenhagen main {
+    max-width: 900px;
+  }
+
+  body.copenhagen main h1 {
+    font-size: 28px;
+    letter-spacing: 4px;
+  }
+
+  body.copenhagen .cards .cards-card-image img {
+    max-width: 170px;
+  }
+}

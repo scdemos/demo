@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "url": "https://6cad-108-6-175-67.ngrok-free.app/Copenhagen_Products.html",
+  "path": "copenhagen-products",
+  "timestamp": "2026-04-27T17:53:49.197Z",
+  "title": "Copenhagen® | Products",
+  "template": "copenhagen-products",
+  "blocks": [
+    "cards",
+    "cards",
+    "cards",
+    "cards",
+    "cards",
+    "cards"
+  ]
+}
