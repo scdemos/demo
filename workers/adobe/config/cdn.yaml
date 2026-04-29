@@ -1,0 +1,22 @@
+kind: "CDN"
+version: "1"
+data:
+  trafficFilters:
+    rules:
+      - name: block-demo2-path
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "demo2.bbird.live"
+            - reqProperty: path
+              equals: "/block/me"
+        action: block
+
+      - name: block-demo2-test
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "demo2.bbird.live"
+            - reqProperty: path
+              equals: "/cdn-test"
+        action: block
