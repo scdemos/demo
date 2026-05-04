@@ -52,3 +52,24 @@
     font-size: 36px;
   }
 }
+
+/* CME column layout + CTA (e.g. dark band): left-aligned copy, no nested graphite card */
+main > .section:has(> .layout) .cta-banner {
+  text-align: left;
+  background-color: transparent;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+main > .section:has(> .layout) .cta-banner p {
+  margin: 0 0 var(--space-l);
+  max-width: none;
+}
+
+main > .section:has(> .layout) .cta-banner picture,
+main > .section:has(> .layout) .cta-banner picture img {
+  margin-inline: 0;
+  width: 100%;
+  max-width: 100%;
+}

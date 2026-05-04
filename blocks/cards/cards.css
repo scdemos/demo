@@ -105,6 +105,22 @@
   }
 }
 
+/*
+ * Centered sections: auto-fit collapses unused tracks so a short row (e.g. 3 cards)
+ * still spans the full width evenly instead of leaving an empty fourth column.
+ */
+@media (width >= 600px) {
+  main > .section.center .cards:not(.featured, .bento) > ul {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+}
+
+@media (width >= 900px) {
+  main > .section.center .cards:not(.featured, .bento) > ul {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  }
+}
+
 /* Links variant empty state */
 .cards .cards-links-empty {
   margin: 0;

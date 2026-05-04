@@ -486,6 +486,60 @@ function decorateIcons(element, prefix = '') {
 }
 
 /**
+ * CME-style multi-column section: reads layout + arrange from section dataset
+ * (section-metadata or data-layout / data-arrange on the section) and wraps
+ * direct children into .layout > .w-* columns. See cmegroup decorateSections.
+ * @param {Element} section
+ */
+function applySectionColumnLayout(section) {
+  const { layout, arrange } = section.dataset;
+  if (!layout || !arrange || section.querySelector(':scope > .layout')) {
+    return;
+  }
+
+  const columnClasses = layout
+    .split('-')
+    .map((w) => w.trim())
+    .filter(Boolean)
+    .map((width) => toClassName(`w-${width}`));
+  if (columnClasses.length === 0) return;
+
+  const blocksPerColumn = arrange
+    .split('-')
+    .map((n) => n.trim())
+    .filter(Boolean)
+    .map((n) => parseInt(n, 10))
+    .filter((n) => !Number.isNaN(n));
+  if (blocksPerColumn.length === 0) return;
+
+  if (blocksPerColumn.length !== columnClasses.length) {
+     
+    console.warn('Section layout/arrange column count mismatch', { layout, arrange });
+    return;
+  }
+
+  const columns = columnClasses.map((cls) => {
+    const column = document.createElement('div');
+    column.classList.add(cls);
+    return column;
+  });
+
+  blocksPerColumn.forEach((count, colIndex) => {
+    for (let i = 0; i < count; i += 1) {
+      const child = section.firstElementChild;
+      if (child && colIndex < columns.length) {
+        columns[colIndex].append(child);
+      }
+    }
+  });
+
+  const container = document.createElement('div');
+  container.classList.add('layout');
+  columns.forEach((column) => container.append(column));
+  section.append(container);
+}
+
+/**
  * Decorates all sections in a container element.
  * @param {Element} main The container element
  */
@@ -524,6 +578,8 @@ function decorateSections(main) {
       });
       sectionMeta.parentNode.remove();
     }
+
+    applySectionColumnLayout(section);
   });
 }
 
@@ -618,7 +674,9 @@ function decorateBlock(block) {
  * @param {Element} main The container element
  */
 function decorateBlocks(main) {
-  main.querySelectorAll('div.section > div > div').forEach(decorateBlock);
+  main.querySelectorAll(
+    'div.section > div:not(.layout) > div, div.section > div.layout > div > div > div',
+  ).forEach(decorateBlock);
 }
 
 /**

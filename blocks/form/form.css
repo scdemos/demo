@@ -1,14 +1,28 @@
 /* Contact-style form layout (inspired by contact-us pattern) */
-main .form-container {
+
+/* decorateBlock adds form-container to the section — do not cap width when the section
+   uses a CME-style column .layout (CTA + form, etc.) or the whole band stays narrow/left-heavy */
+main > .section.form-container:not(:has(> .layout)) {
   max-width: min(var(--grid-container-width), 860px);
   width: 100%;
-  margin: 0 auto;
+  margin-inline: auto;
   padding: var(--space-l) var(--content-padding-inline);
+  box-sizing: border-box;
+}
+
+main > .section.form-container:has(> .layout) {
+  max-width: none;
+  width: 100%;
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
 main .form-container .form-wrapper {
   margin-top: var(--space-m);
+}
+
+main > .section:has(> .layout) .form-container .form-wrapper {
+  margin-top: 0;
 }
 
 .form form,
@@ -270,4 +284,20 @@ main .form form {
   border-color: var(--color-gold);
   color: var(--color-gold);
   transform: translateY(-2px);
+}
+
+/* Two-column dark band: form panel vs section bg (reference layout) */
+main > .section.dark:has(> .layout) .form form {
+  background-color: var(--color-graphite-dark);
+  border: 1px solid rgb(255 255 255 / 12%);
+  box-shadow: 0 20px 48px rgb(0 0 0 / 28%);
+}
+
+main > .section.dark:has(> .layout) .form .form-field > label:first-child,
+main > .section.dark:has(> .layout) .form .form-field > legend {
+  color: rgb(255 255 255 / 92%);
+}
+
+main > .section.dark:has(> .layout) .form .form-status {
+  color: rgb(255 255 255 / 75%);
 }

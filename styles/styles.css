@@ -556,6 +556,59 @@ main > .section > div {
   padding: 0 var(--content-padding-inline);
 }
 
+/* Section column layouts (section-metadata layout + arrange, or data-layout / data-arrange) */
+.section .layout {
+  display: flex;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  width: 100%;
+  align-items: stretch;
+}
+
+/* Wider readable band than default 83.4% when using explicit columns */
+main > .section:has(> .layout) > .layout {
+  max-width: min(1200px, 100%);
+  width: 100%;
+  margin-inline: auto;
+}
+
+.section .layout > div {
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+  padding-block-end: var(--space-l);
+}
+
+@media (width >= 900px) {
+  .section .layout {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: clamp(var(--space-2xl), 5vw, 64px);
+  }
+
+  .section .layout > div {
+    padding: 0;
+    padding-block-end: 0;
+  }
+
+  .section .layout .w-10 { width: 10%; }
+  .section .layout .w-20 { width: 20%; }
+  .section .layout .w-25 { width: 25%; }
+  .section .layout .w-30 { width: 30%; }
+  .section .layout .w-33 { width: 33.33%; }
+  .section .layout .w-40 { width: 40%; }
+  .section .layout .w-42 { width: 42%; }
+  .section .layout .w-50 { width: 50%; }
+  .section .layout .w-58 { width: 58%; }
+  .section .layout .w-60 { width: 60%; }
+  .section .layout .w-66 { width: 66.66%; }
+  .section .layout .w-70 { width: 70%; }
+  .section .layout .w-75 { width: 75%; }
+  .section .layout .w-80 { width: 80%; }
+  .section .layout .w-90 { width: 90%; }
+}
+
 /* section metadata */
 main .section.light,
 main .section.highlight {
@@ -610,8 +663,14 @@ main > .section.divider::after {
   border-bottom: 1px solid var(--color-gray-200);
 }
 
-main > .section.divider.center {
-    text-align: center;
+main > .section.divider.center,
+main > .section.center {
+  text-align: center;
+}
+
+/* Keep each metadata wrapper full width so grids/sliders layout correctly; copy still centers via text-align above */
+main > .section.center > div {
+  width: 100%;
 }
 
 /* section-metadata or block style: spacer utilities – add to section metadata or block styles for readability gaps */
