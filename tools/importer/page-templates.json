@@ -1,0 +1,270 @@
+{
+  "metadata": {
+    "projectType": "da"
+  },
+  "templates": [
+    {
+      "name": "homepage",
+      "urls": [
+        "https://www.paylocity.com/"
+      ],
+      "description": "Paylocity homepage with hero, product highlights, testimonials, and CTAs",
+      "blocks": [
+        {
+          "name": "hero",
+          "instances": [".container.responsivegrid.styleLarge.pb-5"]
+        },
+        {
+          "name": "cards",
+          "instances": [".cmp-flexgrid"]
+        },
+        {
+          "name": "icon-cards",
+          "instances": [".carousel:has(.cmp-iconteaser)"]
+        },
+        {
+          "name": "testimonial",
+          "instances": [".carousel:not(:has(.cmp-iconteaser)):has(.carousel-item)"]
+        },
+        {
+          "name": "columns",
+          "instances": [".cmp-columns.styleColumn1by3"]
+        },
+        {
+          "name": "logo-wall",
+          "instances": [".imagegallery"]
+        },
+        {
+          "name": "cta-banner",
+          "instances": [".cmp-container__bg"]
+        }
+      ],
+      "sections": [
+        {
+          "id": "hero",
+          "name": "Hero Section",
+          "selector": ".container.responsivegrid.styleLarge.pb-5",
+          "style": null,
+          "blocks": [
+            "hero"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "social-proof",
+          "name": "Social Proof Logos",
+          "selector": ".cmp-columns.cols-md-6",
+          "style": null,
+          "blocks": [
+            "logo-wall"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "capabilities",
+          "name": "Platform Capabilities",
+          "selector": [
+            ".cmp-iconteaser"
+          ],
+          "style": null,
+          "blocks": [
+            "icon-cards"
+          ],
+          "defaultContent": [
+            "h3.cmp-title__text",
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "products-carousel",
+          "name": "Ultimate Platform Tabs",
+          "selector": ".carousel",
+          "style": "grey",
+          "blocks": [
+            "tabs"
+          ],
+          "defaultContent": [
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "company-sizes",
+          "name": "Supporting All Company Sizes",
+          "selector": ".cmp-columns.styleColumnTwo-1by2",
+          "style": null,
+          "blocks": [
+            "columns"
+          ],
+          "defaultContent": [
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "testimonial",
+          "name": "Testimonial",
+          "selector": ".carousel-item .cmp-text",
+          "style": null,
+          "blocks": [
+            "testimonial"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "differentiators",
+          "name": "What Makes Paylocity Different",
+          "selector": ".cmp-iconteaser",
+          "style": null,
+          "blocks": [
+            "icon-cards"
+          ],
+          "defaultContent": [
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "cta-dark",
+          "name": "Break Free CTA",
+          "selector": ".cmp-container__bg",
+          "style": "dark",
+          "blocks": [
+            "cta-banner"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "resources",
+          "name": "Featured Resources",
+          "selector": ".cmp-teaser",
+          "style": "grey",
+          "blocks": [
+            "cards"
+          ],
+          "defaultContent": [
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "demo-cta",
+          "name": "Demo CTA",
+          "selector": ".cmp-container__bg",
+          "style": "dark",
+          "blocks": [
+            "cta-banner"
+          ],
+          "defaultContent": []
+        }
+      ]
+    },
+    {
+      "name": "products-page",
+      "urls": [
+        "https://www.paylocity.com/products/"
+      ],
+      "description": "Products listing page showcasing Paylocity product suite and features",
+      "blocks": [
+        {
+          "name": "tabs",
+          "instances": [
+            ".carousel"
+          ]
+        },
+        {
+          "name": "icon-cards",
+          "instances": [
+            ".cmp-iconteaser"
+          ]
+        },
+        {
+          "name": "columns",
+          "instances": [
+            ".cmp-columns"
+          ]
+        },
+        {
+          "name": "cards",
+          "instances": [
+            ".cmp-teaser"
+          ]
+        },
+        {
+          "name": "cta-banner",
+          "instances": [
+            ".cmp-container__bg"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "id": "hero",
+          "name": "Hero with Product Tabs",
+          "selector": ".carousel",
+          "style": null,
+          "blocks": [
+            "tabs"
+          ],
+          "defaultContent": [
+            "h1",
+            "p"
+          ]
+        },
+        {
+          "id": "capabilities",
+          "name": "Platform Capabilities",
+          "selector": ".cmp-iconteaser",
+          "style": "grey",
+          "blocks": [
+            "icon-cards"
+          ],
+          "defaultContent": [
+            "h3.cmp-title__text",
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "align-teams",
+          "name": "Built to Align Teams",
+          "selector": ".cmp-columns",
+          "style": null,
+          "blocks": [
+            "columns"
+          ],
+          "defaultContent": [
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "testimonials",
+          "name": "Client Testimonials",
+          "selector": ".cmp-teaser",
+          "style": null,
+          "blocks": [
+            "cards"
+          ],
+          "defaultContent": [
+            "h2.cmp-title__text"
+          ]
+        },
+        {
+          "id": "cta",
+          "name": "CTA Banner",
+          "selector": ".cmp-container__bg",
+          "style": "dark",
+          "blocks": [
+            "cta-banner"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "demo-cta",
+          "name": "Demo CTA",
+          "selector": ".cmp-container__bg",
+          "style": "dark",
+          "blocks": [
+            "cta-banner"
+          ],
+          "defaultContent": []
+        }
+      ]
+    }
+  ]
+}

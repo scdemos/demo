@@ -1,4 +1,4 @@
-/* Default cards */
+/* Default cards — Paylocity product teaser style */
 
 .cards > ul {
   list-style: none;
@@ -6,25 +6,25 @@
   padding: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-l);
-  max-width: 340px;
-  margin-inline: auto;
+  gap: 24px;
+  max-width: none;
 }
 
 .cards > ul > li {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
-  background: light-dark(var(--color-light), var(--color-card-dark));
+  border: 1px solid var(--color-gray-200);
+  background: var(--color-white);
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card);
   overflow: hidden;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  padding: 32px 24px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .cards > ul > li:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 /* Card link */
@@ -38,58 +38,70 @@
   cursor: pointer;
 }
 
-/* Image */
+/* Image — circular on Paylocity */
 .cards .cards-card-image {
   line-height: 0;
   flex-shrink: 0;
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
 .cards .cards-card-image img {
   display: block;
-  height: auto;
-  max-width: 100%;
-  margin-inline: auto;
-  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cards > ul > li:hover .cards-card-image img {
-  transform: scale(1.05);
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 /* Body */
 .cards .cards-card-body {
-  padding: var(--space-m);
+  padding: 0;
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .cards .cards-card-body :is(h2, h3, h4) {
-  margin-top: 0;
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 900;
   line-height: 1.2;
+  color: var(--color-graphite);
 }
 
 .cards .cards-card-body p {
-  color: light-dark(var(--color-gray-700), var(--color-muted));
-  font-size: var(--body-font-size-s);
-  line-height: 1.55;
+  color: var(--color-graphite-light);
+  font-size: 14px;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.cards .cards-card-body a {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-graphite);
+  text-decoration: none;
+}
+
+.cards .cards-card-body a::after {
+  content: ' \2192';
 }
 
 /* Tablet: 2 columns */
 @media (width >= 600px) {
   .cards > ul {
     grid-template-columns: repeat(2, 1fr);
-    max-width: none;
   }
 }
 
-/* Desktop */
+/* Desktop: 4 columns */
 @media (width >= 900px) {
   .cards > ul {
-    grid-template-columns: repeat(auto-fill, minmax(257px, 1fr));
-  }
-
-  .cards .cards-card-body {
-    padding: var(--space-l);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -97,7 +109,68 @@
 .cards .cards-links-empty {
   margin: 0;
   padding: var(--space-m);
-  color: light-dark(var(--color-gray-600), var(--color-gray-400));
+  color: var(--color-gray-600);
+}
+
+/* ==========================================================================
+   Featured variant (no border, image on top, 3-column)
+   ========================================================================== */
+
+.cards.featured > ul > li {
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.cards.featured .cards-card-image {
+  margin-bottom: 16px;
+}
+
+.cards.featured .cards-card-image img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-sm);
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.cards.featured .cards-card-body :is(h2, h3, h4) {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 8px 0;
+}
+
+.cards.featured .cards-card-body p:first-child {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-orange);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.cards.featured .cards-card-body p:last-child {
+  font-size: 12px;
+  color: var(--color-graphite-light);
+  margin: 8px 0 0;
+}
+
+.cards.featured .cards-card-body a {
+  text-decoration: none;
+  color: var(--color-graphite);
+}
+
+.cards.featured .cards-card-body a::after {
+  content: '';
+}
+
+.cards.featured .cards-card-body a:hover {
+  color: var(--color-orange);
+}
+
+@media (width >= 900px) {
+  .cards.featured > ul {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* ==========================================================================

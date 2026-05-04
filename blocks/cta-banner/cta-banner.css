@@ -1,0 +1,54 @@
+.cta-banner {
+  background-color: var(--color-graphite);
+  border-radius: var(--border-radius-card);
+  padding: 60px 20px;
+  text-align: center;
+  max-width: 100%;
+  margin: 32px 0;
+}
+
+.cta-banner > div > div {
+  margin-bottom: 16px;
+}
+
+.cta-banner h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--color-white);
+  margin: 0 0 16px;
+}
+
+.cta-banner p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 80%);
+  max-width: 600px;
+  margin: 0 auto 24px;
+}
+
+.cta-banner a {
+  display: inline-block;
+  padding: 14px 32px;
+  border-radius: var(--border-radius-pill);
+  background-color: var(--color-red);
+  color: var(--color-white);
+  font-weight: 900;
+  font-size: 14px;
+  text-decoration: none;
+  transition: var(--transition-base);
+}
+
+.cta-banner a:hover {
+  background-color: var(--color-orange);
+  color: var(--color-white);
+}
+
+@media (width >= 900px) {
+  .cta-banner {
+    padding: 80px 20px;
+  }
+
+  .cta-banner h2 {
+    font-size: 36px;
+  }
+}

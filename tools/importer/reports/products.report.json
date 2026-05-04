@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "url": "https://www.paylocity.com/products/",
+  "path": "products",
+  "timestamp": "2026-05-04T18:45:37.823Z",
+  "title": "Unified HR, Finance, and IT Solutions | Paylocity",
+  "template": "products-page",
+  "blocks": [
+    "tabs",
+    "tabs",
+    "icon-cards",
+    "icon-cards",
+    "icon-cards",
+    "icon-cards",
+    "icon-cards",
+    "icon-cards",
+    "columns",
+    "columns",
+    "columns",
+    "cards",
+    "cards",
+    "cards",
+    "cards",
+    "cta-banner"
+  ]
+}

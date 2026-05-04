@@ -1,0 +1,32 @@
+.logo-wall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 40px 20px;
+}
+
+.logo-wall > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-wall > div > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-wall picture {
+  display: block;
+}
+
+.logo-wall img {
+  max-height: 80px;
+  max-width: 120px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
