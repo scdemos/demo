@@ -127,10 +127,6 @@ main .section .tabs {
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
 
-/* Override header-section styles that bleed into tab panel content.
-   .tabs .tabs-wrapper .section h2/p rules target ALL sections inside tabs-wrapper
-   (including tab panels), but they were designed only for an optional intro-header
-   section above the tab list. Reset them here for actual tab panel content. */
 .tabs .tab .section p {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
@@ -148,7 +144,7 @@ main .section .tabs {
   letter-spacing: normal;
 }
 
-.tabs .tab .section > :is(.default-content, .default-content-wrapper, .block-content) {
+.tabs .tab .section > :is(.default-content, .default-content-wrapper, .block-content, [class$='-wrapper']:not(.tabs-wrapper)) {
   max-width: var(--grid-container-width);
   margin-inline: auto;
 }
@@ -196,6 +192,27 @@ main .section .tabs {
 .tabs .tab .columns li {
   margin-bottom: var(--space-s);
   line-height: 1.6;
+}
+
+.tabs .tab .section.center :is(h2, h3, h4, p),
+main > .section.center .tabs .tab .section :is(h2, h3, h4, p) {
+  text-align: center;
+}
+
+.tabs .tab .section.center .default-content-wrapper,
+main > .section.center .tabs .tab .section .default-content-wrapper {
+  text-align: center;
+}
+
+.tabs .tab .section.center .columns :is(h2, p, ul),
+main > .section.center .tabs .tab .columns :is(h2, p, ul) {
+  text-align: center;
+}
+
+.tabs .tab .section.center .columns ul,
+main > .section.center .tabs .tab .columns ul {
+  padding-left: 0;
+  list-style-position: inside;
 }
 
 /* iOS/WebKit themed sections */

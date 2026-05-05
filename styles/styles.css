@@ -537,6 +537,12 @@ main > .section {
   padding-block: var(--space-xl);
 }
 
+main > .section[data-background-image] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 main > .section:first-child {
   padding-block-start: 0;
 

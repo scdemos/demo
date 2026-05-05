@@ -1,6 +1,20 @@
+/** First row is only a hero visual (picture), headings/copy live in following rows */
+function isBackgroundImageFirstRow(row) {
+  if (!row || row.tagName !== 'DIV') return false;
+  if (!row.querySelector('picture')) return false;
+  if (row.querySelector('h1, h2, h3, h4, h5, h6')) return false;
+  if (row.querySelector('.button-container, a.button')) return false;
+  return true;
+}
+
 /** @param {Element} block The hero block element */
 export default function decorate(block) {
   const pictures = block.querySelectorAll('picture');
+  const firstRow = block.firstElementChild;
+
+  if (pictures.length === 1 && isBackgroundImageFirstRow(firstRow)) {
+    block.classList.add('hero-has-background');
+  }
 
   if (pictures.length >= 2) {
     // Dual-image hero: first = light, second = dark
@@ -19,17 +33,16 @@ export default function decorate(block) {
     block.classList.add('no-image');
   }
 
-  const h1 = block.querySelector('h1');
-  if (!h1) return;
+  const headline = block.querySelector('h1, h2');
+  if (!headline) return;
 
-  // Find the first <p> that appears before the <h1> in the DOM and mark it as a tagline
-  const contentDiv = h1.closest('div');
+  const contentDiv = headline.closest('div');
   if (!contentDiv) return;
 
   const children = [...contentDiv.children];
-  const h1Index = children.indexOf(h1);
+  const headIdx = children.indexOf(headline);
 
-  for (let i = 0; i < h1Index; i += 1) {
+  for (let i = 0; i < headIdx; i += 1) {
     if (children[i].tagName === 'P' && !children[i].classList.contains('button-container')) {
       children[i].classList.add('hero-tagline');
       break;

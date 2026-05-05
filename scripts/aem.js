@@ -460,9 +460,10 @@ function decorateButtons(element) {
  * @param {string} [alt] alt text to be added to icon
  */
 function decorateIcon(span, prefix = '', alt = '') {
-  const iconName = Array.from(span.classList)
-    .find((c) => c.startsWith('icon-'))
-    .substring(5);
+  if (!span || span.hasChildNodes()) return;
+  const iconClass = Array.from(span.classList).find((c) => c.startsWith('icon-'));
+  if (!iconClass || iconClass.length < 6) return;
+  const iconName = iconClass.substring(5);
   const img = document.createElement('img');
   img.dataset.iconName = iconName;
   img.src = `${window.hlx.codeBasePath}${prefix}/icons/${iconName}.svg`;
@@ -539,6 +540,18 @@ function applySectionColumnLayout(section) {
   section.append(container);
 }
 
+function applySectionBackgroundImage(section) {
+  const raw = section.dataset.backgroundImage?.trim();
+  if (!raw) return;
+  let href = raw;
+  try {
+    href = new URL(raw, window.location.href).href;
+  } catch {
+    /* keep raw */
+  }
+  section.style.backgroundImage = `url("${href.replace(/\\/g, '/').replace(/"/g, '\\"')}")`;
+}
+
 /**
  * Decorates all sections in a container element.
  * @param {Element} main The container element
@@ -580,6 +593,7 @@ function decorateSections(main) {
     }
 
     applySectionColumnLayout(section);
+    applySectionBackgroundImage(section);
   });
 }
 
