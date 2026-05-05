@@ -3,6 +3,28 @@
   <meta name="description" content="{{description}}">
   <meta name="date" content="{{occurrenceDate}}">
   <meta name="keywords" content="events, upcoming-events">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [{
+      "@type": "Event",
+      "name": "{{title}}",
+      "description": "{{description}}",
+      "startDate": "{{occurrenceDate}}",
+      "eventStatus": "https://schema.org/EventScheduled",
+      "location": {
+        "@type": "Place",
+        "name": "{{location}}",
+        "address": "{{address}}"
+      },
+      "organizer": {
+        "@type": "Organization",
+        "name": "diyFIRE",
+        "url": "https://demo.bbird.live"
+      }
+    }]
+  }
+  </script>
 </head>
 <body>
   <header></header>

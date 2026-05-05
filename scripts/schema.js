@@ -15,10 +15,13 @@ function flush() {
 
 /**
  * Adds a schema object to the page's LD+JSON @graph.
+ * No-ops if an entry with the same @type already exists (prevents duplicates when
+ * a server-side schema has been hydrated from the DOM).
  * @param {object} schema - schema.org structured data object (without @context)
  */
 export function addSchema(schema) {
   if (!schema?.['@type']) return;
+  if (graph.some((s) => s['@type'] === schema['@type'])) return;
   graph.push(schema);
   flush();
 }
@@ -165,7 +168,20 @@ function buildEventSchema() {
   return schema;
 }
 
+function hydrateFromDOM() {
+  const existing = document.head.querySelector('script[type="application/ld+json"]');
+  if (!existing) return;
+  try {
+    const data = JSON.parse(existing.textContent);
+    const entries = data['@graph'] ? data['@graph'] : [data];
+    entries.forEach((entry) => { if (entry?.['@type']) graph.push(entry); });
+    scriptEl = existing;
+  } catch { /* ignore malformed */ }
+}
+
 export function initPageSchemas() {
+  hydrateFromDOM();
+
   if (window.location.pathname === '/') {
     addSchema(buildOrganizationSchema());
   }
