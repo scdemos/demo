@@ -4,7 +4,11 @@ compatibility_date = "2026-02-16"
 account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
 
 [vars]
-ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live"
+# Match Worker route path: e.g. demo.bbird.live/cloneit/* → PATH_PREFIX = "cloneit". Omit for *.workers.dev only.
+PATH_PREFIX = "cloneit"
+# Origins allowed for POST /cloneprocess and POST / (IMS ping + Admin API forwarding).
+# Include the origin that serves CloneIt (e.g. https://demo.bbird.live if the tool is hosted there).
+ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000"
 
 [observability.logs]
 enabled = true

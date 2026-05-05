@@ -10,7 +10,14 @@ import {
 
 function buildLinksCard(article) {
   const href = normalizePath(article.path);
+  const li = createTag('li');
   const link = createTag('a', { href, class: 'cards-card-link' });
+
+  if (article.image) {
+    const imageDiv = createTag('div', { class: 'cards-card-image' });
+    imageDiv.append(createOptimizedPicture(article.image, article.title || '', false, [{ width: '750' }]));
+    link.append(imageDiv);
+  }
 
   const body = createTag('div', { class: 'cards-card-body' });
   body.append(createTag('p', {}, createTag('strong', {}, article.title || href)));
@@ -18,8 +25,9 @@ function buildLinksCard(article) {
     body.append(createTag('p', {}, article.description));
   }
   link.append(body);
+  li.append(link);
 
-  return createTag('li', {}, link);
+  return li;
 }
 
 /**

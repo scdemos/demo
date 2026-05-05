@@ -10,7 +10,7 @@ routes = [
 ]
 
 [vars]
-ORIGIN_HOSTNAME = "main--demo--scdemos.aem.live"
+ORIGIN_HOSTNAME = "main--demo--scdemos.aem.network"
 PUSH_INVALIDATION = "enabled"
 
 [observability.logs]

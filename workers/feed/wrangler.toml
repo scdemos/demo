@@ -11,7 +11,7 @@ routes = [
 
 [vars]
 SITE_URL = "https://demo.bbird.live"
-CONTENT_ORIGIN = "https://main--demo--scdemos.aem.live"
+CONTENT_ORIGIN = "https://main--demo--scdemos.aem.network"
 PUSH_INVALIDATION = "enabled"
 
 [observability.logs]
