@@ -1,6 +1,22 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 
+function normalizeFooterGroups(block) {
+  const navSection = block.querySelector('.footer-nav');
+  if (!navSection) return;
+
+  const groups = navSection.querySelectorAll(':scope > div > ul > li');
+  groups.forEach((group) => {
+    const headingPara = group.querySelector(':scope > p');
+    if (headingPara) {
+      const heading = headingPara.querySelector('strong');
+      if (heading && heading.textContent) {
+        headingPara.classList.add('footer-group-heading');
+      }
+    }
+  });
+}
+
 /**
  * loads and decorates the footer
  * @param {Element} block The footer block element
@@ -18,19 +34,13 @@ export default async function decorate(block) {
     block.append(footer);
   }
 
-  // merge social icons into copyright row
   const sections = block.querySelectorAll('.section');
   if (sections.length >= 4) {
-    const copyrightSection = sections[2];
-    const socialSection = sections[3];
-    const socialUl = socialSection.querySelector('ul');
-    const copyrightWrapper = copyrightSection.querySelector('.default-content-wrapper');
-    if (socialUl && copyrightWrapper) {
-      const pipe = document.createElement('span');
-      pipe.className = 'footer-separator';
-      pipe.textContent = '|';
-      copyrightWrapper.append(pipe, socialUl);
-      socialSection.remove();
-    }
+    sections[0].classList.add('footer-brand');
+    sections[1].classList.add('footer-nav');
+    sections[2].classList.add('footer-social');
+    sections[3].classList.add('footer-legal');
   }
+
+  normalizeFooterGroups(block);
 }

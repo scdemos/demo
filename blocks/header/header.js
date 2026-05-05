@@ -29,11 +29,13 @@ function collapseAll(nav) {
 }
 
 function decorateMega(li) {
-  const link = li.querySelector(':scope > p > a');
+  const link = li.querySelector(':scope > p a[href]');
   const sub = li.querySelector(':scope > ul');
   if (!link || !sub) return;
 
-  const isMega = link.hash === '#mega' || sub.querySelector('picture, img');
+  const hasNestedGroups = [...sub.children]
+    .some((child) => child.tagName === 'LI' && child.querySelector(':scope > ul'));
+  const isMega = link.hash === '#mega' || !!sub.querySelector('picture, img') || hasNestedGroups;
   if (link.hash === '#mega') link.href = link.href.replace(/#mega$/i, '');
 
   if (!isMega) return;
@@ -44,20 +46,30 @@ function decorateMega(li) {
   const rest = items.filter((c) => c !== promo);
 
   let group = 0;
-  let row = 0;
+  const rowsByGroup = {};
   rest.forEach((c) => {
-    const hasDirectLink = c.querySelector(':scope > a') || c.querySelector(':scope > p > a');
-    if (hasDirectLink) {
-      if (!group) group = 1;
-      c.classList.add('nav-mega-item');
-      c.style.setProperty('--mega-group', group);
-      row += 1;
-      c.style.setProperty('--mega-row', row);
-    } else {
+    const hasNestedList = !!c.querySelector(':scope > ul');
+    const hasDirectLink = c.querySelector(':scope > a, :scope > p a[href]');
+    if (hasNestedList) {
       group += 1;
-      row = 0;
+      rowsByGroup[group] = 1;
       c.classList.add('nav-mega-heading');
       c.style.setProperty('--mega-group', group);
+      c.style.setProperty('--mega-row', '1');
+      const nestedItems = c.querySelectorAll(':scope > ul > li').length;
+      if (nestedItems >= 8) c.classList.add('nav-mega-heading-wide');
+      return;
+    }
+
+    if (hasDirectLink) {
+      if (!group) group = 1;
+      // Standalone top-level links (no nested list) should start from the left group
+      // instead of sticking to the last heading group on the far right.
+      const targetGroup = rowsByGroup[1] ? 1 : group;
+      rowsByGroup[targetGroup] = (rowsByGroup[targetGroup] || 1) + 1;
+      c.classList.add('nav-mega-item');
+      c.style.setProperty('--mega-group', targetGroup);
+      c.style.setProperty('--mega-row', rowsByGroup[targetGroup]);
     }
   });
 
@@ -101,7 +113,7 @@ function decorateMega(li) {
 function setupDropdown(li) {
   const submenu = li.querySelector(':scope > ul');
   const heading = li.querySelector(':scope > p');
-  const parentLink = li.querySelector(':scope > p > a');
+  const parentLink = li.querySelector(':scope > p a[href]');
   let toggleBtn = null;
   let closeTimer = null;
 
@@ -331,13 +343,9 @@ async function initAuth(nav, tools) {
   const logoutLabel = getDefaultAuthLabel('logout');
 
   const loginCandidate = tools.querySelector('a[href*="login" i], a[data-auth-link]');
-  const shouldCreateLink = !loginCandidate;
-
-  const desktopLink = loginCandidate || document.createElement('a');
-  if (shouldCreateLink) {
-    desktopLink.href = getLoginUrl();
-    desktopLink.className = 'button nav-auth-link nav-auth-desktop';
-    tools.append(desktopLink);
+  const desktopLink = loginCandidate;
+  if (!desktopLink) {
+    return null;
   }
 
   desktopLink.dataset.authLink = 'true';
@@ -547,6 +555,53 @@ export default async function decorate(block) {
       while (extra.firstElementChild) tools.append(extra.firstElementChild);
       extra.remove();
     });
+  }
+
+  const brand = nav.querySelector('.nav-brand');
+  const brandActions = brand?.querySelector(':scope > .default-content-wrapper > ul');
+  const toolsWrapper = tools?.querySelector(':scope > .default-content-wrapper');
+  const toolList = toolsWrapper?.querySelector(':scope > ul');
+  if (brandActions && toolList) {
+    const ctaLis = [...brandActions.children].filter((li) => li.tagName === 'LI');
+    ctaLis.reverse().forEach((li) => {
+      const link = li.querySelector('a[href]');
+      if (link) {
+        const href = (link.getAttribute('href') || '').toLowerCase();
+        const isPrimary = href.includes('request-a-demo');
+        li.classList.add(isPrimary ? 'nav-cta-primary-item' : 'nav-cta-secondary-item');
+        link.classList.add('nav-cta-link', isPrimary ? 'nav-cta-primary' : 'nav-cta-secondary');
+      }
+      toolList.prepend(li);
+    });
+  }
+
+  if (toolList) {
+    [...toolList.children].forEach((li) => {
+      if (li.classList.contains('nav-cta-primary-item') || li.classList.contains('nav-cta-secondary-item')) {
+        return;
+      }
+      li.classList.add('nav-utility-item');
+    });
+  }
+
+  if (toolsWrapper && toolList) {
+    const ctaList = document.createElement('ul');
+    ctaList.className = 'nav-tools-cta-list';
+    const utilityList = document.createElement('ul');
+    utilityList.className = 'nav-tools-utility-list';
+
+    [...toolList.children].forEach((li) => {
+      if (li.classList.contains('nav-cta-primary-item') || li.classList.contains('nav-cta-secondary-item')) {
+        ctaList.append(li);
+      } else {
+        utilityList.append(li);
+      }
+    });
+
+    toolList.remove();
+    if (ctaList.children.length) toolsWrapper.append(ctaList);
+    if (utilityList.children.length) toolsWrapper.append(utilityList);
+    tools.classList.add('nav-tools-split');
   }
 
   nav.querySelector('.nav-brand .button')?.classList.remove('button');
