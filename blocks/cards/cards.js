@@ -1,4 +1,4 @@
-import { createOptimizedPicture, decorateIcons, toClassName } from '../../scripts/aem.js';
+import { createOptimizedPicture, decorateIcons } from '../../scripts/aem.js';
 import {
   createTag,
   fetchQueryIndexAll,
@@ -8,25 +8,16 @@ import {
   isUE,
 } from '../../scripts/shared.js';
 
-function iconSlugFromPath(path) {
-  const norm = normalizePath(path);
-  const last = norm.split('/').filter(Boolean).pop();
-  return last ? toClassName(last) : 'link';
-}
-
 function buildLinksCard(article) {
   const href = normalizePath(article.path);
   const link = createTag('a', { href, class: 'cards-card-link' });
-
-  const icon = createTag('span', { class: 'cards-card-link-icon', 'aria-hidden': 'true' });
-  icon.append(createTag('span', { class: `icon icon-${iconSlugFromPath(article.path)}` }));
 
   const body = createTag('div', { class: 'cards-card-body' });
   body.append(createTag('p', {}, createTag('strong', {}, article.title || href)));
   if (article.description) {
     body.append(createTag('p', {}, article.description));
   }
-  link.append(icon, body);
+  link.append(body);
 
   return createTag('li', {}, link);
 }

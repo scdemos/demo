@@ -338,7 +338,7 @@
 }
 
 /* ==========================================================================
-   Links variant — product nav grid (icon + label + chevron)
+   Links variant — product nav grid
    ========================================================================== */
 
 /* stylelint-disable no-descending-specificity -- variant section overrides default/bento/featured */
@@ -356,11 +356,8 @@
 
 @media (width >= 900px) {
   .cards.links > ul {
-    grid-template-columns: repeat(2, minmax(0, 519px));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-    max-width: calc(519px * 2 + 1rem);
-    margin-inline: auto;
-    justify-content: center;
   }
 }
 
@@ -385,47 +382,9 @@
   min-height: 64px;
   padding: 8px 15px;
   box-sizing: border-box;
-  border: 2px solid #d6d1ca;
-  border-radius: 10px;
-  background-color: var(--background-color);
-  position: relative;
-  box-shadow: none;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius-sm);
   text-decoration: none;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.cards.links .cards-card-link:hover {
-  box-shadow: 0 4px 14px rgb(50 62 72 / 8%);
-  border-color: #c4bfb6;
-}
-
-.cards.links .cards-card-link:focus-visible {
-  outline: 2px solid var(--color-orange);
-  outline-offset: 2px;
-}
-
-.cards.links .cards-card-link-icon {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-}
-
-.cards.links .cards-card-link-icon .icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  color: light-dark(var(--color-graphite), var(--color-linen));
-}
-
-.cards.links .cards-card-link-icon .icon img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  object-fit: contain;
 }
 
 .cards.links .cards-card-body {
@@ -451,22 +410,6 @@
   font-weight: 900;
   color: var(--color-graphite);
   line-height: 1.25;
-}
-
-.cards.links .cards-card-body a::after {
-  content: none;
-}
-
-/* Right chevron */
-.cards.links .cards-card-link::after {
-  content: '';
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  margin-left: auto;
-  border-right: 2px solid var(--color-graphite-light);
-  border-bottom: 2px solid var(--color-graphite-light);
-  transform: rotate(-45deg);
 }
 
 /* stylelint-enable no-descending-specificity */
