@@ -200,6 +200,7 @@ export function resolveArticlesFromIndex(authoredLinks, indexRows) {
       path: norm,
       title: row?.title?.trim() || linkTitle || fallbackTitle,
       description: row?.description?.trim() || '',
+      image: row?.image?.trim() || '',
       date: row?.date || row?.publisheddate || row?.lastModified,
     };
   });
