@@ -1,0 +1,76 @@
+{
+  "folders": [
+    {
+      "Name": "2024 Archive",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/2024 Archive",
+      "TimeLastModified": "2024-12-15T09:00:00Z"
+    },
+    {
+      "Name": "Design Assets",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Design Assets",
+      "TimeLastModified": "2025-01-20T11:30:00Z"
+    }
+  ],
+  "files": [
+    {
+      "Name": "Q1_2025_Strategy_Deck.pptx",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Q1_2025_Strategy_Deck.pptx",
+      "TimeLastModified": "2025-03-01T14:22:00Z",
+      "Length": "5242880"
+    },
+    {
+      "Name": "Annual_Report_2024.pdf",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Annual_Report_2024.pdf",
+      "TimeLastModified": "2025-01-15T10:30:00Z",
+      "Length": "3145728"
+    },
+    {
+      "Name": "Budget_FY2025.xlsx",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Budget_FY2025.xlsx",
+      "TimeLastModified": "2025-02-10T08:45:00Z",
+      "Length": "1048576"
+    },
+    {
+      "Name": "Team_Roster.docx",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Team_Roster.docx",
+      "TimeLastModified": "2025-04-02T16:00:00Z",
+      "Length": "204800"
+    },
+    {
+      "Name": "Brand_Guidelines_v3.pdf",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Brand_Guidelines_v3.pdf",
+      "TimeLastModified": "2025-02-28T13:15:00Z",
+      "Length": "8388608"
+    },
+    {
+      "Name": "Project_Timeline.xlsx",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/Project_Timeline.xlsx",
+      "TimeLastModified": "2025-04-18T09:30:00Z",
+      "Length": "512000"
+    },
+    {
+      "Name": "onboarding-checklist.md",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/onboarding-checklist.md",
+      "TimeLastModified": "2025-03-12T11:00:00Z",
+      "Length": "10240"
+    },
+    {
+      "Name": "logo-primary.svg",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/logo-primary.svg",
+      "TimeLastModified": "2024-11-05T14:00:00Z",
+      "Length": "25600"
+    },
+    {
+      "Name": "product-demo-recording.mp4",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/product-demo-recording.mp4",
+      "TimeLastModified": "2025-04-01T10:00:00Z",
+      "Length": "157286400"
+    },
+    {
+      "Name": "source-assets.zip",
+      "ServerRelativeUrl": "/sites/weIntranet/Shared Documents/source-assets.zip",
+      "TimeLastModified": "2025-01-30T16:45:00Z",
+      "Length": "26214400"
+    }
+  ]
+}

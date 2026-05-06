@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{properties.elements.title.value}}</title>
+    <meta name="template" content="article">
+    <meta name="author" content="{{properties.elements.author.value}}">
+    <meta name="date" content="{{properties.elements.publicationDate.value}}">
+    <meta name="description" content="{{properties.elements.summary.value}}">
+    <meta name="image" content="{{{properties.elements.image.value}}}">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <div class="hero">
+          <div>
+            <div>
+              <picture>
+                <img src="{{{properties.elements.image.value}}}" alt="{{properties.elements.title.value}}">
+              </picture>
+            </div>
+          </div>
+          <div>
+            <div>
+              <h1>{{properties.elements.title.value}}</h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p>{{{properties.elements.summary.value}}}</p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>
