@@ -69,7 +69,8 @@ function parseSharePointUrl(href) {
     const siteMatch = u.pathname.match(/^(\/sites\/[^/]+)/i);
     if (!siteMatch) return null;
     const siteUrl = `${u.origin}${siteMatch[1]}`;
-    let folderPath = u.pathname.replace(/\/Forms\/[^/]*$/i, '');
+    // Decode first so encodeURIComponent later doesn't double-encode (e.g. %20 → %2520)
+    let folderPath = decodeURIComponent(u.pathname).replace(/\/Forms\/[^/]*$/i, '');
     // RootFolder query param overrides when navigating inside a library
     const rootFolder = u.searchParams.get('RootFolder');
     if (rootFolder) folderPath = decodeURIComponent(rootFolder);
@@ -84,8 +85,9 @@ function parseSharePointUrl(href) {
 // ---------------------------------------------------------------------------
 
 async function fetchSharePointItems(siteUrl, folderPath) {
-  const ep = encodeURIComponent(folderPath);
-  const apiBase = `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${ep}')`;
+  // Encode each path segment individually so slashes are preserved (not encoded as %2F)
+  const encodedPath = folderPath.split('/').map((s) => encodeURIComponent(s)).join('/');
+  const apiBase = `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${encodedPath}')`;
   const opts = {
     credentials: 'include',
     headers: { Accept: 'application/json;odata=nometadata' },
@@ -256,15 +258,18 @@ export default async function decorate(block) {
   } catch (err) {
     list.remove();
     statusEl.textContent = '';
-    const isAuth = err.isAuthError;
+    // TypeError = network/CORS failure; isAuthError = 401/403 from SharePoint
+    const msg = err.isAuthError
+      ? 'Sign in to SharePoint to view these documents.'
+      : 'Unable to reach SharePoint — open it in a new tab to authenticate, then reload.';
     statusEl.append(
-      isAuth ? 'Sign in to view these documents. ' : 'Unable to load documents. ',
+      `${msg} `,
       createTag('a', {
         class: 'button',
         href: rawHref,
         target: '_blank',
         rel: 'noopener noreferrer',
-      }, isAuth ? 'Sign in to SharePoint' : 'Open in SharePoint'),
+      }, 'Open in SharePoint'),
     );
   } finally {
     block.removeAttribute('aria-busy');
