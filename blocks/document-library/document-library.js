@@ -1,19 +1,20 @@
 /**
- * Document Library block — displays files/folders from a SharePoint document library.
- * Uses MSAL.js for silent SSO; authenticated users see files without any prompt.
+ * Document Library block — POSTs to an Azure Logic App to list SharePoint files.
  *
- * Authoring (key-value rows):
- *   | document-library |                                                         |
- *   | Folder    | https://adobe.sharepoint.com/sites/site/Shared%20Docs        |
- *   | Title     | Team Documentation                                             |
- *   | Client ID | <Azure AD application (client) ID>                            |
- *   | Tenant    | adobe.com  (optional, defaults to "common")                   |
+ * Authoring (key-value row):
+ *   | document-library |                  |
+ *   | Folder           | Shared Documents |
  *
- * Local dev: point Folder at a JSON file
- *   { files: [{Name, ServerRelativeUrl, TimeLastModified, Length}], folders:[…] }
+ * The Logic App receives: { "folder": "Shared Documents" }
+ * Expected response (any of these shapes are handled):
+ *   - Array of items
+ *   - { value: [...items] }
+ *   - { files: [...], folders: [...] }
  */
 
 import { createTag } from '../../scripts/shared.js';
+
+const ENDPOINT = 'https://defaultfa7b1b5a7b34438794aed2c178dece.e1.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/7cf1dd3c93b243bda49882aaf73aa9da/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=QCJox8uNJ8MQGi9Ma-djzuk33tJXJ6NeTflW7gPboSg';
 
 // ---------------------------------------------------------------------------
 // File-type helpers
@@ -36,8 +37,8 @@ function getFileType(name) {
   return Object.keys(FILE_TYPES).find((t) => FILE_TYPES[t].includes(ext)) ?? 'generic';
 }
 
-function formatSize(bytesStr) {
-  const n = Number(bytesStr);
+function formatSize(bytes) {
+  const n = Number(bytes);
   if (!n || Number.isNaN(n)) return '—';
   if (n < 1024) return `${n} B`;
   if (n < 1_048_576) return `${(n / 1024).toFixed(1)} KB`;
@@ -52,140 +53,47 @@ function formatModified(iso) {
 }
 
 // ---------------------------------------------------------------------------
-// SharePoint URL parser
+// Response normalizer — handles common Logic App / SharePoint return shapes
 // ---------------------------------------------------------------------------
 
-function parseSharePointUrl(href) {
-  try {
-    const u = new URL(href);
-    if (!u.hostname.includes('sharepoint.com')) return null;
-    const siteMatch = u.pathname.match(/^(\/sites\/[^/]+)/i);
-    if (!siteMatch) return null;
-    const siteUrl = `${u.origin}${siteMatch[1]}`;
-    let folderPath = decodeURIComponent(u.pathname).replace(/\/Forms\/[^/]*$/i, '');
-    const rootFolder = u.searchParams.get('RootFolder');
-    if (rootFolder) folderPath = decodeURIComponent(rootFolder);
-    return { siteUrl, folderPath, origin: u.origin };
-  } catch {
-    return null;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// MSAL loader
-// ---------------------------------------------------------------------------
-
-const MSAL_CDN = 'https://alcdn.msauth.net/browser/3.26.1/js/msal-browser.min.js';
-const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
-const GRAPH_SCOPES = ['Files.Read.All', 'Sites.Read.All'];
-
-let msalLoadPromise = null;
-
-function loadMsal() {
-  if (typeof window.msal !== 'undefined') return Promise.resolve(window.msal);
-  if (msalLoadPromise) return msalLoadPromise;
-  msalLoadPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = MSAL_CDN;
-    s.async = true;
-    s.onload = () => resolve(window.msal);
-    s.onerror = () => reject(new Error('MSAL failed to load'));
-    document.head.append(s);
-  });
-  return msalLoadPromise;
-}
-
-async function createMsalClient(clientId, tenant) {
-  const msalLib = await loadMsal();
-  const pca = new msalLib.PublicClientApplication({
-    auth: {
-      clientId,
-      authority: `https://login.microsoftonline.com/${tenant || 'common'}`,
-      redirectUri: `${window.location.origin}${window.location.pathname}`,
-    },
-    cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: false },
-    system: { loggerOptions: { logLevel: 3 } },
-  });
-  await pca.initialize();
-  return pca;
-}
-
-// Attempt silent SSO — works without any user interaction if already signed in to Microsoft.
-async function acquireTokenSilently(pca) {
-  const scopes = GRAPH_SCOPES;
-  const accounts = pca.getAllAccounts();
-
-  // Try cached account first (fastest path)
-  if (accounts.length) {
-    try {
-      const r = await pca.acquireTokenSilent({ scopes, account: accounts[0] });
-      return r.accessToken;
-    } catch { /* fall through */ }
-  }
-
-  // Try SSO silent via existing browser session (Office 365, Outlook, etc.)
-  try {
-    const r = await pca.ssoSilent({ scopes });
-    return r.accessToken;
-  } catch { /* fall through */ }
-
-  return null;
-}
-
-// ---------------------------------------------------------------------------
-// Microsoft Graph API
-// ---------------------------------------------------------------------------
-
-async function fetchGraphItems(token, sp) {
-  const hostname = sp.origin.replace('https://', '');
-  const siteMatch = sp.folderPath.match(/^(\/sites\/[^/]+)/i);
-  if (!siteMatch) throw new Error('Cannot determine SharePoint site path');
-
-  const sitePath = siteMatch[1];
-  const afterSite = sp.folderPath.slice(sitePath.length);
-  const subfolderPath = afterSite.split('/').filter(Boolean).slice(1).join('/');
-
-  const siteRef = encodeURIComponent(`${hostname}:${sitePath}:`);
-  const driveBase = `${GRAPH_BASE}/sites/${siteRef}/drive`;
-  const childrenUrl = subfolderPath
-    ? `${driveBase}/root:/${encodeURI(subfolderPath)}:/children`
-    : `${driveBase}/root/children`;
-
-  const res = await fetch(
-    `${childrenUrl}?$select=name,size,lastModifiedDateTime,webUrl,file,folder&$top=5000&$orderby=name`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
-
-  if (res.status === 401) {
-    const err = new Error('auth'); err.isAuthError = true; throw err;
-  }
-  if (!res.ok) throw new Error(`Graph error: ${res.status}`);
-
-  const { value: items = [] } = await res.json();
+function normalizeItem(raw) {
+  // Prefer LinkingUri (fully encoded absolute URL) for clickable/download links
+  const url = raw.LinkingUri || raw.LinkingUrl || raw.webUrl || raw.url || raw.link || raw.FileRef
+    || (raw.ServerRelativeUrl ? `https://adobe.sharepoint.com${raw.ServerRelativeUrl}` : '#');
   return {
-    files: items.filter((i) => i.file).map((i) => ({
-      Name: i.name,
-      Length: String(i.size ?? 0),
-      TimeLastModified: i.lastModifiedDateTime,
-      ServerRelativeUrl: i.webUrl,
-    })),
-    folders: items.filter((i) => i.folder).map((i) => ({
-      Name: i.name,
-      TimeLastModified: i.lastModifiedDateTime,
-      ServerRelativeUrl: i.webUrl,
-    })),
+    Name: raw.Name || raw.name || raw.FileLeafRef || '',
+    Length: String(raw.Length || raw.size || raw.File_x0020_Size || raw.fileSize || 0),
+    TimeLastModified: raw.TimeLastModified || raw.lastModifiedDateTime || raw.Modified || raw.modified || '',
+    ServerRelativeUrl: url,
+    isFolder: !!(raw.folder || raw.isFolder || raw.FSObjType === 1 || raw.type === 'folder'),
   };
 }
 
-// ---------------------------------------------------------------------------
-// Direct JSON (local dev / mock)
-// ---------------------------------------------------------------------------
+function parseResponse(raw) {
+  let items = [];
+  let folderItems = [];
 
-async function fetchJsonItems(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Fetch error: ${res.status}`);
-  const json = await res.json();
-  return { files: json.files ?? json.value ?? [], folders: json.folders ?? [] };
+  // SharePoint OData REST format: { d: { results: [...] } }
+  if (raw.d && Array.isArray(raw.d.results)) {
+    items = raw.d.results;
+  } else if (Array.isArray(raw)) {
+    items = raw;
+  } else if (raw.files || raw.folders) {
+    items = raw.files || [];
+    folderItems = raw.folders || [];
+  } else if (Array.isArray(raw.value)) {
+    items = raw.value;
+  } else if (raw.body && Array.isArray(raw.body.value)) {
+    items = raw.body.value;
+  }
+
+  const normalized = items.map(normalizeItem);
+  const normalizedFolders = folderItems.map((f) => ({ ...normalizeItem(f), isFolder: true }));
+
+  return {
+    files: normalized.filter((i) => !i.isFolder),
+    folders: [...normalizedFolders, ...normalized.filter((i) => i.isFolder)],
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -198,14 +106,8 @@ function buildIcon(type, ext) {
   return el;
 }
 
-function resolveUrl(serverRelativeUrl, origin) {
-  if (!serverRelativeUrl) return '#';
-  if (serverRelativeUrl.startsWith('http')) return serverRelativeUrl;
-  return `${origin}${serverRelativeUrl}`;
-}
-
-function buildFolderRow(folder, origin) {
-  const url = resolveUrl(folder.ServerRelativeUrl, origin);
+function buildFolderRow(folder) {
+  const url = folder.ServerRelativeUrl;
   const li = createTag('li', { class: 'dl-item dl-item-folder' });
   li.append(
     buildIcon('folder', ''),
@@ -217,8 +119,8 @@ function buildFolderRow(folder, origin) {
   return li;
 }
 
-function buildFileRow(file, origin) {
-  const url = resolveUrl(file.ServerRelativeUrl, origin);
+function buildFileRow(file) {
+  const url = file.ServerRelativeUrl;
   const ext = file.Name.includes('.') ? file.Name.split('.').pop() : '';
   const li = createTag('li', { class: 'dl-item dl-item-file' });
   li.append(
@@ -259,9 +161,7 @@ function readConfig(block) {
     const cells = [...row.querySelectorAll(':scope > div')];
     if (cells.length === 2) {
       const key = cells[0].textContent.trim().toLowerCase().replace(/\s+/g, '-');
-      config[key] = cells[1];
-    } else if (cells.length === 1 && !config.folder) {
-      config.folder = cells[0];
+      config[key] = cells[1].textContent.trim();
     }
   });
   return config;
@@ -273,139 +173,39 @@ function readConfig(block) {
 
 export default async function decorate(block) {
   const config = readConfig(block);
-  const folderCell = config.folder ?? config['folder-url'];
-  if (!folderCell) return;
+  const folder = config.folder || 'Shared Documents';
 
-  const anchor = folderCell.querySelector('a[href]');
-  const rawHref = anchor ? anchor.href : folderCell.textContent.trim();
-  const titleText = config.title?.textContent?.trim() ?? '';
-  const clientId = config['client-id']?.textContent?.trim() ?? '';
-  const tenant = config.tenant?.textContent?.trim() || 'common';
-
-  const sp = parseSharePointUrl(rawHref);
-  const origin = sp ? sp.origin : window.location.origin;
-
-  // ── Shell ──────────────────────────────────────────────────────────────────
   block.textContent = '';
   block.setAttribute('aria-busy', 'true');
-
-  const header = createTag('div', { class: 'dl-header' });
-  if (titleText) header.append(createTag('h3', { class: 'dl-title' }, titleText));
 
   const list = createTag('ul', { class: 'dl-list', role: 'list' });
   const statusEl = createTag('p', { class: 'dl-status' }, 'Loading…');
 
-  block.append(header, buildColHeaders(), list, statusEl);
+  block.append(buildColHeaders(), list, statusEl);
 
-  // Populate list with items, remove status placeholder
-  function renderItems(data) {
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    });
+
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+    const raw = await res.json();
+    const { files, folders } = parseResponse(raw);
+
     statusEl.remove();
-    const { files = [], folders = [] } = data;
+
     if (!files.length && !folders.length) {
       block.append(createTag('p', { class: 'dl-status' }, 'No documents found.'));
-      return;
+    } else {
+      folders.forEach((f) => list.append(buildFolderRow(f)));
+      files.forEach((f) => list.append(buildFileRow(f)));
     }
-    folders.forEach((f) => list.append(buildFolderRow(f, origin)));
-    files.forEach((f) => list.append(buildFileRow(f, origin)));
-  }
-
-  // Render a "Sign in with Microsoft" button; on click use MSAL popup (redirect fallback)
-  function showSignIn(pca, message) {
-    list.remove();
-    statusEl.textContent = '';
-    if (message) statusEl.append(`${message} `);
-    const btn = createTag('button', { class: 'dl-signin button', type: 'button' }, 'Sign in with Microsoft');
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      try {
-        const result = await pca.acquireTokenPopup({ scopes: GRAPH_SCOPES });
-        const data = await fetchGraphItems(result.accessToken, sp);
-        statusEl.remove();
-        block.append(buildColHeaders(), list);
-        block.removeAttribute('aria-busy');
-        renderItems(data);
-      } catch (popupErr) {
-        if (popupErr.errorCode === 'popup_window_error') {
-          // Popup blocked — fall back to redirect
-          await pca.acquireTokenRedirect({ scopes: GRAPH_SCOPES });
-        } else {
-          btn.disabled = false;
-          statusEl.textContent = 'Sign-in failed. Please try again.';
-        }
-      }
-    });
-    statusEl.append(btn);
-    block.removeAttribute('aria-busy');
-  }
-
-  // ── No clientId: direct fetch (JSON mock or unauthenticated REST) ──────────
-  if (!clientId) {
-    try {
-      const data = sp
-        ? await (async () => {
-          const encodedPath = sp.folderPath.split('/').map((s) => encodeURIComponent(s)).join('/');
-          const apiBase = `${sp.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${encodedPath}')`;
-          const opts = { credentials: 'include', headers: { Accept: 'application/json;odata=nometadata' } };
-          const sel = '$select=Name,TimeLastModified,Length,ServerRelativeUrl&$orderby=Name';
-          const [fRes, dRes] = await Promise.all([
-            fetch(`${apiBase}/Files?${sel}&$top=5000`, opts),
-            fetch(`${apiBase}/Folders?${sel}&$filter=Name ne 'Forms'&$top=500`, opts),
-          ]);
-          if (!fRes.ok) { const e = new Error('auth'); e.isAuthError = fRes.status === 401 || fRes.status === 403; throw e; }
-          const [fj, dj] = await Promise.all([fRes.json(), dRes.ok ? dRes.json() : Promise.resolve({ value: [] })]);
-          return { files: fj.value ?? [], folders: dj.value ?? [] };
-        })()
-        : await fetchJsonItems(rawHref);
-      renderItems(data);
-    } catch (err) {
-      list.remove();
-      statusEl.textContent = '';
-      const msg = err.isAuthError
-        ? 'Access denied. Add a "Client ID" config row to enable SSO, or '
-        : 'Unable to load documents. ';
-      statusEl.append(msg, createTag('a', { class: 'button', href: rawHref, target: '_blank', rel: 'noopener noreferrer' }, 'Open in SharePoint'));
-    }
-    block.removeAttribute('aria-busy');
-    return;
-  }
-
-  // ── MSAL SSO path ──────────────────────────────────────────────────────────
-  let pca;
-  try {
-    pca = await createMsalClient(clientId, tenant);
   } catch {
-    statusEl.textContent = 'Unable to initialize authentication. Check the Client ID config.';
-    block.removeAttribute('aria-busy');
-    return;
+    statusEl.textContent = 'Unable to load documents. Please try again later.';
   }
 
-  // Handle redirect callback (user returning from Microsoft login page)
-  let redirectToken = null;
-  try {
-    const redirectResult = await pca.handleRedirectPromise();
-    redirectToken = redirectResult?.accessToken ?? null;
-  } catch { /* ignore */ }
-
-  // Try silent SSO (uses existing Microsoft session — no UI needed)
-  const token = redirectToken ?? await acquireTokenSilently(pca);
-
-  if (token) {
-    try {
-      const data = await (sp ? fetchGraphItems(token, sp) : fetchJsonItems(rawHref));
-      renderItems(data);
-    } catch (err) {
-      if (err.isAuthError) {
-        showSignIn(pca, 'Session expired.');
-      } else {
-        list.remove();
-        statusEl.textContent = 'Files loaded but an error occurred. ';
-        statusEl.append(createTag('a', { href: rawHref, target: '_blank', rel: 'noopener noreferrer' }, 'Open in SharePoint'));
-      }
-    }
-    block.removeAttribute('aria-busy');
-    return;
-  }
-
-  // Silent SSO failed — show sign-in button
-  showSignIn(pca);
+  block.removeAttribute('aria-busy');
 }
