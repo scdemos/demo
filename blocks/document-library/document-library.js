@@ -200,8 +200,9 @@ export default async function decorate(block) {
     if (!files.length && !folders.length) {
       block.append(createTag('p', { class: 'dl-status' }, 'No documents found.'));
     } else {
-      folders.forEach((f) => list.append(buildFolderRow(f)));
-      files.forEach((f) => list.append(buildFileRow(f)));
+      const byModified = (a, b) => new Date(b.TimeLastModified) - new Date(a.TimeLastModified);
+      folders.sort(byModified).forEach((f) => list.append(buildFolderRow(f)));
+      files.sort(byModified).forEach((f) => list.append(buildFileRow(f)));
     }
   } catch {
     statusEl.textContent = 'Unable to load documents. Please try again later.';
