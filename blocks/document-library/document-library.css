@@ -1,0 +1,218 @@
+/* ==========================================================================
+   Document Library block
+   ========================================================================== */
+
+/* Loading state */
+.document-library[aria-busy='true'] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.dl-header {
+  margin-bottom: var(--space-m);
+}
+
+.dl-title {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-family);
+  font-size: var(--heading-font-size-xs);
+  font-weight: 700;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* ── Grid layout (shared by col-headers and list items) ─────────────────── */
+
+.dl-col-headers,
+.dl-item {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  column-gap: var(--space-m);
+  align-items: center;
+  padding: var(--space-s);
+}
+
+/* ── Column headers ──────────────────────────────────────────────────────── */
+
+.dl-col-headers {
+  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 12%));
+  padding-bottom: var(--space-s);
+  margin-bottom: var(--space-xs);
+}
+
+.dl-col {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: light-dark(var(--color-gray-500), var(--color-muted));
+  white-space: nowrap;
+}
+
+/* ── File list ───────────────────────────────────────────────────────────── */
+
+.dl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dl-item {
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.dl-item + .dl-item {
+  border-top: 1px solid light-dark(var(--color-gray-100), rgb(245 242 237 / 6%));
+}
+
+.dl-item:hover {
+  background: light-dark(rgb(0 0 0 / 4%), rgb(255 255 255 / 5%));
+}
+
+/* ── File-type icon ──────────────────────────────────────────────────────── */
+
+.dl-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #fff;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.dl-icon::after {
+  content: attr(data-ext);
+}
+
+.dl-icon-pdf     { background: #e53935; }
+.dl-icon-word    { background: #1565c0; }
+.dl-icon-excel   { background: #2e7d32; }
+.dl-icon-ppt     { background: #e64a19; }
+.dl-icon-image   { background: #6a1b9a; }
+.dl-icon-video   { background: #00695c; }
+.dl-icon-audio   { background: #ad1457; }
+.dl-icon-archive { background: #4e342e; }
+.dl-icon-code    { background: #263238; }
+.dl-icon-generic { background: var(--color-gray-500); }
+
+/* Folder: amber tab-shaped icon */
+.dl-icon-folder {
+  background: var(--color-gold);
+  border-radius: 2px 8px 8px;
+  position: relative;
+}
+
+.dl-icon-folder::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 14px;
+  height: 5px;
+  background: var(--color-gold);
+  border-radius: 3px 4px 0 0;
+}
+
+/* ── Name column ─────────────────────────────────────────────────────────── */
+
+.dl-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--body-font-size-s);
+  color: light-dark(var(--color-ink), var(--color-parchment));
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.dl-name:hover {
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  text-decoration: underline;
+}
+
+/* ── Date / size / download — hidden on mobile ───────────────────────────── */
+
+.dl-date,
+.dl-size,
+.dl-download,
+.dl-col-date,
+.dl-col-size,
+.dl-col-dl {
+  display: none;
+}
+
+/* ── Status / error ──────────────────────────────────────────────────────── */
+
+.dl-status {
+  padding: var(--space-l) var(--space-s);
+  color: light-dark(var(--color-gray-600), var(--color-muted));
+  font-size: var(--body-font-size-s);
+}
+
+/* ── Tablet (600 px+): reveal date + size ────────────────────────────────── */
+
+@media (width >= 600px) {
+  .dl-col-headers,
+  .dl-item {
+    grid-template-columns: 40px 1fr 120px 72px;
+  }
+
+  .dl-date,
+  .dl-size,
+  .dl-col-date,
+  .dl-col-size {
+    display: block;
+  }
+
+  .dl-date,
+  .dl-size {
+    font-size: var(--body-font-size-xs);
+    color: light-dark(var(--color-gray-600), var(--color-muted));
+    white-space: nowrap;
+  }
+}
+
+/* ── Desktop (900 px+): reveal download button ───────────────────────────── */
+
+@media (width >= 900px) {
+  .dl-col-headers,
+  .dl-item {
+    grid-template-columns: 40px 1fr 140px 80px 36px;
+    padding-inline: var(--space-m);
+  }
+
+  .dl-download,
+  .dl-col-dl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dl-download {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 15px;
+    color: light-dark(var(--color-gray-500), var(--color-muted));
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .dl-item-folder .dl-download {
+    visibility: hidden;
+  }
+
+  .dl-download:hover {
+    background: light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+    color: light-dark(var(--color-rust), var(--color-rust-bright));
+  }
+}
