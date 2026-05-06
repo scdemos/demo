@@ -1,17 +1,24 @@
 /**
- * Document Library block.
+ * Document Library block — displays files from a SharePoint document library.
  *
- * Authoring:
- *   | document-library                                                          |
- *   | Folder  | https://adobe.sharepoint.com/sites/siteName/Shared%20Documents |
- *   | Title   | Team Documentation                                              |
+ * Authoring (key-value rows):
+ *   | document-library |                                                          |
+ *   | Folder           | https://adobe.sharepoint.com/sites/site/Shared%20Docs  |
+ *   | Title            | Team Documentation                                       |
+ *   | Client ID        | <Azure AD app client ID>                                 |
+ *   | Tenant           | adobe.com  (optional, defaults to "common")              |
  *
  * Single-row shorthand also accepted:
- *   | document-library                                                          |
- *   | https://adobe.sharepoint.com/sites/siteName/Shared%20Documents           |
+ *   | document-library                                                            |
+ *   | https://adobe.sharepoint.com/sites/site/Shared%20Documents                 |
  *
- * For local development, point Folder at a JSON file that matches
- * { files: [{Name, ServerRelativeUrl, TimeLastModified, Length}], folders: [...] }.
+ * When "Client ID" is supplied the block uses PKCE OAuth + Microsoft Graph API
+ * (works cross-origin, no CORS config needed on SharePoint).  Without it the
+ * block falls back to the SharePoint REST API with credentials:include, which
+ * only works if SharePoint has CORS configured for the requesting origin.
+ *
+ * Local dev: point "Folder" at a JSON file matching
+ * { files: [{Name, ServerRelativeUrl, TimeLastModified, Length}], folders:[…] }.
  */
 
 import { createTag } from '../../scripts/shared.js';
@@ -57,7 +64,7 @@ function formatModified(iso) {
 // ---------------------------------------------------------------------------
 
 /**
- * Decompose a SharePoint URL into siteUrl + folderPath.
+ * Decompose a SharePoint URL into { siteUrl, folderPath, origin }.
  * Returns null for non-SharePoint URLs (treated as direct JSON endpoints).
  * @param {string} href
  * @returns {{ siteUrl: string, folderPath: string, origin: string } | null}
@@ -69,9 +76,8 @@ function parseSharePointUrl(href) {
     const siteMatch = u.pathname.match(/^(\/sites\/[^/]+)/i);
     if (!siteMatch) return null;
     const siteUrl = `${u.origin}${siteMatch[1]}`;
-    // Decode first so encodeURIComponent later doesn't double-encode (e.g. %20 → %2520)
+    // Decode so encodeURIComponent later doesn't double-encode (%20 → %2520)
     let folderPath = decodeURIComponent(u.pathname).replace(/\/Forms\/[^/]*$/i, '');
-    // RootFolder query param overrides when navigating inside a library
     const rootFolder = u.searchParams.get('RootFolder');
     if (rootFolder) folderPath = decodeURIComponent(rootFolder);
     return { siteUrl, folderPath, origin: u.origin };
@@ -81,11 +87,157 @@ function parseSharePointUrl(href) {
 }
 
 // ---------------------------------------------------------------------------
-// Data fetching
+// PKCE / OAuth helpers
+// ---------------------------------------------------------------------------
+
+const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
+const AUTH_BASE = 'https://login.microsoftonline.com';
+const STORAGE_KEY = 'dl-oauth';
+
+function base64urlEncode(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  bytes.forEach((b) => { str += String.fromCharCode(b); });
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+async function generatePKCE() {
+  const verifier = base64urlEncode(crypto.getRandomValues(new Uint8Array(32)));
+  const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return { verifier, challenge: base64urlEncode(hash) };
+}
+
+function getStoredToken() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const { token, expiry } = JSON.parse(raw);
+    if (Date.now() >= expiry) { sessionStorage.removeItem(STORAGE_KEY); return null; }
+    return token;
+  } catch {
+    return null;
+  }
+}
+
+function storeToken(token, expiresIn) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+      token,
+      expiry: Date.now() + (expiresIn - 60) * 1000,
+    }));
+  } catch { /* ignore quota errors */ }
+}
+
+async function initiateOAuth(clientId, tenant) {
+  const { verifier, challenge } = await generatePKCE();
+  const state = base64urlEncode(crypto.getRandomValues(new Uint8Array(16)));
+  const redirectUri = `${window.location.origin}${window.location.pathname}`;
+  try {
+    sessionStorage.setItem(`${STORAGE_KEY}-pkce`, JSON.stringify({ verifier, state, redirectUri }));
+  } catch { /* ignore */ }
+  const params = new URLSearchParams({
+    client_id: clientId,
+    response_type: 'code',
+    redirect_uri: redirectUri,
+    scope: 'openid Files.Read.All Sites.Read.All',
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    state,
+  });
+  window.location.href = `${AUTH_BASE}/${tenant}/oauth2/v2.0/authorize?${params}`;
+}
+
+async function handleOAuthCallback(clientId) {
+  const u = new URL(window.location.href);
+  const code = u.searchParams.get('code');
+  const returnedState = u.searchParams.get('state');
+  if (!code || !returnedState) return null;
+
+  let pkce;
+  try { pkce = JSON.parse(sessionStorage.getItem(`${STORAGE_KEY}-pkce`) ?? 'null'); } catch { /* ignore */ }
+  if (!pkce || pkce.state !== returnedState) return null;
+
+  // Clean code/state from URL without triggering a navigation
+  u.searchParams.delete('code');
+  u.searchParams.delete('state');
+  u.searchParams.delete('session_state');
+  window.history.replaceState({}, '', u.toString());
+  sessionStorage.removeItem(`${STORAGE_KEY}-pkce`);
+
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: clientId,
+    code,
+    redirect_uri: pkce.redirectUri,
+    code_verifier: pkce.verifier,
+  });
+
+  const res = await fetch(`${AUTH_BASE}/common/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+
+  if (!res.ok) return null;
+  const json = await res.json();
+  storeToken(json.access_token, json.expires_in ?? 3600);
+  return json.access_token;
+}
+
+// ---------------------------------------------------------------------------
+// Graph API fetching
+// ---------------------------------------------------------------------------
+
+async function fetchGraphItems(token, sp) {
+  // Build the site reference: "hostname:/sites/name:"
+  const hostname = sp.origin.replace('https://', '');
+  const siteMatch = sp.folderPath.match(/^(\/sites\/[^/]+)/i);
+  if (!siteMatch) throw new Error('Cannot determine SharePoint site path');
+
+  const sitePath = siteMatch[1];
+  // Subfolder path = everything after /sites/{name}/{library}/
+  const afterSite = sp.folderPath.slice(sitePath.length);
+  const subfolderPath = afterSite.split('/').filter(Boolean).slice(1).join('/');
+
+  const siteRef = encodeURIComponent(`${hostname}:${sitePath}:`);
+  const driveBase = `${GRAPH_BASE}/sites/${siteRef}/drive`;
+  const childrenUrl = subfolderPath
+    ? `${driveBase}/root:/${encodeURI(subfolderPath)}:/children`
+    : `${driveBase}/root/children`;
+
+  const sel = '$select=name,size,lastModifiedDateTime,webUrl,file,folder';
+  const res = await fetch(`${childrenUrl}?${sel}&$top=5000&$orderby=name`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    sessionStorage.removeItem(STORAGE_KEY);
+    const err = new Error('auth'); err.isAuthError = true; throw err;
+  }
+  if (!res.ok) throw new Error(`Graph API error: ${res.status}`);
+
+  const { value: items = [] } = await res.json();
+  return {
+    files: items.filter((i) => i.file).map((i) => ({
+      Name: i.name,
+      Length: String(i.size ?? 0),
+      TimeLastModified: i.lastModifiedDateTime,
+      ServerRelativeUrl: i.webUrl,
+    })),
+    folders: items.filter((i) => i.folder).map((i) => ({
+      Name: i.name,
+      TimeLastModified: i.lastModifiedDateTime,
+      ServerRelativeUrl: i.webUrl,
+    })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// SharePoint REST API fetching (fallback when no client-id)
 // ---------------------------------------------------------------------------
 
 async function fetchSharePointItems(siteUrl, folderPath) {
-  // Encode each path segment individually so slashes are preserved (not encoded as %2F)
+  // Encode each segment individually — preserves slashes, avoids %2F
   const encodedPath = folderPath.split('/').map((s) => encodeURIComponent(s)).join('/');
   const apiBase = `${siteUrl}/_api/web/GetFolderByServerRelativeUrl('${encodedPath}')`;
   const opts = {
@@ -100,11 +252,9 @@ async function fetchSharePointItems(siteUrl, folderPath) {
   ]);
 
   if (fRes.status === 401 || fRes.status === 403) {
-    const err = new Error('auth');
-    err.isAuthError = true;
-    throw err;
+    const err = new Error('auth'); err.isAuthError = true; throw err;
   }
-  if (!fRes.ok) throw new Error(`SharePoint API error: ${fRes.status}`);
+  if (!fRes.ok) throw new Error(`SharePoint REST API error: ${fRes.status}`);
 
   const [filesJson, foldersJson] = await Promise.all([
     fRes.json(),
@@ -112,6 +262,10 @@ async function fetchSharePointItems(siteUrl, folderPath) {
   ]);
   return { files: filesJson.value ?? [], folders: foldersJson.value ?? [] };
 }
+
+// ---------------------------------------------------------------------------
+// Direct JSON endpoint (local dev / custom data source)
+// ---------------------------------------------------------------------------
 
 async function fetchJsonItems(url) {
   const res = await fetch(url);
@@ -141,12 +295,7 @@ function buildFolderRow(folder, origin) {
   const li = createTag('li', { class: 'dl-item dl-item-folder' });
   li.append(
     buildIcon('folder', ''),
-    createTag('a', {
-      class: 'dl-name',
-      href: url,
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    }, folder.Name),
+    createTag('a', { class: 'dl-name', href: url, target: '_blank', rel: 'noopener noreferrer' }, folder.Name),
     createTag('span', { class: 'dl-date' }, formatModified(folder.TimeLastModified)),
     createTag('span', { class: 'dl-size' }, '—'),
     createTag('span', { class: 'dl-download' }),
@@ -160,12 +309,7 @@ function buildFileRow(file, origin) {
   const li = createTag('li', { class: 'dl-item dl-item-file' });
   li.append(
     buildIcon(getFileType(file.Name), ext),
-    createTag('a', {
-      class: 'dl-name',
-      href: url,
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    }, file.Name),
+    createTag('a', { class: 'dl-name', href: url, target: '_blank', rel: 'noopener noreferrer' }, file.Name),
     createTag('span', { class: 'dl-date' }, formatModified(file.TimeLastModified)),
     createTag('span', { class: 'dl-size' }, formatSize(file.Length)),
     createTag('a', {
@@ -192,7 +336,7 @@ function buildColHeaders() {
 }
 
 // ---------------------------------------------------------------------------
-// Config parsing
+// Config reader
 // ---------------------------------------------------------------------------
 
 function readConfig(block) {
@@ -221,6 +365,8 @@ export default async function decorate(block) {
   const anchor = folderCell.querySelector('a[href]');
   const rawHref = anchor ? anchor.href : folderCell.textContent.trim();
   const titleText = config.title?.textContent?.trim() ?? '';
+  const clientId = config['client-id']?.textContent?.trim() ?? '';
+  const tenant = config.tenant?.textContent?.trim() || 'common';
 
   const sp = parseSharePointUrl(rawHref);
   const origin = sp ? sp.origin : window.location.origin;
@@ -230,20 +376,39 @@ export default async function decorate(block) {
 
   // ── Shell ──────────────────────────────────────────────────────────────
   const header = createTag('div', { class: 'dl-header' });
-  if (titleText) {
-    header.append(createTag('h3', { class: 'dl-title' }, titleText));
-  }
+  if (titleText) header.append(createTag('h3', { class: 'dl-title' }, titleText));
 
   const list = createTag('ul', { class: 'dl-list', role: 'list' });
   const statusEl = createTag('p', { class: 'dl-status' }, 'Loading documents…');
 
   block.append(header, buildColHeaders(), list, statusEl);
 
-  // ── Fetch & render ─────────────────────────────────────────────────────
+  // ── Auth + data fetching ───────────────────────────────────────────────
+  const showSignIn = (expired) => {
+    list.remove();
+    statusEl.textContent = '';
+    const btn = createTag('button', { class: 'dl-signin button', type: 'button' }, 'Sign in with Microsoft');
+    btn.addEventListener('click', () => initiateOAuth(clientId, tenant));
+    statusEl.append(expired ? 'Session expired. ' : '', btn);
+    block.removeAttribute('aria-busy');
+  };
+
   try {
-    const data = sp
-      ? await fetchSharePointItems(sp.siteUrl, sp.folderPath)
-      : await fetchJsonItems(rawHref);
+    let data;
+
+    if (clientId) {
+      // PKCE OAuth + Graph API path
+      let token = getStoredToken();
+      if (!token) token = await handleOAuthCallback(clientId);
+      if (!token) { showSignIn(false); return; }
+      data = await fetchGraphItems(token, sp);
+    } else if (sp) {
+      // SharePoint REST API path (requires CORS config on the SharePoint site)
+      data = await fetchSharePointItems(sp.siteUrl, sp.folderPath);
+    } else {
+      // Direct JSON endpoint (local dev)
+      data = await fetchJsonItems(rawHref);
+    }
 
     statusEl.remove();
     const { files = [], folders = [] } = data;
@@ -256,14 +421,17 @@ export default async function decorate(block) {
     folders.forEach((f) => list.append(buildFolderRow(f, origin)));
     files.forEach((f) => list.append(buildFileRow(f, origin)));
   } catch (err) {
+    if (err.isAuthError && clientId) {
+      showSignIn(true);
+      return;
+    }
     list.remove();
     statusEl.textContent = '';
-    // TypeError = network/CORS failure; isAuthError = 401/403 from SharePoint
     const msg = err.isAuthError
-      ? 'Sign in to SharePoint to view these documents.'
-      : 'Unable to reach SharePoint — open it in a new tab to authenticate, then reload.';
+      ? 'Access denied. Add a Client ID config row to enable Microsoft sign-in, or '
+      : 'Unable to load documents. ';
     statusEl.append(
-      `${msg} `,
+      msg,
       createTag('a', {
         class: 'button',
         href: rawHref,

@@ -150,11 +150,17 @@
   display: none;
 }
 
-/* ── Status / error ──────────────────────────────────────────────────────── */
+/* ── Status / error / sign-in ────────────────────────────────────────────── */
 
 .dl-status {
   padding: var(--space-l) var(--space-s);
   color: light-dark(var(--color-gray-600), var(--color-muted));
+  font-size: var(--body-font-size-s);
+}
+
+.dl-signin {
+  cursor: pointer;
+  font-family: inherit;
   font-size: var(--body-font-size-s);
 }
 
