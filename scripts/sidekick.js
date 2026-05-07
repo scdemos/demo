@@ -1,22 +1,20 @@
-let defined;
+let expMod;
+const DA_EXP = 'https://da.live/nx/public/plugins/exp/exp.js';
 
-function toggleExp() {
-  if (defined) {
-    defined.remove();
-    defined = undefined;
+async function toggleExp() {
+  const exists = document.querySelector('#aem-sidekick-exp');
+
+  if (!exists) {
+    expMod = await import(DA_EXP);
     return;
   }
-  import('https://da.live/nx/public/plugins/exp/exp.js').then((mod) => {
-    defined = mod;
-  });
+
+  if (!expMod) expMod = await import(DA_EXP);
+  expMod.default();
 }
 
-const sk = document.querySelector('aem-sidekick');
-if (sk) {
+(async function sidekick() {
+  const sk = document.querySelector('aem-sidekick');
+  if (!sk) return;
   sk.addEventListener('custom:experimentation', toggleExp);
-} else {
-  document.addEventListener('sidekick-ready', () => {
-    document.querySelector('aem-sidekick')
-      .addEventListener('custom:experimentation', toggleExp);
-  }, { once: true });
-}
+}());
