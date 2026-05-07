@@ -196,11 +196,13 @@ export function resolveArticlesFromIndex(authoredLinks, indexRows) {
     const norm = normalizePath(path);
     const row = indexRows.find((r) => r?.path && normalizePath(r.path) === norm);
     const fallbackTitle = norm.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || norm;
+    const img = row?.image?.trim() || '';
+
     return {
       path: norm,
       title: row?.title?.trim() || linkTitle || fallbackTitle,
       description: row?.description?.trim() || '',
-      image: row?.image?.trim() || '',
+      image: img.includes('default-meta-image.png') ? '' : img,
       date: row?.date || row?.publisheddate || row?.lastModified,
     };
   });
