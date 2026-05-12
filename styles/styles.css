@@ -164,6 +164,8 @@
   --shadow-glow-gold: 0 0 40px rgb(197 160 89 / 25%);
   --shadow-lift-m: 0 20px 40px -8px rgb(0 0 0 / 15%);
   --shadow-lift-l: 0 30px 60px -12px rgb(0 0 0 / 22%);
+  --shadow-card: 0 2px 8px rgb(0 0 0 / 5%), 0 1px 2px rgb(0 0 0 / 7%);
+  --shadow-card-dark: 0 2px 12px rgb(0 0 0 / 45%), 0 1px 4px rgb(0 0 0 / 30%);
 
   /* easing presets for consistent motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -266,6 +268,11 @@ body {
   margin: 0;
   box-sizing: border-box;
   background-color: var(--background-color);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 12% 8%,
+      light-dark(rgb(197 160 89 / 9%), rgb(197 160 89 / 4%)) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 88% 82%,
+      light-dark(rgb(161 79 43 / 6%), rgb(161 79 43 / 3%)) 0%, transparent 50%);
   color: var(--text-color);
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
@@ -304,7 +311,7 @@ h4,
 h5,
 h6 {
   margin-top: 0.8em;
-  margin-bottom: 0.25em;
+  margin-bottom: 0.4em;
   font-family: var(--heading-font-family);
   font-weight: 500;
   line-height: var(--heading-line-height);
@@ -618,6 +625,23 @@ main > .section.divider.center {
 .spacer-bottom-m { margin-bottom: var(--space-m); }
 .spacer-bottom-l { margin-bottom: var(--space-l); }
 
+/* section-metadata style=rust: bold brand accent section */
+main > .section.rust {
+  background-color: var(--color-rust);
+  color: var(--color-parchment);
+  margin: 0;
+  padding: var(--space-3xl, var(--section-block-space)) 0;
+}
+
+main > .section.rust * {
+  color: var(--color-parchment);
+}
+
+main > .section.rust a:any-link {
+  color: var(--color-parchment);
+  text-decoration-color: rgb(245 242 237 / 40%);
+}
+
 /* section-metadata style=gradient: warm brand gradient full-bleed section */
 main > .section.gradient {
   background: var(--gradient-brand);
@@ -635,6 +659,9 @@ main > .section.gradient a:any-link {
   text-decoration-color: rgb(255 255 255 / 40%);
 }
 
+/* Shared button overrides for colored sections (rust, gradient) */
+main > .section.rust a.button:any-link,
+main > .section.rust button.button,
 main > .section.gradient a.button:any-link,
 main > .section.gradient button.button {
   border-color: var(--color-parchment);
@@ -644,6 +671,8 @@ main > .section.gradient button.button {
   box-shadow: none;
 }
 
+main > .section.rust a.button:any-link:hover,
+main > .section.rust button.button:hover,
 main > .section.gradient a.button:any-link:hover,
 main > .section.gradient button.button:hover {
   background-color: var(--color-parchment);
@@ -662,6 +691,28 @@ main > .section.ink {
 
 main > .section.ink * {
   color: var(--color-parchment);
+}
+
+/* section-metadata style=warm: atmospheric warm tint with heritage diamond mesh */
+main > .section.warm {
+  background-color: light-dark(#f2ead8, #0e1812);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 0,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 0,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  margin: 0;
+  padding: var(--space-3xl, var(--section-block-space)) 0;
 }
 
 /* gradient-text utility: apply to any heading or span for brand gradient text */
