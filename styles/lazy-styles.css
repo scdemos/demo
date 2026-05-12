@@ -63,9 +63,7 @@ a:any-link {
 main blockquote {
   margin: var(--space-2xl, 48px) 0;
   padding: var(--space-l) var(--space-xl);
-  border-left: 4px solid var(--color-gold);
-  background-color: light-dark(rgb(197 160 89 / 6%), rgb(197 160 89 / 8%));
-  border-radius: 0 8px 8px 0;
+  border-left: 3px solid var(--color-gold);
   font-family: var(--font-family-serif);
   font-size: var(--body-font-size-xl);
   font-style: italic;
