@@ -55,7 +55,7 @@ function getAbsoluteUrl(value) {
 function buildOrganizationSchema() {
   return {
     '@type': 'Organization',
-    name: 'diyFIRE',
+    name: 'amazon-prime-air',
     url: 'https://demo.bbird.live',
     logo: 'https://demo.bbird.live/icons/logo.svg',
     description: 'A step-by-step, uniquely Canadian path to financial independence.',
@@ -108,7 +108,7 @@ function buildArticleSchema() {
 
   schema.publisher = {
     '@type': 'Organization',
-    name: 'diyFIRE',
+    name: 'amazon-prime-air',
     logo: {
       '@type': 'ImageObject',
       url: 'https://demo.bbird.live/icons/logo.svg',
@@ -161,7 +161,7 @@ function buildEventSchema() {
 
   schema.organizer = {
     '@type': 'Organization',
-    name: 'diyFIRE',
+    name: 'amazon-prime-air',
     url: 'https://demo.bbird.live',
   };
 

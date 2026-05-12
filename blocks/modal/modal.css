@@ -43,7 +43,7 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 15%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(255 255 255 / 15%));
   border-radius: 999px;
   background: light-dark(var(--color-parchment), var(--color-obsidian));
   color: inherit;

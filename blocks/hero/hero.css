@@ -1,4 +1,4 @@
-/* Hero block – Heritage Elite, mobile-first */
+/* Hero block – Amazon Prime Air, mobile-first */
 
 .hero-container .hero-wrapper {
   max-width: unset;
@@ -114,33 +114,29 @@
   font-weight: 600;
   color: var(--color-gold);
   text-transform: uppercase;
-  letter-spacing: 5px;
+  letter-spacing: 3px;
   margin: 0;
 }
 
 /* Heading */
 .hero h1 {
   margin: 0;
-  font-family: var(--font-family-serif);
-  font-size: clamp(2rem, 8vw, 4.5rem);
-  font-weight: 500;
-  line-height: 1.05;
-  color: light-dark(var(--color-ink), var(--color-parchment));
+  font-family: var(--heading-font-family);
+  font-size: clamp(2rem, 8vw, 3rem);
+  font-weight: 900;
+  line-height: 1.2;
+  color: light-dark(var(--color-parchment), var(--color-parchment));
 }
 
 .hero h1 em {
-  font-weight: 400;
-  font-style: italic;
-  background: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
-  background-clip: text;
-  color: transparent;
+  font-weight: 900;
+  font-style: normal;
+  color: var(--color-rust-bright);
 }
 
 .dark-scheme .hero h1 em,
 :root[data-theme='dark'] .hero h1 em {
-  background: linear-gradient(135deg, var(--color-rust-bright) 0%, var(--color-gold) 100%);
-  background-clip: text;
-  color: transparent;
+  color: var(--color-rust-bright);
 }
 
 /* Body text — hidden on mobile */
@@ -148,9 +144,9 @@
   display: none;
   max-width: 550px;
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.15rem;
-  color: light-dark(var(--color-ink), var(--color-muted));
+  color: light-dark(var(--color-parchment), var(--color-muted));
   line-height: 1.7;
   letter-spacing: 0.01em;
 }
@@ -261,22 +257,20 @@
 
 /* Variant heros: reset gradient text and use solid color */
 :root .hero.rust h1 em {
-  background: none;
-  background-clip: unset;
-  color: var(--color-gold);
+  color: var(--color-rust-bright);
 }
 
 .hero.gold {
-  background-color: var(--color-gold);
+  background-color: var(--color-blue);
 }
 
 .hero.gold h1,
 .hero.gold p:not(.button-container, .hero-tagline) {
-  color: var(--color-ink);
+  color: var(--color-parchment);
 }
 
 .hero.ink {
-  background-color: var(--color-ink);
+  background-color: var(--color-obsidian);
 }
 
 .hero.ink h1,
@@ -285,7 +279,5 @@
 }
 
 :root .hero.ink h1 em {
-  background: none;
-  background-clip: unset;
-  color: var(--color-rust);
+  color: var(--color-rust-bright);
 }

@@ -1,11 +1,11 @@
-/* Teaser block – Heritage Elite */
+/* Teaser block – Amazon Prime Air */
 
 main .teaser {
   background: light-dark(var(--color-parchment), var(--color-card-dark));
   border: var(--border-heritage);
   border-radius: var(--border-radius-heritage);
   text-align: center;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-m);
   font-weight: 500;
   color: light-dark(var(--color-ink), var(--color-parchment));
@@ -17,7 +17,7 @@ main .teaser {
 main .teaser:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lift-m);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  border-color: light-dark(var(--color-gold), rgb(255 153 0 / 40%));
 }
 
 main .teaser > div {

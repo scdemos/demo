@@ -19,7 +19,7 @@
 
 /* Card */
 .product-grid-item {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(255 255 255 / 10%));
   background: light-dark(var(--color-light), var(--color-card-dark));
   border-radius: 12px;
   overflow: hidden;
@@ -31,8 +31,8 @@
 
 .product-grid-item:hover {
   transform: translateY(-6px);
-  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+  box-shadow: 0 24px 48px light-dark(rgb(35 47 62 / 18%), rgb(255 153 0 / 18%));
+  border-color: light-dark(var(--color-gold), rgb(255 153 0 / 45%));
 }
 
 /* Link wraps the whole card */

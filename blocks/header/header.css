@@ -34,9 +34,9 @@ header {
   --nav-bg-mega: light-dark(var(--color-parchment), var(--color-obsidian));
   --nav-bg-hover-item: light-dark(var(--light-color), var(--color-card-dark));
 
-  /* header uses neutral hover color */
-  --nav-hover-color: light-dark(var(--color-rust), var(--color-gold));
-  --nav-focus-color: light-dark(var(--color-rust), var(--color-gold));
+  /* header uses Amazon hover color */
+  --nav-hover-color: light-dark(var(--color-gold), var(--color-rust-bright));
+  --nav-focus-color: light-dark(var(--color-gold), var(--color-rust-bright));
 
   /* desktop-only (overridden in @media 900px) */
   --nav-desktop-max-width: 1264px;
@@ -50,7 +50,7 @@ header {
 }
 
 header .nav-wrapper {
-  background-color: light-dark(#faf8f5, var(--color-obsidian));
+  background-color: light-dark(var(--color-rust), var(--color-obsidian));
   width: 100%;
   z-index: 1000;
   position: fixed;
@@ -185,12 +185,12 @@ header .nav-brand {
   justify-content: center;
   justify-self: stretch;
   min-width: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--nav-brand-size);
   font-weight: var(--nav-brand-weight);
   line-height: 1;
   letter-spacing: -0.5px;
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: light-dark(var(--color-parchment), var(--color-rust-bright));
 }
 
 header nav .nav-brand a:any-link {
@@ -533,15 +533,14 @@ header nav .nav-sections button.button:focus-visible {
 
 /* CTA button in header tools */
 header nav .nav-tools a.button:any-link:not(.nav-tool) {
-  border: 1.5px solid var(--color-rust);
+  border: 1.5px solid var(--color-gold);
   border-radius: 4px;
   background: transparent;
-  color: var(--color-rust);
+  color: var(--color-gold);
   padding: 12px 24px;
   font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   transition: all 0.3s;
 }
 
@@ -579,7 +578,7 @@ header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item
 }
 
 header nav .nav-tools a.button:any-link:not(.nav-tool):hover {
-  background: var(--color-rust);
+  background: var(--color-gold);
   color: var(--color-light);
   transform: none;
   box-shadow: none;
@@ -1059,7 +1058,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     top: var(--mega-top, var(--nav-height, 64px));
     padding: var(--space-xl) var(--space-xl);
     border-bottom: var(--border-heritage);
-    background-color: light-dark(#faf8f5, var(--color-obsidian));
+    background-color: light-dark(var(--color-parchment), var(--color-obsidian));
     color: var(--text-color);
     box-shadow: var(--header-drop-shadow);
     z-index: 999;
@@ -1292,15 +1291,14 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1.5px solid var(--color-rust);
+    border: 1.5px solid var(--color-gold);
     border-radius: 4px;
     background: transparent;
-    color: var(--color-rust);
+    color: var(--color-gold);
     padding: 12px 24px;
     font-size: 0.75rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     line-height: 1;
     min-width: 120px;
     text-decoration: none;
@@ -1308,7 +1306,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item > p > a.button.nav-auth-mobile:any-link:hover,
   header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item > p > a.button.nav-auth-mobile:any-link:focus-visible {
-    background: var(--color-rust);
+    background: var(--color-gold);
     color: var(--color-light);
     transform: none;
     box-shadow: none;

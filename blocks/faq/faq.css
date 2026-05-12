@@ -63,7 +63,7 @@ main .faq .faq-answer {
 }
 
 main .faq .faq-answer p {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-m);
   line-height: 1.65;
   color: var(--color-text);

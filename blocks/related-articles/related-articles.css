@@ -94,8 +94,8 @@ main .related-articles .related-articles-card-date {
 main .related-articles .related-articles-card:hover,
 main .related-articles .related-articles-card:focus-within {
   transform: translateY(-6px);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
-  box-shadow: 0 20px 40px light-dark(rgb(161 79 43 / 14%), rgb(197 160 89 / 14%));
+  border-color: light-dark(var(--color-gold), rgb(255 153 0 / 40%));
+  box-shadow: 0 20px 40px light-dark(rgb(35 47 62 / 14%), rgb(255 153 0 / 14%));
 }
 
 /* Empty state */
@@ -177,7 +177,7 @@ main .related-articles .related-articles-arrow.is-hidden {
 }
 
 /* ==========================================================================
-   Bento variant – Heritage Elite grid layout
+   Bento variant – Amazon grid layout
    ========================================================================== */
 
 main .related-articles.bento .related-articles-list {
@@ -220,7 +220,7 @@ main .related-articles.bento .related-articles-card-tag {
 
 /* Heading */
 main .related-articles.bento .related-articles-card h3 {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-weight: 500;
   font-size: 1.4rem;
   line-height: 1.15;
@@ -248,7 +248,7 @@ main .related-articles.bento .related-articles-card:hover,
 main .related-articles.bento .related-articles-card:focus-within {
   transform: translateY(-8px);
   border-color: var(--color-gold);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
+  box-shadow: 0 30px 60px -12px rgb(35 47 62 / 15%);
 }
 
 /* Featured (first) card */
