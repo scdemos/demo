@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" fill="currentColor">
+  <!-- Drone body (central rectangle) -->
+  <rect x="18" y="14" width="12" height="6" rx="1.5"/>
+  <!-- Drone arms -->
+  <line x1="18" y1="17" x2="10" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <line x1="30" y1="17" x2="38" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="17" x2="10" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <line x1="30" y1="17" x2="38" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- Rotors (4 circles at arm ends) -->
+  <circle cx="10" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <circle cx="38" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <circle cx="10" cy="22" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <circle cx="38" cy="22" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <!-- Package hanging below drone -->
+  <line x1="24" y1="20" x2="24" y2="27" stroke="currentColor" stroke-width="1.2"/>
+  <rect x="20" y="27" width="8" height="7" rx="0.8"/>
+  <!-- Package cross lines -->
+  <line x1="20" y1="30.5" x2="28" y2="30.5" stroke="currentColor" stroke-width="0.6" style="stroke: var(--background-color, #fff)"/>
+  <line x1="24" y1="27" x2="24" y2="34" stroke="currentColor" stroke-width="0.6" style="stroke: var(--background-color, #fff)"/>
+  <!-- Text: Prime Air -->
+  <text x="54" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="18" fill="currentColor">Prime Air</text>
+</svg>
