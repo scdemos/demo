@@ -113,8 +113,8 @@ main hr {
 main > .section:not(.hero-container, .gradient, .ink, .rust) h2::after {
   content: '';
   display: block;
-  width: 2.5rem;
-  height: 2px;
+  width: 3rem;
+  height: 3px;
   margin-top: 0.35em;
   background: var(--gradient-brand);
   border-radius: 1px;
