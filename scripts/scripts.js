@@ -172,9 +172,8 @@ export function decorateMain(main) {
   if (document.contains(main)) initPageSchemas();
 }
 
-async function loadTemplate(main) {
+async function loadTemplate(main, template) {
   try {
-    const template = getMetadata('template');
     if (template) {
       const mod = await import(`../templates/${template}/${template}.js`);
       loadCSS(`${window.hlx.codeBasePath}/templates/${template}/${template}.css`);
@@ -183,7 +182,6 @@ async function loadTemplate(main) {
       }
     }
   } catch (error) {
-     
     console.error('template loading failed', error);
   }
 }
@@ -221,8 +219,10 @@ async function loadLazy(doc) {
   const headerEl = doc.querySelector('header');
   const footerEl = doc.querySelector('footer');
   loadHeader(headerEl);
-  const templateName = getMetadata('template');
+  const templateName = getMetadata('template')
+    || toClassName(window.location.pathname.split('/').filter(Boolean)[0] || '');
   if (templateName) {
+    document.body.classList.add(templateName);
     await loadTemplate(doc, templateName);
   }
 
