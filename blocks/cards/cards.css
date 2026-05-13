@@ -29,6 +29,11 @@
   border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
 }
 
+/* Article wrapper — layout-invisible so the card link remains the direct flex child */
+.cards > ul > li > article {
+  display: contents;
+}
+
 /* Card link */
 .cards .cards-card-link {
   display: flex;
