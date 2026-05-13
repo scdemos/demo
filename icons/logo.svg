@@ -1,22 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 45" fill="currentColor">
-  <!-- Drone body (central rectangle) -->
-  <rect x="18" y="14" width="12" height="6" rx="1.5"/>
-  <!-- Drone arms -->
-  <line x1="18" y1="17" x2="10" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <line x1="30" y1="17" x2="38" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <line x1="18" y1="17" x2="10" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <line x1="30" y1="17" x2="38" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <!-- Rotors (4 circles at arm ends) -->
-  <circle cx="10" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-  <circle cx="38" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-  <circle cx="10" cy="22" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-  <circle cx="38" cy="22" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-  <!-- Package hanging below drone -->
-  <line x1="24" y1="20" x2="24" y2="27" stroke="currentColor" stroke-width="1.2"/>
-  <rect x="20" y="27" width="8" height="7" rx="0.8"/>
-  <!-- Package cross lines -->
-  <line x1="20" y1="30.5" x2="28" y2="30.5" stroke="currentColor" stroke-width="0.6" style="stroke: var(--background-color, #fff)"/>
-  <line x1="24" y1="27" x2="24" y2="34" stroke="currentColor" stroke-width="0.6" style="stroke: var(--background-color, #fff)"/>
-  <!-- Text: Prime Air -->
-  <text x="54" y="28" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="18" fill="currentColor">Prime Air</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 603 182" role="img" aria-label="amazon">
+  <!-- amazon wordmark - accurate paths -->
+  <path fill="#ffffff" d="M32.3 25.7C14.6 25.7 0 38.8 0 57.8c0 18.9 12.6 30.1 29.7 30.1 12.7 0 20.9-6.1 25.6-15.1v12.9h15.9V57.5C71.2 36.3 59.2 25.7 32.3 25.7zm20.1 34.5c0 11.5-7.8 17.3-17.2 17.3-9.9 0-16.6-6.5-16.6-17.4 0-11.3 7.3-18.4 17.2-18.4 9.7 0 16.6 7 16.6 18.5zM88.1 85.7V26.9h15.9v9.3c3.7-6.5 10.9-11 19.6-11 13.2 0 22.8 9 22.8 24.3v36.2h-15.9V52.9c0-8.5-4.7-13.8-12.4-13.8-8.1 0-14.1 5.8-14.1 14.8v31.8H88.1zM167.6 85.7V26.9h15.9v9.3c3.7-6.5 10.9-11 19.6-11 13.2 0 22.8 9 22.8 24.3v36.2h-15.9V52.9c0-8.5-4.7-13.8-12.4-13.8-8.1 0-14.1 5.8-14.1 14.8v31.8h-15.9zM259.6 87.9c-20.7 0-35.6-14.2-35.6-32.3s14.9-29.9 35.6-29.9 35.6 11.8 35.6 29.9-14.9 32.3-35.6 32.3zm0-47.6c-11.3 0-19.4 7.5-19.4 15.3 0 8.5 6.2 17.7 19.4 17.7 13.2 0 19.4-9.2 19.4-17.7 0-7.8-8.1-15.3-19.4-15.3zM307.4 85.7l24.5-29.8-23.3-29h19.4l13.3 16.9 13.3-16.9h19l-23.2 28.8 24.7 30h-19.7l-14.1-17.7-14.1 17.7H307.4zM403.7 25.7c-13.3 0-22.1 5.9-27.2 13.2V26.9H361V112h15.9V74.9c4.9 7.1 13.8 13 27.1 13 18.2 0 32.7-14 32.7-31.4-.1-17-14.1-30.8-33-30.8zm-3.3 46.7c-9.8 0-17.2-7.1-17.2-15.9 0-8.8 7.4-16.1 17.2-16.1 10.2 0 17.9 6.7 17.9 16.1 0 9.4-7.3 15.9-17.9 15.9zM452 85.7V0h15.9v85.7H452zM503 57.4c.7 9.9 8.2 16.5 18.8 16.5 7.6 0 13.7-3.4 17.2-8.9l13 7.5c-5.9 9.2-16.5 15.4-30.7 15.4-20.7 0-34.2-13.9-34.2-31.8 0-17.8 13-30.4 33.3-30.4 19.1 0 31.4 12.3 31.4 30.3 0 .5 0 1-.1 1.4H503zm.3-11.4h31.4c-1.4-8.6-7.6-13.5-15.4-13.5-8.4 0-14.4 5.1-16 13.5z"/>
+  <!-- orange smile arrow -->
+  <path fill="#ff9900" d="M301.3 130.6c-39.3 0-75.5 14.5-102.8 38.4-2.9 2.5-.3 5.9 3.2 3.9 29.4-17.2 66-27.5 103.8-27.5 25.5 0 53.5 5.3 79.2 16.2 3.9 1.7 7.1-2.5 3.7-5.3-26.1-22.3-58.9-25.7-87.1-25.7z"/>
+  <path fill="#ff9900" d="M340.3 118.2c-4-5.1-26.4-2.4-36.5-1.2-3 .4-3.5-2.3-.8-4.3 17.9-12.5 47.2-8.9 50.6-4.7 3.4 4.2-1 33.6-17.7 47.6-2.6 2.2-5 1-3.9-1.8 3.8-9.4 12.3-30.6 8.3-35.6z"/>
 </svg>

@@ -226,12 +226,30 @@ function initSearch(tools) {
   form.action = path;
   form.method = 'get';
 
+  const categorySelect = document.createElement('select');
+  categorySelect.className = 'nav-search-category';
+  categorySelect.setAttribute('aria-label', 'Search category');
+  [
+    'Prime Air Drone Delivery',
+    'All Departments',
+    'Amazon Devices',
+    'Electronics',
+    'Grocery',
+    'Books',
+  ].forEach((cat, i) => {
+    const opt = document.createElement('option');
+    opt.value = i === 0 ? 'drone' : cat.toLowerCase().replace(/\s+/g, '-');
+    opt.textContent = cat;
+    if (i === 0) opt.selected = true;
+    categorySelect.append(opt);
+  });
+
   const input = document.createElement('input');
   input.type = 'search';
   input.name = 'q';
-  input.placeholder = 'Search';
+  input.placeholder = 'Search Amazon';
   input.value = q;
-  input.setAttribute('aria-label', 'Search');
+  input.setAttribute('aria-label', 'Search Amazon');
   input.className = 'nav-search-input';
   input.autocomplete = 'off';
 
@@ -247,7 +265,7 @@ function initSearch(tools) {
       location.href = path;
     }
   };
-  form.append(input, submit);
+  form.append(categorySelect, input, submit);
   const wrap = link.closest('p');
   (wrap && wrap.children.length === 1 ? wrap : link).replaceWith(form);
 }
@@ -565,7 +583,7 @@ export default async function decorate(block) {
 
   const hamburger = document.createElement('div');
   hamburger.className = 'nav-hamburger';
-  hamburger.innerHTML = '<button type="button" aria-controls="nav" aria-label="Open navigation"><span class="nav-hamburger-icon"></span></button>';
+  hamburger.innerHTML = '<button type="button" aria-controls="nav" aria-label="Open navigation"><span class="nav-hamburger-icon"></span><span class="nav-hamburger-label">All</span></button>';
   let refreshAuthState = null;
   hamburger.onclick = async () => {
     toggleMobile(nav, undefined, body);

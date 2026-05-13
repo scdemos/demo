@@ -50,14 +50,15 @@ header {
 }
 
 header .nav-wrapper {
-  background-color: light-dark(var(--color-rust), var(--color-obsidian));
+  background-color: var(--color-obsidian);
+  color: var(--color-parchment);
   width: 100%;
   z-index: 1000;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  border-bottom: var(--border-heritage);
+  border-bottom: none;
   box-shadow: none;
 }
 
@@ -206,7 +207,8 @@ header nav .nav-brand a:any-link:focus-visible {
 
 header nav .nav-brand .icon.icon-logo {
     position: relative;
-    top: 5px;
+    top: 0;
+    display: none;
   }
 
 header nav .nav-brand :is(img, svg) {
@@ -734,6 +736,15 @@ header nav .nav-tools .nav-language-menu a:hover,
 header nav .nav-tools .nav-language-menu a:focus-visible {
   background-color: var(--nav-bg-hover-item);
   text-decoration: none;
+}
+
+/* category select + hamburger label: hidden on mobile */
+.nav-search-category {
+  display: none;
+}
+
+header nav .nav-hamburger-label {
+  display: none;
 }
 
 /* tablet: 600px */
@@ -1324,5 +1335,312 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 @media (width >= 1200px) {
   header nav {
     max-width: 1264px;
+  }
+}
+
+/* ===== Amazon two-row nav (desktop) ===== */
+@media (width >= 900px) {
+  /* Update total header height so content doesn't sit under the bottom bar */
+  header {
+    --header-height: calc(var(--nav-height) + 38px);
+    height: calc(var(--nav-height) + 38px);
+  }
+
+  /* Two-row grid: brand+tools on top, hamburger+sections below */
+  header nav {
+    display: grid;
+    grid-template-areas:
+      'brand tools'
+      'hamburger sections';
+    grid-template-columns: auto 1fr;
+    grid-template-rows: var(--nav-height) 38px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 0;
+    gap: 0;
+  }
+
+  /* Brand: top-left, hover outline */
+  header .nav-brand {
+    grid-area: brand;
+    flex-basis: auto;
+    justify-content: center;
+    padding: 0 var(--space-s) 0 var(--space-m);
+    border: 1px solid transparent;
+    border-radius: 2px;
+    transition: border-color 0.15s;
+  }
+
+  header .nav-brand:hover {
+    border-color: var(--color-parchment);
+  }
+
+  /* Hide the SVG icon — replaced by PNG background on the link */
+  header .nav-brand .icon.icon-logo {
+    display: none;
+  }
+
+  header .nav-brand a:any-link {
+    display: block;
+    width: 104px;
+    height: 44px;
+    background: url('/icons/amazon-logo.png') no-repeat center / contain;
+    opacity: 1;
+  }
+
+  header .nav-brand a:any-link:hover,
+  header .nav-brand a:any-link:focus-visible {
+    opacity: 0.9;
+  }
+
+  /* Tools: top-right, search grows to fill middle */
+  header nav .nav-tools {
+    grid-area: tools;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--space-m) 0 0;
+    gap: var(--space-s);
+    flex: 1 1 auto;
+  }
+
+  /* Sections: bottom-right, dark bar with overflow scroll */
+  header nav .nav-sections {
+    grid-area: sections;
+    background-color: var(--color-rust);
+    display: flex;
+    align-items: center;
+    flex: unset;
+    justify-content: flex-start;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    white-space: nowrap;
+    height: 38px;
+  }
+
+  header nav .nav-sections::-webkit-scrollbar {
+    display: none;
+  }
+
+  header nav .nav-sections .default-content-wrapper {
+    width: auto;
+    height: 100%;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 0;
+    height: 100%;
+    align-items: center;
+    padding: 0 var(--space-s);
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li {
+    height: 100%;
+    padding: 0 8px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li:hover,
+  header nav .nav-sections .default-content-wrapper > ul > li[aria-expanded='true'] {
+    border-color: var(--color-parchment);
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li > p {
+    min-height: unset;
+    padding: 0;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li > p > a {
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--color-parchment);
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li > p > a:hover,
+  header nav .nav-sections .default-content-wrapper > ul > li > p > a:focus-visible {
+    color: var(--color-parchment);
+    background-color: transparent;
+    text-decoration: none;
+  }
+
+  /* compact chevron for bottom bar */
+  header nav .nav-sections .nav-drop {
+    padding-right: 18px;
+  }
+
+  header nav .nav-sections .nav-drop::after {
+    right: 2px;
+    width: 4px;
+    height: 4px;
+  }
+
+  /* Hamburger: bottom-left, visible as "≡ All" */
+  header nav .nav-hamburger {
+    grid-area: hamburger;
+    display: flex !important;
+    visibility: visible !important;
+    background-color: var(--color-rust);
+    align-items: center;
+    padding: 0 4px 0 var(--space-s);
+    height: 38px;
+  }
+
+  header nav .nav-hamburger button {
+    height: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 4px 8px;
+    color: var(--color-parchment);
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: border-color 0.15s;
+  }
+
+  header nav .nav-hamburger button:hover,
+  header nav .nav-hamburger button:focus-visible {
+    border-color: var(--color-parchment);
+    background-color: transparent;
+    opacity: 1;
+  }
+
+  header nav .nav-hamburger-label {
+    display: inline;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-parchment);
+    line-height: 1;
+  }
+
+  /* Search form: Amazon-style flex row */
+  header nav .nav-tools .nav-search-form {
+    position: static;
+    display: flex;
+    align-items: stretch;
+    height: 40px;
+    flex: 1 1 auto;
+    max-width: 620px;
+    border-radius: 4px;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .nav-search-category {
+    display: block;
+    background: #f3f3f3;
+    border: none;
+    border-right: 1px solid #cdcdcd;
+    padding: 0 2px 0 8px;
+    font-size: 0.7rem;
+    color: #111;
+    cursor: pointer;
+    max-width: 150px;
+    min-width: 50px;
+    border-radius: 4px 0 0 4px;
+    flex-shrink: 0;
+  }
+
+  header nav .nav-tools .nav-search-input {
+    flex: 1 1 auto;
+    width: auto;
+    border: none;
+    border-radius: 0;
+    padding: 0 8px;
+    background: white;
+    color: #111;
+    font-size: 0.875rem;
+  }
+
+  header nav .nav-tools .nav-search-input::placeholder {
+    color: #666;
+    opacity: 1;
+  }
+
+  header nav .nav-tools .nav-search-input:focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  header nav .nav-tools .nav-search-submit {
+    position: static;
+    top: auto;
+    right: auto;
+    transform: none;
+    background: #febd69;
+    border-radius: 0 4px 4px 0;
+    padding: 0 14px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  header nav .nav-tools .nav-search-submit:hover {
+    background: #f3a847;
+  }
+
+  header nav .nav-tools .nav-search-submit .icon img {
+    filter: brightness(0);
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Right-side tools: hover outline */
+  header nav .nav-tools .nav-language-wrap,
+  header nav .nav-tools > p {
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 4px 8px;
+    transition: border-color 0.15s;
+  }
+
+  header nav .nav-tools .nav-language-wrap:hover,
+  header nav .nav-tools > p:hover {
+    border-color: var(--color-parchment);
+  }
+
+  header nav .nav-tools a.button:any-link:not(.nav-tool),
+  header nav .nav-tools a.button.nav-auth-link:any-link {
+    border: none;
+    background: transparent;
+    color: var(--color-parchment);
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  header nav .nav-tools a.button:any-link:not(.nav-tool):hover,
+  header nav .nav-tools a.button.nav-auth-link:any-link:hover {
+    background: transparent;
+    color: var(--color-parchment);
   }
 }
