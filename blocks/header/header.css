@@ -1540,17 +1540,19 @@ header nav .nav-hamburger-label {
     line-height: 1;
   }
 
-  /* Search form: Amazon-style flex row */
+  /* Search form: Amazon-style flex row, centered in the nav */
   header nav .nav-tools .nav-search-form {
     position: static;
     display: flex;
     align-items: stretch;
     height: 40px;
-    flex: 1 1 auto;
-    max-width: 620px;
+    flex: 0 0 min(70vw, 900px);
+    width: min(70vw, 900px);
+    max-width: min(70vw, 900px);
     border-radius: 4px;
     overflow: hidden;
     padding: 0;
+    margin: 0 auto;
   }
 
   .nav-search-category {
