@@ -146,6 +146,7 @@
   font-size: 48px;
   font-weight: 700;
   line-height: 1;
+  letter-spacing: 0.01em;
   color: light-dark(var(--color-parchment), var(--color-parchment));
 }
 
