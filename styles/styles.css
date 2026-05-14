@@ -554,6 +554,7 @@ main .icon.icon-logo {
   vertical-align: middle;
   padding-right: 10px;
   margin-bottom: 4px;
+  aspect-ratio:auto !important;
 }
 
 /* Reserve space for unsized images to reduce CLS */
