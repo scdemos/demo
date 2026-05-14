@@ -1406,9 +1406,10 @@ header nav .nav-hamburger-label {
     flex: 1 1 auto;
   }
 
-  /* Sections: bottom-right, dark bar with overflow scroll */
+  /* Sections: full-width bottom bar; hamburger overlays the left */
   header nav .nav-sections {
     grid-area: sections;
+    grid-column: 1 / -1;
     background-color: var(--color-rust);
     display: flex;
     align-items: center;
@@ -1437,7 +1438,7 @@ header nav .nav-hamburger-label {
     gap: 0;
     height: 100%;
     align-items: center;
-    padding: 0 var(--space-s);
+    padding: 0 var(--space-s) 0 80px;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li {
@@ -1502,7 +1503,7 @@ header nav .nav-hamburger-label {
     height: 4px;
   }
 
-  /* Hamburger: bottom-left, visible as "≡ All" */
+  /* Hamburger: bottom-left, overlays sections bar */
   header nav .nav-hamburger {
     grid-area: hamburger;
     display: flex !important;
@@ -1511,6 +1512,8 @@ header nav .nav-hamburger-label {
     align-items: center;
     padding: 0 4px 0 var(--space-s);
     height: 38px;
+    position: relative;
+    z-index: 2;
   }
 
   header nav .nav-hamburger button {
