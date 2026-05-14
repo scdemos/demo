@@ -568,6 +568,7 @@ main > .section {
   padding-block: var(--space-xl);
   background-color: var(--color-parchment);
   color: var(--color-ink);
+  color-scheme: light;
 }
 
 main > .section:first-child {
