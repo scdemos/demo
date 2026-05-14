@@ -1359,6 +1359,7 @@ header nav .nav-hamburger-label {
     padding: 0;
     min-height: 0;
     gap: 0;
+    position: relative;
   }
 
   /* Brand: top-left, hover outline */
@@ -1394,11 +1395,12 @@ header nav .nav-hamburger-label {
     opacity: 0.9;
   }
 
-  /* Tools: top-right, search grows to fill middle */
+  /* Tools: top-right, non-search items flush right */
   header nav .nav-tools {
     grid-area: tools;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     padding: 0 var(--space-m) 0 0;
     gap: var(--space-s);
     flex: 1 1 auto;
@@ -1540,19 +1542,23 @@ header nav .nav-hamburger-label {
     line-height: 1;
   }
 
-  /* Search form: Amazon-style flex row, centered in the nav */
+  /* Search form: absolutely centered across the full nav width */
   header nav .nav-tools .nav-search-form {
-    position: static;
+    position: absolute;
+    left: 50%;
+    top: calc((var(--nav-height) - 40px) / 2);
+    transform: translateX(-50%);
     display: flex;
     align-items: stretch;
     height: 40px;
-    flex: 0 0 min(70vw, 900px);
-    width: min(70vw, 900px);
-    max-width: min(70vw, 900px);
+    width: 70vw;
+    max-width: 70vw;
+    flex: none;
+    margin: 0;
     border-radius: 4px;
     overflow: hidden;
     padding: 0;
-    margin: 0 auto;
+    z-index: 5;
   }
 
   .nav-search-category {
