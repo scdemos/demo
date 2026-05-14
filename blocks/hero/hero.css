@@ -139,9 +139,9 @@
 /* Heading */
 .hero h1 {
   margin: 0;
-  font-family: var(--heading-font-family);
-  font-size: clamp(2rem, 8vw, 3rem);
-  font-weight: 900;
+  font-family: 'Amazon Ember Display', helvetica, arial, sans-serif;
+  font-size: 48px;
+  font-weight: 700;
   line-height: 1.2;
   color: light-dark(var(--color-parchment), var(--color-parchment));
 }
@@ -218,18 +218,11 @@
     margin: 0 25%;
   }
 
-  .hero h1 {
-    font-size: clamp(3.5rem, 5vw, 6rem);
-  }
 }
 
 @media (width >= 1200px) {
   .hero > div:last-child {
     padding: 100px 6vw;
-  }
-
-  .hero h1 {
-    font-size: clamp(4rem, 5.5vw, 6.5rem);
   }
 }
 
