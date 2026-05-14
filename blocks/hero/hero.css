@@ -145,7 +145,7 @@
   font-family: 'Amazon Ember Display', helvetica, arial, sans-serif;
   font-size: 48px;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1;
   color: light-dark(var(--color-parchment), var(--color-parchment));
 }
 
@@ -217,7 +217,8 @@
   }
 
   .hero > div:last-child > div {
-    max-width: 900px;
+    max-width: none;
+    width: 90vw;
   }
 
 }
