@@ -1,6 +1,7 @@
 main .faq {
   max-width: 800px;
   margin: 0 auto;
+  color: var(--color-ink);
 }
 
 main .faq .faq-category {
