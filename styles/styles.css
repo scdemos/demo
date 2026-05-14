@@ -567,6 +567,7 @@ main > .section {
   margin: inherit;
   padding-block: var(--space-xl);
   background-color: var(--color-parchment);
+  color: var(--color-ink);
 }
 
 main > .section:first-child {
