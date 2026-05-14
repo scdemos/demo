@@ -1,14 +1,7 @@
 export default function decorate(block) {
   const rows = [...block.children];
 
-  // First row is the heading row
-  const headingRow = rows[0];
-  if (headingRow) {
-    headingRow.classList.add('faq-heading-row');
-  }
-
-  // Remaining rows are Q&A pairs
-  rows.slice(1).forEach((row) => {
+  rows.forEach((row) => {
     const [questionCell, answerCell] = row.children;
     if (!questionCell || !answerCell) return;
 

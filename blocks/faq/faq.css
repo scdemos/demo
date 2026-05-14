@@ -34,7 +34,7 @@ main .faq .faq-question {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
   font-weight: 600;
-  color: var(--color-text);
+  color: inherit;
   text-align: left;
   line-height: var(--body-line-height);
   transition: color 0.3s;
@@ -67,7 +67,7 @@ main .faq .faq-answer p {
   font-family: var(--font-family-serif);
   font-size: var(--body-font-size-m);
   line-height: 1.65;
-  color: var(--color-text);
+  color: inherit;
   margin: 0;
 }
 
