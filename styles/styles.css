@@ -566,6 +566,7 @@ main img:not([width], [height]) {
 main > .section {
   margin: inherit;
   padding-block: var(--space-xl);
+  background-color: var(--color-parchment);
 }
 
 main > .section:first-child {
@@ -585,6 +586,14 @@ main > .section > div {
   max-width: var(--grid-container-width);
   margin: auto;
   padding: 0 var(--content-padding-inline);
+}
+
+/* Full-bleed image: section containing only a picture breaks out of grid */
+main > .section > div:has(> picture:only-child) {
+  max-width: unset;
+  padding: 0;
+  display: flex;
+  justify-content: center;
 }
 
 /* section metadata */
