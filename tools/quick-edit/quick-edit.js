@@ -15,7 +15,7 @@ function addImportmap() {
   document.head.appendChild(importmapEl);
 }
 
-async function loadMoudle(origin, payload) {
+async function loadModule(origin, payload) {
   const { default: loadQuickEdit } = await import(`${origin}/nx/public/plugins/quick-edit/quick-edit.js`);
   loadQuickEdit(payload, loadPage);
 }
@@ -48,5 +48,5 @@ export default function init(payload) {
   if (ref === 'local') origin = 'http://localhost:6456';
   if (!origin) origin = `https://${ref}--da-nx--adobe.aem.live`;
   addImportmap();
-  loadMoudle(origin, payload || generateSidekickPayload());
+  loadModule(origin, payload || generateSidekickPayload());
 }

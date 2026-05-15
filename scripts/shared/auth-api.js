@@ -37,20 +37,21 @@ const ANONYMOUS_SESSION = {
 
 
 /**
- * Loads `/auth/session` JSON. Any failure (non-OK, network, CORS after a redirect) → anonymous session.
- * Older pattern used `redirect: 'manual'` when Access 302s broke `fetch`; treating errors as logged-out is enough for the header UI.
+ * Loads `/auth/session` JSON (anonymous on non-OK or failure).
+ * `redirect: 'manual'` — Cloudflare Access replies with 302 to *.cloudflareaccess.com;
  */
 export async function getSessionState() {
   try {
     const response = await fetch(authUrl(AUTH_PATHS.session), {
       method: 'GET',
       credentials: 'include',
+      redirect: 'manual',
       headers: { Accept: 'application/json' },
     });
     if (!response.ok) {
       return { ...ANONYMOUS_SESSION, path: AUTH_PATHS.session };
     }
-    return response.json();
+    return await response.json();
   } catch {
     return { ...ANONYMOUS_SESSION, path: AUTH_PATHS.session };
   }
