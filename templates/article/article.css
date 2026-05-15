@@ -6,15 +6,20 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-s);
+  justify-content: flex-start;
+  gap: 0 var(--space-m);
   max-width: var(--grid-container-width);
   margin: 0 auto;
   width: 100%;
-  font-size: var(--body-font-size-s);
+  padding-top: var(--space-m);
+  border-top: 1px solid light-dark(rgb(161 79 43 / 20%), rgb(245 242 237 / 18%));
 }
 
 .article .hero .article-date {
+  font-family: var(--font-family-serif);
+  font-size: var(--body-font-size-s);
+  font-style: italic;
+  color: light-dark(var(--color-gray-600), var(--color-muted));
   white-space: nowrap;
 }
 
