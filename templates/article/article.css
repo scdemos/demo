@@ -1,3 +1,7 @@
+/* ==========================================================================
+   Author / Date byline
+   ========================================================================== */
+
 .article .hero .article-author-container {
   display: flex;
   flex-wrap: wrap;
@@ -14,37 +18,60 @@
   white-space: nowrap;
 }
 
+/* ==========================================================================
+   Breadcrumb strip
+   ========================================================================== */
+
 .article .article-breadcrumb {
-  max-width: var(--grid-container-width);
-  margin: var(--space-m) auto var(--space-l);
-  padding: 0 var(--content-padding-inline);
-  font-size: var(--body-font-size-s);
+  background-color: light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 3%));
+  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 8%));
+  margin: 0;
+  padding: var(--space-m) var(--content-padding-inline);
 }
 
 .article .article-breadcrumb ol {
   list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
   align-items: center;
+  gap: 0;
+  margin: 0 auto;
+  padding: 0;
+  max-width: var(--grid-container-width);
+  font-size: var(--body-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
 .article .article-breadcrumb li:not(:last-child)::after {
-  content: '/';
-  margin-left: var(--space-xs);
-  color: var(--color-gray-500);
+  content: '›';
+  margin: 0 var(--space-m);
+  color: var(--color-gold);
+  font-size: 1rem;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .article .article-breadcrumb a {
-  color: inherit;
+  color: light-dark(var(--color-gray-600), var(--color-muted));
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .article .article-breadcrumb a:hover,
 .article .article-breadcrumb a:focus-visible {
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
   text-decoration: underline;
-  text-underline-offset: 0.2em;
-  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 1px;
 }
+
+.article .article-breadcrumb li[aria-current='page'] {
+  font-family: var(--font-family-serif);
+  font-size: var(--body-font-size-s);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+

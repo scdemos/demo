@@ -61,4 +61,12 @@ export default function init(root = document) {
     const authorDate = buildAuthorDate();
     if (authorDate) heroText.append(authorDate);
   }
+
+  // Wrap all non-hero content sections in <article> for semantic correctness
+  const contentSections = [...main.querySelectorAll(':scope > .section:not(.hero-container)')];
+  if (contentSections.length && !main.querySelector('article.article-body')) {
+    const article = createTag('article', { class: 'article-body' });
+    contentSections[0].before(article);
+    contentSections.forEach((s) => article.append(s));
+  }
 }
