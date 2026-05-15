@@ -15,6 +15,21 @@
   border-top: 1px solid light-dark(rgb(161 79 43 / 20%), rgb(245 242 237 / 18%));
 }
 
+.article .hero .article-author {
+  font-size: var(--body-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
+}
+
+.article .hero .article-author::after {
+  content: '·';
+  margin-left: var(--space-m);
+  font-style: normal;
+  color: light-dark(rgb(0 0 0 / 30%), rgb(245 242 237 / 35%));
+}
+
 .article .hero .article-date {
   font-family: var(--font-family-serif);
   font-size: var(--body-font-size-s);
