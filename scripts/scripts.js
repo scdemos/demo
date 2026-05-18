@@ -216,8 +216,6 @@ async function loadEager(doc) {
         // Normal delivery: Form-Based html-content-item at homepage-hero-mbox
         'homepage-hero-mbox': { selector: 'main .section:first-child', actionType: 'replaceHtml' },
         'homepage-teaser-mbox': { selector: 'main .section:nth-child(2)', actionType: 'replaceHtml' },
-        // QA preview: Target forces the activity into __view__ as dom-action with selector:head
-        '__view__': { selector: 'main .section:first-child', actionType: 'replaceHtml' },
       },
     },
   );
