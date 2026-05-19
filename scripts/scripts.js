@@ -353,8 +353,11 @@ async function loadLazy(doc) {
   }
 }
 
-const IS_QUICK_EDIT = new URL(window.location.href).searchParams.has('quick-edit');
-if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
+const IS_QUICK_EDIT = document.querySelector('html').hasAttribute('quick-edit');
+if (IS_QUICK_EDIT) {
+  document.querySelector('html').setAttribute('quick-edit', 'true');
+  import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
+}
 
 function loadDelayed() {
   window.setTimeout(() => {
