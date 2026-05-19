@@ -353,9 +353,8 @@ async function loadLazy(doc) {
   }
 }
 
-const IS_QUICK_EDIT = () => new URL(window.location.href).searchParams.has('quick-edit')
-  || document.querySelector('html').hasAttribute('quick-edit');
-if (new URL(window.location.href).searchParams.has('quick-edit')) {
+const IS_QUICK_EDIT = () => document.querySelector('html').hasAttribute('quick-edit');
+if (IS_QUICK_EDIT()) {
   document.querySelector('html').setAttribute('quick-edit', 'true');
   import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
 }
