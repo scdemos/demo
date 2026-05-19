@@ -17,6 +17,7 @@ function addImportmap() {
 
 async function loadModule(origin, payload) {
   const { default: loadQuickEdit } = await import(`${origin}/nx/public/plugins/quick-edit/quick-edit.js`);
+  document.querySelector('html').setAttribute('quick-edit', 'true');
   loadQuickEdit(payload, loadPage);
 }
 
@@ -41,7 +42,6 @@ function generateSidekickPayload() {
 }
 
 export default function init(payload) {
-  document.querySelector('html').setAttribute('quick-edit', 'true');
   const { search } = window.location;
   const ref = new URLSearchParams(search).get('quick-edit');
   let origin;
