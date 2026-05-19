@@ -50,6 +50,9 @@
  */
 const SCHEMA_DOM_ACTION = 'https://ns.adobe.com/personalization/dom-action';
 const SCHEMA_HTML_CONTENT_ITEM = 'https://ns.adobe.com/personalization/html-content-item';
+// Selectors that target the document chrome rather than visible content. If a dom-action item
+// arrives with one of these, alloy's applyPropositions injects directly into <head>/<body>/<html>.
+const NON_VISUAL_SELECTORS = new Set(['head', 'body', 'html']);
 
 export const DEFAULT_CONFIG = {
   analytics: true,
@@ -72,6 +75,13 @@ let alloyConfig;
 let isAlloyConfigured = false;
 const pendingAlloyCommands = [];
 const pendingDatalayerEvents = [];
+
+const debug = (label = 'martech', ...args) => {
+  if (alloyConfig?.debugEnabled) {
+    // eslint-disable-next-line no-console
+    console.debug.call(null, `[${label}]`, ...args);
+  }
+};
 
 /**
  * Triggers the callback when the page is actually activated,
@@ -398,6 +408,62 @@ export async function updateUserConsent(consent) {
 let response;
 
 /**
+ * Resolves the target selector and actionType for a Form-Based html-content-item.
+ * Priority: selector embedded in item data (DA "Send to Target" offers carry this automatically)
+ * > propositionMetadata config fallback (manually created raw HTML offers).
+ * @returns {{selector: String, actionType: String}|null} null when no selector can be resolved
+ */
+function resolveHtmlContentTarget(item, scope) {
+  const selector = item.data?.selector || config.propositionMetadata?.[scope]?.selector;
+  if (!selector) return null;
+  const actionType = item.data?.actionType
+    || config.propositionMetadata?.[scope]?.actionType
+    || 'replaceHtml';
+  return { selector, actionType };
+}
+
+/**
+ * Applies an HTML offer's content to a target element using alloy's actionType vocabulary.
+ * Mirrors what alloy itself does for setHtml/replaceHtml/appendHtml so the direct-injection
+ * fallback behaves identically to the alloy-handled path.
+ */
+function applyHtmlAction(target, content, actionType) {
+  const parser = new DOMParser();
+  const parsed = parser.parseFromString(content, 'text/html');
+  const nodes = [...parsed.body.childNodes];
+  if (actionType === 'appendHtml') {
+    target.append(...nodes);
+  } else if (actionType === 'setHtml') {
+    target.replaceChildren(...nodes);
+  } else {
+    // replaceHtml (alloy semantics: replace the element itself)
+    target.replaceWith(...nodes);
+  }
+}
+
+/**
+ * Fires a `decisioning.propositionDisplay` event so Target Activity reporting records an
+ * impression for offers we applied outside the alloy pipeline (non-visual dom-action fallback).
+ */
+function reportPropositionDisplay(instanceName, proposition) {
+  window[instanceName]('sendEvent', {
+    xdm: {
+      eventType: 'decisioning.propositionDisplay',
+      _experience: {
+        decisioning: {
+          propositions: [{
+            id: proposition.id,
+            scope: proposition.scope,
+            scopeDetails: proposition.scopeDetails,
+          }],
+          propositionEventType: { display: 1 },
+        },
+      },
+    },
+  }).catch(() => { /* reporting failure shouldn't break the page */ });
+}
+
+/**
  * Fetching propositions from the backend and applying the propositions as the AEM EDS page loads
  * its content async.
  * Documentation:
@@ -405,30 +471,6 @@ let response;
  * @param {String} instanceName The name of the instance in the blobal scope
  * @returns a promise that the propositions were retrieved and will be applied as the page renders
  */
-/**
- * Builds the metadata object required by alloy's applyPropositions for
- * html-content-item propositions (Form-Based HTML offers without built-in selectors).
- * Priority: selector embedded in item data (DA "Send to Target" offers) > propositionMetadata
- * config fallback (manually created raw HTML offers).
- * @param {Array} propositions
- * @returns {Object} metadata keyed by scope — empty if no html-content-item items need mapping
- */
-function buildHtmlContentMetadata(propositions) {
-  const metadata = {};
-  propositions.forEach((p) => {
-    p.items.forEach((item) => {
-      if (item.schema !== SCHEMA_HTML_CONTENT_ITEM) return;
-      const selector = item.data?.selector || config.propositionMetadata?.[p.scope]?.selector;
-      if (!selector) return;
-      const actionType = item.data?.actionType
-        || config.propositionMetadata?.[p.scope]?.actionType
-        || 'replaceHtml';
-      metadata[p.scope] = { selector, actionType };
-    });
-  });
-  return metadata;
-}
-
 async function applyPropositions(instanceName) {
   // Get the decisions, but don't render them automatically
   // so we can hook up into the AEM EDS page load sequence
@@ -444,11 +486,11 @@ async function applyPropositions(instanceName) {
   if (!renderDecisionResponse?.propositions) {
     return [];
   }
-  // dom-action items targeting non-visual elements (head/body/html) have a wrong selector —
-  // alloy validates dom-action propositions against its edge response cache by ID and ignores
-  // any selector we pass. Collect these for direct DOM injection and exclude from alloy entirely.
-  const NON_VISUAL_SELECTORS = new Set(['head', 'body', 'html']);
-  const directInjectItems = [];
+  // dom-action items targeting a non-visual element (head/body/html) are usually a misconfigured
+  // VEC offer — alloy would inject into <head>/<body>/<html>. Pull them out of the alloy pipeline
+  // and apply them via propositionMetadata override (or drop them) instead. Also drop
+  // html-content-item items that have no resolvable selector so they aren't retried every tick.
+  let directInjectQueue = [];
   let propositions = window.structuredClone(renderDecisionResponse.propositions)
     .filter((p) => p.items.some(
       (i) => i.schema === SCHEMA_DOM_ACTION || i.schema === SCHEMA_HTML_CONTENT_ITEM,
@@ -459,13 +501,24 @@ async function applyPropositions(instanceName) {
         if (item.schema === SCHEMA_DOM_ACTION
           && NON_VISUAL_SELECTORS.has(item.data?.selector)) {
           const override = config.propositionMetadata?.[p.scope];
-          if (override?.selector) {
-            directInjectItems.push({
-              content: item.data.content,
-              selector: override.selector,
-              actionType: override.actionType || 'replaceHtml',
-            });
+          if (!override?.selector) {
+            debug('martech', `dropping non-visual dom-action item with no propositionMetadata override for scope "${p.scope}"`);
+            return null;
           }
+          if (NON_VISUAL_SELECTORS.has(override.selector)) {
+            debug('martech', `ignoring propositionMetadata override for scope "${p.scope}": selector "${override.selector}" is non-visual`);
+            return null;
+          }
+          directInjectQueue.push({
+            proposition: { id: p.id, scope: p.scope, scopeDetails: p.scopeDetails },
+            content: item.data.content,
+            selector: override.selector,
+            actionType: override.actionType || 'replaceHtml',
+          });
+          return null;
+        }
+        if (item.schema === SCHEMA_HTML_CONTENT_ITEM && !resolveHtmlContentTarget(item, p.scope)) {
+          debug('martech', `dropping html-content-item with no resolvable selector for scope "${p.scope}"`);
           return null;
         }
         return item;
@@ -473,25 +526,38 @@ async function applyPropositions(instanceName) {
     }))
     .filter((p) => p.items.length > 0);
   onDecoratedElement(async () => {
-    // Direct injection for dom-action items alloy cannot place (non-visual selector override)
-    while (directInjectItems.length) {
-      const { content, selector, actionType } = directInjectItems.shift();
-      const target = document.querySelector(selector);
-      if (target) {
-        const parser = new DOMParser();
-        const parsed = parser.parseFromString(content, 'text/html');
-        const nodes = [...parsed.body.childNodes];
-        if (actionType === 'appendHtml') {
-          target.append(...nodes);
-        } else {
-          target.replaceWith(...nodes);
+    // Direct injection for dom-action items alloy cannot place (non-visual selector override).
+    // Re-queue items whose target hasn't been decorated yet so later mutation ticks can retry.
+    if (directInjectQueue.length) {
+      const pending = directInjectQueue;
+      directInjectQueue = [];
+      pending.forEach((entry) => {
+        let target;
+        try {
+          target = document.querySelector(entry.selector);
+        } catch (err) {
+          debug('martech', `propositionMetadata selector "${entry.selector}" is invalid: ${err.message}`);
+          return;
         }
-      }
+        if (!target) {
+          directInjectQueue.push(entry);
+          return;
+        }
+        applyHtmlAction(target, entry.content, entry.actionType);
+        reportPropositionDisplay(instanceName, entry.proposition);
+      });
     }
     if (!propositions.length) {
       return;
     }
-    const metadata = buildHtmlContentMetadata(propositions);
+    const metadata = {};
+    propositions.forEach((p) => {
+      p.items.forEach((item) => {
+        if (item.schema !== SCHEMA_HTML_CONTENT_ITEM) return;
+        const target = resolveHtmlContentTarget(item, p.scope);
+        if (target) metadata[p.scope] = target;
+      });
+    });
     const applyOptions = { propositions };
     if (Object.keys(metadata).length) {
       applyOptions.metadata = metadata;
@@ -596,13 +662,6 @@ export async function initMartech(webSDKConfig, martechConfig = {}) {
   }
   return Promise.resolve();
 }
-
-const debug = (label = 'martech', ...args) => {
-  if (alloyConfig.debugEnabled) {
-    // eslint-disable-next-line no-console
-    console.debug.call(null, `[${label}]`, ...args);
-  }
-};
 
 export function initRumTracking(sampleRUM, options = {}) {
   // Load the RUM enhancer so we can map all RUM events even on non-sampled pages
@@ -724,7 +783,10 @@ export async function martechLazy() {
       });
     }
   } else if (!config.performanceOptimized) {
-    const renderDecisionResponse = await sendEvent({ renderDecisions: true, decisionScopes: ['__view__'] });
+    const renderDecisionResponse = await sendEvent({
+      renderDecisions: true,
+      decisionScopes: [...new Set(['__view__', ...(config.decisionScopes || [])])],
+    });
     response = renderDecisionResponse;
     document.body.style.visibility = null;
     // Automatically report displayed propositions
