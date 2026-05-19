@@ -41,6 +41,7 @@ function generateSidekickPayload() {
 }
 
 export default function init(payload) {
+  document.querySelector('html').setAttribute('quick-edit', 'true');
   const { search } = window.location;
   const ref = new URLSearchParams(search).get('quick-edit');
   let origin;
