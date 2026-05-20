@@ -441,21 +441,27 @@ function applyHtmlAction(target, content, actionType) {
   }
 }
 
+// Cap retries for direct-inject entries so a typo'd or never-rendering selector can't
+// keep generating querySelector calls for the life of the page.
+const DIRECT_INJECT_MAX_ATTEMPTS = 20;
+
 /**
- * Fires a `decisioning.propositionDisplay` event so Target Activity reporting records an
- * impression for offers we applied outside the alloy pipeline (non-visual dom-action fallback).
+ * Fires a single `decisioning.propositionDisplay` event covering one or more propositions
+ * we applied outside the alloy pipeline (non-visual dom-action fallback), so Target Activity
+ * reporting still records an impression.
  */
-function reportPropositionDisplay(instanceName, proposition) {
+function reportPropositionDisplay(instanceName, propositions) {
+  if (!propositions.length) return;
   window[instanceName]('sendEvent', {
     xdm: {
       eventType: 'decisioning.propositionDisplay',
       _experience: {
         decisioning: {
-          propositions: [{
-            id: proposition.id,
-            scope: proposition.scope,
-            scopeDetails: proposition.scopeDetails,
-          }],
+          propositions: propositions.map((p) => ({
+            id: p.id,
+            scope: p.scope,
+            scopeDetails: p.scopeDetails,
+          })),
           propositionEventType: { display: 1 },
         },
       },
@@ -490,7 +496,10 @@ async function applyPropositions(instanceName) {
   // VEC offer — alloy would inject into <head>/<body>/<html>. Pull them out of the alloy pipeline
   // and apply them via propositionMetadata override (or drop them) instead. Also drop
   // html-content-item items that have no resolvable selector so they aren't retried every tick.
+  // Build the html-content-item metadata map up front so the per-tick callback doesn't have to
+  // re-walk the propositions tree.
   let directInjectQueue = [];
+  const htmlContentMetadata = {};
   let propositions = window.structuredClone(renderDecisionResponse.propositions)
     .filter((p) => p.items.some(
       (i) => i.schema === SCHEMA_DOM_ACTION || i.schema === SCHEMA_HTML_CONTENT_ITEM,
@@ -514,12 +523,17 @@ async function applyPropositions(instanceName) {
             content: item.data.content,
             selector: override.selector,
             actionType: override.actionType || 'replaceHtml',
+            attempts: 0,
           });
           return null;
         }
-        if (item.schema === SCHEMA_HTML_CONTENT_ITEM && !resolveHtmlContentTarget(item, p.scope)) {
-          debug('martech', `dropping html-content-item with no resolvable selector for scope "${p.scope}"`);
-          return null;
+        if (item.schema === SCHEMA_HTML_CONTENT_ITEM) {
+          const target = resolveHtmlContentTarget(item, p.scope);
+          if (!target) {
+            debug('martech', `dropping html-content-item with no resolvable selector for scope "${p.scope}"`);
+            return null;
+          }
+          htmlContentMetadata[p.scope] = target;
         }
         return item;
       }).filter(Boolean),
@@ -527,10 +541,12 @@ async function applyPropositions(instanceName) {
     .filter((p) => p.items.length > 0);
   onDecoratedElement(async () => {
     // Direct injection for dom-action items alloy cannot place (non-visual selector override).
-    // Re-queue items whose target hasn't been decorated yet so later mutation ticks can retry.
+    // Re-queue items whose target hasn't been decorated yet so later mutation ticks can retry,
+    // up to DIRECT_INJECT_MAX_ATTEMPTS — past that we assume the selector is wrong and drop it.
     if (directInjectQueue.length) {
       const pending = directInjectQueue;
       directInjectQueue = [];
+      const justInjected = [];
       pending.forEach((entry) => {
         let target;
         try {
@@ -540,27 +556,25 @@ async function applyPropositions(instanceName) {
           return;
         }
         if (!target) {
+          entry.attempts += 1;
+          if (entry.attempts >= DIRECT_INJECT_MAX_ATTEMPTS) {
+            debug('martech', `dropping direct-inject entry after ${entry.attempts} attempts — selector "${entry.selector}" never matched`);
+            return;
+          }
           directInjectQueue.push(entry);
           return;
         }
         applyHtmlAction(target, entry.content, entry.actionType);
-        reportPropositionDisplay(instanceName, entry.proposition);
+        justInjected.push(entry.proposition);
       });
+      reportPropositionDisplay(instanceName, justInjected);
     }
     if (!propositions.length) {
       return;
     }
-    const metadata = {};
-    propositions.forEach((p) => {
-      p.items.forEach((item) => {
-        if (item.schema !== SCHEMA_HTML_CONTENT_ITEM) return;
-        const target = resolveHtmlContentTarget(item, p.scope);
-        if (target) metadata[p.scope] = target;
-      });
-    });
     const applyOptions = { propositions };
-    if (Object.keys(metadata).length) {
-      applyOptions.metadata = metadata;
+    if (Object.keys(htmlContentMetadata).length) {
+      applyOptions.metadata = htmlContentMetadata;
     }
     const appliedPropositions = await window[instanceName](
       'applyPropositions',
