@@ -209,6 +209,11 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+/** Escape HTML then render `backtick` spans as inline <code> elements. */
+function formatText(value) {
+  return escapeHtml(value).replace(/`([^`\n]+)`/g, '<code>$1</code>');
+}
+
 function normalizeExternalUrl(value) {
   const trimmed = String(value || '').trim();
   if (!trimmed) return '';
@@ -324,11 +329,11 @@ function renderSlide(slide) {
         <h2 class="slide-title">${escapeHtml(slide.title || 'Slide')}</h2>
       </header>
 
-      ${slide.lead ? `<p class="slide-lead">${escapeHtml(slide.lead)}</p>` : ''}
+      ${slide.lead ? `<p class="slide-lead">${formatText(slide.lead)}</p>` : ''}
 
       ${bullets.length ? `
         <ul class="slide-list">
-          ${bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('')}
+          ${bullets.map((b) => `<li>${formatText(b)}</li>`).join('')}
         </ul>
       ` : ''}
 
@@ -342,7 +347,7 @@ function renderSlide(slide) {
       ${slide.takeaway ? `
         <aside class="slide-takeaway" aria-label="Key takeaway">
           <span class="takeaway-label">Key takeaway</span>
-          <p class="takeaway-text">${escapeHtml(slide.takeaway)}</p>
+          <p class="takeaway-text">${formatText(slide.takeaway)}</p>
         </aside>
       ` : ''}
 
