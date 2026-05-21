@@ -33,17 +33,15 @@ export async function loadFragment(path) {
     const { prefix } = getLocale();
     const localizedPath = (!dnt && prefix) ? `${prefix}${cleanPath}` : cleanPath;
 
-    console.log('Loading fragment: path=%s, cleanPath=%s, localizedPath=%s, dnt=%s', path, cleanPath, localizedPath, dnt);
-
     let resp = await fetch(`${localizedPath}.plain.html`);
     let resolvedPath = localizedPath;
     if (!resp.ok && prefix && !dnt) {
-      console.log('Fragment not found for localized path: %s, loading default path: %s', localizedPath, cleanPath)
+      console.log('Fragment not found for localized path: %s', localizedPath)
 
       resp = await fetch(`${cleanPath}.plain.html`);
       resolvedPath = cleanPath;
     } else {
-      console.log('Loaded fragment for localized path: %s', localizedPath);
+      console.log('Found localized fragment for path: %s', localizedPath);
     }
 
     if (resp.ok) {

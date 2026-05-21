@@ -28,8 +28,6 @@ export function getLocale(locales = LOCALES) {
   const prefix = matches.sort((a, b) => b.length - a.length)[0] || '';
   const locale = locales[prefix] || locales[''];
 
-  console.log('Locale: %s', JSON.stringify(locale));
-
   document.documentElement.lang = locale?.lang || 'en';
   return { prefix, ...locale };
 }
