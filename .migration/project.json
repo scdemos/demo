@@ -1,4 +1,6 @@
 {
   "previewOrg": "scdemos",
-  "previewSite": "cognify"
+  "previewSite": "cognify",
+  "type": "da",
+  "contentHostUrl": "https://content.da.live/scdemos/cognify/"
 }
