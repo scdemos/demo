@@ -12,21 +12,21 @@
 }
 
 .cards > ul > li {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(248 250 252 / 8%));
   background: light-dark(var(--color-light), var(--color-card-dark));
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 40%)),
-              0 1px 2px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
+  box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 4%), rgb(0 0 0 / 35%)),
+              0 1px 2px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 20%));
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
 .cards > ul > li:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px light-dark(rgb(16 42 67 / 12%), rgb(20 184 196 / 12%));
+  border-color: light-dark(var(--color-gold), rgb(20 184 196 / 35%));
 }
 
 /* Article wrapper — layout-invisible so the card link remains the direct flex child */
@@ -125,15 +125,15 @@
 }
 
 .cards.bento > ul > li:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 32px 64px -12px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  transform: translateY(-8px);
+  box-shadow: 0 32px 64px -12px light-dark(rgb(16 42 67 / 18%), rgb(20 184 196 / 15%)), 0 0 0 1px light-dark(var(--color-gold), rgb(20 184 196 / 30%));
   border-color: var(--color-gold);
 }
 
 /* Featured card */
 .cards.bento > ul > li.cards-card-featured {
   border: none;
-  background-color: var(--color-rust);
+  background: var(--gradient-brand);
   color: var(--color-parchment);
 }
 
@@ -150,11 +150,11 @@
 
 /* Headings */
 .cards.bento .cards-card-body :is(h2, h3) {
-  font-family: var(--font-family-serif);
-  font-weight: 500;
+  font-family: var(--font-family);
+  font-weight: 700;
   font-size: 2.2rem;
   line-height: 1.1;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
   margin: 0;
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
@@ -169,7 +169,7 @@
 }
 
 .cards.bento .cards-card-featured .cards-card-body p:not(.cards-card-tag) {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.2rem;
   opacity: 0.9;
   margin-top: 35px;

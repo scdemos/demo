@@ -1,6 +1,6 @@
 footer {
   width: 100%;
-  background-color: light-dark(var(--color-rust), #080d0d);
+  background-color: light-dark(var(--color-ink), #060e1c);
   color: var(--color-parchment);
   border-top: light-dark(none, var(--border-heritage));
   font-size: var(--body-font-size-xs);

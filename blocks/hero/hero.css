@@ -1,4 +1,4 @@
-/* Hero block – Heritage Elite, mobile-first */
+/* Hero block – Cognify, mobile-first */
 
 .hero-container .hero-wrapper {
   max-width: unset;
@@ -126,16 +126,16 @@
 /* Heading */
 .hero h1 {
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: clamp(2rem, 8vw, 4.5rem);
-  font-weight: 500;
+  font-weight: 800;
   line-height: 1.05;
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
 
 .hero h1 em {
-  font-weight: 400;
-  font-style: italic;
+  font-weight: 800;
+  font-style: normal;
   background: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
   background-clip: text;
   color: transparent;
@@ -153,7 +153,7 @@
   display: none;
   max-width: 550px;
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: 1.15rem;
   color: light-dark(var(--color-ink), var(--color-muted));
   line-height: 1.7;

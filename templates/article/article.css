@@ -64,7 +64,7 @@
   margin: 0 auto;
   width: 100%;
   padding-top: var(--space-m);
-  border-top: 1px solid light-dark(rgb(161 79 43 / 20%), rgb(245 242 237 / 18%));
+  border-top: 1px solid light-dark(rgb(16 42 67 / 12%), rgb(248 250 252 / 12%));
 }
 
 .article .hero .article-author {
@@ -72,20 +72,20 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: light-dark(var(--color-gold), var(--color-gold));
 }
 
 .article .hero .article-author::after {
   content: '·';
   margin-left: var(--space-m);
   font-style: normal;
-  color: light-dark(rgb(0 0 0 / 30%), rgb(245 242 237 / 35%));
+  color: light-dark(rgb(0 0 0 / 25%), rgb(248 250 252 / 30%));
 }
 
 .article .hero .article-date {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-s);
-  font-style: italic;
+  font-style: normal;
   color: light-dark(var(--color-gray-600), var(--color-muted));
   white-space: nowrap;
 }
@@ -95,8 +95,8 @@
    ========================================================================== */
 
 .article .article-breadcrumb {
-  background-color: light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 3%));
-  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 8%));
+  background-color: light-dark(rgb(20 184 196 / 3%), rgb(20 184 196 / 2%));
+  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(248 250 252 / 6%));
   margin: 0;
   padding: var(--space-m) var(--content-padding-inline);
 }
@@ -132,16 +132,16 @@
 
 .article .article-breadcrumb a:hover,
 .article .article-breadcrumb a:focus-visible {
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: light-dark(var(--color-gold), var(--color-gold));
   text-decoration: underline;
   text-underline-offset: 0.3em;
   text-decoration-thickness: 1px;
 }
 
 .article .article-breadcrumb li[aria-current='page'] {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family);
   font-size: var(--body-font-size-s);
-  font-style: italic;
+  font-style: normal;
   text-transform: none;
   letter-spacing: 0;
   color: light-dark(var(--color-ink), var(--color-parchment));
