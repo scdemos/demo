@@ -41,10 +41,12 @@ function decorateVideoHero(block) {
     video.autoplay = true;
     video.muted = true;
     video.defaultMuted = true;
+    video.loop = true;
     video.playsInline = true;
     video.preload = 'auto';
     video.setAttribute('autoplay', '');
     video.setAttribute('muted', '');
+    video.setAttribute('loop', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     video.setAttribute('aria-hidden', 'true');
@@ -55,23 +57,41 @@ function decorateVideoHero(block) {
     block.append(video);
     block.classList.add('has-video');
 
-    const toggle = document.createElement('button');
-    toggle.className = 'hero-video-toggle';
-    toggle.type = 'button';
-    toggle.setAttribute('aria-label', 'Pause background video');
-    toggle.textContent = 'Pause';
-    block.append(toggle);
+    const controls = document.createElement('div');
+    controls.className = 'hero-video-controls';
 
-    const setToggleState = () => {
+    const playToggle = document.createElement('button');
+    playToggle.className = 'hero-video-control hero-video-play-toggle';
+    playToggle.type = 'button';
+    playToggle.setAttribute('aria-label', 'Pause background video');
+    playToggle.textContent = 'Pause';
+
+    const loopToggle = document.createElement('button');
+    loopToggle.className = 'hero-video-control hero-video-loop-toggle';
+    loopToggle.type = 'button';
+    loopToggle.setAttribute('aria-label', 'Disable background video loop');
+    loopToggle.setAttribute('aria-pressed', 'true');
+    loopToggle.textContent = 'Loop';
+
+    controls.append(playToggle, loopToggle);
+    block.append(controls);
+
+    const setPlayToggleState = () => {
       const paused = video.paused || video.ended;
-      toggle.textContent = paused ? 'Play' : 'Pause';
-      toggle.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} background video`);
+      playToggle.textContent = paused ? 'Play' : 'Pause';
+      playToggle.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} background video`);
+    };
+
+    const setLoopToggleState = () => {
+      loopToggle.setAttribute('aria-pressed', String(video.loop));
+      loopToggle.setAttribute('aria-label', `${video.loop ? 'Disable' : 'Enable'} background video loop`);
     };
 
     const playVideo = () => {
+      if (video.ended) video.currentTime = 0;
       const playPromise = video.play();
       if (playPromise) playPromise.catch(() => {});
-      setToggleState();
+      setPlayToggleState();
     };
 
     const getTheme = () => {
@@ -90,14 +110,21 @@ function decorateVideoHero(block) {
       playVideo();
     };
 
-    toggle.addEventListener('click', () => {
+    playToggle.addEventListener('click', () => {
       if (video.paused || video.ended) playVideo();
       else video.pause();
-      setToggleState();
+      setPlayToggleState();
     });
-    video.addEventListener('play', setToggleState);
-    video.addEventListener('pause', setToggleState);
-    video.addEventListener('ended', setToggleState);
+    loopToggle.addEventListener('click', () => {
+      video.loop = !video.loop;
+      if (video.loop) video.setAttribute('loop', '');
+      else video.removeAttribute('loop');
+      setLoopToggleState();
+    });
+    video.addEventListener('play', setPlayToggleState);
+    video.addEventListener('pause', setPlayToggleState);
+    video.addEventListener('ended', setPlayToggleState);
+    setLoopToggleState();
 
     setVideoSource();
     window.addEventListener('aem-theme-change', (e) => {
