@@ -1,5 +1,123 @@
+function getVideoSources(block) {
+  const videoSources = {};
+
+  [...block.children].forEach((row) => {
+    const link = row.querySelector('a[href]');
+    if (link && /\.(mp4|webm|ogg)(\?|#|$)/i.test(link.href)) {
+      const label = link.textContent.trim().toLowerCase();
+      if (label.includes('light')) videoSources.light = link.href;
+      else if (label.includes('dark')) videoSources.dark = link.href;
+      else if (!videoSources.dark) videoSources.dark = link.href;
+      else if (!videoSources.light) videoSources.light = link.href;
+      row.remove();
+    }
+  });
+
+  if (!videoSources.light) videoSources.light = videoSources.dark;
+  if (!videoSources.dark) videoSources.dark = videoSources.light;
+
+  return videoSources;
+}
+
+function decorateVideoHero(block) {
+  const videoSources = getVideoSources(block);
+  const picture = block.querySelector('picture');
+  const poster = picture?.querySelector('img')?.currentSrc || picture?.querySelector('img')?.src;
+  const posterRow = picture?.parentElement?.parentElement;
+  posterRow?.remove();
+
+  const content = document.createElement('div');
+  content.className = 'hero-video-content';
+  [...block.children].forEach((row) => {
+    [...row.children].forEach((cell) => {
+      while (cell.firstChild) content.append(cell.firstChild);
+    });
+  });
+
+  block.textContent = '';
+
+  if (videoSources.light || videoSources.dark) {
+    const video = document.createElement('video');
+    video.autoplay = true;
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.setAttribute('autoplay', '');
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+    video.setAttribute('aria-hidden', 'true');
+    if (poster) video.poster = poster;
+
+    const source = document.createElement('source');
+    video.append(source);
+    block.append(video);
+    block.classList.add('has-video');
+
+    const toggle = document.createElement('button');
+    toggle.className = 'hero-video-toggle';
+    toggle.type = 'button';
+    toggle.setAttribute('aria-label', 'Pause background video');
+    toggle.textContent = 'Pause';
+    block.append(toggle);
+
+    const setToggleState = () => {
+      const paused = video.paused || video.ended;
+      toggle.textContent = paused ? 'Play' : 'Pause';
+      toggle.setAttribute('aria-label', `${paused ? 'Play' : 'Pause'} background video`);
+    };
+
+    const playVideo = () => {
+      const playPromise = video.play();
+      if (playPromise) playPromise.catch(() => {});
+      setToggleState();
+    };
+
+    const getTheme = () => {
+      const theme = document.documentElement.dataset.theme;
+      if (theme === 'light' || theme === 'dark') return theme;
+      return document.body.classList.contains('light-scheme') ? 'light' : 'dark';
+    };
+
+    const setVideoSource = (theme = getTheme()) => {
+      const src = videoSources[theme] || videoSources.dark || videoSources.light;
+      if (!src || source.src === src) return;
+      source.src = src;
+      source.type = src.endsWith('.webm') ? 'video/webm' : 'video/mp4';
+      video.dataset.themeVideo = theme;
+      video.load();
+      playVideo();
+    };
+
+    toggle.addEventListener('click', () => {
+      if (video.paused || video.ended) playVideo();
+      else video.pause();
+      setToggleState();
+    });
+    video.addEventListener('play', setToggleState);
+    video.addEventListener('pause', setToggleState);
+    video.addEventListener('ended', setToggleState);
+
+    setVideoSource();
+    window.addEventListener('aem-theme-change', (e) => {
+      setVideoSource(e.detail?.theme);
+    });
+
+    if (document.visibilityState === 'visible') playVideo();
+    else document.addEventListener('visibilitychange', playVideo, { once: true });
+  }
+
+  block.append(content);
+}
+
 /** @param {Element} block The hero block element */
 export default function decorate(block) {
+  if (block.classList.contains('video')) {
+    decorateVideoHero(block);
+    return;
+  }
+
   const pictures = block.querySelectorAll('picture');
 
   if (pictures.length >= 2) {
