@@ -64,9 +64,13 @@ async function decorateLinks(block) {
 function decorateBento(block) {
   const ul = createTag('ul');
 
+  // Bento is a repeating 3-card pattern: lead (wide) + contrast (dark, narrow) + full (full-width).
+  // The pattern wraps every 3 cards so authors can add 3, 6, 9, ... cards and it still works.
+  const ROLES = ['cards-card-lead', 'cards-card-contrast', 'cards-card-full'];
+
   [...block.children].forEach((row, idx) => {
     const li = createTag('li');
-    if (idx === 0) li.classList.add('cards-card-featured');
+    li.classList.add(ROLES[idx % ROLES.length]);
     while (row.firstElementChild) li.append(row.firstElementChild);
 
     // Unwrap the single wrapper div if present
@@ -90,10 +94,21 @@ function decorateBento(block) {
       li.classList.add('cards-card-text-only');
     }
 
-    // Find and mark the tag/label (first <p> that looks like a category tag)
-    const firstP = li.querySelector('p');
-    if (firstP && !firstP.querySelector('picture') && !firstP.classList.contains('button-container')) {
-      firstP.classList.add('cards-card-tag');
+    // Mark any <p>s that appear before the heading as eyebrow tags
+    const heading = li.querySelector('h1, h2, h3, h4');
+    if (heading) {
+      let prev = heading.previousElementSibling;
+      while (prev) {
+        const cur = prev;
+        prev = prev.previousElementSibling;
+        if (
+          cur.tagName === 'P'
+          && !cur.classList.contains('button-container')
+          && !cur.querySelector('picture')
+        ) {
+          cur.classList.add('cards-card-tag');
+        }
+      }
     }
 
     // Wrap remaining non-image content in a body div
@@ -149,9 +164,9 @@ function decorateDefault(block) {
         //Remove the button class from the link and button-container class from the parent
         const parent = linkEl.parentElement;
         if (parent) {
-          parent.classList.remove('button-container');
+          // parent.classList.remove('button-container');
         }
-        linkEl.classList.remove('button');
+        // linkEl.classList.remove('button');
        } else {
         const wrapper = createTag('a', {
           href: linkEl.getAttribute('href'),

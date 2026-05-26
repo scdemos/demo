@@ -516,9 +516,7 @@ header nav .nav-sections button.button {
   color: var(--text-color);
   padding: 0;
   min-width: 0;
-  font-weight: var(--nav-primary-weight);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  font-weight: normal;
 }
 
 header nav .nav-sections a.button:any-link:hover,
@@ -529,19 +527,18 @@ header nav .nav-sections button.button:focus-visible {
   border: 0;
   transform: none;
   box-shadow: none;
+  text-decoration: underline;
 }
 
 /* CTA button in header tools */
 header nav .nav-tools a.button:any-link:not(.nav-tool) {
-  border: 1.5px solid var(--color-rust);
+  border: 0;
   border-radius: 4px;
   background: transparent;
-  color: var(--color-rust);
+  color: #454b52;
   padding: 12px 24px;
   font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  font-weight: normal;
   transition: all 0.3s;
 }
 
@@ -579,10 +576,9 @@ header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item
 }
 
 header nav .nav-tools a.button:any-link:not(.nav-tool):hover {
-  background: var(--color-rust);
-  color: var(--color-light);
   transform: none;
   box-shadow: none;
+  text-decoration: underline;
 }
 
 header nav .nav-sections .default-content-wrapper > ul > li > ul p.button-container {
@@ -618,8 +614,8 @@ header nav .nav-tools .nav-search-form {
 header nav .nav-tools .nav-search-input {
   width: 120px;
   border: 1px solid light-dark(rgb(0 0 0 / 14%), rgb(255 255 255 / 20%));
-  border-radius: 999px;
-  padding: var(--nav-gap) 38px var(--nav-gap) var(--nav-padding);
+  border-radius: 8px;
+  padding: var(--nav-gap) 38px var(--nav-gap) 8px;
   background-color: transparent;
   color: inherit;
   font: inherit;
@@ -689,8 +685,8 @@ header nav .nav-tools .icon img {
   height: 18px;
 }
 
-:where(body.dark-scheme, body.dark, body.theme-dark) header nav .nav-tools .icon img {
-  filter: invert(1) brightness(1.2);
+header nav .nav-tools .icon-toggle {
+  display: none;
 }
 
 header nav .nav-tools .nav-language-wrap {
@@ -944,22 +940,6 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     color: var(--nav-hover-color);
   }
 
-  header nav .nav-sections .nav-drop::after {
-    content: '';
-    display: inline-block;
-    position: absolute;
-    top: 50%;
-    right: var(--space-xs);
-    transform: translateY(-50%) rotate(135deg);
-    width: 5px;
-    height: 5px;
-    border: 2px solid currentcolor;
-    border-radius: 0 1px 0 0;
-    border-width: 2px 2px 0 0;
-    transition: transform 0.2s ease;
-    opacity: 0.7;
-  }
-
   header nav .nav-sections .nav-drop:hover::after,
   header nav .nav-sections .nav-drop[aria-expanded='true']::after {
     transform: translateY(-50%) rotate(-45deg);
@@ -1077,6 +1057,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     transform: translateY(0);
     pointer-events: auto;
     transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s;
+    border-radius: 0;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul::before {
@@ -1170,7 +1151,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     padding: var(--space-s) var(--space-s);
     border-radius: var(--nav-radius);
     color: var(--text-color);
-    font-size: var(--body-font-size-m);
+    font-size: var(--body-font-size-xs);
     font-weight: var(--nav-item-weight);
     text-decoration: none;
     transition: background-color 0.18s ease, color 0.18s ease;
@@ -1229,8 +1210,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul a:hover,
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul a:focus-visible {
     color: var(--nav-hover-color);
-    background-color: var(--nav-bg-hover-item);
-    text-decoration: none;
+    text-decoration: underline;
   }
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul a:focus-visible {
@@ -1255,7 +1235,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
   }
 
   header nav .nav-tools .nav-search-input {
-    width: 190px;
+    width: 250px;
   }
 
   header nav .nav-tools a.button.nav-auth-link:any-link {
@@ -1326,5 +1306,162 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 @media (width >= 1200px) {
   header nav {
     max-width: 1264px;
+  }
+}
+
+/* ==========================================================================
+   Mega-nav backdrop — dims the page when any mega panel is open (desktop)
+   ========================================================================== */
+
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 50%);
+  z-index: 70;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.nav-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.25s ease, visibility 0s;
+}
+
+/* ==========================================================================
+   Mega-nav: kill uppercase inherited from `header nav .nav-sections ul`
+   (the .nav-mega-inner structure isn't covered by the existing text-transform
+   reset further up, so headings and sub-items render UPPERCASE without this).
+   ========================================================================== */
+
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p > a,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul > li,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > ul > li > a,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-item,
+header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-item > a {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ==========================================================================
+   Mega-nav icons — small SVG icons rendered next to category headings
+   (e.g. ":wireless: Wireless")
+   ========================================================================== */
+
+@media (width >= 900px) {
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p > .icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p > .icon img,
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p > .icon svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* When the heading itself is a link, give it the category-title treatment */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p > a {
+    color: var(--color-rust);
+    font-weight: var(--nav-heading-weight);
+    text-decoration: none;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-heading > p > a:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ==========================================================================
+   Products mega-nav: two-panel layout
+   Left: categories arranged in 3 cols × 2 rows (auto-flow)
+   Right: "What's trending" sidebar with subtle gray background
+
+   NOTE on specificity: all overrides below match the full base-rule chain
+   (`...default-content-wrapper > ul > li.nav-drop-mega ... > .nav-mega-inner > li...`)
+   plus the extra `.nav-drop-mega-products` and `.nav-mega-heading[.nav-mega-trending]`
+   class qualifiers, so they reliably beat the per-group positioning set by
+   decorateMega via the `--mega-group` custom property.
+   ========================================================================== */
+
+@media (width >= 900px) {
+  /* Switch from per-group columns to a fixed 4-col grid: 3 category cols + 1
+     trending col. Categories will auto-flow into 3 × 2; trending is pinned. */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr)) minmax(240px, 300px);
+    grid-auto-flow: row dense;
+    grid-auto-rows: min-content;
+    gap: var(--space-l) var(--space-xl);
+    align-items: start;
+  }
+
+  /* Categories: drop the per-group column/row assignment so they auto-flow */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading:not(.nav-mega-trending) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  /* Trending: pin to column 4, span both category rows */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading.nav-mega-trending {
+    grid-column: 4;
+    grid-row: 1 / span 2;
+    background: light-dark(var(--color-gray-100), rgb(255 255 255 / 4%));
+    padding: var(--space-l);
+    border-radius: var(--nav-radius);
+    align-self: stretch;
+  }
+
+  /* Trending heading text */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading.nav-mega-trending > p {
+    margin: 0 0 var(--space-m);
+    color: var(--color-rust);
+    font-size: var(--nav-heading-size);
+    font-weight: var(--nav-heading-weight);
+  }
+
+  /* The first <li> inside trending is "Featured" — treat as sub-heading */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading.nav-mega-trending > ul > li:first-child {
+    font-weight: 600;
+    color: var(--text-color);
+    padding: 0 var(--space-s) var(--space-xs);
+  }
+
+  /* CTA: the last link inside trending = "Shop all deals" */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading.nav-mega-trending > ul > li:last-child > a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-m);
+    padding: var(--space-s) var(--space-m);
+    font-weight: 600;
+    color: var(--color-rust);
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading.nav-mega-trending > ul > li:last-child > a::after {
+    content: '→';
+    font-size: 1.1em;
+    transition: transform 0.18s ease;
+  }
+
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega.nav-drop-mega-products > ul > .nav-mega-inner > li.nav-mega-heading.nav-mega-trending > ul > li:last-child > a:hover::after {
+    transform: translateX(4px);
   }
 }

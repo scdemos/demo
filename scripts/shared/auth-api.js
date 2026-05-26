@@ -6,7 +6,7 @@ const AUTH_PATHS = {
 };
 
 const AUTH_LABELS = {
-  login: 'Login',
+  login: 'Account sign in',
   logout: 'Logout',
 };
 

@@ -6,166 +6,136 @@
   when they intersect. Only runs when prefers-reduced-motion allows it.
   ========================================================================== */
 
-@media (prefers-reduced-motion: no-preference) {
-  :is(main, article.article-body) > .section.will-reveal:not(.revealed) {
-    opacity: 0;
-    transform: translateY(32px);
-    transition: opacity 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-      transform 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
-  }
-
-  :is(main, article.article-body) > .section.will-reveal.revealed {
-    opacity: 1;
-    transform: none;
-    transition: opacity 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-      transform 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
-  }
-
-  /* Stagger children inside revealed sections for cascading entrance */
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :is(h1, h2, h3, h4, p, .block, .button-container, picture) {
-    animation: content-enter 0.7s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
-  }
-
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(1) { animation-delay: 0.05s; }
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(2) { animation-delay: 0.1s; }
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(3) { animation-delay: 0.15s; }
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(4) { animation-delay: 0.2s; }
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(5) { animation-delay: 0.25s; }
-  :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(6) { animation-delay: 0.3s; }
-
-  @keyframes content-enter {
-    from {
+  @media (prefers-reduced-motion: no-preference) {
+    :is(main, article.article-body) > .section.will-reveal:not(.revealed) {
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(32px);
+      transition: opacity 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+        transform 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
     }
-
-    to {
+  
+    :is(main, article.article-body) > .section.will-reveal.revealed {
       opacity: 1;
       transform: none;
+      transition: opacity 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+        transform 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    }
+  
+    /* Stagger children inside revealed sections for cascading entrance */
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :is(h1, h2, h3, h4, p, .block, .button-container, picture) {
+      animation: content-enter 0.7s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+    }
+  
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(1) { animation-delay: 0.05s; }
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(2) { animation-delay: 0.1s; }
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(3) { animation-delay: 0.15s; }
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(4) { animation-delay: 0.2s; }
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(5) { animation-delay: 0.25s; }
+    :is(main, article.article-body) > .section.will-reveal.revealed > div > :nth-child(6) { animation-delay: 0.3s; }
+  
+    @keyframes content-enter {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+  
+      to {
+        opacity: 1;
+        transform: none;
+      }
     }
   }
-}
-
-/* ==========================================================================
-  Post-LCP link transitions
-  ========================================================================== */
-
-a:any-link {
-  transition: color 0.25s, text-decoration-color 0.25s;
-}
-
-/* ==========================================================================
-  Blockquote and horizontal rule – editorial polish
-  ========================================================================== */
-
-:is(main, article.article-body) blockquote {
-  margin: var(--space-2xl, 48px) 0;
-  padding: var(--space-l) var(--space-xl);
-  border-left: 4px solid var(--color-gold);
-  background-color: light-dark(rgb(0 159 219 / 5%), rgb(0 159 219 / 8%));
-  border-radius: 0 8px 8px 0;
-  font-family: var(--font-family);
-  font-size: var(--body-font-size-xl);
-  font-style: normal;
-  line-height: 1.55;
-  color: light-dark(var(--color-ink), var(--color-parchment));
-}
-
-:is(main, article.article-body) blockquote p {
-  margin: 0;
-}
-
-:is(main, article.article-body) hr {
-  border: none;
-  height: 2px;
-  margin: var(--space-2xl, 48px) auto;
-  max-width: 80px;
-  background: var(--gradient-brand);
-  border-radius: 1px;
-}
-
-/* ==========================================================================
-  Section polish — non-critical enhancements
-  ========================================================================== */
-
-/* Highlighted/light sections get a subtle border in dark mode */
-.dark-scheme :is(main, article.article-body) > .section.light,
-.dark-scheme :is(main, article.article-body) > .section.highlight,
-:root[data-theme='dark'] :is(main, article.article-body) > .section.light,
-:root[data-theme='dark'] :is(main, article.article-body) > .section.highlight {
-  box-shadow: inset 0 1px 0 rgb(0 159 219 / 10%), inset 0 -1px 0 rgb(0 159 219 / 10%);
-}
-
-/* Divider sections: slightly larger padding for visual breathing room */
-@media (width >= 900px) {
-  :is(main, article.article-body) > .section.divider {
-    padding-block: calc(var(--space-xl) * 1.5);
+  
+  /* ==========================================================================
+    Post-LCP link transitions
+    ========================================================================== */
+  
+  a:any-link {
+    transition: color 0.25s, text-decoration-color 0.25s;
   }
-
-  :is(main, article.article-body) > .section.divider:first-child {
-    padding-block-start: 0;
+  
+  /* ==========================================================================
+    Blockquote and horizontal rule – editorial polish
+    ========================================================================== */
+  
+  :is(main, article.article-body) blockquote {
+    margin: var(--space-2xl, 48px) 0;
+    padding: var(--space-l) var(--space-xl);
+    border-left: 4px solid var(--color-gold);
+    background-color: light-dark(rgb(0 159 219 / 5%), rgb(0 159 219 / 8%));
+    border-radius: 0 8px 8px 0;
+    font-family: var(--font-family);
+    font-size: var(--body-font-size-xl);
+    font-style: normal;
+    line-height: 1.55;
+    color: light-dark(var(--color-ink), var(--color-parchment));
   }
-}
-
-/* H2 accent — thin brand-gradient bar beneath h2 in plain content sections */
-:is(main, article.article-body) > .section:not(.hero-container, .gradient, .ink, .rust) h2::after {
-  content: '';
-  display: block;
-  width: 3rem;
-  height: 3px;
-  margin-top: 0.35em;
-  background: var(--gradient-brand);
-  border-radius: 2px;
-}
-
-:is(main, article.article-body) > .section.center:not(.hero-container, .gradient, .ink, .rust) h2::after {
-  margin-inline: auto;
-}
-
-/* ==========================================================================
-  Header scroll shadow — appears after user scrolls past hero
-  ========================================================================== */
-
-header .nav-wrapper.scrolled {
-  box-shadow: 0 2px 16px rgb(0 0 0 / 8%);
-}
-
-.dark-scheme header .nav-wrapper.scrolled,
-:root[data-theme='dark'] header .nav-wrapper.scrolled {
-  box-shadow: 0 2px 16px rgb(0 0 0 / 30%);
-}
-
-/* ==========================================================================
-  Teaser block — enhanced dark mode styling
-  ========================================================================== */
-
-.dark-scheme main .teaser,
-:root[data-theme='dark'] main .teaser {
-  box-shadow: 0 0 0 1px rgb(0 159 219 / 12%), 0 8px 32px rgb(0 0 0 / 25%);
-}
-
-/* ==========================================================================
-  Global image hover – subtle scale on linked images
-  ========================================================================== */
-
-:is(main, article.article-body) a picture img {
-  transition: transform 0.55s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    filter 0.55s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
-}
-
-:is(main, article.article-body) a:hover picture img {
-  transform: scale(1.03);
-  filter: brightness(1.02);
-}
-
-/* Inline images get subtle rounded corners for a polished look */
-:is(main, article.article-body) > .section > div > p > picture img {
-  border-radius: 8px;
-}
-
-/* Focus-visible on all interactive elements: consistent brand ring */
-:is(main, article.article-body) :is(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
+  
+  :is(main, article.article-body) blockquote p {
+    margin: 0;
+  }
+  
+  :is(main, article.article-body) hr {
+    border: none;
+    height: 2px;
+    margin: var(--space-2xl, 48px) auto;
+    max-width: 80px;
+    background: var(--gradient-brand);
+    border-radius: 1px;
+  }
+  
+  /* ==========================================================================
+    Section polish — non-critical enhancements
+    ========================================================================== */
+  
+  
+  /* Divider sections: slightly larger padding for visual breathing room */
+  @media (width >= 900px) {
+    :is(main, article.article-body) > .section.divider {
+      padding-block: calc(var(--space-xl) * 1.5);
+    }
+  
+    :is(main, article.article-body) > .section.divider:first-child {
+      padding-block-start: 0;
+    }
+  }
+  
+  :is(main, article.article-body) > .section.center:not(.hero-container, .gradient, .ink, .rust) h2::after {
+    margin-inline: auto;
+  }
+  
+  /* ==========================================================================
+    Header scroll shadow — appears after user scrolls past hero
+    ========================================================================== */
+  
+  header .nav-wrapper.scrolled {
+    box-shadow: 0 2px 16px rgb(0 0 0 / 8%);
+  }
+  
+  
+  /* ==========================================================================
+    Global image hover – subtle scale on linked images
+    ========================================================================== */
+  
+  :is(main, article.article-body) a picture img {
+    transition: transform 0.55s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      filter 0.55s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  
+  :is(main, article.article-body) a:hover picture img {
+    transform: scale(1.03);
+    filter: brightness(1.02);
+  }
+  
+  /* Inline images get subtle rounded corners for a polished look */
+  :is(main, article.article-body) > .section > div > p > picture img {
+    border-radius: 8px;
+  }
+  
+  /* Focus-visible on all interactive elements: consistent brand ring */
+  :is(main, article.article-body) :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  

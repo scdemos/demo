@@ -15,7 +15,6 @@ import {
 } from '../../scripts/shared/auth-api.js';
 
 const DESKTOP = window.matchMedia('(min-width: 900px)');
-const THEME_KEY = 'demo-theme';
 
 function getNavPath() {
   const meta = getMetadata('nav');
@@ -26,6 +25,25 @@ function collapseAll(nav) {
   nav.querySelectorAll('.nav-drop').forEach((li) => li.setAttribute('aria-expanded', 'false'));
   nav.querySelector('.nav-language-menu')?.setAttribute('hidden', '');
   nav.querySelector('.nav-language-toggle')?.setAttribute('aria-expanded', 'false');
+  updateBackdrop(nav);
+}
+
+/* Dark page backdrop shown while any desktop mega-nav panel is open. */
+function ensureBackdrop() {
+  let backdrop = document.querySelector('.nav-backdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.className = 'nav-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    document.body.append(backdrop);
+  }
+  return backdrop;
+}
+
+function updateBackdrop(nav) {
+  const backdrop = ensureBackdrop();
+  const anyMegaOpen = !!nav.querySelector('.nav-drop-mega[aria-expanded="true"]');
+  backdrop.classList.toggle('open', DESKTOP.matches && anyMegaOpen);
 }
 
 function decorateMega(li) {
@@ -33,33 +51,61 @@ function decorateMega(li) {
   const sub = li.querySelector(':scope > ul');
   if (!link || !sub) return;
 
-  const isMega = link.hash === '#mega' || sub.querySelector('picture, img');
+  // Opt-in via #mega hash, or implicit when the submenu contains a real
+  // responsive image (a promo card). Bare <img> tags inside `.icon` spans
+  // (i.e. inline category icons) don't count.
+  const hasPromoMedia = !!sub.querySelector('picture')
+    || ![...sub.querySelectorAll('img')].every((img) => img.closest('.icon'));
+  const isMega = link.hash === '#mega' || hasPromoMedia;
   if (link.hash === '#mega') link.href = link.href.replace(/#mega$/i, '');
 
   if (!isMega) return;
 
   li.classList.add('nav-drop-mega');
   const items = [...sub.children].filter((c) => c.tagName === 'LI');
-  const promo = items.find((c) => c.querySelector('picture, img'));
+  // A promo is a card-style item with a real responsive image. We deliberately
+  // look for <picture> (and exclude bare <img> tags inside `.icon` spans) so
+  // that category headings with inline icons are NOT mis-classified as promos.
+  const isPromo = (c) => !!c.querySelector('picture')
+    || !![...c.querySelectorAll('img')].find((img) => !img.closest('.icon'));
+  const promo = items.find(isPromo);
   const rest = items.filter((c) => c !== promo);
+
+  // Detect "trending" sidebar: a group whose heading text contains "trending"
+  // (e.g. "What's trending"). Marked so CSS can render it as a right-side panel.
+  const isTrendingHeading = (c) => {
+    if (!c.querySelector(':scope > ul')) return false;
+    const txt = (c.querySelector(':scope > p')?.textContent || c.textContent || '').trim().toLowerCase();
+    return txt.includes("what's trending") || txt === 'trending';
+  };
 
   let group = 0;
   let row = 0;
   rest.forEach((c) => {
+    const hasNestedList = !!c.querySelector(':scope > ul');
     const hasDirectLink = c.querySelector(':scope > a') || c.querySelector(':scope > p > a');
-    if (hasDirectLink) {
+    // A nested <ul> means this is a group heading (the heading itself may
+    // still be a link — e.g. "Wireless" linking to the category landing page).
+    if (hasNestedList) {
+      group += 1;
+      row = 0;
+      c.classList.add('nav-mega-heading');
+      c.style.setProperty('--mega-group', group);
+      if (isTrendingHeading(c)) c.classList.add('nav-mega-trending');
+    } else if (hasDirectLink) {
       if (!group) group = 1;
       c.classList.add('nav-mega-item');
       c.style.setProperty('--mega-group', group);
       row += 1;
       c.style.setProperty('--mega-row', row);
-    } else {
-      group += 1;
-      row = 0;
-      c.classList.add('nav-mega-heading');
-      c.style.setProperty('--mega-group', group);
     }
   });
+
+  // Flag the parent <li> so CSS can apply the two-panel "products" layout
+  // (categories grid on the left, trending sidebar on the right).
+  if (rest.some((c) => c.classList.contains('nav-mega-trending'))) {
+    li.classList.add('nav-drop-mega-products');
+  }
 
   const cols = group || 1;
   const totalCols = promo ? cols + 1 : cols;
@@ -138,22 +184,14 @@ function setupDropdown(li) {
     collapseAll(li.closest('nav'));
     li.setAttribute('aria-expanded', 'true');
     syncToggle();
+    updateBackdrop(li.closest('nav'));
   };
   const close = () => {
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     li.setAttribute('aria-expanded', 'false');
     syncToggle();
+    updateBackdrop(li.closest('nav'));
   };
-
-  li.addEventListener('mouseenter', () => { if (DESKTOP.matches) open(); });
-  li.addEventListener('mouseleave', (e) => {
-    if (!DESKTOP.matches || li.contains(e.relatedTarget)) return;
-    closeTimer = setTimeout(close, 150);
-  });
-  li.addEventListener('focusin', () => { if (DESKTOP.matches) open(); });
-  li.addEventListener('focusout', (e) => {
-    if (DESKTOP.matches && !li.contains(e.relatedTarget)) close();
-  });
 
   li.addEventListener('click', (e) => {
     if (!DESKTOP.matches) {
@@ -174,43 +212,26 @@ function setupDropdown(li) {
         li.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
         syncToggle();
       }
-    } else if (li.querySelector('ul')?.contains(e.target) && e.target.closest('a')) {
+      return;
+    }
+
+    // Desktop: click on the trigger toggles the menu; click on a submenu link closes it.
+    const clickedSubmenuLink = submenu?.contains(e.target) && e.target.closest('a');
+    if (clickedSubmenuLink) {
       collapseAll(li.closest('nav'));
       close();
+      return;
+    }
+    const clickedTrigger = heading?.contains(e.target);
+    if (clickedTrigger && submenu) {
+      // Suppress parent-link navigation so the click acts as a toggle.
+      e.preventDefault();
+      const wasOpen = li.getAttribute('aria-expanded') === 'true';
+      if (wasOpen) close(); else open();
     }
   });
 }
 
-function initTheme(tools) {
-  const btn = tools.querySelector('.icon-toggle')?.closest('p, button, a, div');
-  if (!btn) return;
-
-  const get = () => {
-    try {
-      const s = localStorage.getItem(THEME_KEY);
-      if (s === 'light' || s === 'dark') return s;
-    } catch (e) { /* ignore */ }
-    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-  const set = (s) => {
-    if (s !== 'light' && s !== 'dark') return;
-    try { localStorage.setItem(THEME_KEY, s); } catch (e) { /* ignore */ }
-    window.dispatchEvent(new CustomEvent('aem-theme-change', { detail: { theme: s } }));
-  };
-
-  btn.classList.add('nav-tool');
-  btn.setAttribute('role', 'button');
-  btn.setAttribute('tabindex', '0');
-  const updateLabel = () => btn.setAttribute('aria-label', `Switch to ${get() === 'dark' ? 'light' : 'dark'} mode`);
-  const toggle = () => {
-    set(get() === 'dark' ? 'light' : 'dark');
-    updateLabel();
-  };
-  btn.addEventListener('click', toggle);
-  btn.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); toggle(); } });
-  set(get());
-  updateLabel();
-}
 
 function initSearch(tools) {
   const link = tools.querySelector('a[href*="search"]');
@@ -229,7 +250,7 @@ function initSearch(tools) {
   const input = document.createElement('input');
   input.type = 'search';
   input.name = 'q';
-  input.placeholder = 'Search';
+  input.placeholder = `Let's find what you need...`;
   input.value = q;
   input.setAttribute('aria-label', 'Search');
   input.className = 'nav-search-input';
@@ -595,13 +616,18 @@ export default async function decorate(block) {
   toggleMobile(nav, false, body);
   syncMobileNavHeight(nav);
   collapseAll(nav);
-  DESKTOP.addEventListener('change', () => toggleMobile(nav, false, body));
+  DESKTOP.addEventListener('change', () => {
+    toggleMobile(nav, false, body);
+    updateBackdrop(nav);
+  });
   window.addEventListener('resize', () => {
     syncMobileNavHeight(nav);
   });
 
+  // Backdrop closes any open mega-nav when clicked.
+  ensureBackdrop().addEventListener('click', () => collapseAll(nav));
+
   if (tools) {
-    initTheme(tools);
     initSearch(tools);
     refreshAuthState = await initAuth(nav, tools);
     window.addEventListener('pageshow', () => { refreshAuthState?.(); });

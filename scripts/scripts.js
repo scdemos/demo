@@ -41,18 +41,6 @@ function isExperimentationEnabled() {
     || Object.keys(getAllMetadata('audience')).length;
 }
 
-const THEME_STORAGE_KEY = 'demo-theme';
-
-function applyTheme(theme) {
-  let t = theme ?? (() => { try { return localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { return null; } })();
-  if (t !== 'light' && t !== 'dark') {
-    t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  document.documentElement.dataset.theme = t;
-  document.body.classList.remove('light-scheme', 'dark-scheme');
-  document.body.classList.add(`${t}-scheme`);
-}
-
 const isYoutubeLink = (url) => ['youtube.com', 'www.youtube.com', 'youtu.be'].includes(url.hostname);
 
 function replaceParagraphWithBlock(link, block) {
@@ -192,7 +180,6 @@ async function loadTemplate(main, template) {
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
-  applyTheme();
 
   // Consent stub — wire to real CMP later; true for demo
   const isConsentGiven = true;
@@ -404,7 +391,4 @@ if (!window.hlx?.suppressLoadPage) {
     }, { once: true });
   }
 
-  window.addEventListener('aem-theme-change', (e) => {
-    applyTheme(e.detail?.theme);
-  });
 }
