@@ -171,3 +171,125 @@ header .nav-wrapper.scrolled {
   outline-offset: 3px;
   border-radius: 2px;
 }
+
+.code-block {
+  position: relative;
+}
+
+.code-block > pre {
+  padding-right: calc(var(--space-l) + 90px);
+  background-color: light-dark(
+    color-mix(in srgb, var(--text-color, #1a1a2e) 8%, var(--light-color, #fff)),
+    var(--light-color, #1c1c2c)
+  );
+  border: 1px solid light-dark(
+    color-mix(in srgb, var(--text-color, #1a1a2e) 14%, transparent),
+    rgb(255 255 255 / 8%)
+  );
+  color: light-dark(var(--color-ink, #1a1a2e), var(--color-parchment, #f6f1e7));
+}
+
+.code-block > pre code {
+  color: inherit;
+  background: transparent;
+}
+
+:is(main, article.article-body) :not(pre) > code {
+  display: inline;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: light-dark(
+    color-mix(in srgb, var(--text-color, #1a1a2e) 8%, transparent),
+    rgb(255 255 255 / 10%)
+  );
+  color: var(--color-rust);
+  -webkit-text-fill-color: currentcolor;
+  font-size: 0.9em;
+  font-weight: 600;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+:is(main, article.article-body) a:any-link > code {
+  color: inherit;
+}
+
+.code-block-copy {
+  position: absolute;
+  top: var(--space-s, 12px);
+  right: var(--space-s, 12px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 15%));
+  border-radius: 6px;
+  background: light-dark(rgb(255 255 255 / 70%), rgb(0 0 0 / 30%));
+  backdrop-filter: blur(6px);
+  color: light-dark(var(--color-ink, #111), var(--color-parchment, #fff));
+  -webkit-text-fill-color: currentcolor;
+  font-family: var(--body-font-family);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.code-block-copy:focus-visible {
+  opacity: 1;
+}
+
+.code-block-copy:hover {
+  opacity: 1;
+  background: light-dark(rgb(255 255 255 / 95%), rgb(0 0 0 / 55%));
+  border-color: light-dark(rgb(0 0 0 / 18%), rgb(255 255 255 / 25%));
+}
+
+.code-block:hover .code-block-copy {
+  opacity: 1;
+}
+
+.code-block-copy-icon {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+}
+
+.code-block-copy-icon > svg {
+  grid-area: 1 / 1;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.code-block-copy-icon > svg:first-child {
+  opacity: 1;
+}
+
+.code-block-copy-icon > svg:last-child {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.code-block-copy.is-copied {
+  color: light-dark(var(--color-green-500), var(--color-green-400));
+  border-color: currentcolor;
+  opacity: 1;
+}
+
+.code-block-copy.is-copied .code-block-copy-icon > svg:first-child {
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.code-block-copy.is-copied .code-block-copy-icon > svg:last-child {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .code-block-copy,
+  .code-block-copy-icon > svg {
+    transition: none;
+  }
+}

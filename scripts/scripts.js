@@ -175,6 +175,65 @@ export function decorateMain(main) {
   if (document.contains(main)) initPageSchemas();
 }
 
+/**
+ * Add a "copy" button to every <pre><code> block in `main`. The EDS html
+ * pipeline renders fenced code blocks as <pre><code>…</code></pre>, so this
+ * works for any authored code snippet across the site.
+ *
+ * Idempotent: skips blocks that have already been decorated.
+ */
+function decorateCodeBlocks(main) {
+  if (!main || !navigator.clipboard) return;
+  const blocks = main.querySelectorAll('pre:has(> code)');
+  blocks.forEach((pre) => {
+    if (pre.parentElement?.classList.contains('code-block')) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.replaceWith(wrapper);
+    wrapper.append(pre);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-block-copy';
+    button.setAttribute('aria-label', 'Copy code to clipboard');
+    button.innerHTML = `
+      <span class="code-block-copy-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="11" height="11" rx="2"/>
+          <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+        </svg>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="5 13 10 18 19 7"/>
+        </svg>
+      </span>
+      <span class="code-block-copy-label">Copy</span>
+    `;
+    wrapper.append(button);
+
+    let resetTimer = null;
+    button.addEventListener('click', async () => {
+      const code = pre.querySelector('code');
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code.textContent || '');
+        button.classList.add('is-copied');
+        button.querySelector('.code-block-copy-label').textContent = 'Copied';
+        button.setAttribute('aria-label', 'Code copied to clipboard');
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          button.classList.remove('is-copied');
+          button.querySelector('.code-block-copy-label').textContent = 'Copy';
+          button.setAttribute('aria-label', 'Copy code to clipboard');
+        }, 2000);
+      } catch (e) {
+        // Clipboard access can be blocked (insecure context, permission denied).
+        // Silently no-op — the button just doesn't update.
+      }
+    });
+  });
+}
+
 async function loadTemplate(main, template) {
   try {
     if (template) {
@@ -268,6 +327,7 @@ async function loadLazy(doc) {
   }
   await dynamicBlocks(main);
   applyContentProtection();
+  decorateCodeBlocks(main);
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
