@@ -33,20 +33,26 @@
  *                                         and returns a boolean. Return true to process the event,
  *                                         false to ignore it. The default is a function that
  *                                         always returns true.
+ * @property {String[]} [decisionScopes]   Additional decision scopes to request beyond the
+ *                                         default `__view__` scope. The scopes are included
+ *                                         in both the eager `propositionFetch` (performance
+ *                                         path) and the `martechLazy` `sendEvent`
+ *                                         (non-performance path), with `__view__` always
+ *                                         included.
+ *                                         (defaults to [])
  * @property {Object} [propositionMetadata] Selector mapping for Form-Based HTML offers that do
- *                                          not carry a built-in CSS selector (e.g. raw HTML offers
- *                                          created manually in Target). Keys are decision scope
- *                                          names; values are `{ selector, actionType }` objects
- *                                          where actionType is 'setHtml', 'replaceHtml', or
- *                                          'appendHtml' (defaults to 'replaceHtml'). Offers sent
- *                                          from DA via "Send to Target" carry their own selector
- *                                          and do not need an entry here.
- *                                          Example: `{ 'target-global-mbox': { selector: 'main h2',
+ *                                          not carry a built-in CSS selector (e.g. raw HTML
+ *                                          offers created manually in Target). Keys are
+ *                                          decision scope names; values are
+ *                                          `{ selector, actionType }` objects where actionType
+ *                                          is 'setHtml', 'replaceHtml', or 'appendHtml'
+ *                                          (defaults to 'replaceHtml'). Offers sent from DA
+ *                                          via "Send to Target" carry their own selector and
+ *                                          do not need an entry here. Also acts as a rescue
+ *                                          override for dom-action items that arrive with a
+ *                                          non-visual selector (head/body/html).
+ *                                          Example: `{ 'my-hero-mbox': { selector: 'main h2',
  *                                          actionType: 'replaceHtml' } }`
- * @property {String[]} [decisionScopes]    Additional decision scopes to request beyond the default
- *                                          __view__ scope. Required for Form-Based activities at
- *                                          named mboxes (e.g. ['target-global-mbox']).
- *                                          (defaults to [])
  */
 const SCHEMA_DOM_ACTION = 'https://ns.adobe.com/personalization/dom-action';
 const SCHEMA_HTML_CONTENT_ITEM = 'https://ns.adobe.com/personalization/html-content-item';
@@ -66,8 +72,8 @@ export const DEFAULT_CONFIG = {
   performanceOptimized: true,
   personalizationTimeout: 1000,
   shouldProcessEvent: () => true,
-  propositionMetadata: {},
   decisionScopes: [],
+  propositionMetadata: {},
 };
 
 let config;

@@ -185,10 +185,12 @@ async function loadEager(doc) {
     {
       personalization: !!getMetadata('target') && isConsentGiven,
       launchUrls: [/* your Launch script URLs here */],
-      // For Form-Based activities at named mboxes, add the scope(s) here.
-      // decisionScopes: ['target-global-mbox'],
-      // If those offers don't embed a CSS selector, add a fallback map.
-      // propositionMetadata: { 'target-global-mbox': { selector: 'main h2', actionType: 'replaceHtml' } },
+      // To request additional decision scopes beyond the default `__view__` scope,
+      // list them here. They are added to the eager personalization fetch.
+      // decisionScopes: ['my-scope-name'],
+      // For Form-Based HTML offers that don't embed a CSS selector, map the scope to a
+      // target selector here so the plugin knows where to apply the offer.
+      // propositionMetadata: { 'my-scope-name': { selector: 'main h2', actionType: 'replaceHtml' } },
       // See the API Reference for all available options.
     },
   );
@@ -258,8 +260,8 @@ Initializes the library. This should be called once in `loadEager`.
   - `personalizationTimeout` `{Number}`: Timeout in ms for personalization. Default: `1000`.
   - `trackPageView` `{Boolean}`: Whether to automatically send a page view event on page activation. When `false`, the library sends a `decisioning.propositionDisplay` event instead, so proposition display is still reported to Target without triggering an extra page view. Set to `false` if this is already handled separately in the page. Default: `true`.
   - `shouldProcessEvent` `{Function}`: A function that receives a data layer event payload and returns `false` to prevent it from being sent.
-  - `decisionScopes` `{String[]}`: Additional decision scopes to request beyond the default `__view__` scope. Required for Form-Based activities targeting named mboxes (e.g. `['target-global-mbox']`). Default: `[]`.
-  - `propositionMetadata` `{Object}`: Selector fallback map for Form-Based HTML offers that do not carry a built-in CSS selector (e.g. raw HTML offers created manually in Target). Keys are decision scope names; values are `{ selector, actionType }` objects where `actionType` is `'setHtml'`, `'replaceHtml'` (default), or `'appendHtml'`. DA "Send to Target" offers embed their own selector and do not need an entry here. Default: `{}`.
+  - `decisionScopes` `{String[]}`: Additional decision scopes to request beyond the default `__view__` scope. Previously this required mutating the payload via `onBeforeEventSend`; this provides a dedicated config field. The scopes are included in both the eager `propositionFetch` (when `performanceOptimized` is `true`) and the `martechLazy` `sendEvent` (when `performanceOptimized` is `false`), with `__view__` always included. Default: `[]`.
+  - `propositionMetadata` `{Object}`: Selector fallback map for Form-Based HTML offers that do not carry a built-in CSS selector (e.g. raw HTML offers created manually in Target). Keys are decision scope names; values are `{ selector, actionType }` objects where `actionType` is `'setHtml'`, `'replaceHtml'` (default), or `'appendHtml'`. DA "Send to Target" offers embed their own selector and do not need an entry here. The same map also rescues dom-action items that arrive with a non-visual selector (`head`/`body`/`html`). Default: `{}`.
 
 ---
 
@@ -349,16 +351,16 @@ window.addEventListener('consent.onetrust', consentEventHandler);
 
 ## Working with Form-Based Activities
 
-Adobe Target Form-Based activities (offers created in the Target UI rather than the Visual Experience Composer) require two additional configuration steps because the Web SDK does not fetch named mbox propositions by default.
+Adobe Target Form-Based activities (offers created in the Target UI rather than the Visual Experience Composer) need two pieces of configuration: the named decision scope(s) to fetch, and — for raw HTML offers that don't carry their own selector — a fallback map telling the plugin where to apply the offer content.
 
-### Step 1 — Request the mbox scope
+### Step 1 — Request the scope
 
-Add the mbox name(s) to `decisionScopes` in your `initMartech` call:
+Add the mbox name(s) to `decisionScopes`:
 
 ```js
 initMartech(webSDKConfig, {
   personalization: true,
-  decisionScopes: ['target-global-mbox'],
+  decisionScopes: ['my-hero-mbox'],
 });
 ```
 
@@ -373,9 +375,9 @@ For **raw HTML offers** created manually in the Target UI (which have no built-i
 ```js
 initMartech(webSDKConfig, {
   personalization: true,
-  decisionScopes: ['target-global-mbox'],
+  decisionScopes: ['my-hero-mbox'],
   propositionMetadata: {
-    'target-global-mbox': {
+    'my-hero-mbox': {
       // CSS selector of the element the offer content targets
       selector: 'main .hero',
       // 'setHtml'     — replace the inner HTML of the matched element (preserves the element)
