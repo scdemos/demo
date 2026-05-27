@@ -60,8 +60,23 @@ const setupObservers = () => {
   });
 };
 
+function openFragmentInUE(fragmentPath) {
+  const { hostname } = window.location;
+  const editorUrl = `https://experience.adobe.com/#/@ccs/aem/editor/canvas/${hostname}${fragmentPath}`;
+  window.open(editorUrl, '_blank');
+}
+
+const setupFragmentOverlays = () => {
+  document.body.addEventListener('click', (e) => {
+    const locked = e.target.closest('.fragment-locked[data-fragment-path]');
+    if (!locked) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openFragmentInUE(locked.dataset.fragmentPath);
+  });
+};
+
 const setupUEEventHandlers = () => {
-  // For each picture or img element change, update the srcsets of the picture element sources
   document.body.addEventListener('aue:content-patch', ({ detail: { patch, request } }) => {
     let element = document.querySelector(`[data-aue-resource="${request.target.resource}"]`);
     if (element && element.getAttribute('data-aue-prop') !== patch.name) element = element.querySelector(`[data-aue-prop='${patch.name}']`);
@@ -81,13 +96,19 @@ const setupUEEventHandlers = () => {
       if (!element) {
         return;
       }
+
+      const lockedFragment = element.closest('[data-fragment-path]');
+      if (lockedFragment) {
+        openFragmentInUE(lockedFragment.dataset.fragmentPath);
+        return;
+      }
+
       const blockEl = element.parentElement?.closest('.block[data-aue-resource]') || element?.closest('.block[data-aue-resource]');
       if (blockEl) {
         const block = blockEl.getAttribute('data-aue-component');
 
         switch (block) {
           case 'journey-map': {
-            // Click the toggle for the selected step
             const toggle = element.querySelector('.journey-map-step-toggle');
             if (toggle && !toggle.disabled) toggle.click();
             break;
@@ -116,4 +137,5 @@ const setupUEEventHandlers = () => {
 export default () => {
   setupObservers();
   setupUEEventHandlers();
+  setupFragmentOverlays();
 };

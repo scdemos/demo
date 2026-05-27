@@ -1,1 +1,29 @@
 /* stylelint-disable no-empty-source */
+
+.fragment-locked {
+  position: relative;
+  cursor: pointer;
+}
+
+.fragment-ue-preview {
+  display: block;
+  width: 100%;
+  border: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fragment-locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.fragment-locked:hover::after {
+  border-color: var(--color-gold, #c5a059);
+  background: rgb(197 160 89 / 8%);
+}

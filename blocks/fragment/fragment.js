@@ -44,21 +44,52 @@ export async function loadFragment(path) {
   return null;
 }
 
+/**
+ * Renders a sandboxed preview of the fragment in UE.
+ * Uses a srcdoc iframe so UE cannot instrument the content inside it.
+ * @param {Element} container The element to render into
+ * @param {string} path The fragment path
+ */
+export async function renderFragmentPreviewForUE(container, path) {
+  const resp = await fetch(`${path}.plain.html`);
+  if (!resp.ok) return;
+  const html = await resp.text();
+
+  const styles = [...document.querySelectorAll('link[rel="stylesheet"], style')]
+    .map((el) => el.outerHTML).join('\n');
+
+  const srcdoc = `<!doctype html><html><head><base href="${window.location.origin}${path}">
+${styles}<style>body{margin:0;pointer-events:none;user-select:none}</style>
+</head><body>${html}</body></html>`;
+
+  const iframe = document.createElement('iframe');
+  iframe.className = 'fragment-ue-preview';
+  iframe.sandbox = 'allow-same-origin';
+  iframe.srcdoc = srcdoc;
+  iframe.title = `Fragment preview: ${path}`;
+
+  container.dataset.fragmentPath = path;
+  container.classList.add('fragment-locked');
+  container.replaceChildren(iframe);
+
+  iframe.addEventListener('load', () => {
+    const body = iframe.contentDocument?.body;
+    if (body) iframe.style.height = `${body.scrollHeight}px`;
+  });
+}
+
 export default async function decorate(block) {
   const link = block.querySelector('a');
   const path = link ? link.getAttribute('href') : block.textContent.trim();
+
+  if (isUE()) {
+    await renderFragmentPreviewForUE(block, path);
+    return;
+  }
+
   const fragment = await loadFragment(path);
   if (fragment) {
     block.replaceChildren(...fragment.childNodes);
-
-    if (isUE()) {
-      block.querySelectorAll('[data-aue-resource]').forEach((el) => {
-        [...el.attributes]
-          .filter((attr) => attr.name.startsWith('data-aue-') || attr.name.startsWith('data-richtext-'))
-          .forEach((attr) => el.removeAttribute(attr.name));
-      });
-    }
-
     const main = block.closest('main');
     if (main) await dynamicBlocks(main);
   }

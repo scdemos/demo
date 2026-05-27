@@ -20,7 +20,7 @@ import {
 import {
   initMartech, martechEager, martechLazy, martechDelayed,
 } from '../plugins/martech/src/index.js';
-import { getAllMetadata } from './shared.js';
+import { getAllMetadata, isUE } from './shared.js';
 import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
@@ -108,17 +108,32 @@ async function loadFragments(section) {
     return true;
   });
   if (fragments.length === 0) return;
-  const { loadFragment } = await import('../blocks/fragment/fragment.js');
-  await Promise.all(fragments.map(async (a) => {
-    try {
-      const { pathname } = new URL(a.href);
-      const frag = await loadFragment(pathname);
-      a.parentElement.replaceWith(...frag.children);
-    } catch (error) {
-      console.error('Fragment loading failed', error);
-    }
-  }));
-  await dynamicBlocks(main);
+  const ue = isUE();
+  if (ue) {
+    const { renderFragmentPreviewForUE } = await import('../blocks/fragment/fragment.js');
+    await Promise.all(fragments.map(async (a) => {
+      try {
+        const { pathname } = new URL(a.href);
+        const wrapper = document.createElement('div');
+        await renderFragmentPreviewForUE(wrapper, pathname);
+        a.parentElement.replaceWith(wrapper);
+      } catch (error) {
+        console.error('Fragment preview failed', error);
+      }
+    }));
+  } else {
+    const { loadFragment } = await import('../blocks/fragment/fragment.js');
+    await Promise.all(fragments.map(async (a) => {
+      try {
+        const { pathname } = new URL(a.href);
+        const frag = await loadFragment(pathname);
+        a.parentElement.replaceWith(...frag.children);
+      } catch (error) {
+        console.error('Fragment loading failed', error);
+      }
+    }));
+    await dynamicBlocks(main);
+  }
 }
 
 function buildAutoBlocks(main) {
