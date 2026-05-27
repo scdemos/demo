@@ -1,4 +1,4 @@
-# diyFIRE
+# FIRE
 
 > An educational platform for the FIRE (Financial Independence, Retire Early) movement, helping Canadians achieve financial independence through disciplined saving, intentional spending, and long-term investing.
 
