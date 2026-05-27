@@ -216,6 +216,23 @@ function getSelectedBaselineLabel() {
   return t || '';
 }
 
+/**
+ * Empty input is allowed and returns { valid: true, value: '' } so the admin field stays optional.
+ * Non-empty input must look like a single email address (no globs, no commas).
+ */
+function validateAdminEmail(raw) {
+  const trimmed = (raw || '').trim();
+  if (!trimmed) return { valid: true, value: '' };
+  if (trimmed.length > 254) {
+    return { valid: false, error: 'Admin email must be 254 characters or less' };
+  }
+  const pattern = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
+  if (!pattern.test(trimmed)) {
+    return { valid: false, error: 'Enter a valid admin email (e.g. name@example.com)' };
+  }
+  return { valid: true, value: trimmed };
+}
+
 function validateSiteName(name, baselineSite) {
   const trimmed = (name || '').trim().toLowerCase();
   if (!trimmed) return { valid: false, error: 'Site name is required' };
@@ -301,6 +318,7 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     queryIndex = {},
     baselineSite: baselineSiteOpt = '',
     templateLabel: templateLabelOpt = '',
+    adminEmail = '',
   } = options;
   const baselineSite = baselineSiteOpt || '—';
   const templateLabel = (templateLabelOpt || '').trim() || baselineSiteOpt || '—';
@@ -316,6 +334,7 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   plainLines.push(`DA content: ${ORG}/${baselineSite}/ → ${ORG}/${siteName}/`);
   if (daConfigCopied) plainLines.push('DA config copied');
   plainLines.push('AEM site config created');
+  if (adminEmail) plainLines.push(`Admin email granted: ${adminEmail}`);
 
   const queryYamlUrl = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
   let queryLine = '';
@@ -336,11 +355,16 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     plainLines.push('Query index (query.yaml): not configured');
   }
 
+  const adminLine = adminEmail
+    ? `<li>Admin role granted to <code>${escapeHtml(adminEmail)}</code></li>`
+    : '';
+
   const html = `
     <li>Template: ${escapeHtml(templateLabel)}</li>
     <li>DA content: <code>${ORG}/${escapeHtml(baselineSite)}/</code> → <code>${ORG}/${siteName}/</code></li>
     ${daConfigCopied ? '<li>DA config copied</li>' : ''}
     <li>AEM site config created</li>
+    ${adminLine}
     ${queryLine}
   `;
 
@@ -505,7 +529,7 @@ function cleanupSiteConfig(config) {
   }
 }
 
-function buildNewSiteConfig(baselineConfig, newSiteName) {
+function buildNewSiteConfig(baselineConfig, newSiteName, adminEmail = '') {
   const now = new Date().toISOString();
 
   const config = {
@@ -533,6 +557,17 @@ function buildNewSiteConfig(baselineConfig, newSiteName) {
   }
   if (baselineConfig.headers && Object.keys(baselineConfig.headers).length > 0) {
     config.headers = { ...baselineConfig.headers };
+  }
+
+  const email = (adminEmail || '').trim();
+  if (email) {
+    // AccessConfig schema: access.admin.role.<roleName> = [emailGlob, ...].
+    // requireAuth defaults to 'auto' which enforces auth because a role mapping exists.
+    config.access = {
+      admin: {
+        role: { admin: [email] },
+      },
+    };
   }
 
   cleanupSiteConfig(config);
@@ -735,7 +770,7 @@ async function createDaSource(siteName, path, content) {
   return response;
 }
 
-async function cloneSite(siteName, baselineSite) {
+async function cloneSite(siteName, baselineSite, adminEmail = '') {
   if (!app.workerReady) {
     showToast('CloneIt worker is not ready. Refresh the page or check worker configuration.', 'error');
     return;
@@ -802,8 +837,8 @@ async function cloneSite(siteName, baselineSite) {
     setProgress(true, 50, 'Fetching baseline config…', null, 'Configuring', '');
     const baselineConfig = await fetchBaselineConfig(baselineSite);
 
-    setProgress(true, 70, 'Creating site config…', null, 'Configuring', '');
-    const newConfig = buildNewSiteConfig(baselineConfig, siteName);
+    setProgress(true, 70, adminEmail ? `Creating site config (admin: ${adminEmail})…` : 'Creating site config…', null, 'Configuring', '');
+    const newConfig = buildNewSiteConfig(baselineConfig, siteName, adminEmail);
     await createAemSiteConfig(siteName, newConfig);
 
     const queryIndex = {
@@ -841,6 +876,7 @@ async function cloneSite(siteName, baselineSite) {
       queryIndex,
       baselineSite,
       templateLabel,
+      adminEmail,
     });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
@@ -856,10 +892,12 @@ async function cloneSite(siteName, baselineSite) {
 function updateCloneButtonState() {
   const cloneBtn = document.getElementById('clone-btn');
   const siteInput = document.getElementById('site-name-input');
+  const emailInput = document.getElementById('admin-email-input');
   const baseline = getSelectedBaselineSite();
   const { value } = validateSiteName(siteInput?.value || '', baseline);
+  const emailOk = validateAdminEmail(emailInput?.value || '').valid;
   if (cloneBtn) {
-    cloneBtn.disabled = !app.workerReady || !app.demositesReady || !value || !baseline;
+    cloneBtn.disabled = !app.workerReady || !app.demositesReady || !value || !baseline || !emailOk;
   }
 }
 
@@ -906,7 +944,24 @@ function setupEventListeners() {
         showToast(error, 'error');
         return;
       }
-      cloneSite(value, baselineSite);
+      const emailInput = document.getElementById('admin-email-input');
+      const emailResult = validateAdminEmail(emailInput?.value || '');
+      if (!emailResult.valid) {
+        showToast(emailResult.error, 'error');
+        return;
+      }
+      cloneSite(value, baselineSite, emailResult.value);
+    });
+  }
+
+  const adminEmailInput = document.getElementById('admin-email-input');
+  if (adminEmailInput) {
+    adminEmailInput.addEventListener('input', updateCloneButtonState);
+    adminEmailInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        cloneBtn?.click();
+      }
     });
   }
 

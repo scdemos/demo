@@ -12,7 +12,7 @@
 
 import { applyGatingIfNeeded } from './handlers/gating.js';
 
-const AEM_HOST = /^main--.+--.+\.(?:aem|hlx)\.live$/;
+const AEM_HOST = /^main--.+--.+\.(?:aem|hlx)\.(?:live|network)$/;
 
 const getExtension = (path) => {
   const basename = path.split('/').pop() || '';
@@ -26,6 +26,15 @@ const isRUMRequest = (url) => /\/\.(rum|optel)\/.*/.test(url.pathname);
 
 //html2json - start
 const HTML2JSON_QUERY_PARAMS = new Set(['head', 'preview', 'compact']);
+// Paths that should NOT fall back to html2json (mhast) on .json 404.
+const HTML2JSON_EXCLUDE_PATTERNS = [
+  // /products/<category>/* — product detail paths are not backed by mhast
+  /^\/products\/[^/]+\/.+/,
+];
+const isHtml2JsonExcluded = (pathname) => {
+  const cleanPath = pathname.replace(/\.json$/, '');
+  return HTML2JSON_EXCLUDE_PATTERNS.some((re) => re.test(cleanPath));
+};
 const buildHTML2JSONURL = (requestURL) => {
   const pagePath = requestURL.pathname.replace(/\.json$/, '');
   const html2jsonURL = new URL(
@@ -119,7 +128,12 @@ const handleRequest = async (request, env) => {
   });
 
   // html2json - start
-  if (request.method === 'GET' && extension === 'json' && resp.status === 404) {
+  if (
+    request.method === 'GET'
+    && extension === 'json'
+    && resp.status === 404
+    && !isHtml2JsonExcluded(requestURL.pathname)
+  ) {
     const html2jsonResp = await fetch(buildHTML2JSONURL(requestURL), {
       headers: {
         accept: 'application/json',

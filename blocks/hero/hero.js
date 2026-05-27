@@ -26,6 +26,9 @@ export default function decorate(block) {
   const contentDiv = h1.closest('div');
   if (!contentDiv) return;
 
+  const textDiv = contentDiv.parentElement;
+  if (textDiv) textDiv.classList.add('hero-text');
+
   const children = [...contentDiv.children];
   const h1Index = children.indexOf(h1);
 

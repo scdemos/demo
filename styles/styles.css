@@ -129,6 +129,7 @@
   --heading-font-size-m: 22.78px;
   --heading-font-size-s: 20.25px;
   --heading-font-size-xs: 18px;
+  --heading-font-size-xxs: 16px;
   --heading-line-height: 1.15;
 
   /* body sizes */
@@ -164,6 +165,8 @@
   --shadow-glow-gold: 0 0 40px rgb(197 160 89 / 25%);
   --shadow-lift-m: 0 20px 40px -8px rgb(0 0 0 / 15%);
   --shadow-lift-l: 0 30px 60px -12px rgb(0 0 0 / 22%);
+  --shadow-card: 0 2px 8px rgb(0 0 0 / 5%), 0 1px 2px rgb(0 0 0 / 7%);
+  --shadow-card-dark: 0 2px 12px rgb(0 0 0 / 45%), 0 1px 4px rgb(0 0 0 / 30%);
 
   /* easing presets for consistent motion */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -183,6 +186,8 @@
 @media (width >= 600px) {
   :root,
   :host {
+    --heading-font-size-xxl: 44px;
+    --heading-font-size-xl: 36px;
     --content-padding-inline: var(--space-l);
     --main-block-space: var(--space-xl);
     --section-block-space: var(--space-xl);
@@ -266,6 +271,11 @@ body {
   margin: 0;
   box-sizing: border-box;
   background-color: var(--background-color);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 12% 8%,
+      light-dark(rgb(197 160 89 / 9%), rgb(197 160 89 / 4%)) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 88% 82%,
+      light-dark(rgb(161 79 43 / 6%), rgb(161 79 43 / 3%)) 0%, transparent 50%);
   color: var(--text-color);
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
@@ -304,7 +314,7 @@ h4,
 h5,
 h6 {
   margin-top: 0.8em;
-  margin-bottom: 0.25em;
+  margin-bottom: 0.4em;
   font-family: var(--heading-font-family);
   font-weight: 500;
   line-height: var(--heading-line-height);
@@ -324,7 +334,7 @@ h2 {
 h3 { font-size: var(--heading-font-size-m); }
 h4 { font-size: var(--heading-font-size-s); }
 h5 { font-size: var(--heading-font-size-xs); }
-h6 { font-size: var(--heading-font-size-xs); }
+h6 { font-size: var(--heading-font-size-xxs); }
 
 @media (width >= 600px) {
   h3 { font-size: var(--heading-font-size-l); }
@@ -332,9 +342,6 @@ h6 { font-size: var(--heading-font-size-xs); }
   h5 { font-size: var(--heading-font-size-s); }
 }
 
-@media (width >= 1200px) {
-  h3 { font-size: var(--heading-font-size-xl); }
-}
 
 p,
 dl,
@@ -560,7 +567,7 @@ main img:not([width], [height]) {
 }
 
 /* sections – boilerplate structure with design tokens */
-main > .section {
+:is(main, article.article-body) > .section {
   margin: inherit;
   padding-block: var(--space-xl);
 }
@@ -578,7 +585,8 @@ main > .section:has(.social-share) {
   contain: none;
 }
 
-main > .section > div {
+main > .section > div,
+article.article-body > .section > div {
   max-width: var(--grid-container-width);
   margin: auto;
   padding: 0 var(--content-padding-inline);
@@ -593,11 +601,11 @@ main .section.highlight {
 }
 
 /* section-metadata style=divider: content-width (grid) border-bottom */
-main > .section.divider {
+:is(main, article.article-body) > .section.divider {
   position: relative;
 }
 
-main > .section.divider::after {
+:is(main, article.article-body) > .section.divider::after {
   content: '';
   display: block;
   max-width: var(--grid-container-width);
@@ -606,8 +614,8 @@ main > .section.divider::after {
   border-bottom: 1px solid var(--color-gray-200);
 }
 
-main > .section.center {
-  text-align: center;
+:is(main, article.article-body) > .section.divider.center {
+    text-align: center;
 }
 
 /* section-metadata or block style: spacer utilities – add to section metadata or block styles for readability gaps */
@@ -618,25 +626,45 @@ main > .section.center {
 .spacer-bottom-m { margin-bottom: var(--space-m); }
 .spacer-bottom-l { margin-bottom: var(--space-l); }
 
+/* section-metadata style=rust: bold brand accent section */
+main > .section.rust {
+  background-color: var(--color-rust);
+  color: var(--color-parchment);
+  margin: 0;
+  padding: var(--space-3xl, var(--section-block-space)) 0;
+}
+
+main > .section.rust * {
+  color: var(--color-parchment);
+}
+
+main > .section.rust a:any-link {
+  color: var(--color-parchment);
+  text-decoration-color: rgb(245 242 237 / 40%);
+}
+
 /* section-metadata style=gradient: warm brand gradient full-bleed section */
-main > .section.gradient {
+:is(main, article.article-body) > .section.gradient {
   background: var(--gradient-brand);
   color: var(--color-parchment);
   margin: 0;
   padding: var(--space-3xl, var(--section-block-space)) 0;
 }
 
-main > .section.gradient * {
+:is(main, article.article-body) > .section.gradient * {
   color: var(--color-parchment);
 }
 
-main > .section.gradient a:any-link {
+:is(main, article.article-body) > .section.gradient a:any-link {
   color: var(--color-parchment);
   text-decoration-color: rgb(255 255 255 / 40%);
 }
 
-main > .section.gradient a.button:any-link,
-main > .section.gradient button.button {
+/* Shared button overrides for colored sections (rust, gradient) */
+:is(main, article.article-body) > .section.rust a.button:any-link,
+:is(main, article.article-body) > .section.rust button.button,
+:is(main, article.article-body) > .section.gradient a.button:any-link,
+:is(main, article.article-body) > .section.gradient button.button {
   border-color: var(--color-parchment);
   background-color: transparent;
   background-image: none;
@@ -644,8 +672,10 @@ main > .section.gradient button.button {
   box-shadow: none;
 }
 
-main > .section.gradient a.button:any-link:hover,
-main > .section.gradient button.button:hover {
+:is(main, article.article-body) > .section.rust a.button:any-link:hover,
+:is(main, article.article-body) > .section.rust button.button:hover,
+:is(main, article.article-body) > .section.gradient a.button:any-link:hover,
+:is(main, article.article-body) > .section.gradient button.button:hover {
   background-color: var(--color-parchment);
   border-color: var(--color-parchment);
   color: var(--color-rust);
@@ -653,15 +683,37 @@ main > .section.gradient button.button:hover {
 }
 
 /* section-metadata style=ink: deep dark full-bleed section */
-main > .section.ink {
+:is(main, article.article-body) > .section.ink {
   background-color: var(--color-ink);
   color: var(--color-parchment);
   margin: 0;
   padding: var(--space-3xl, var(--section-block-space)) 0;
 }
 
-main > .section.ink * {
+:is(main, article.article-body) > .section.ink * {
   color: var(--color-parchment);
+}
+
+/* section-metadata style=warm: atmospheric warm tint with heritage diamond mesh */
+main > .section.warm {
+  background-color: light-dark(#f2ead8, #0e1812);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 0,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 0,
+      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  margin: 0;
+  padding: var(--space-3xl, var(--section-block-space)) 0;
 }
 
 /* gradient-text utility: apply to any heading or span for brand gradient text */

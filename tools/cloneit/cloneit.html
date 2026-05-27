@@ -123,8 +123,24 @@
                     <span class="input-affix input-affix-end" aria-hidden="true">--scdemos</span>
                   </div>
                 </div>
+                <div class="cloneit-config-field">
+                  <label for="admin-email-input" class="cloneit-config-label">Admin email</label>
+                  <span class="cloneit-config-colon" aria-hidden="true">:</span>
+                  <div class="input-wrap cloneit-site-input-wrap">
+                    <input
+                      type="email"
+                      id="admin-email-input"
+                      class="input-field"
+                      placeholder="optional — name@example.com"
+                      autocomplete="off"
+                      maxlength="254"
+                      aria-describedby="admin-email-hint"
+                    >
+                  </div>
+                </div>
               </div>
               <p id="site-name-hint" class="cloneit-sr-only">Site slug: lowercase letters, numbers, hyphens only. Max 50 characters.</p>
+              <p id="admin-email-hint" class="cloneit-sr-only">Optional. Enter an email to grant the admin role on the new site via the AEM Admin API. Sidekick authentication will be enforced for admin actions when set.</p>
               <div class="preview-panel">
                 <span class="preview-panel-label">Preview URL</span>
                 <p class="input-preview">

@@ -22,7 +22,7 @@ CloneIt creates a new repoless site by:
 1. **Creating DA folder** – Creates the new site folder in DA with a minimal `index.html`.
 2. **Copying DA config** – Fetches repo-level config from the **selected template** baseline via [DA Config GET](https://opensource.adobe.com/da-admin/#tag/Config/operation/getConfig) and creates it for the new site via [DA Config POST](https://opensource.adobe.com/da-admin/#tag/Config/operation/createConfig). Skipped if baseline has no config.
 3. **Copying DA content** – Recursively copies all files from `scdemos/{template}` to the new site folder, skipping `drafts`, `demo-docs`, and **locale folders** (segment names like `en`, `fr`, `de`, `ja`, `hi`, `zh`, plus other common ISO 639-1 codes and a few regional variants such as `zh-cn`, `pt-br`). Uses the [DA List API](https://admin.da.live/list) to discover all files, then the [DA Copy API](https://opensource.adobe.com/da-admin/#tag/Copy) per file (the Copy API does not recurse into folders). If copy fails, falls back to updating the minimal `index.html`.
-4. **Creating the AEM site config** – Fetches the baseline configuration from the [AEM Admin API](https://www.aem.live/docs/admin.html#tag/siteConfig/operation/createSiteSite) for the template, copies only code, sidekick, and headers, sets content to the new DA URL, and creates the site via `PUT /config/{org}/sites/{site}.json`
+4. **Creating the AEM site config** – Fetches the baseline configuration from the [AEM Admin API](https://www.aem.live/docs/admin.html#tag/siteConfig/operation/createSiteSite) for the template, copies only code, sidekick, and headers, sets content to the new DA URL, and creates the site via `PUT /config/{org}/sites/{site}.json`. When an **Admin email** is provided, the create payload also includes `access.admin.role.admin: ["<email>"]` per [AdminAccessConfig](https://www.aem.live/docs/admin.html#schema/AdminAccessConfig) so that user is granted the admin role on the new site in the same request. `requireAuth` is left at its default (`"auto"`), which enforces Sidekick authentication for admin actions because a role mapping is now defined.
 5. **Copying query index config** – Fetches the template’s `query.yaml` and writes it with **`PUT`** (create per [IndexConfig](https://www.aem.live/docs/admin.html#schema/IndexConfig)); on **409** conflict, **`POST`** (update). Then **GETs the same URL** (with retries) so you see **copied and verified** when propagation succeeds. If the baseline has no `query.yaml`, CloneIt shows that nothing was copied. If the write fails, the error is shown; if write succeeds but `GET` stays empty, the UI warns with a link to the Admin API URL for manual checks.
 
 After a successful clone, use **Copy handoff** to copy a plain-text block (Preview URL, DA content, Code) for email or Slack.
@@ -39,9 +39,10 @@ The new site uses `https://content.da.live/scdemos/{sitename}/` as its content s
 2. **Authentication** – DA_SDK needs an active DA session to read org config for the dropdown. Clone operations use the **CloneIt worker** (see below).
 3. Choose a **template** from the dropdown.
 4. Enter a **site name** (lowercase, numbers and hyphens only, max 50 chars). It must not match the template `site` or reserved names like `admin`, `api`, `config`.
-5. Click **Start clone**
-6. Access your new site at `https://main--{sitename}--scdemos.aem.page`
-7. **Bulk Preview/Publish** (optional) – After a successful clone, click **Bulk Preview/Publish** to copy all content URLs to your clipboard. A modal guides you to the [DA Bulk app](https://da.live/apps/bulk).
+5. *(Optional)* Enter an **Admin email**. When set, that email is granted the `admin` role on the new site via the AEM Admin API (`access.admin.role.admin`) as part of the create-site request. Leave blank to keep the site open (no auth required for admin actions).
+6. Click **Start clone**
+7. Access your new site at `https://main--{sitename}--scdemos.aem.page`
+8. **Bulk Preview/Publish** (optional) – After a successful clone, click **Bulk Preview/Publish** to copy all content URLs to your clipboard. A modal guides you to the [DA Bulk app](https://da.live/apps/bulk).
 
 ---
 
@@ -61,7 +62,7 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 ### HTML structure (`cloneit.html`)
 
 - **Header** – Title, subtitle, Help button
-- **Config card** – Template `<select>`, site name input, live preview URL, Clone button
+- **Config card** – Template `<select>`, site name input, optional admin email input, live preview URL, Clone button
 - **Progress section** – Shown during clone: phase, progress bar, status text, file list
 - **Result section** – Success card (summary list, Bulk Preview/Publish button, Preview/DA/Code links) or error card
 - **Bulk modal** – “URLs copied” message and “Open DA Bulk app” button

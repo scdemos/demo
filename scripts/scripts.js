@@ -17,7 +17,11 @@ import {
   toCamelCase,
   toClassName,
 } from './aem.js';
+import {
+  initMartech, martechEager, martechLazy, martechDelayed,
+} from '../plugins/martech/src/index.js';
 import { getAllMetadata } from './shared.js';
+import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
 const AUDIENCES = {
@@ -168,11 +172,11 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
+  if (document.contains(main)) initPageSchemas();
 }
 
-async function loadTemplate(main) {
+async function loadTemplate(main, template) {
   try {
-    const template = getMetadata('template');
     if (template) {
       const mod = await import(`../templates/${template}/${template}.js`);
       loadCSS(`${window.hlx.codeBasePath}/templates/${template}/${template}.css`);
@@ -181,7 +185,6 @@ async function loadTemplate(main) {
       }
     }
   } catch (error) {
-     
     console.error('template loading failed', error);
   }
 }
@@ -190,6 +193,33 @@ async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
   applyTheme();
+
+  // Consent stub — wire to real CMP later; true for demo
+  const isConsentGiven = true;
+
+  const martechLoadedPromise = !IS_QUICK_EDIT && initMartech(
+    {
+      datastreamId: 'd73be188-bc37-4ede-a5da-8aa7cd1e343b',
+      orgId: '138A07885EE042D20A495CFA@AdobeOrg',
+      defaultConsent: 'in',
+      edgeConfigOverrides: {
+        com_adobe_target: {
+          propertyToken: '2375354b-3ff1-6d5d-1304-7c38fccd590b',
+        },
+      },
+    },
+    {
+      personalization: !!getMetadata('target') && isConsentGiven,
+      launchUrls: ['https://assets.adobedtm.com/ace20f3fb313/d4fa519d75cf/launch-452113bfea88.min.js'],
+      decisionScopes: ['homepage-hero-mbox', 'homepage-teaser-mbox'],
+      propositionMetadata: {
+        // Normal delivery: Form-Based html-content-item at homepage-hero-mbox
+        'homepage-hero-mbox': { selector: 'main .section:first-child', actionType: 'replaceHtml' },
+        'homepage-teaser-mbox': { selector: 'main .section:nth-child(2)', actionType: 'replaceHtml' },
+      },
+    },
+  );
+
   const main = doc.querySelector('main');
   if (main) {
     if (window.isErrorPage) loadErrorPage(main);
@@ -199,10 +229,13 @@ async function loadEager(doc) {
     }
     decorateMain(main);
     document.body.classList.add('appear');
-    await loadSection(main.querySelector('.section'), async (s) => {
-      await waitForFirstImage(s);
-      await loadFragments(s);
-    });
+    await Promise.all([
+      martechLoadedPromise && martechLoadedPromise.then(martechEager),
+      loadSection(main.querySelector('.section'), async (s) => {
+        await waitForFirstImage(s);
+        await loadFragments(s);
+      }),
+    ]);
   }
 
   try {
@@ -221,6 +254,7 @@ async function loadLazy(doc) {
   loadHeader(headerEl);
   const templateName = getMetadata('template');
   if (templateName) {
+    document.body.classList.add(templateName);
     await loadTemplate(doc, templateName);
   }
 
@@ -240,6 +274,7 @@ async function loadLazy(doc) {
   if (hash && element) element.scrollIntoView();
 
   loadFooter(footerEl);
+  if (!IS_QUICK_EDIT) await martechLazy();
 
   /* Scroll reveal: sections below the viewport animate in as they enter */
   if (main && 'IntersectionObserver' in window) {
@@ -318,9 +353,14 @@ async function loadLazy(doc) {
   }
 }
 
+const IS_QUICK_EDIT = new URL(window.location.href).searchParams.has('quick-edit');
+if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
+
 function loadDelayed() {
-  window.setTimeout(() => import('./delayed.js'), 3000);
-  // load anything that can be postponed to the latest here
+  window.setTimeout(() => {
+    if (!IS_QUICK_EDIT) martechDelayed();
+    import('./delayed.js');
+  }, 3000);
 }
 
 /**
