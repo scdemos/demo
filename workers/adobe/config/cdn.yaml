@@ -15,7 +15,7 @@ data:
             op: replace
             reqProperty: path
             match: '^/llms\.txt$'
-            replacement: '/llms-demo2.txt'
+            replacement: '/llms-txt.md'
   trafficFilters:
     rules:
       - name: block-demo2-path
