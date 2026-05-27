@@ -218,7 +218,7 @@
           "plugins": {
             "da": {
               "name": "hero",
-              "rows": 2,
+              "rows": 3,
               "columns": 1,
               "fields": [
                 {
@@ -230,8 +230,16 @@
                   "selector": "div:nth-child(1)>div>picture>img[alt]"
                 },
                 {
-                  "name": "heading",
-                  "selector": "div:nth-child(2)>div>h1"
+                  "name": "darkImage",
+                  "selector": "div:nth-child(2)>div>picture>img[src]"
+                },
+                {
+                  "name": "darkImageAlt",
+                  "selector": "div:nth-child(2)>div>picture>img[alt]"
+                },
+                {
+                  "name": "text",
+                  "selector": "div:last-child>div"
                 }
               ]
             }

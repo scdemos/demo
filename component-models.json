@@ -373,21 +373,37 @@
         "component": "reference",
         "valueType": "string",
         "name": "image",
-        "label": "Image",
+        "label": "Light Mode Image",
         "multi": false
       },
       {
         "component": "text",
         "valueType": "string",
         "name": "imageAlt",
-        "label": "Alt Text",
+        "label": "Light Image Alt Text",
         "value": ""
       },
       {
+        "component": "reference",
+        "valueType": "string",
+        "name": "darkImage",
+        "label": "Dark Mode Image",
+        "multi": false,
+        "description": "Optional. Shown instead of the light image when dark mode is active."
+      },
+      {
         "component": "text",
-        "name": "heading",
-        "label": "Heading",
-        "valueType": "string"
+        "valueType": "string",
+        "name": "darkImageAlt",
+        "label": "Dark Image Alt Text",
+        "value": ""
+      },
+      {
+        "component": "richtext",
+        "name": "text",
+        "label": "Text",
+        "valueType": "string",
+        "description": "Tagline, heading, body, and CTA."
       }
     ]
   },
