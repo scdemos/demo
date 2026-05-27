@@ -1,6 +1,21 @@
 kind: "CDN"
 version: "1"
 data:
+  requestTransformations:
+    rules:
+      - name: rewrite-demo2-llms-txt
+        when:
+          allOf:
+            - reqProperty: domain
+              matches: '^(www\.)?demo2\.bbird\.live$'
+            - reqProperty: path
+              equals: /llms.txt
+        actions:
+          - type: transform
+            op: replace
+            reqProperty: path
+            match: '^/llms\.txt$'
+            replacement: '/llms-demo2.txt'
   trafficFilters:
     rules:
       - name: block-demo2-path
