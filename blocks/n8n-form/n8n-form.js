@@ -253,7 +253,7 @@ function createForm(config) {
   const submitButton = document.createElement('button');
   submitButton.type = 'submit';
   submitButton.textContent = 'Submit';
-  submitButton.className = 'button primary';
+  submitButton.className = 'button';
   submitWrapper.appendChild(submitButton);
   form.appendChild(submitWrapper);
 
