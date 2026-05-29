@@ -10,6 +10,8 @@ import {
   decorateTemplateAndTheme,
   waitForFirstImage,
   loadSection,
+  loadBlock,
+  readBlockConfig,
   sampleRUM,
   loadCSS,
   loadScript,
@@ -189,6 +191,65 @@ async function loadTemplate(main, template) {
   }
 }
 
+function watchForTargetInjectedBlocks(main) {
+  const observer = new MutationObserver((mutations) => {
+    const toDecorate = new Set();
+
+    mutations.forEach(({ addedNodes }) => {
+      addedNodes.forEach((node) => {
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        [node, ...node.querySelectorAll('div[class]')].forEach((el) => {
+          if (
+            el.tagName === 'DIV'
+            && el.classList.length > 0
+            && !el.classList.contains('block')
+            && !el.classList.contains('section-metadata')
+            && !el.classList.contains('default-content-wrapper')
+            && !el.dataset.blockStatus
+            && !el.closest('.block')
+          ) {
+            toDecorate.add(el);
+          }
+        });
+      });
+    });
+
+    if (!toDecorate.size) return;
+
+    observer.disconnect(); // ← stop watching once Target has fired
+
+    toDecorate.forEach((block) => {
+      const wrapper = block.parentElement;
+      const sectionMeta = wrapper?.querySelector('div.section-metadata');
+      if (sectionMeta) {
+        const section = block.closest('.section');
+        if (section) {
+          const meta = readBlockConfig(sectionMeta);
+          Object.keys(meta).forEach((key) => {
+            if (key === 'style') {
+              meta.style.split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+                .forEach((s) => section.classList.add(s));
+            } else {
+              section.dataset[toCamelCase(key)] = meta[key];
+            }
+          });
+          sectionMeta.remove();
+        }
+      }
+    });
+
+    [...toDecorate].forEach((block) => {
+      decorateBlock(block);
+      decorateButtons(block);
+      decorateIcons(block);
+    });
+    Promise.all([...toDecorate].map((block) => loadBlock(block)));
+  });
+
+  observer.observe(main, { childList: true, subtree: true });
+}
+
+
 async function loadEager(doc) {
   document.documentElement.lang = 'en';
   decorateTemplateAndTheme();
@@ -196,6 +257,7 @@ async function loadEager(doc) {
 
   // Consent stub — wire to real CMP later; true for demo
   const isConsentGiven = true;
+  const personalizationEnabled = !!getMetadata('target') && isConsentGiven;
 
   const martechLoadedPromise = !IS_QUICK_EDIT && initMartech(
     {
@@ -209,14 +271,12 @@ async function loadEager(doc) {
       },
     },
     {
-      personalization: !!getMetadata('target') && isConsentGiven,
+      personalization: personalizationEnabled,
       launchUrls: ['https://assets.adobedtm.com/ace20f3fb313/d4fa519d75cf/launch-452113bfea88.min.js'],
-      decisionScopes: ['homepage-hero-mbox', 'homepage-teaser-mbox'],
-      propositionMetadata: {
-        // Normal delivery: Form-Based html-content-item at homepage-hero-mbox
-        'homepage-hero-mbox': { selector: 'main .section:first-child', actionType: 'replaceHtml' },
-        'homepage-teaser-mbox': { selector: 'main .section:nth-child(2)', actionType: 'replaceHtml' },
-      },
+      // Decision scopes + selector mapping are auto-discovered from section-metadata
+      // `mbox` rows (server-rendered as `data-mbox` attributes), so no hardcoded
+      // decisionScopes / propositionMetadata is needed here. See the plugins/martech
+      // README, "Working with Form-Based Activities".
     },
   );
 
@@ -228,6 +288,10 @@ async function loadEager(doc) {
       await runEager(document, { audiences: AUDIENCES }, getExperimentationContext());
     }
     decorateMain(main);
+    // Re-decorate EDS block markup that a Target offer injects after decoration has
+    // already run (e.g. a replaceHtml offer that brings in authored block HTML). Started
+    // before martechEager applies propositions so the observer is live when offers land.
+    if (personalizationEnabled) watchForTargetInjectedBlocks(main);
     document.body.classList.add('appear');
     await Promise.all([
       martechLoadedPromise && martechLoadedPromise.then(martechEager),
