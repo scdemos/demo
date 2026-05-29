@@ -430,8 +430,8 @@ section-shaped, overriding discovered selectors, or working around constraints t
 section-metadata model doesn't cover), the plugin also accepts a `propositionMetadata`
 config map plus a `decisionScopes` array on `initMartech`. This developer-owned-config
 approach is currently experimental — see
-[`docs/form-based-target-activities.md`](./docs/form-based-target-activities.md) for
-the API reference and status notes.
+[`docs/form-based-target-activities.md`](https://github.com/adobe-rnd/aem-martech/blob/main/docs/form-based-target-activities.md)
+in the `aem-martech` plugin repo for the API reference and status notes.
 
 ## Working with Dynamic Content (SPAs)
 
