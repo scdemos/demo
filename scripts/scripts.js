@@ -10,6 +10,8 @@ import {
   decorateTemplateAndTheme,
   waitForFirstImage,
   loadSection,
+  loadBlock,
+  readBlockConfig,
   sampleRUM,
   loadCSS,
   loadScript,
@@ -20,7 +22,7 @@ import {
 import {
   initMartech, martechEager, martechLazy, martechDelayed,
 } from '../plugins/martech/src/index.js';
-import { getAllMetadata, getLocale } from './shared.js';
+import { getAllMetadata, getLocale, isUE } from './shared.js';
 import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
@@ -189,6 +191,74 @@ async function loadTemplate(main, template) {
   }
 }
 
+// Structural EDS wrappers a Target offer can inject (e.g. a replaceHtml offer that brings in a
+// whole authored section). These are decorated by the section pipeline, not as blocks — calling
+// decorateBlock/loadBlock on them would try to load a non-existent block named after the wrapper.
+const isStructuralDiv = (el) => el.classList.contains('section')
+  || el.classList.contains('section-metadata')
+  || [...el.classList].some((c) => c.endsWith('-wrapper') || c.endsWith('-container'));
+
+function watchForTargetInjectedBlocks(main) {
+  const observer = new MutationObserver((mutations) => {
+    const toDecorate = new Set();
+
+    mutations.forEach(({ addedNodes }) => {
+      addedNodes.forEach((node) => {
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        [node, ...node.querySelectorAll('div[class]')].forEach((el) => {
+          if (
+            el.tagName === 'DIV'
+            && el.classList.length > 0
+            && !el.classList.contains('block')
+            && !isStructuralDiv(el)
+            && !el.dataset.blockStatus
+            && !el.closest('.block')
+          ) {
+            toDecorate.add(el);
+          }
+        });
+      });
+    });
+
+    if (!toDecorate.size) return;
+
+    // Stay connected: Target/alloy apply offers across multiple mutation ticks, so disconnecting
+    // after the first batch would leave later-injected blocks undecorated. Already-decorated
+    // blocks are skipped above via the `block` class / `data-block-status` guards.
+
+    toDecorate.forEach((block) => {
+      const wrapper = block.parentElement;
+      const sectionMeta = wrapper?.querySelector('div.section-metadata');
+      if (sectionMeta) {
+        const section = block.closest('.section');
+        if (section) {
+          const meta = readBlockConfig(sectionMeta);
+          Object.keys(meta).forEach((key) => {
+            if (key === 'style') {
+              meta.style.split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+                .forEach((s) => section.classList.add(s));
+            } else {
+              section.dataset[toCamelCase(key)] = meta[key];
+            }
+          });
+          sectionMeta.remove();
+        }
+      }
+    });
+
+    [...toDecorate].forEach((block) => {
+      decorateBlock(block);
+      decorateButtons(block);
+      decorateIcons(block);
+    });
+    Promise.all([...toDecorate].map((block) => loadBlock(block)))
+      .catch(() => { /* a failed block load shouldn't break the page */ });
+  });
+
+  observer.observe(main, { childList: true, subtree: true });
+}
+
+
 async function loadEager(doc) {
   getLocale();
   decorateTemplateAndTheme();
@@ -196,8 +266,9 @@ async function loadEager(doc) {
 
   // Consent stub — wire to real CMP later; true for demo
   const isConsentGiven = true;
+  const personalizationEnabled = !!getMetadata('target') && isConsentGiven;
 
-  const martechLoadedPromise = !IS_QUICK_EDIT && initMartech(
+  const martechLoadedPromise = !IS_EDITOR && initMartech(
     {
       datastreamId: 'd73be188-bc37-4ede-a5da-8aa7cd1e343b',
       orgId: '138A07885EE042D20A495CFA@AdobeOrg',
@@ -209,14 +280,12 @@ async function loadEager(doc) {
       },
     },
     {
-      personalization: !!getMetadata('target') && isConsentGiven,
+      personalization: personalizationEnabled,
       launchUrls: ['https://assets.adobedtm.com/ace20f3fb313/d4fa519d75cf/launch-452113bfea88.min.js'],
-      decisionScopes: ['homepage-hero-mbox', 'homepage-teaser-mbox'],
-      propositionMetadata: {
-        // Normal delivery: Form-Based html-content-item at homepage-hero-mbox
-        'homepage-hero-mbox': { selector: 'main .section:first-child', actionType: 'replaceHtml' },
-        'homepage-teaser-mbox': { selector: 'main .section:nth-child(2)', actionType: 'replaceHtml' },
-      },
+      // Decision scopes + selector mapping are auto-discovered from section-metadata
+      // `mbox` rows (server-rendered as `data-mbox` attributes), so no hardcoded
+      // config is needed here. See the plugins/martech README,
+      // "Working with Form-Based Activities".
     },
   );
 
@@ -228,6 +297,10 @@ async function loadEager(doc) {
       await runEager(document, { audiences: AUDIENCES }, getExperimentationContext());
     }
     decorateMain(main);
+    // Re-decorate EDS block markup that a Target offer injects after decoration has
+    // already run (e.g. a replaceHtml offer that brings in authored block HTML). Started
+    // before martechEager applies propositions so the observer is live when offers land.
+    if (personalizationEnabled && !IS_EDITOR) watchForTargetInjectedBlocks(main);
     document.body.classList.add('appear');
     await Promise.all([
       martechLoadedPromise && martechLoadedPromise.then(martechEager),
@@ -274,7 +347,7 @@ async function loadLazy(doc) {
   if (hash && element) element.scrollIntoView();
 
   loadFooter(footerEl);
-  if (!IS_QUICK_EDIT) await martechLazy();
+  if (!IS_EDITOR) await martechLazy();
 
   /* Scroll reveal: sections below the viewport animate in as they enter */
   if (main && 'IntersectionObserver' in window) {
@@ -356,9 +429,14 @@ async function loadLazy(doc) {
 const IS_QUICK_EDIT = new URL(window.location.href).searchParams.has('quick-edit');
 if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
 
+// Authoring surfaces (Sidekick quick-edit + Universal Editor). Martech (tracking +
+// personalization) is bypassed entirely here so offers never mutate the DOM while authoring
+// and the Target-injected-block observer can't fight UE/quick-edit DOM changes.
+const IS_EDITOR = IS_QUICK_EDIT || isUE();
+
 function loadDelayed() {
   window.setTimeout(() => {
-    if (!IS_QUICK_EDIT) martechDelayed();
+    if (!IS_EDITOR) martechDelayed();
     import('./delayed.js');
   }, 3000);
 }
