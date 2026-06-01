@@ -1,0 +1,40 @@
+{
+  "definitions": [
+    {
+      "title": "Quiz",
+      "id": "quiz",
+      "model": "quiz",
+      "plugins": {
+        "da": {
+          "name": "quiz",
+          "rows": 5,
+          "columns": 2
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "quiz",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "completeMessage",
+          "label": "Completion Message",
+          "value": "Great job! You completed the quiz.",
+          "description": "Message shown when the learner finishes all questions"
+        },
+        {
+          "component": "boolean",
+          "valueType": "boolean",
+          "name": "doNotMarkLessonAsCompleted",
+          "label": "Do Not Mark Lesson as Completed",
+          "value": false,
+          "description": "When enabled, completing the quiz does not fire the quiz:completed event"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

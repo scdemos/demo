@@ -1,0 +1,35 @@
+{
+  "definitions": [
+    {
+      "title": "Table",
+      "id": "table",
+      "model": "table",
+      "plugins": {
+        "da": {
+          "name": "table",
+          "rows": 3,
+          "columns": 3
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "table",
+      "fields": [
+        {
+          "component": "multiselect",
+          "name": "classes",
+          "label": "Style",
+          "valueType": "string[]",
+          "options": [
+            { "name": "No Header", "value": "no-header" },
+            { "name": "Striped Rows", "value": "striped" },
+            { "name": "Bordered", "value": "bordered" }
+          ]
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

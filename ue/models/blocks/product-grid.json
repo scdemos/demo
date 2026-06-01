@@ -1,0 +1,35 @@
+{
+  "definitions": [
+    {
+      "title": "Product Grid",
+      "id": "product-grid",
+      "model": "product-grid",
+      "plugins": {
+        "da": {
+          "name": "product-grid",
+          "rows": 1,
+          "columns": 1,
+          "fields": [
+            { "name": "indexUrl", "selector": "div>div>a[href]" }
+          ]
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "product-grid",
+      "fields": [
+        {
+          "component": "aem-content",
+          "valueType": "string",
+          "name": "indexUrl",
+          "label": "Product Index",
+          "required": true,
+          "description": "Path to the product index JSON (e.g. /products/tools/index)"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

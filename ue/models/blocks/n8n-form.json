@@ -1,0 +1,61 @@
+{
+  "definitions": [
+    {
+      "title": "N8N Form",
+      "id": "n8n-form",
+      "model": "n8n-form",
+      "plugins": {
+        "da": {
+          "name": "n8n-form",
+          "rows": 2,
+          "columns": 1,
+          "fields": [
+            { "name": "submitUrl", "selector": "div:nth-child(1)>div" }
+          ]
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "n8n-form",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "submitUrl",
+          "label": "Webhook URL",
+          "required": true,
+          "description": "n8n webhook URL that receives form submissions"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "title",
+          "label": "Form Title",
+          "value": "Sign up"
+        },
+        {
+          "component": "textarea",
+          "valueType": "string",
+          "name": "description",
+          "label": "Form Description"
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "successTitle",
+          "label": "Thank You Title",
+          "value": "Thank you!"
+        },
+        {
+          "component": "textarea",
+          "valueType": "string",
+          "name": "successMessage",
+          "label": "Thank You Message"
+        }
+      ]
+    }
+  ],
+  "filters": []
+}

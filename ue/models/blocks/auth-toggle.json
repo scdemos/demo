@@ -1,0 +1,23 @@
+{
+  "definitions": [
+    {
+      "title": "Auth Toggle",
+      "id": "auth-toggle",
+      "model": "auth-toggle",
+      "plugins": {
+        "da": {
+          "name": "auth-toggle",
+          "rows": 0,
+          "columns": 0
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "auth-toggle",
+      "fields": []
+    }
+  ],
+  "filters": []
+}

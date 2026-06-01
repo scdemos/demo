@@ -60,6 +60,18 @@
       "id": "blocks",
       "components": [
         {
+          "title": "Auth Toggle",
+          "id": "auth-toggle",
+          "model": "auth-toggle",
+          "plugins": {
+            "da": {
+              "name": "auth-toggle",
+              "rows": 0,
+              "columns": 0
+            }
+          }
+        },
+        {
           "title": "Cards",
           "id": "cards",
           "model": "cards",
@@ -157,6 +169,37 @@
                 {
                   "name": "embedUrl",
                   "selector": "div>div>p"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "FAQ",
+          "id": "faq",
+          "model": "faq",
+          "filter": "faq",
+          "plugins": {
+            "da": {
+              "name": "faq",
+              "rows": 3,
+              "columns": 1
+            }
+          }
+        },
+        {
+          "title": "FAQ Category",
+          "id": "faq-item",
+          "model": "faq-item",
+          "plugins": {
+            "da": {
+              "name": "faq-item",
+              "rows": 1,
+              "columns": 1,
+              "fields": [
+                {
+                  "name": "category",
+                  "selector": "div:nth-child(1)"
                 }
               ]
             }
@@ -272,6 +315,54 @@
           }
         },
         {
+          "title": "N8N Form",
+          "id": "n8n-form",
+          "model": "n8n-form",
+          "plugins": {
+            "da": {
+              "name": "n8n-form",
+              "rows": 2,
+              "columns": 1,
+              "fields": [
+                {
+                  "name": "submitUrl",
+                  "selector": "div:nth-child(1)>div"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "Product Grid",
+          "id": "product-grid",
+          "model": "product-grid",
+          "plugins": {
+            "da": {
+              "name": "product-grid",
+              "rows": 1,
+              "columns": 1,
+              "fields": [
+                {
+                  "name": "indexUrl",
+                  "selector": "div>div>a[href]"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "Quiz",
+          "id": "quiz",
+          "model": "quiz",
+          "plugins": {
+            "da": {
+              "name": "quiz",
+              "rows": 5,
+              "columns": 2
+            }
+          }
+        },
+        {
           "title": "Related Articles",
           "id": "related-articles",
           "model": "related-articles",
@@ -302,6 +393,18 @@
               "name": "social-share",
               "rows": 0,
               "columns": 0
+            }
+          }
+        },
+        {
+          "title": "Table",
+          "id": "table",
+          "model": "table",
+          "plugins": {
+            "da": {
+              "name": "table",
+              "rows": 3,
+              "columns": 3
             }
           }
         },

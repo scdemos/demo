@@ -8,17 +8,23 @@
   {
     "id": "section",
     "components": [
+      "auth-toggle",
       "cards",
       "columns",
       "embed",
+      "faq",
       "form",
       "fragment",
       "hero",
       "image",
       "journey-map",
+      "n8n-form",
+      "product-grid",
+      "quiz",
       "related-articles",
       "search",
       "social-share",
+      "table",
       "tabs",
       "teaser",
       "text"
@@ -45,6 +51,12 @@
     "components": [
       "text",
       "image"
+    ]
+  },
+  {
+    "id": "faq",
+    "components": [
+      "faq-item"
     ]
   },
   {

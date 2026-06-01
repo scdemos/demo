@@ -1,0 +1,57 @@
+{
+  "definitions": [
+    {
+      "title": "FAQ",
+      "id": "faq",
+      "model": "faq",
+      "filter": "faq",
+      "plugins": {
+        "da": {
+          "name": "faq",
+          "rows": 3,
+          "columns": 1
+        }
+      }
+    },
+    {
+      "title": "FAQ Category",
+      "id": "faq-item",
+      "model": "faq-item",
+      "plugins": {
+        "da": {
+          "name": "faq-item",
+          "rows": 1,
+          "columns": 1,
+          "fields": [
+            { "name": "category", "selector": "div:nth-child(1)" }
+          ]
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "faq",
+      "fields": []
+    },
+    {
+      "id": "faq-item",
+      "fields": [
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "category",
+          "label": "Category",
+          "required": true,
+          "description": "Category name to filter FAQs from the /faq-index.json feed"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "faq",
+      "components": ["faq-item"]
+    }
+  ]
+}
