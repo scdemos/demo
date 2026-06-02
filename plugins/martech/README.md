@@ -185,10 +185,11 @@ async function loadEager(doc) {
     {
       personalization: !!getMetadata('target') && isConsentGiven,
       launchUrls: [/* your Launch script URLs here */],
-      // For Form-Based activities at named mboxes, add the scope(s) here.
-      // decisionScopes: ['target-global-mbox'],
-      // If those offers don't embed a CSS selector, add a fallback map.
-      // propositionMetadata: { 'target-global-mbox': { selector: 'main h2', actionType: 'replaceHtml' } },
+      // To request additional decision scopes beyond the default `__view__` scope,
+      // list them here. They are added to the eager personalization fetch.
+      // decisionScopes: ['my-scope-name'],
+      // Form-Based HTML offers are targeted via `mbox` section metadata (auto-discovered as
+      // `data-mbox`) — see "Working with Form-Based Activities" below.
       // See the API Reference for all available options.
     },
   );
@@ -256,10 +257,11 @@ Initializes the library. This should be called once in `loadEager`.
   - `personalization` `{Boolean}`: Enable personalization. Default: `true`.
   - `performanceOptimized` `{Boolean}`: Use aggressive performance optimizations. Default: `true`.
   - `personalizationTimeout` `{Number}`: Timeout in ms for personalization. Default: `1000`.
-  - `trackPageView` `{Boolean}`: Whether to automatically send a page view event on page activation. When `false`, the library sends a `decisioning.propositionDisplay` event instead, so proposition display is still reported to Target without triggering an extra page view. Set to `false` if this is already handled separately in the page. Default: `true`.
+  - `trackPageView` `{Boolean}`: Whether to automatically send a page view event on page activation. Proposition display is reported independently via `decisioning.propositionDisplay` as each offer renders, so setting this to `false` (e.g. when page views are handled separately) still reports impressions to Target without an extra page view. Default: `true`.
   - `shouldProcessEvent` `{Function}`: A function that receives a data layer event payload and returns `false` to prevent it from being sent.
-  - `decisionScopes` `{String[]}`: Additional decision scopes to request beyond the default `__view__` scope. Required for Form-Based activities targeting named mboxes (e.g. `['target-global-mbox']`). Default: `[]`.
-  - `propositionMetadata` `{Object}`: Selector fallback map for Form-Based HTML offers that do not carry a built-in CSS selector (e.g. raw HTML offers created manually in Target). Keys are decision scope names; values are `{ selector, actionType }` objects where `actionType` is `'setHtml'`, `'replaceHtml'` (default), or `'appendHtml'`. DA "Send to Target" offers embed their own selector and do not need an entry here. Default: `{}`.
+  - `decisionScopes` `{String[]}`: Additional decision scopes to request beyond the default `__view__` scope. Previously this required mutating the payload via `onBeforeEventSend`; this provides a dedicated config field. The scopes are included in both the eager `propositionFetch` (when `performanceOptimized` is `true`) and the `martechLazy` `sendEvent` (when `performanceOptimized` is `false`), with `__view__` always included. Default: `[]`.
+  - `propositionScopeAttribute` `{String|null}`: The `data-*` attribute the plugin scans to auto-discover decision scopes from the DOM (rendered from `mbox` section metadata). Comma-separated values declare multiple scopes per element. Set to `null` to disable auto-discovery. Auto-discovery only runs in the performance-optimized eager path (the default); when `performanceOptimized` is `false`, request scopes explicitly via `decisionScopes`. Default: `'mbox'`.
+  - `discoveredScopeActionType` `{String}`: Default `actionType` for auto-discovered scopes when neither the offer nor the section's `data-mbox-action` specifies one. One of `'setHtml'`, `'replaceHtml'`, `'appendHtml'`. Default: `'setHtml'`.
 
 ---
 
@@ -349,47 +351,80 @@ window.addEventListener('consent.onetrust', consentEventHandler);
 
 ## Working with Form-Based Activities
 
-Adobe Target Form-Based activities (offers created in the Target UI rather than the Visual Experience Composer) require two additional configuration steps because the Web SDK does not fetch named mbox propositions by default.
+Form-Based HTML offers in Adobe Target deliver an `html-content-item` proposition that
+doesn't carry a CSS selector in the offer payload. The plugin needs to know where to put
+the HTML. The recommended way to wire this up in EDS is **author-controlled section
+metadata** — authors tag sections in DA with `mbox` rows, the Helix HTML pipeline
+pre-renders these as `data-mbox` attributes on the section element, and the plugin
+discovers them automatically at the start of `martechEager`.
 
-### Step 1 — Request the mbox scope
+### Authoring contract
 
-Add the mbox name(s) to `decisionScopes` in your `initMartech` call:
+In DA, add a `section-metadata` block to any section you want to personalize:
+
+| section metadata | |
+|---|---|
+| mbox | hero-offer |
+
+Multiple mboxes per section (comma-separated):
+
+| section metadata | |
+|---|---|
+| mbox | hero-offer, audience-banner |
+
+Optional per-section actionType override (default is `setHtml`, which preserves the
+section element and its decoration state — see "Why `setHtml`" below):
+
+| section metadata | |
+|---|---|
+| mbox | hero-offer |
+| mbox-action | replaceHtml |
+
+Valid `mbox-action` values: `setHtml`, `replaceHtml`, `appendHtml`. Invalid values fall
+back to the default with a debug warning.
+
+### What the plugin does
+
+For each `[data-mbox]` element it discovers:
+
+1. Splits the attribute value on `,` to get individual mbox names.
+2. Sanitizes each name for CSS identifier safety: `name.replace(/[^a-zA-Z0-9_-]/g, '-')`.
+3. Adds a synthetic class `martech-mbox-{sanitized-name}` to the element (idempotent).
+4. Registers `{ selector: '.martech-mbox-{sanitized-name}', actionType }` for the scope in
+   an internal map used to place `html-content-item` offers. An offer that embeds its own
+   selector still wins over the synthetic one.
+5. Adds the unsanitized mbox name to `config.decisionScopes` (de-duplicated).
+6. Marks the element with `martech-mbox-scanned` so subsequent per-tick re-scans skip it.
+
+The plugin's existing `MutationObserver` (which runs `applyPropositions` on every section /
+block decoration tick) re-runs the same scan, so mboxes introduced by fragments, dynamic
+blocks, or Universal Editor edits also get picked up. Scopes that arrive *after* the eager
+`propositionFetch` are logged with a debug warning — they won't be personalized on this
+page load (v1 limitation; the eager fetch is single-shot).
+
+### Why `setHtml` is the default
+
+`setHtml` replaces the *children* of the target element — preserving the element itself,
+its `class="section"`, `data-section-status="loaded"`, scroll-reveal state, and the
+`data-mbox` attribute (so a second offer for the same scope can still target it).
+`replaceHtml` swaps the element out entirely; useful when an offer is authored as a
+whole section but easy to misuse (it removes EDS decoration markers that downstream code
+may rely on). Choose `replaceHtml` per-section when you know the offer is shaped like
+the section it replaces.
+
+### Configuration
 
 ```js
 initMartech(webSDKConfig, {
   personalization: true,
-  decisionScopes: ['target-global-mbox'],
+  // Default values shown — adjust to taste:
+  propositionScopeAttribute: 'mbox',       // set to null to disable auto-discovery
+  discoveredScopeActionType: 'setHtml',    // default for discovered scopes
 });
 ```
 
-Without this, the Web SDK only fetches `__view__` (VEC) propositions and Form-Based activities at named mboxes are silently ignored.
-
-### Step 2 — Provide a selector fallback (if needed)
-
-Offers sent from **Document Authoring via "Send to Target"** embed their own CSS selector in the offer data — no further configuration is required for those.
-
-For **raw HTML offers** created manually in the Target UI (which have no built-in selector), provide a `propositionMetadata` fallback map:
-
-```js
-initMartech(webSDKConfig, {
-  personalization: true,
-  decisionScopes: ['target-global-mbox'],
-  propositionMetadata: {
-    'target-global-mbox': {
-      // CSS selector of the element the offer content targets
-      selector: 'main .hero',
-      // 'setHtml'     — replace the inner HTML of the matched element (preserves the element)
-      // 'replaceHtml' — replace the matched element itself with the offer content (default)
-      // 'appendHtml'  — append the offer content as children of the matched element
-      actionType: 'setHtml',
-    },
-  },
-});
-```
-
-The same `propositionMetadata` field also acts as a **rescue override for misconfigured VEC offers**: if a dom-action item arrives with a non-visual selector (`head`, `body`, or `html`) — which can happen when a DA offer is re-sent without updating its selector — the plugin reroutes it through the matching `propositionMetadata` entry and applies it directly. Items with no override (or whose override selector is itself `head`/`body`/`html`) are dropped with a debug-mode warning to prevent unintended document-chrome mutations.
-
-> **Reporting note:** When the rescue override path is used, the plugin manually fires a `decisioning.propositionDisplay` event so Target Activity reporting still records an impression for the delivered offer.
+See [`docs/form-based-target-activities.md`](https://github.com/adobe-rnd/aem-martech/blob/main/docs/form-based-target-activities.md)
+for a focused, author-facing walkthrough of using Form-Based activities.
 
 ## Working with Dynamic Content (SPAs)
 
