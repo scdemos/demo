@@ -489,10 +489,12 @@ async function loadLazy(doc) {
 const IS_QUICK_EDIT = new URL(window.location.href).searchParams.has('quick-edit');
 if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
 
+const DA_PREVIEW = new URL(window.location.href).searchParams.get('dapreview');
+
 // Authoring surfaces (Sidekick quick-edit + Universal Editor). Martech (tracking +
 // personalization) is bypassed entirely here so offers never mutate the DOM while authoring
 // and the Target-injected-block observer can't fight UE/quick-edit DOM changes.
-const IS_EDITOR = IS_QUICK_EDIT || isUE();
+const IS_EDITOR = IS_QUICK_EDIT || isUE() || DA_PREVIEW;
 
 function loadDelayed() {
   window.setTimeout(() => {
