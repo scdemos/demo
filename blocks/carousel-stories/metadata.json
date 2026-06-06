@@ -1,0 +1,39 @@
+{
+  "variantName": "carousel-stories",
+  "baseBlock": "carousel",
+  "version": "1.0.0",
+  "created": "2026-06-05T06:37:00.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.fortinet.com/",
+    "originPage": "Fortinet homepage",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "spacious",
+    "purpose": "testimonial",
+    "imagePattern": "large"
+  },
+  "contentPattern": {
+    "structure": "heading + links + badges + customer photo",
+    "buttonCount": 2,
+    "imageCount": 1
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "customer story showcases",
+      "case study carousels",
+      "testimonial sections"
+    ],
+    "notSuitableFor": [
+      "hero sections",
+      "news listings",
+      "simple image galleries"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/index"],
+    "reuseCount": 1,
+    "lastUsed": "2026-06-05T06:37:00.000Z"
+  }
+}

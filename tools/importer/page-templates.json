@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "projectType": "xwalk"
+  },
+  "templates": [
+    {
+      "name": "homepage",
+      "urls": ["https://www.fortinet.com/"],
+      "description": "Fortinet corporate homepage with hero, product highlights, and promotional sections",
+      "blocks": [
+        {
+          "name": "carousel-hero",
+          "instances": ["section.valprop--home.ftnt--billboard"]
+        },
+        {
+          "name": "carousel-news",
+          "instances": [".news-slider"]
+        },
+        {
+          "name": "cards-platform",
+          "instances": ["#fabric-area .all-boxes"]
+        },
+        {
+          "name": "cards-product",
+          "instances": [".product-row.ftnt-platform"]
+        },
+        {
+          "name": "cards-stats",
+          "instances": [".global-scale .row"]
+        },
+        {
+          "name": "carousel-stories",
+          "instances": [".customer-stories"]
+        },
+        {
+          "name": "cards-trust",
+          "instances": ["main.ftnt-main.trusted-section"]
+        },
+        {
+          "name": "carousel-events",
+          "instances": [".events-slider"]
+        }
+      ],
+      "sections": [
+        {
+          "id": "section-1",
+          "name": "Hero",
+          "selector": ".C926-Billboard-Sliders",
+          "style": "dark",
+          "blocks": ["carousel-hero"],
+          "defaultContent": []
+        },
+        {
+          "id": "section-2",
+          "name": "News",
+          "selector": ".C814-Event-News-Slider:first-of-type",
+          "style": "light",
+          "blocks": ["carousel-news"],
+          "defaultContent": [".news-slider .section-label", ".news-slider h2"]
+        },
+        {
+          "id": "section-3",
+          "name": "Platform Pillars",
+          "selector": "#fabric-area",
+          "style": "fortinet-red",
+          "blocks": ["cards-platform"],
+          "defaultContent": ["#fabric-area .section-label", "#fabric-area h2"]
+        },
+        {
+          "id": "section-4",
+          "name": "AI Security",
+          "selector": ".C48-Form-HTML-Snippet:nth-of-type(2)",
+          "style": "light",
+          "blocks": [],
+          "defaultContent": [".section-label:contains('AI-DRIVEN')", "h2:contains('Secure and Transform')"]
+        },
+        {
+          "id": "section-5",
+          "name": "Platform Innovation",
+          "selector": ".container.platform-container",
+          "style": "light",
+          "blocks": ["cards-product"],
+          "defaultContent": [".platform-container .section-label", ".platform-container h2"]
+        },
+        {
+          "id": "section-6",
+          "name": "Threat Statistics",
+          "selector": ".global-scale",
+          "style": "navy-dark",
+          "blocks": ["cards-stats"],
+          "defaultContent": [".global-scale .section-label", ".global-scale h2", ".global-scale .moreinfo a"]
+        },
+        {
+          "id": "section-7",
+          "name": "Customer Stories",
+          "selector": ".customer-stories",
+          "style": "light",
+          "blocks": ["carousel-stories"],
+          "defaultContent": []
+        },
+        {
+          "id": "section-8",
+          "name": "Trust",
+          "selector": "main.ftnt-main.trusted-section",
+          "style": "light",
+          "blocks": ["cards-trust"],
+          "defaultContent": [".trusted-section h2", ".trusted-section .head-description", ".trusted-section .cta-wrapper a"]
+        },
+        {
+          "id": "section-9",
+          "name": "Events",
+          "selector": ".events-slider",
+          "style": "light",
+          "blocks": ["carousel-events"],
+          "defaultContent": [".events-slider h2"]
+        }
+      ]
+    }
+  ]
+}

@@ -9,6 +9,14 @@
     "id": "section",
     "components": [
       "cards",
+      "cards-platform",
+      "cards-product",
+      "cards-stats",
+      "cards-trust",
+      "carousel-hero",
+      "carousel-news",
+      "carousel-stories",
+      "carousel-events",
       "columns",
       "embed",
       "form",
@@ -51,6 +59,54 @@
     "id": "journey-map",
     "components": [
       "journey-map-step"
+    ]
+  },
+  {
+    "id": "carousel-hero",
+    "components": [
+      "carousel-hero-item"
+    ]
+  },
+  {
+    "id": "carousel-news",
+    "components": [
+      "carousel-hero-item"
+    ]
+  },
+  {
+    "id": "carousel-stories",
+    "components": [
+      "carousel-hero-item"
+    ]
+  },
+  {
+    "id": "carousel-events",
+    "components": [
+      "carousel-hero-item"
+    ]
+  },
+  {
+    "id": "cards-platform",
+    "components": [
+      "cards-item"
+    ]
+  },
+  {
+    "id": "cards-product",
+    "components": [
+      "cards-item"
+    ]
+  },
+  {
+    "id": "cards-stats",
+    "components": [
+      "cards-item"
+    ]
+  },
+  {
+    "id": "cards-trust",
+    "components": [
+      "cards-item"
     ]
   }
 ]

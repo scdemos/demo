@@ -1,3 +1,5 @@
+@import url('brand.css');
+
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -44,17 +46,11 @@
   /* color scheme */
   color-scheme: light dark;
 
-  /* heritage palette */
-  --color-rust: #a14f2b;
-  --color-gold: #c5a059;
-  --color-parchment: #f5f2ed;
-  --color-ink: #1a1a1a;
-
-  /* heritage dark palette */
-  --color-obsidian: #060d0d;
-  --color-card-dark: #162121;
-  --color-rust-bright: #d16a3e;
-  --color-muted: #8b9a9a;
+  /* Fortinet palette */
+  --color-fortinet-red: #da291c;
+  --color-navy-dark: #0c1427;
+  --color-fortinet-gray: #333;
+  --color-fortinet-light-gray: #f5f5f5;
 
   /* color tokens – grays and palette */
   --color-gray-100: #f1f1f1;
@@ -106,18 +102,18 @@
   --color-yellow-300: #cab600;
 
   /* semantic / named colors */
-  --color-light: rgb(255 255 255);
-  --color-dark: rgb(0 0 0);
-  --color-text: light-dark(var(--color-ink), var(--color-parchment));
-  --color-link: light-dark(var(--color-ink), var(--color-parchment));
-  --color-link-hover: light-dark(var(--color-rust), var(--color-gold));
-  --color-brand: var(--color-rust);
-  --color-accent: var(--color-gold);
-  --color-shaded: light-dark(var(--color-parchment), var(--color-card-dark));
+  --color-light: #fff;
+  --color-dark: #1a1a2e;
+  --color-text: #333;
+  --color-link: #333;
+  --color-link-hover: #da291c;
+  --color-brand: #da291c;
+  --color-accent: #1a1a2e;
+  --color-shaded: #f5f5f5;
 
   /* fonts */
-  --font-family: montserrat, "Trebuchet MS", sans-serif;
-  --font-family-serif: "EB Garamond", georgia, serif;
+  --font-family: "Inter", "Noto Sans JP", sans-serif;
+  --font-family-serif: "Inter", sans-serif;
   --font-family-mono: "JetBrains Mono", "Courier New", monospace;
   --body-font-family: var(--font-family);
   --heading-font-family: var(--font-family-serif);
@@ -147,9 +143,9 @@
   --header-height: var(--nav-height);
 
   /* boilerplate compatibility – map to design tokens */
-  --background-color: light-dark(var(--color-parchment), var(--color-obsidian));
+  --background-color: #fff;
   --light-color: var(--color-shaded);
-  --dark-color: var(--color-gray-500);
+  --dark-color: var(--color-navy-dark);
   --text-color: var(--color-text);
   --link-color: var(--color-link);
   --link-hover-color: var(--color-link-hover);
@@ -262,7 +258,7 @@ html {
 }
 
 ::selection {
-  background: light-dark(rgb(161 79 43 / 20%), rgb(197 160 89 / 30%));
+  background: rgb(218 41 28 / 20%);
   color: inherit;
 }
 
@@ -271,11 +267,6 @@ body {
   margin: 0;
   box-sizing: border-box;
   background-color: var(--background-color);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 12% 8%,
-      light-dark(rgb(197 160 89 / 9%), rgb(197 160 89 / 4%)) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at 88% 82%,
-      light-dark(rgb(161 79 43 / 6%), rgb(161 79 43 / 3%)) 0%, transparent 50%);
   color: var(--text-color);
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
@@ -306,6 +297,27 @@ footer .footer[data-block-status="loaded"] {
   visibility: visible;
 }
 
+/* Section backgrounds */
+.section.dark {
+  background-color: var(--color-navy-dark);
+  color: #fff;
+}
+
+.section.light {
+  background-color: var(--color-light);
+  color: var(--text-color);
+}
+
+.section.fortinet-red {
+  background-color: var(--color-fortinet-red);
+  color: #fff;
+}
+
+.section.navy-dark {
+  background-color: var(--color-navy-dark);
+  color: #fff;
+}
+
 /* typography */
 h1,
 h2,
@@ -316,7 +328,7 @@ h6 {
   margin-top: 0.8em;
   margin-bottom: 0.4em;
   font-family: var(--heading-font-family);
-  font-weight: 500;
+  font-weight: 700;
   line-height: var(--heading-line-height);
   scroll-margin: 40px;
 }

@@ -1,0 +1,70 @@
+{
+  "definitions": [
+    {
+      "title": "Carousel Stories",
+      "id": "carousel-stories",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "Carousel Stories",
+              "filter": "carousel-stories"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "Carousel Stories Slide",
+      "id": "carousel-stories-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "Carousel Stories Slide",
+              "model": "carousel-stories-item"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "carousel-stories-item",
+      "fields": [
+        {
+          "component": "reference",
+          "valueType": "string",
+          "name": "media_image",
+          "label": "Background Image",
+          "multi": false
+        },
+        {
+          "component": "text",
+          "valueType": "string",
+          "name": "media_imageAlt",
+          "value": "",
+          "label": "Background Alt"
+        },
+        {
+          "component": "richtext",
+          "name": "content_text",
+          "value": "",
+          "label": "Text",
+          "valueType": "string"
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "carousel-stories",
+      "components": [
+        "carousel-stories-item"
+      ]
+    }
+  ]
+}

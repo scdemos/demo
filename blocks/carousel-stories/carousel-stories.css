@@ -1,0 +1,371 @@
+/* Block: carousel-stories
+   Customer case study carousel with colored slide backgrounds,
+   customer photo on right, quote/title on left. */
+
+/* Wrapper override for full-width */
+.carousel-stories-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Block root */
+.carousel-stories {
+  position: relative;
+  color: var(--color-text);
+  overflow: hidden;
+}
+
+/* Slides container */
+.carousel-stories .carousel-stories-slides-container {
+  position: relative;
+}
+
+/* Slide list */
+.carousel-stories .carousel-stories-slides,
+.carousel-stories .carousel-stories-slide-indicators {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-stories .carousel-stories-slides {
+  display: flex;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  overflow: scroll clip;
+}
+
+.carousel-stories .carousel-stories-slides::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual slide */
+.carousel-stories .carousel-stories-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+  background-color: rgb(31 68 86);
+  overflow: hidden;
+}
+
+/* Vary slide background colors */
+.carousel-stories .carousel-stories-slide:nth-child(2) {
+  background-color: rgb(19 74 124);
+}
+
+.carousel-stories .carousel-stories-slide:nth-child(3) {
+  background-color: rgb(22 22 22);
+}
+
+.carousel-stories .carousel-stories-slide:nth-child(4) {
+  background-color: rgb(226 81 36);
+}
+
+/* Decorative rectangle shape at bottom-left of slide */
+.carousel-stories .carousel-stories-slide::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  height: 230px;
+  background-color: rgb(2 18 29);
+  border-radius: 0 100px 0 0;
+  z-index: 0;
+}
+
+/* Hidden state for non-active slides */
+.carousel-stories .carousel-stories-slide[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+/* Image column */
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-image {
+  position: relative;
+  z-index: 1;
+  order: -1;
+  margin-bottom: 20px;
+}
+
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-image picture {
+  display: block;
+}
+
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-image img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 23px;
+}
+
+/* Content columns (h2, quote, CTA) */
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+}
+
+/* Heading */
+.carousel-stories .carousel-stories-slide h2 {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--heading-font-family);
+  line-height: 32px;
+  color: #fff;
+  margin: 0 0 16px;
+}
+
+/* Quote text */
+.carousel-stories .carousel-stories-slide p {
+  font-size: 14px;
+  font-family: var(--body-font-family);
+  line-height: 20px;
+  color: #fff;
+  font-style: italic;
+  margin: 0 0 8px;
+}
+
+/* Quote attribution */
+.carousel-stories .carousel-stories-slide p strong {
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* CTA links */
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-content a,
+main .carousel-stories .carousel-stories-slide a.button:any-link {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  display: inline-block;
+  margin-top: 12px;
+  margin-right: 24px;
+  letter-spacing: 0.5px;
+}
+
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-content a:hover,
+main .carousel-stories .carousel-stories-slide a.button:any-link:hover {
+  text-decoration: underline;
+  color: #fff;
+  background: none;
+  border: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Arrow indicator after CTA links */
+.carousel-stories .carousel-stories-slide .carousel-stories-slide-content a::after,
+main .carousel-stories .carousel-stories-slide a.button:any-link::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid #fff;
+  border-right: 2px solid #fff;
+  transform: rotate(45deg);
+  margin-left: 8px;
+  vertical-align: middle;
+  position: static;
+  background: none;
+  inset: unset;
+}
+
+/* Last slide - "Explore All Customer Stories" link */
+.carousel-stories .carousel-stories-slide:last-child {
+  background-color: #fff;
+  min-height: auto;
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-stories .carousel-stories-slide:last-child::before {
+  display: none;
+}
+
+.carousel-stories .carousel-stories-slide:last-child .carousel-stories-slide-content a,
+main .carousel-stories .carousel-stories-slide:last-child a.button:any-link {
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 400;
+  text-transform: none;
+  text-decoration: underline;
+  margin: 0;
+}
+
+.carousel-stories .carousel-stories-slide:last-child .carousel-stories-slide-content a:hover,
+main .carousel-stories .carousel-stories-slide:last-child a.button:any-link:hover {
+  color: var(--color-fortinet-red);
+}
+
+/* Button container reset inside slides */
+.carousel-stories .button-container {
+  display: inline;
+}
+
+/* Hide YouTube embed in carousel (it was a "Customer Video" link) */
+.carousel-stories .carousel-stories-slide .embed-wrapper {
+  display: none;
+}
+
+/* Slide indicators (dots) */
+.carousel-stories .carousel-stories-slide-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
+  padding: 16px;
+  line-height: 0;
+}
+
+.carousel-stories .carousel-stories-slide-indicator button {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--color-text);
+  border-radius: 50%;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.carousel-stories .carousel-stories-slide-indicator button:disabled,
+.carousel-stories .carousel-stories-slide-indicator button:hover,
+.carousel-stories .carousel-stories-slide-indicator button:focus-visible {
+  background-color: var(--color-text);
+}
+
+/* Navigation arrows */
+.carousel-stories .carousel-stories-navigation-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.carousel-stories .carousel-stories-navigation-buttons button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background-color: rgb(255 255 255 / 25%);
+  transition: background-color 0.2s;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.carousel-stories .carousel-stories-navigation-buttons button:hover,
+.carousel-stories .carousel-stories-navigation-buttons button:focus-visible {
+  background-color: rgb(255 255 255 / 60%);
+}
+
+.carousel-stories .carousel-stories-navigation-buttons button::after {
+  display: block;
+  content: '';
+  border: 2px solid #fff;
+  border-bottom: 0;
+  border-left: 0;
+  height: 12px;
+  width: 12px;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 2px);
+  transform: translate(-50%, -50%) rotate(-135deg);
+}
+
+.carousel-stories .carousel-stories-navigation-buttons button.slide-next::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+  left: calc(50% - 2px);
+}
+
+/* Desktop layout */
+@media (width >= 900px) {
+  .carousel-stories .carousel-stories-slide {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 540px;
+    padding: 0 0 0 calc((100% - 1240px) / 2 + 15px);
+  }
+
+  .carousel-stories .carousel-stories-slide .carousel-stories-slide-image {
+    position: absolute;
+    right: 15px;
+    bottom: 0;
+    width: 500px;
+    height: 515px;
+    margin-bottom: 0;
+    order: unset;
+  }
+
+  .carousel-stories .carousel-stories-slide .carousel-stories-slide-image img {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+    border-radius: 23px;
+  }
+
+  .carousel-stories .carousel-stories-slide .carousel-stories-slide-content {
+    max-width: 55%;
+    padding-left: 0;
+    padding-right: 40px;
+  }
+
+  .carousel-stories .carousel-stories-slide h2 {
+    font-size: 30px;
+    line-height: 40px;
+    margin: 0 0 20px;
+  }
+
+  .carousel-stories .carousel-stories-slide p {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .carousel-stories .carousel-stories-slide:last-child {
+    min-height: auto;
+    padding: 85px 20px;
+  }
+
+  .carousel-stories .carousel-stories-navigation-buttons {
+    left: 24px;
+    right: 24px;
+  }
+
+  .carousel-stories .carousel-stories-slide::before {
+    width: 720px;
+  }
+}
+
+@media (width >= 1200px) {
+  .carousel-stories .carousel-stories-slide .carousel-stories-slide-content {
+    max-width: 682px;
+  }
+}

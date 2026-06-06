@@ -334,6 +334,136 @@
               ]
             }
           }
+        },
+        {
+          "title": "Carousel Hero",
+          "id": "carousel-hero",
+          "model": "carousel-hero",
+          "filter": "carousel-hero",
+          "plugins": {
+            "da": {
+              "name": "carousel-hero",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Carousel Hero Item",
+          "id": "carousel-hero-item",
+          "model": "carousel-hero-item",
+          "plugins": {
+            "da": {
+              "name": "carousel-hero-item",
+              "rows": 1,
+              "columns": 2,
+              "fields": [
+                {
+                  "name": "media_image",
+                  "selector": "div:nth-child(1)>picture>img[src]"
+                },
+                {
+                  "name": "media_imageAlt",
+                  "selector": "div:nth-child(1)>picture>img[alt]"
+                },
+                {
+                  "name": "content_text",
+                  "selector": "div:nth-child(2)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "title": "Carousel News",
+          "id": "carousel-news",
+          "model": "carousel-news",
+          "filter": "carousel-news",
+          "plugins": {
+            "da": {
+              "name": "carousel-news",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Carousel Stories",
+          "id": "carousel-stories",
+          "model": "carousel-stories",
+          "filter": "carousel-stories",
+          "plugins": {
+            "da": {
+              "name": "carousel-stories",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Carousel Events",
+          "id": "carousel-events",
+          "model": "carousel-events",
+          "filter": "carousel-events",
+          "plugins": {
+            "da": {
+              "name": "carousel-events",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Cards Platform",
+          "id": "cards-platform",
+          "model": "cards-platform",
+          "filter": "cards-platform",
+          "plugins": {
+            "da": {
+              "name": "cards-platform",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Cards Product",
+          "id": "cards-product",
+          "model": "cards-product",
+          "filter": "cards-product",
+          "plugins": {
+            "da": {
+              "name": "cards-product",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Cards Stats",
+          "id": "cards-stats",
+          "model": "cards-stats",
+          "filter": "cards-stats",
+          "plugins": {
+            "da": {
+              "name": "cards-stats",
+              "rows": 1,
+              "columns": 2
+            }
+          }
+        },
+        {
+          "title": "Cards Trust",
+          "id": "cards-trust",
+          "model": "cards-trust",
+          "filter": "cards-trust",
+          "plugins": {
+            "da": {
+              "name": "cards-trust",
+              "rows": 1,
+              "columns": 2
+            }
+          }
         }
       ]
     }

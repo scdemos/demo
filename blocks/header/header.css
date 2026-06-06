@@ -227,7 +227,9 @@ header nav .nav-sections {
 header nav[aria-expanded='true'] .nav-sections {
   display: block;
   visibility: visible;
-  padding: var(--nav-item-padding) 0;
+  padding: 0;
+  margin-inline: calc(-1 * var(--nav-padding));
+  width: calc(100% + 2 * var(--nav-padding));
 }
 
 header nav .nav-sections ul {
@@ -237,6 +239,21 @@ header nav .nav-sections ul {
   font-size: var(--nav-primary-size);
   text-transform: uppercase;
   letter-spacing: 1.5px;
+}
+
+header nav .nav-sections > ul > li {
+  width: 100%;
+}
+
+header nav .nav-sections > ul > li > p {
+  padding: var(--space-m);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+header nav .nav-sections > ul > li > p > a {
+  text-decoration: none;
+  color: inherit;
 }
 
 @media (width <= 899px) {
@@ -834,6 +851,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     max-width: var(--nav-desktop-max-width);
     margin: 0 auto;
     padding: 0 var(--space-xl);
+    padding-top: 0;
     min-height: var(--nav-height);
   }
 
@@ -869,9 +887,21 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     margin: 0;
   }
 
-  /* tools: right, no shrink */
+  /* tools: right, no shrink — Fortinet utility bar */
   header nav .nav-tools {
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    background-color: #222;
+    padding: 0 24px;
+    height: 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
   }
 
   header nav[aria-expanded='true'] {
@@ -1252,6 +1282,174 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul > .nav-mega-inner > li.nav-mega-item + li.nav-mega-item {
     border-top: 0;
+  }
+
+  header nav .nav-tools p {
+    margin: 0;
+  }
+
+  header nav .nav-tools a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  header nav .nav-tools a:hover {
+    color: #ccc;
+  }
+
+  /* Fortinet: main nav bar below utility */
+  header .nav-wrapper {
+    position: fixed;
+    top: 40px;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  body {
+    padding-top: 104px;
+  }
+
+  /* Fortinet nav: horizontal menu bar on desktop */
+  header nav .nav-sections > ul {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  header nav .nav-sections > ul > li {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  header nav .nav-sections > ul > li > p {
+    margin: 0;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    height: var(--nav-height);
+  }
+
+  header nav .nav-sections > ul > li > p > a {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    text-decoration: none;
+    color: var(--text-color);
+    white-space: nowrap;
+  }
+
+  header nav .nav-sections > ul > li > p > a:hover {
+    color: var(--color-fortinet-red, #da291c);
+  }
+
+  header nav .nav-sections > ul > li > p > .nav-submenu-toggle {
+    display: none;
+  }
+
+  /* Sidebar + Content panel megamenu (Fortinet style) */
+  header nav .nav-sections > ul > li.nav-drop-mega > ul {
+    position: fixed;
+    top: var(--mega-top, var(--nav-height));
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+    display: none;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  header nav .nav-sections > ul > li.nav-drop-mega[aria-expanded="true"] > ul {
+    display: block;
+  }
+
+  header nav .nav-sections > ul > li.nav-drop-mega > ul > .nav-mega-inner {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 450px;
+  }
+
+  .nav-mega-sidebar {
+    width: 280px;
+    min-width: 280px;
+    border-right: 1px solid #e5e5e5;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-mega-sidebar-item {
+    display: block;
+    width: 100%;
+    padding: 14px 24px;
+    border: none;
+    border-left: 3px solid transparent;
+    background: none;
+    text-align: left;
+    font-family: var(--body-font-family);
+    font-size: 15px;
+    font-weight: 400;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+
+  .nav-mega-sidebar-item:hover {
+    background-color: #f5f5f5;
+  }
+
+  .nav-mega-sidebar-item.is-active {
+    border-left-color: #da291c;
+    font-weight: 600;
+    background-color: #fafafa;
+  }
+
+  .nav-mega-content {
+    flex: 1;
+    padding: 24px 32px;
+    position: relative;
+  }
+
+  .nav-mega-panel {
+    display: none;
+    gap: 16px;
+    column-count: 3;
+    column-gap: 40px;
+  }
+
+  .nav-mega-panel.is-active {
+    display: block;
+  }
+
+  .nav-mega-panel-link {
+    display: block;
+    padding: 8px 0;
+    color: #333;
+    font-size: 14px;
+    font-weight: 400;
+    text-decoration: none;
+    break-inside: avoid;
+    transition: color 0.15s;
+  }
+
+  .nav-mega-panel-link:hover {
+    color: #da291c;
   }
 
   header nav .nav-tools .nav-search-input {

@@ -1,0 +1,151 @@
+/* Block: cards-trust
+   Trust pillar cards with colored bottom accents.
+   Extracted from: main.ftnt-main.trusted-section on fortinet.com */
+
+.cards-trust > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+.cards-trust > ul > li {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  background: rgb(45 45 45);
+  transition: background 1s;
+  border-bottom: 20px solid rgb(45 45 45);
+  box-shadow: rgb(0 0 0 / 75%) 0 10px 20px -14px;
+  overflow: hidden;
+}
+
+/* Color variant accents - bottom border */
+.cards-trust > ul > li.red {
+  border-bottom-color: var(--color-fortinet-red);
+}
+
+.cards-trust > ul > li.blue {
+  border-bottom-color: rgb(31 116 222);
+}
+
+.cards-trust > ul > li.purple {
+  border-bottom-color: rgb(141 95 204);
+}
+
+.cards-trust > ul > li.teal {
+  border-bottom-color: rgb(28 131 136);
+}
+
+/* Hover: card fills with accent color */
+.cards-trust > ul > li.red:hover {
+  background: var(--color-fortinet-red);
+}
+
+.cards-trust > ul > li.blue:hover {
+  background: rgb(31 116 222);
+}
+
+.cards-trust > ul > li.purple:hover {
+  background: rgb(141 95 204);
+}
+
+.cards-trust > ul > li.teal:hover {
+  background: rgb(28 131 136);
+}
+
+/* Header area with shield background SVG */
+.cards-trust .cards-trust-header {
+  font-size: 30px;
+  font-weight: 500;
+  margin-bottom: 40px;
+  min-height: 150px;
+  background: url('https://www.fortinet.com/content/dam/fortinet/images/general/trust-default-bg.svg') 0% 0% / 100% no-repeat;
+  transition: background 1s;
+}
+
+.cards-trust .cards-trust-title {
+  padding: 70px 50px 20px 20px;
+  font-family: var(--body-font-family);
+}
+
+/* Description */
+.cards-trust .cards-trust-body {
+  padding: 0 20px 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #fff;
+  flex: 1;
+}
+
+.cards-trust .cards-trust-body p {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Footer link area */
+.cards-trust .cards-trust-footer {
+  padding: 20px;
+  margin-top: auto;
+  font-size: 15px;
+}
+
+.cards-trust .cards-trust-footer a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.cards-trust > ul > li:hover .cards-trust-footer a {
+  text-decoration: underline;
+}
+
+/* EDS button reset inside this block */
+main .cards-trust .button-container {
+  display: inline;
+}
+
+main .cards-trust a.button:any-link {
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+main .cards-trust a.button:any-link:hover {
+  background: none;
+  border: none;
+  box-shadow: none;
+  transform: none;
+  text-decoration: underline;
+  color: #fff;
+}
+
+/* Responsive: 2 columns on tablet, 4 on desktop */
+@media (width >= 600px) {
+  .cards-trust > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= 900px) {
+  .cards-trust > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

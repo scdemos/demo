@@ -1,0 +1,7 @@
+{
+  "type": "xwalk",
+  "libraryUrl": "https://main--sta-xwalk-boilerplate--aemysites.aem.page/tools/sidekick/library.json",
+  "contentHostUrl": "https://content.da.live/scdemos/demo/",
+  "previewOrg": "scdemos",
+  "previewSite": "demo"
+}

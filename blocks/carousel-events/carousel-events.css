@@ -1,0 +1,228 @@
+/* Block: carousel-events
+   Horizontal slider of upcoming events with card-style slides.
+   Extracted values from source: fortinet.com section.ftnt-events */
+
+/* --- Slides container --- */
+.carousel-events .carousel-events-slides-container {
+  position: relative;
+}
+
+.carousel-events .carousel-events-slides,
+.carousel-events .carousel-events-slide-indicators {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-events .carousel-events-slides {
+  display: flex;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  overflow: auto hidden;
+  gap: 40px;
+  padding: 20px 0 30px;
+}
+
+.carousel-events .carousel-events-slides::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- Individual slide (card) --- */
+.carousel-events .carousel-events-slide {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: rgb(237 236 236);
+  border-radius: 20px;
+  box-shadow: rgb(0 0 0 / 75%) 0 10px 20px -14px;
+  overflow: hidden;
+  min-height: 470px;
+}
+
+/* --- Image area --- */
+.carousel-events .carousel-events-slide .carousel-events-slide-image {
+  flex: 0 0 auto;
+  height: 200px;
+  overflow: hidden;
+}
+
+.carousel-events .carousel-events-slide .carousel-events-slide-image p {
+  margin: 0;
+  height: 100%;
+}
+
+.carousel-events .carousel-events-slide .carousel-events-slide-image picture {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.carousel-events .carousel-events-slide .carousel-events-slide-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Content area --- */
+.carousel-events .carousel-events-slide .carousel-events-slide-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px 30px 30px;
+  position: relative;
+}
+
+/* Title (h3) */
+.carousel-events .carousel-events-slide-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--body-font-family);
+  line-height: 24px;
+  color: rgb(0 0 0);
+  margin: 0 0 4px;
+}
+
+/* Description paragraph - contains date, description, and CTA text */
+/* stylelint-disable-next-line no-descending-specificity */
+.carousel-events .carousel-events-slide-content p {
+  font-size: 15px;
+  font-family: var(--body-font-family);
+  line-height: 25px;
+  color: rgb(68 68 68);
+  margin: 0 0 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* CTA link "Register Now" */
+.carousel-events .carousel-events-slide-content p:last-child {
+  margin-top: auto;
+}
+
+main .carousel-events .carousel-events-slide-content a:any-link {
+  color: var(--color-fortinet-red);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+main .carousel-events .carousel-events-slide-content a:any-link:hover {
+  text-decoration: underline;
+  color: var(--color-fortinet-red);
+}
+
+/* --- Slide indicators (progress bar style) --- */
+.carousel-events .carousel-events-slide-indicators {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 0;
+  padding: 0;
+  margin: 0 20px;
+  height: 4px;
+  background-color: rgb(220 220 220 / 40%);
+  border-radius: 2px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.carousel-events .carousel-events-slide-indicator {
+  flex: 1;
+  height: 100%;
+}
+
+.carousel-events .carousel-events-slide-indicator button {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.carousel-events .carousel-events-slide-indicator button:disabled {
+  background-color: var(--color-fortinet-red);
+}
+
+/* --- Navigation arrows --- */
+.carousel-events .carousel-events-navigation-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.carousel-events .carousel-events-navigation-buttons button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.carousel-events .carousel-events-navigation-buttons button::after {
+  display: block;
+  content: '';
+  border: 2px solid currentcolor;
+  border-bottom: 0;
+  border-left: 0;
+  height: 14px;
+  width: 14px;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 2px);
+  transform: translate(-50%, -50%) rotate(-135deg);
+}
+
+.carousel-events .carousel-events-navigation-buttons button.slide-next::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+  left: calc(50% - 2px);
+}
+
+.carousel-events .carousel-events-navigation-buttons button:hover::after,
+.carousel-events .carousel-events-navigation-buttons button:focus-visible::after {
+  border-color: var(--color-fortinet-red);
+}
+
+/* --- Responsive: tablet and up --- */
+@media (width >= 600px) {
+  .carousel-events .carousel-events-slide {
+    flex: 0 0 340px;
+    min-height: 470px;
+  }
+
+  .carousel-events .carousel-events-slide .carousel-events-slide-image {
+    height: 210px;
+  }
+}
+
+/* --- Responsive: desktop --- */
+@media (width >= 900px) {
+  .carousel-events .carousel-events-slide {
+    flex: 0 0 375px;
+    min-height: 470px;
+  }
+
+  .carousel-events .carousel-events-slide .carousel-events-slide-image {
+    height: 224px;
+  }
+
+  .carousel-events .carousel-events-slides {
+    gap: 40px;
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "variantName": "cards-product",
+  "baseBlock": "cards",
+  "version": "1.0.0",
+  "created": "2026-06-05T06:37:00.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.fortinet.com/",
+    "originPage": "Fortinet homepage",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "product",
+    "imagePattern": "icon"
+  },
+  "contentPattern": {
+    "structure": "colored header + icon + product name + description",
+    "buttonCount": 0,
+    "imageCount": 1
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "product feature cards",
+      "technology platform cards",
+      "innovation showcase grids"
+    ],
+    "notSuitableFor": [
+      "blog post listings",
+      "team member cards",
+      "testimonial cards"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/index"],
+    "reuseCount": 1,
+    "lastUsed": "2026-06-05T06:37:00.000Z"
+  }
+}

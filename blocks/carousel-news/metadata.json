@@ -1,0 +1,39 @@
+{
+  "variantName": "carousel-news",
+  "baseBlock": "carousel",
+  "version": "1.0.0",
+  "created": "2026-06-05T06:37:00.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.fortinet.com/",
+    "originPage": "Fortinet homepage",
+    "blockPosition": "top"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "news",
+    "imagePattern": "icon"
+  },
+  "contentPattern": {
+    "structure": "image + title + description + CTA link",
+    "buttonCount": 1,
+    "imageCount": 1
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "news listing carousels",
+      "blog post sliders",
+      "press release sections"
+    ],
+    "notSuitableFor": [
+      "hero sections",
+      "full-width image galleries",
+      "product showcases"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/index"],
+    "reuseCount": 1,
+    "lastUsed": "2026-06-05T06:37:00.000Z"
+  }
+}

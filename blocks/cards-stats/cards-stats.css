@@ -1,0 +1,78 @@
+/* Block: cards-stats
+   Source: .global-scale .row on fortinet.com
+   Layout: 6 stat cards in a 2x3 grid (mobile: 1 col, tablet: 2 col, desktop: 3 col)
+   Each card shows a large number + description text, white on dark bg, centered */
+
+.cards-stats > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.cards-stats > ul > li {
+  border: none;
+  background-color: transparent;
+  text-align: center;
+  padding: 0 15px 50px;
+}
+
+/* Card body with text content */
+.cards-stats .cards-stats-card-body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide the empty first cell in each card */
+.cards-stats > ul > li > .cards-stats-card-body:first-child:empty {
+  display: none;
+}
+
+/* Also hide any card-image div (empty placeholder) */
+.cards-stats .cards-stats-card-image {
+  display: none;
+}
+
+/* Stat number (h3) */
+.cards-stats h3 {
+  font-size: 50px;
+  font-weight: 700;
+  font-family: var(--body-font-family);
+  line-height: normal;
+  color: #fff;
+  margin: 0 0 8px;
+}
+
+/* Stat description (p) */
+.cards-stats p {
+  font-size: 23px;
+  font-weight: 400;
+  color: #fff;
+  line-height: normal;
+  margin: 0;
+}
+
+/* Remove default card image styling */
+.cards-stats > ul > li img {
+  display: none;
+}
+
+/* Tablet: 2 columns */
+@media (width >= 600px) {
+  .cards-stats > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 3 columns */
+@media (width >= 900px) {
+  .cards-stats > ul {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cards-stats > ul > li {
+    padding: 0 80px 50px;
+  }
+}

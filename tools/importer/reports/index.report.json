@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "url": "https://www.fortinet.com/",
+  "path": "index",
+  "timestamp": "2026-06-05T16:06:33.806Z",
+  "title": "Global Leader of Cybersecurity Solutions and Services | Fortinet",
+  "template": "homepage",
+  "blocks": [
+    "carousel-hero",
+    "carousel-news",
+    "cards-platform",
+    "cards-product",
+    "cards-stats",
+    "carousel-stories",
+    "cards-trust",
+    "carousel-events"
+  ]
+}
