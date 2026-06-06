@@ -1,0 +1,145 @@
+/* Block: cards-platform
+   Three platform cards (Secure Networking, Unified SASE, Security Operations)
+   displayed as white cards on the fortinet-red section background.
+   Source: https://www.fortinet.com/ #fabric-area .all-boxes
+   Each card has an icon image, title (h3 link), description, and product link list. */
+
+/* Wrapper: full-width within the fortinet-red section */
+.cards-platform-wrapper {
+  max-width: 100% !important;
+  padding: 0 var(--content-padding-inline) !important;
+}
+
+/* Card grid container (ul after decoration) */
+.cards-platform > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Individual card */
+.cards-platform > ul > li {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: rgb(0 0 0 / 75%) 0 10px 20px -14px;
+  overflow: hidden;
+  padding: 50px 32px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.5s, box-shadow 0.5s;
+}
+
+.cards-platform > ul > li:hover {
+  box-shadow: rgb(0 0 0 / 75%) 0 10px 20px -5px;
+  transform: scale(1.03);
+}
+
+/* Card image area (icon) */
+.cards-platform .cards-platform-card-image {
+  line-height: 0;
+  margin-bottom: 20px;
+}
+
+.cards-platform .cards-platform-card-image picture {
+  display: block;
+}
+
+.cards-platform .cards-platform-card-image img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+/* Card body (text content) */
+.cards-platform .cards-platform-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Card title (h3 with link) */
+.cards-platform .cards-platform-card-body h3 {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: var(--heading-font-family);
+  line-height: normal;
+  margin: 10px 0;
+  text-align: center;
+}
+
+/* Description paragraph */
+.cards-platform .cards-platform-card-body p {
+  font-size: 15px;
+  font-family: var(--body-font-family);
+  line-height: 20px;
+  color: rgb(0 0 0);
+  margin: 0;
+  text-align: center;
+}
+
+/* Product links list */
+.cards-platform .cards-platform-card-body ul {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 16px;
+}
+
+.cards-platform .cards-platform-card-body ul li {
+  margin-bottom: 10px;
+  font-size: 15px;
+  line-height: normal;
+}
+
+/* All links in card body (title and product links) */
+.cards-platform .cards-platform-card-body a {
+  text-decoration: none;
+  color: var(--color-fortinet-red);
+  font-weight: 500;
+}
+
+/* Title link weight override */
+.cards-platform .cards-platform-card-body h3 a {
+  font-weight: 700;
+}
+
+.cards-platform .cards-platform-card-body a:hover {
+  text-decoration: underline;
+}
+
+/* Second card colors (Unified SASE - blue) */
+.cards-platform > ul > li:nth-child(2) .cards-platform-card-body a {
+  color: rgb(48 127 225);
+}
+
+/* Third card colors (Security Operations - teal) */
+.cards-platform > ul > li:nth-child(3) .cards-platform-card-body a {
+  color: rgb(28 131 136);
+}
+
+/* Desktop layout: 3 cards in a row */
+@media (width >= 900px) {
+  .cards-platform > ul {
+    flex-direction: row;
+    gap: 30px;
+  }
+
+  .cards-platform > ul > li {
+    flex: 1 1 0;
+    min-height: 450px;
+  }
+
+  .cards-platform .cards-platform-card-body h3 {
+    font-size: 26px;
+  }
+}

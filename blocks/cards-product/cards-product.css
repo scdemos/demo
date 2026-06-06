@@ -1,0 +1,150 @@
+/* Block: cards-product
+   Source: .product-row.ftnt-platform on fortinet.com
+   4 product innovation cards with colored top bars, icons, and descriptions */
+
+.cards-product > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 25px;
+}
+
+.cards-product > ul > li {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px 0 rgb(0 0 0 / 20%);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Colored top bar via pseudo-element on each card */
+.cards-product > ul > li::before {
+  content: '';
+  display: block;
+  height: 10px;
+  width: 100%;
+  flex-shrink: 0;
+  border-radius: 20px 20px 0 0;
+}
+
+/* Color per card position - from source extraction:
+   Card 1: rgb(218, 41, 28) - Fortinet red
+   Card 2: rgb(0, 0, 0) - black
+   Card 3: rgb(38, 102, 181) - blue
+   Card 4: rgb(0, 0, 0) - black */
+.cards-product > ul > li:nth-child(1)::before {
+  background-color: var(--color-fortinet-red);
+}
+
+.cards-product > ul > li:nth-child(2)::before {
+  background-color: rgb(0 0 0);
+}
+
+.cards-product > ul > li:nth-child(3)::before {
+  background-color: rgb(38 102 181);
+}
+
+.cards-product > ul > li:nth-child(4)::before {
+  background-color: rgb(0 0 0);
+}
+
+/* Image cell - icon display */
+.cards-product .cards-product-card-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 20px 0;
+}
+
+.cards-product .cards-product-card-image picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cards-product .cards-product-card-image img {
+  width: auto;
+  height: 120px;
+  max-width: 160px;
+  object-fit: contain;
+  aspect-ratio: auto;
+}
+
+/* Card body - text content */
+.cards-product .cards-product-card-body {
+  padding: 0 20px 20px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Product name - h3 */
+.cards-product .cards-product-card-body h3 {
+  font-size: 16px;
+  font-weight: 900;
+  font-family: var(--body-font-family);
+  color: rgb(0 0 0);
+  line-height: normal;
+  margin: 10px 0 0;
+}
+
+/* Description paragraph */
+.cards-product .cards-product-card-body p {
+  font-size: 15px;
+  color: rgb(0 0 0);
+  line-height: 20px;
+  margin: 10px 0;
+  font-weight: 400;
+}
+
+/* Links in card body - reset EDS button styling */
+.cards-product .cards-product-card-body a:any-link {
+  color: rgb(0 0 0);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+  display: inline;
+  padding: 0;
+  border: none;
+  background: none;
+  white-space: normal;
+}
+
+.cards-product .cards-product-card-body a:any-link:hover {
+  text-decoration: underline;
+  color: var(--color-fortinet-red);
+  transform: none;
+  box-shadow: none;
+}
+
+.cards-product .cards-product-card-body .button-container {
+  display: block;
+  margin: 0;
+}
+
+/* Desktop: 4 columns matching source layout */
+@media (width >= 900px) {
+  .cards-product > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .cards-product .cards-product-card-image img {
+    height: 150px;
+    max-width: 200px;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (width >= 600px) and (width < 900px) {
+  .cards-product > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

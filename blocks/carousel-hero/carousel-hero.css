@@ -1,0 +1,295 @@
+/* carousel-hero block – Fortinet billboard hero carousel */
+
+/* Full-width wrapper override */
+.carousel-hero-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Block container */
+.carousel-hero {
+  position: relative;
+  background-color: rgb(0 0 0);
+  overflow: hidden;
+}
+
+/* Slides container */
+.carousel-hero .carousel-hero-slides-container {
+  position: relative;
+}
+
+.carousel-hero .carousel-hero-slides,
+.carousel-hero .carousel-hero-slide-indicators {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-hero .carousel-hero-slides {
+  display: flex;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  overflow: scroll clip;
+}
+
+.carousel-hero .carousel-hero-slides::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual slide */
+.carousel-hero .carousel-hero-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  padding: 60px 16px;
+  box-sizing: border-box;
+}
+
+/* Background image layer */
+.carousel-hero .carousel-hero-slide .carousel-hero-slide-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+main .carousel-hero .carousel-hero-slide .carousel-hero-slide-image p {
+  margin: 0;
+  height: 100%;
+}
+
+.carousel-hero .carousel-hero-slide .carousel-hero-slide-image picture {
+  position: absolute;
+  inset: 0;
+}
+
+.carousel-hero .carousel-hero-slide .carousel-hero-slide-image picture > img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Content overlay */
+.carousel-hero .carousel-hero-slide .carousel-hero-slide-content {
+  position: relative;
+  z-index: 1;
+  color: rgb(255 255 255);
+  max-width: 100%;
+  padding: 0;
+  background-color: transparent;
+  margin: 0;
+  width: auto;
+}
+
+/* Headings */
+.carousel-hero .carousel-hero-slide-content h1,
+.carousel-hero .carousel-hero-slide-content h2 {
+  font-family: var(--heading-font-family);
+  color: rgb(255 255 255);
+  margin: 0 0 20px;
+  letter-spacing: 0.9px;
+}
+
+.carousel-hero .carousel-hero-slide-content h1 {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.carousel-hero .carousel-hero-slide-content h2 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Paragraphs */
+/* stylelint-disable-next-line no-descending-specificity */
+main .carousel-hero .carousel-hero-slide-content p {
+  font-size: 16px;
+  font-family: var(--body-font-family);
+  line-height: 1.5;
+  color: rgb(255 255 255);
+  margin: 20px 0;
+  max-width: 740px;
+}
+
+/* Button container reset */
+main .carousel-hero .carousel-hero-slide-content .button-container {
+  display: inline-block;
+  margin: 8px 12px 8px 0;
+}
+
+/* CTA buttons – pill-shaped, default is outline (secondary) */
+main .carousel-hero .carousel-hero-slide-content a.button:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 30px;
+  border: 2px solid rgb(255 255 255);
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  background-color: transparent;
+  color: rgb(255 255 255);
+  white-space: nowrap;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  background-image: none;
+}
+
+/* Primary button (first CTA) – white fill, dark text */
+main .carousel-hero .carousel-hero-slide-content p.button-container:not(p.button-container ~ p.button-container) a.button:any-link {
+  background-color: rgb(255 255 255);
+  color: rgb(0 0 0);
+  border-color: rgb(255 255 255);
+}
+
+/* Button hover states */
+/* stylelint-disable-next-line no-descending-specificity */
+main .carousel-hero .carousel-hero-slide-content p.button-container a.button:any-link:hover {
+  background-color: var(--color-fortinet-red);
+  border-color: var(--color-fortinet-red);
+  color: rgb(255 255 255);
+  transform: none;
+  box-shadow: none;
+}
+
+main .carousel-hero .carousel-hero-slide-content a.button:any-link::after {
+  display: none;
+}
+
+/* Slide indicators – bottom center dots */
+.carousel-hero .carousel-hero-slide-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background-color: transparent;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  line-height: 0;
+}
+
+.carousel-hero .carousel-hero-slide-indicator button {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255);
+  background-color: rgb(255 255 255 / 10%);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.carousel-hero .carousel-hero-slide-indicator button:disabled {
+  background-color: rgb(255 255 255);
+  border-color: rgb(255 255 255);
+}
+
+.carousel-hero .carousel-hero-slide-indicator button:hover,
+.carousel-hero .carousel-hero-slide-indicator button:focus-visible {
+  background-color: rgb(255 255 255 / 50%);
+}
+
+/* Navigation arrows */
+.carousel-hero .carousel-hero-navigation-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.carousel-hero .carousel-hero-navigation-buttons button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 50%;
+  padding: 0;
+  border: 2px solid rgb(255 255 255 / 60%);
+  background-color: rgb(0 0 0 / 30%);
+  transition: background-color 0.3s, border-color 0.3s;
+  cursor: pointer;
+}
+
+.carousel-hero .carousel-hero-navigation-buttons button:hover,
+.carousel-hero .carousel-hero-navigation-buttons button:focus-visible {
+  background-color: rgb(0 0 0 / 60%);
+  border-color: rgb(255 255 255);
+}
+
+.carousel-hero .carousel-hero-navigation-buttons button::after {
+  display: block;
+  content: '';
+  border: 2px solid rgb(255 255 255);
+  border-bottom: 0;
+  border-left: 0;
+  height: 12px;
+  width: 12px;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 2px);
+  transform: translate(-50%, -50%) rotate(-135deg);
+}
+
+.carousel-hero .carousel-hero-navigation-buttons button.slide-next::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+  left: calc(50% - 2px);
+}
+
+/* ===== Desktop (900px+) ===== */
+@media (width >= 900px) {
+  .carousel-hero .carousel-hero-slide {
+    min-height: 600px;
+    padding: 100px 0;
+  }
+
+  .carousel-hero .carousel-hero-slide .carousel-hero-slide-content {
+    max-width: 58.33%;
+    margin: 0 100px;
+    padding: 0 15px;
+  }
+
+  .carousel-hero .carousel-hero-slide-content h1 {
+    font-size: 45px;
+    line-height: 54px;
+  }
+
+  .carousel-hero .carousel-hero-slide-content h2 {
+    font-size: 40px;
+    line-height: normal;
+  }
+
+  .carousel-hero .carousel-hero-slide-content p {
+    font-size: 24px;
+    line-height: normal;
+  }
+
+  .carousel-hero .carousel-hero-navigation-buttons {
+    left: 24px;
+    right: 24px;
+  }
+
+  .carousel-hero .carousel-hero-slide-indicators {
+    bottom: 50px;
+  }
+}

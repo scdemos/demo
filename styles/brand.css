@@ -1,0 +1,43 @@
+:root {
+  /* Fortinet brand fonts */
+  --heading-font-family: "Inter", sans-serif;
+  --body-font-family: "Inter", "Noto Sans JP", sans-serif;
+
+  /* Fortinet brand colors */
+  --background-color: #fff;
+  --text-color: #333;
+  --link-color: #333;
+  --link-hover-color: #da291c;
+  --color-brand: #da291c;
+  --color-accent: #1a1a2e;
+
+  /* Section colors */
+  --color-light: #fff;
+  --color-dark: #1a1a2e;
+  --color-fortinet-red: #da291c;
+  --color-navy-dark: #0c1427;
+
+  /* Heading sizes */
+  --heading-font-size-xxl: 36px;
+  --heading-font-size-xl: 28px;
+  --heading-font-size-l: 24px;
+  --heading-font-size-m: 20px;
+  --heading-font-size-s: 18px;
+  --heading-font-size-xs: 16px;
+
+  /* Spacing */
+  --section-padding: 50px;
+  --content-max-width: 1200px;
+  --nav-height: 64px;
+}
+
+@media (width >= 900px) {
+  :root {
+    --heading-font-size-xxl: 45px;
+    --heading-font-size-xl: 40px;
+    --heading-font-size-l: 26px;
+    --heading-font-size-m: 20px;
+    --heading-font-size-s: 18px;
+    --heading-font-size-xs: 16px;
+  }
+}

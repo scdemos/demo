@@ -1,0 +1,39 @@
+{
+  "variantName": "carousel-events",
+  "baseBlock": "carousel",
+  "version": "1.0.0",
+  "created": "2026-06-05T06:37:00.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.fortinet.com/",
+    "originPage": "Fortinet homepage",
+    "blockPosition": "bottom"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "events",
+    "imagePattern": "icon"
+  },
+  "contentPattern": {
+    "structure": "image + title + date + description + CTA",
+    "buttonCount": 1,
+    "imageCount": 1
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "upcoming events listings",
+      "webinar carousels",
+      "conference schedules"
+    ],
+    "notSuitableFor": [
+      "hero sections",
+      "product showcases",
+      "image galleries"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/index"],
+    "reuseCount": 1,
+    "lastUsed": "2026-06-05T06:37:00.000Z"
+  }
+}

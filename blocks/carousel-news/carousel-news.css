@@ -1,0 +1,251 @@
+/* Block: carousel-news
+   Horizontal news card slider matching Fortinet source design.
+   Extracted values: bg rgb(237,236,236), border-radius 20px,
+   box-shadow rgba(0,0,0,0.75) 0 10px 20px -14px, title 18px/700,
+   desc 15px/400 rgb(68,68,68), CTA 15px/600 rgb(51,51,51) */
+
+.carousel-news {
+  padding: 0;
+}
+
+/* Full-width wrapper override */
+.carousel-news-wrapper {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Slides container (holds nav buttons + slides list) */
+.carousel-news .carousel-news-slides-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Slides list - horizontal scroll */
+.carousel-news .carousel-news-slides,
+.carousel-news .carousel-news-slide-indicators {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel-news .carousel-news-slides {
+  display: flex;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  overflow: scroll clip;
+  gap: 25px;
+  padding-bottom: 30px;
+}
+
+.carousel-news .carousel-news-slides::-webkit-scrollbar {
+  display: none;
+}
+
+/* Individual slide card */
+.carousel-news .carousel-news-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: rgb(237 236 236);
+  border-radius: 20px;
+  box-shadow: rgb(0 0 0 / 75%) 0 10px 20px -14px;
+  overflow: hidden;
+  min-height: 410px;
+}
+
+/* Card image area */
+.carousel-news .carousel-news-slide-image {
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
+}
+
+.carousel-news .carousel-news-slide-image picture {
+  display: block;
+  line-height: 0;
+}
+
+.carousel-news .carousel-news-slide-image img {
+  width: 100%;
+  height: 224px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Card text content area */
+.carousel-news .carousel-news-slide-content {
+  padding: 20px 30px 60px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+}
+
+/* Card title */
+.carousel-news .carousel-news-slide-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--body-font-family);
+  line-height: 24px;
+  color: rgb(0 0 0);
+  margin: 0 0 8px;
+}
+
+/* Card description */
+.carousel-news .carousel-news-slide-content p {
+  font-size: 15px;
+  font-weight: 400;
+  font-family: var(--body-font-family);
+  line-height: 25px;
+  color: rgb(68 68 68);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* CTA link at bottom of card */
+.carousel-news .carousel-news-slide-cta {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  right: 30px;
+}
+
+.carousel-news .carousel-news-slide-cta a {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-fortinet-red);
+  letter-spacing: 0.3px;
+  text-decoration: none;
+}
+
+.carousel-news .carousel-news-slide-cta a:hover {
+  color: var(--color-fortinet-red);
+}
+
+/* Slide indicators */
+.carousel-news .carousel-news-slide-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 12px;
+  padding: 12px;
+  line-height: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.carousel-news .carousel-news-slide-indicator button {
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background-color: #dadada;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.carousel-news .carousel-news-slide-indicator button:disabled,
+.carousel-news .carousel-news-slide-indicator button:hover,
+.carousel-news .carousel-news-slide-indicator button:focus-visible {
+  background-color: var(--color-fortinet-red);
+}
+
+/* Navigation buttons */
+.carousel-news .carousel-news-navigation-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.carousel-news .carousel-news-navigation-buttons button {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 50%;
+  padding: 0;
+  border: none;
+  background-color: rgb(255 255 255 / 80%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  transition: background-color 0.2s;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.carousel-news .carousel-news-navigation-buttons button:hover,
+.carousel-news .carousel-news-navigation-buttons button:focus-visible {
+  background-color: rgb(255 255 255 / 100%);
+}
+
+.carousel-news .carousel-news-navigation-buttons button::after {
+  display: block;
+  content: '';
+  border: 2px solid var(--color-text);
+  border-bottom: 0;
+  border-left: 0;
+  height: 10px;
+  width: 10px;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 2px);
+  transform: translate(-50%, -50%) rotate(-135deg);
+}
+
+.carousel-news .carousel-news-navigation-buttons button.slide-next::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+  left: calc(50% - 2px);
+}
+
+/* Responsive: tablet shows 2 cards */
+@media (width >= 600px) {
+  .carousel-news .carousel-news-slide {
+    flex: 0 0 calc(50% - 13px);
+  }
+
+  .carousel-news .carousel-news-navigation-buttons {
+    left: -16px;
+    right: -16px;
+  }
+}
+
+/* Responsive: desktop shows 3 cards (matching source min-width: 31%) */
+@media (width >= 900px) {
+  .carousel-news .carousel-news-slides-container {
+    padding: 0 32px;
+  }
+
+  .carousel-news .carousel-news-slide {
+    flex: 0 0 calc(33.333% - 17px);
+  }
+
+  .carousel-news .carousel-news-navigation-buttons {
+    left: -8px;
+    right: -8px;
+  }
+
+  .carousel-news .carousel-news-navigation-buttons button {
+    width: 48px;
+    height: 48px;
+  }
+
+  .carousel-news .carousel-news-navigation-buttons button::after {
+    height: 12px;
+    width: 12px;
+  }
+}

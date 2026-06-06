@@ -39,59 +39,84 @@ function decorateMega(li) {
   if (!isMega) return;
 
   li.classList.add('nav-drop-mega');
-  const items = [...sub.children].filter((c) => c.tagName === 'LI');
-  const promo = items.find((c) => c.querySelector('picture, img'));
-  const rest = items.filter((c) => c !== promo);
 
-  let group = 0;
-  let row = 0;
-  rest.forEach((c) => {
-    const hasDirectLink = c.querySelector(':scope > a') || c.querySelector(':scope > p > a');
-    if (hasDirectLink) {
-      if (!group) group = 1;
-      c.classList.add('nav-mega-item');
-      c.style.setProperty('--mega-group', group);
-      row += 1;
-      c.style.setProperty('--mega-row', row);
-    } else {
-      group += 1;
-      row = 0;
-      c.classList.add('nav-mega-heading');
-      c.style.setProperty('--mega-group', group);
+  const items = [...sub.children].filter((c) => c.tagName === 'LI');
+
+  const sidebar = document.createElement('div');
+  sidebar.className = 'nav-mega-sidebar';
+
+  const content = document.createElement('div');
+  content.className = 'nav-mega-content';
+
+  const categories = [];
+  let currentCategory = null;
+
+  items.forEach((item) => {
+    const hasLink = item.querySelector(':scope > a') || item.querySelector(':scope > p > a');
+    if (!hasLink && item.textContent.trim()) {
+      currentCategory = { heading: item.textContent.trim(), links: [] };
+      categories.push(currentCategory);
+    } else if (hasLink && currentCategory) {
+      currentCategory.links.push(item);
+    } else if (hasLink && !currentCategory) {
+      currentCategory = { heading: hasLink.textContent.trim(), links: [] };
+      categories.push(currentCategory);
     }
   });
 
-  const cols = group || 1;
-  const totalCols = promo ? cols + 1 : cols;
-  if (promo) {
-    promo.classList.add('nav-mega-promo');
-    promo.style.setProperty('--mega-group', cols + 1);
-    sub.append(promo);
-  }
-  if (group) sub.classList.add('nav-mega-has-groups');
+  categories.forEach((cat, idx) => {
+    const sidebarItem = document.createElement('button');
+    sidebarItem.className = 'nav-mega-sidebar-item';
+    sidebarItem.textContent = cat.heading;
+    sidebarItem.type = 'button';
+    if (idx === 0) sidebarItem.classList.add('is-active');
+    sidebar.append(sidebarItem);
 
-  /* wrap content in centered inner container (full-width panel, centered grid) */
+    const panel = document.createElement('div');
+    panel.className = 'nav-mega-panel';
+    if (idx === 0) panel.classList.add('is-active');
+
+    cat.links.forEach((linkItem) => {
+      const a = linkItem.querySelector('a');
+      if (a) {
+        const panelLink = document.createElement('a');
+        panelLink.href = a.href;
+        panelLink.textContent = a.textContent;
+        panelLink.className = 'nav-mega-panel-link';
+        panel.append(panelLink);
+      }
+    });
+
+    content.append(panel);
+  });
+
+  sidebar.addEventListener('mouseenter', (e) => {
+    const btn = e.target.closest('.nav-mega-sidebar-item');
+    if (!btn) return;
+    const allBtns = sidebar.querySelectorAll('.nav-mega-sidebar-item');
+    const allPanels = content.querySelectorAll('.nav-mega-panel');
+    const idx = [...allBtns].indexOf(btn);
+    allBtns.forEach((b) => b.classList.remove('is-active'));
+    allPanels.forEach((p) => p.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    if (allPanels[idx]) allPanels[idx].classList.add('is-active');
+  }, true);
+
   const inner = document.createElement('div');
   inner.className = 'nav-mega-inner';
-  inner.style.setProperty('--mega-columns', String(totalCols));
-  while (sub.firstChild) inner.appendChild(sub.firstChild);
-  sub.appendChild(inner);
+  inner.append(sidebar, content);
 
-  // Position dropdown: full viewport width, arrow under trigger
+  sub.textContent = '';
+  sub.appendChild(inner);
+  sub.classList.add('nav-mega-has-groups');
+
   const sync = () => {
     if (!li.isConnected) return;
-    const trigger = li.querySelector(':scope > p');
-    const menu = li.querySelector(':scope > ul');
-    if (!trigger || !menu) return;
     const navBar = li.closest('.nav-wrapper');
     if (navBar) {
       const rect = navBar.getBoundingClientRect();
-      menu.style.setProperty('--mega-top', `${rect.bottom}px`);
+      sub.style.setProperty('--mega-top', `${rect.bottom}px`);
     }
-    const t = trigger.getBoundingClientRect();
-    const m = menu.getBoundingClientRect();
-    const x = t.left + t.width / 2 - m.left;
-    menu.style.setProperty('--mega-pointer-x', `${Math.round(x)}px`);
   };
   li.megaSync = sync;
   sync();
@@ -513,14 +538,26 @@ function syncMobileNavHeight(nav) {
   nav.style.setProperty('--nav-open-height', `${window.innerHeight}px`);
 }
 
-const NAV_ITEMS = '.default-content-wrapper > ul > li';
+const NAV_ITEMS = '.default-content-wrapper > ul > li, .nav-sections > ul > li';
 
 export default async function decorate(block) {
   const { body, eventRoot } = getBlockContext(block);
 
   // Load nav content (skip if aem-embed already provided content)
   if (block.textContent === '') {
-    const fragment = await loadFragment(getNavPath());
+    let fragment = null;
+    const localResp = await fetch('/content/nav.plain.html');
+    if (localResp.ok) {
+      const html = await localResp.text();
+      if (!html.startsWith('<html')) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        fragment = tmp;
+      }
+    }
+    if (!fragment) {
+      fragment = await loadFragment(getNavPath());
+    }
     if (!fragment) return;
 
     block.textContent = '';
