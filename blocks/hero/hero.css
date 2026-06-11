@@ -1,4 +1,4 @@
-/* Hero block – Heritage Elite, mobile-first */
+/* Hero block – image left, text right */
 
 .hero-container .hero-wrapper {
   max-width: unset;
@@ -6,41 +6,42 @@
 }
 
 .hero {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   background-color: light-dark(var(--color-parchment), var(--color-obsidian));
 }
 
-/* Image */
-.hero > div:first-child {
+/* ─── Image column ─── */
+.hero .hero-image {
   position: relative;
-  line-height: 0;
+  overflow: hidden;
+  height: 300px; /* explicit height in mobile column layout */
 }
 
+/* Absolute stack: each layer fills its positioned parent, no height:100% chains */
 .hero .hero-img-light,
 .hero .hero-img-dark {
-  line-height: 0;
-}
-
-/* Gradient fade effect at the bottom of the hero image */
-.hero > div:first-child::after {
-  content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65%;
-  background: linear-gradient(to bottom, transparent 0%, light-dark(var(--color-parchment), var(--color-obsidian)) 100%);
-  pointer-events: none;
-  z-index: 1;
+  inset: 0;
 }
 
+.hero .hero-image picture {
+  position: absolute;
+  inset: 0;
+}
 
-/* Dual-image hero: light shown by default, dark hidden */
+.hero .hero-image picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Dual-image: light shown by default, dark hidden */
 .hero .hero-img-dark {
   display: none;
 }
 
-/* Dark theme: swap images (must match light-dark() triggers, not OS preference) */
 .dark-scheme .hero .hero-img-light,
 :root[data-theme='dark'] .hero .hero-img-light {
   display: none;
@@ -51,37 +52,26 @@
   display: block;
 }
 
-.hero picture img {
-  display: block;
-  width: 100%;
-  max-height: 580px;
-  object-fit: cover;
-  opacity: 0.55;
-}
-
-/* Text overlay */
-.hero > div:last-child {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  padding: 40px var(--content-padding-inline);
+/* ─── Text column ─── */
+.hero .hero-text {
   display: flex;
   align-items: center;
+  padding: 40px var(--content-padding-inline);
 }
 
-.hero > div:last-child > div {
+.hero .hero-text > div {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-m);
-  max-width: 600px;
 }
 
-/* Hide the second image row when hero block decoration hasn't run (Target offer injection) */
-.hero > div:nth-child(2):not(.hero-img-dark, .hero-img-light, .hero-text) {
+/* Hide injected rows before decoration runs (Target offer injection) */
+.hero > div:nth-child(2):not(.hero-img-dark, .hero-img-light, .hero-text, .hero-image) {
   display: none;
 }
 
+/* ─── Animations ─── */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hero-enter {
     from {
@@ -95,7 +85,7 @@
     }
   }
 
-  .hero > div:last-child > div {
+  .hero .hero-text > div {
     animation: hero-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
@@ -112,7 +102,7 @@
   }
 }
 
-/* Tagline */
+/* ─── Tagline ─── */
 .hero .hero-tagline {
   font-family: var(--font-family-mono);
   font-size: 0.75rem;
@@ -123,7 +113,7 @@
   margin: 0;
 }
 
-/* Heading */
+/* ─── Heading ─── */
 .hero h1 {
   margin: 0;
   font-family: var(--font-family-serif);
@@ -148,13 +138,12 @@
   color: transparent;
 }
 
-/* Body text — hidden on mobile */
+/* ─── Body text ─── */
 .hero p:not(.button-container, .hero-tagline) {
-  display: none;
-  max-width: 550px;
+  max-width: 480px;
   margin: 0;
   font-family: var(--font-family-serif);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: light-dark(var(--color-ink), var(--color-muted));
   line-height: 1.7;
   letter-spacing: 0.01em;
@@ -164,7 +153,7 @@
   margin-top: var(--space-s);
 }
 
-/* Icon */
+/* ─── Icon ─── */
 .hero .icon {
   flex-shrink: 0;
   width: 165px;
@@ -177,84 +166,76 @@
   object-fit: contain;
 }
 
-/* Dark-mode image: blend into obsidian bg with soft edges */
-.dark-scheme .hero .hero-img-dark picture img,
-:root[data-theme='dark'] .hero .hero-img-dark picture img {
-  opacity: 0.3;
-  mask-image: radial-gradient(ellipse 85% 70% at 50% 35%, black 25%, transparent 100%);
-}
-
-/* Dark mode cinematic fade uses obsidian */
-.dark-scheme .hero > div:first-child::after,
-:root[data-theme='dark'] .hero > div:first-child::after {
-  background: linear-gradient(to bottom, transparent 0%, var(--color-obsidian) 100%);
-}
-
-/* Tablet: show body text */
+/* ─── Tablet: side-by-side ─── */
 @media (width >= 600px) {
-  .hero p:not(.button-container, .hero-tagline) {
-    display: block;
-    font-size: 1.3rem;
-  }
-}
-
-/* Desktop */
-@media (width >= 900px) {
-  .hero > div:last-child {
-    padding: 100px 5vw;
+  .hero {
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 500px;
   }
 
-  .hero > div:last-child > div {
-    max-width: 1000px;
-    margin: 0 25%;
+  .hero .hero-image {
+    flex: 1;
+    height: auto; /* let flex stretch determine height */
+  }
+
+  .hero .hero-text {
+    flex: 1;
+    padding: 60px 5vw;
   }
 
   .hero h1 {
-    font-size: clamp(3.5rem, 5vw, 6rem);
+    font-size: clamp(2.5rem, 4vw, 4rem);
+  }
+}
+
+/* ─── Desktop ─── */
+@media (width >= 900px) {
+  .hero {
+    min-height: 580px;
+  }
+
+  .hero .hero-text {
+    padding: 80px 6vw;
+  }
+
+  .hero h1 {
+    font-size: clamp(3rem, 4.5vw, 5rem);
   }
 }
 
 @media (width >= 1200px) {
-  .hero > div:last-child {
+  .hero .hero-text {
     padding: 100px 6vw;
-  }
-
-  .hero h1 {
-    font-size: clamp(4rem, 5.5vw, 6.5rem);
   }
 }
 
-/* No-image fallback */
-.hero.no-image > div:last-child {
-  position: static;
+/* ─── No-image fallback ─── */
+.hero.no-image .hero-text {
   padding: 80px var(--content-padding-inline);
 }
 
-.hero.no-image > div:last-child > div {
+.hero.no-image .hero-text > div {
   align-items: center;
   text-align: center;
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }
 
-.hero.no-image p:not(.button-container, .hero-tagline) {
-  display: block;
-}
-
 @media (width >= 900px) {
-  .hero.no-image > div:last-child {
+  .hero.no-image .hero-text {
     min-height: 400px;
     padding: 100px 5vw;
   }
 }
 
 @media (width >= 1200px) {
-  .hero.no-image > div:last-child {
+  .hero.no-image .hero-text {
     padding: 120px 6vw;
   }
 }
 
-/* Background color variants */
+/* ─── Color variants ─── */
 .hero.rust {
   background-color: var(--color-rust);
 }
@@ -264,7 +245,6 @@
   color: var(--color-parchment);
 }
 
-/* Variant heros: reset gradient text and use solid color */
 :root .hero.rust h1 em {
   background: none;
   background-clip: unset;

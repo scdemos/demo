@@ -19,6 +19,16 @@ export default function decorate(block) {
     block.classList.add('no-image');
   }
 
+  // Wrap all image divs in a single .hero-image container for the split layout
+  // Exclude the text div (identified by containing an h1) before hero-text class is applied
+  const imageDivs = [...block.children].filter((d) => !d.querySelector('h1'));
+  if (imageDivs.length > 0) {
+    const imageWrapper = document.createElement('div');
+    imageWrapper.classList.add('hero-image');
+    block.insertBefore(imageWrapper, imageDivs[0]);
+    imageDivs.forEach((d) => imageWrapper.appendChild(d));
+  }
+
   const h1 = block.querySelector('h1');
   if (!h1) return;
 

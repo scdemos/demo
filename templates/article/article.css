@@ -16,38 +16,34 @@
   }
 }
 
-/* Text div: override to normal flow — its padding + content sets the hero height */
-.article .hero > div:last-child {
+/* Image: absolutely fills the hero so it plays no part in sizing the height */
+.article .hero {
   position: relative;
-  inset: auto;
+  flex-direction: column;
+}
+
+.article .hero .hero-image {
+  position: absolute;
+  inset: 0;
+  flex: none;
+}
+
+.article .hero .hero-image picture img {
+  max-height: none;
+}
+
+/* Text div: normal flow — its padding + content sets the hero height */
+.article .hero .hero-text {
+  position: relative;
+  flex: 1;
 }
 
 /* Tighten vertical padding: 100px was sized for a fixed-height hero;
    with a content-driven height it over-pads short titles */
 @media (width >= 900px) {
-  .article .hero > div:last-child {
+  .article .hero .hero-text {
     padding-block: 60px;
   }
-}
-
-/* Image div: absolutely fills the hero so it plays no part in sizing the height.
-   The original design had the text overlay absolute; here we swap the roles. */
-.article .hero > div:first-child {
-  position: absolute;
-  inset: 0;
-}
-
-/* height: 100% resolves correctly here because the parent has a definite height
-   from position: absolute; inset: 0 (= hero height). */
-.article .hero > div:first-child > div,
-.article .hero > div:first-child picture {
-  display: block;
-  height: 100%;
-}
-
-.article .hero > div:first-child picture img {
-  max-height: none;
-  height: 100%;
 }
 
 /* ==========================================================================

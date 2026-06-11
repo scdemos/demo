@@ -50,7 +50,7 @@ export default function init(root = document) {
   if (!main) return;
 
   const hero = main.querySelector('.hero');
-  const heroText = main.querySelector('.hero > div:last-child > div');
+  const heroText = main.querySelector('.hero .hero-text > div');
 
   if (hero && !main.querySelector('.article-breadcrumb')) {
     const breadcrumb = buildBreadcrumb(root);
