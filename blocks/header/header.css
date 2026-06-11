@@ -31,12 +31,12 @@ header {
   --nav-bg-link-hover: var(--header-link-hover-bg);
   --nav-bg-dropdown: light-dark(var(--background-color), var(--color-card-dark));
   --nav-bg-dropdown-mobile: light-dark(var(--color-gray-100), var(--color-card-dark));
-  --nav-bg-mega: light-dark(var(--color-parchment), var(--color-obsidian));
+  --nav-bg-mega: light-dark(var(--color-off-white), var(--color-navy-dark));
   --nav-bg-hover-item: light-dark(var(--light-color), var(--color-card-dark));
 
-  /* header uses neutral hover color */
-  --nav-hover-color: light-dark(var(--color-rust), var(--color-gold));
-  --nav-focus-color: light-dark(var(--color-rust), var(--color-gold));
+  /* updated to OneMain blue */
+  --nav-hover-color: light-dark(var(--color-blue), var(--color-off-white));
+  --nav-focus-color: light-dark(var(--color-blue), var(--color-off-white));
 
   /* desktop-only (overridden in @media 900px) */
   --nav-desktop-max-width: 1264px;
@@ -50,7 +50,7 @@ header {
 }
 
 header .nav-wrapper {
-  background-color: light-dark(#faf8f5, var(--color-obsidian));
+  background-color: light-dark(#ffffff, var(--color-navy-dark));
   width: 100%;
   z-index: 1000;
   position: fixed;
@@ -190,7 +190,7 @@ header .nav-brand {
   font-weight: var(--nav-brand-weight);
   line-height: 1;
   letter-spacing: -0.5px;
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: light-dark(var(--color-navy), var(--color-off-white));
 }
 
 header nav .nav-brand a:any-link {
@@ -205,13 +205,15 @@ header nav .nav-brand a:any-link:focus-visible {
 }
 
 header nav .nav-brand .icon.icon-logo {
-    position: relative;
-    top: 5px;
-  }
+  position: relative;
+  top: 5px;
+}
 
+/* logo sizing — height:auto lets the two-row stacked mark find natural proportions */
 header nav .nav-brand :is(img, svg) {
-  width: min(200px, 42vw);
-  height: 45px;
+  width: min(140px, 38vw);
+  height: auto;
+  max-height: 52px;
   object-fit: contain;
 }
 
@@ -533,10 +535,10 @@ header nav .nav-sections button.button:focus-visible {
 
 /* CTA button in header tools */
 header nav .nav-tools a.button:any-link:not(.nav-tool) {
-  border: 1.5px solid var(--color-rust);
+  border: 1.5px solid var(--color-navy);
   border-radius: 4px;
   background: transparent;
-  color: var(--color-rust);
+  color: var(--color-navy);
   padding: 12px 24px;
   font-size: 0.75rem;
   font-weight: 700;
@@ -579,7 +581,7 @@ header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item
 }
 
 header nav .nav-tools a.button:any-link:not(.nav-tool):hover {
-  background: var(--color-rust);
+  background: var(--color-navy);
   color: var(--color-light);
   transform: none;
   box-shadow: none;
@@ -755,70 +757,73 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 
 /* small phones: prevent header row clipping */
 @media (width <= 430px) {
-    header {
-      --nav-padding: var(--space-s);
-      --nav-gap: 6px;
-    }
-  
-    header nav {
-      gap: 0 var(--nav-gap);
-    }
-  
-    header nav .nav-brand :is(img, svg) {
-      width: min(138px, 37vw);
-      height: 36px;
-    }
-  
-    header nav .nav-brand .icon.icon-logo {
-      width: 100px;
-      height: 40px;
-    }
-  
-    header nav .nav-tools {
-      gap: 4px;
-      min-width: 0;
-    }
-  
-    header nav .nav-tools .nav-search-input {
-      width: min(98px, 26vw);
-      padding: var(--space-xs) 32px var(--space-xs) var(--space-s);
-      font-size: var(--body-font-size-xs);
-    }
-  
-    header nav .nav-tools .nav-tool,
-    header nav .nav-tools a.button.nav-tool:any-link {
-      padding: var(--space-xs);
-    }
-  
-    header nav .nav-tools .icon img {
-      width: 16px;
-      height: 16px;
-    }
+  header {
+    --nav-padding: var(--space-s);
+    --nav-gap: 6px;
+  }
 
-    header nav .nav-tools a.button.nav-auth-link:any-link {
-      padding: 8px 10px;
-      font-size: var(--body-font-size-xs);
-      letter-spacing: 1px;
-    }
+  header nav {
+    gap: 0 var(--nav-gap);
   }
-  
-  /* very small phones */
-  @media (width <= 350px) {
-    header {
-      --nav-padding: var(--space-s);
-      --nav-gap: var(--space-xs);
-    }
-  
-    header nav .nav-brand :is(img, svg) {
-      width: min(120px, 40vw);
-      height: 38px;
-    }
-  
-    header nav .nav-tools .nav-search-input {
-      width: 82px;
-      padding: var(--space-xs) 34px var(--space-xs) var(--space-s);
-    }
+
+  header nav .nav-brand :is(img, svg) {
+    width: min(110px, 37vw);
+    height: auto;
+    max-height: 44px;
   }
+
+  header nav .nav-brand .icon.icon-logo {
+    width: 90px;
+    height: auto;
+    max-height: 44px;
+  }
+
+  header nav .nav-tools {
+    gap: 4px;
+    min-width: 0;
+  }
+
+  header nav .nav-tools .nav-search-input {
+    width: min(98px, 26vw);
+    padding: var(--space-xs) 32px var(--space-xs) var(--space-s);
+    font-size: var(--body-font-size-xs);
+  }
+
+  header nav .nav-tools .nav-tool,
+  header nav .nav-tools a.button.nav-tool:any-link {
+    padding: var(--space-xs);
+  }
+
+  header nav .nav-tools .icon img {
+    width: 16px;
+    height: 16px;
+  }
+
+  header nav .nav-tools a.button.nav-auth-link:any-link {
+    padding: 8px 10px;
+    font-size: var(--body-font-size-xs);
+    letter-spacing: 1px;
+  }
+}
+
+/* very small phones */
+@media (width <= 350px) {
+  header {
+    --nav-padding: var(--space-s);
+    --nav-gap: var(--space-xs);
+  }
+
+  header nav .nav-brand :is(img, svg) {
+    width: min(100px, 40vw);
+    height: auto;
+    max-height: 44px;
+  }
+
+  header nav .nav-tools .nav-search-input {
+    width: 82px;
+    padding: var(--space-xs) 34px var(--space-xs) var(--space-s);
+  }
+}
 
 /* desktop: 900px */
 @media (width >= 900px) {
@@ -1059,7 +1064,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     top: var(--mega-top, var(--nav-height, 64px));
     padding: var(--space-xl) var(--space-xl);
     border-bottom: var(--border-heritage);
-    background-color: light-dark(#faf8f5, var(--color-obsidian));
+    background-color: light-dark(#ffffff, var(--color-navy-dark));
     color: var(--text-color);
     box-shadow: var(--header-drop-shadow);
     z-index: 999;
@@ -1292,10 +1297,10 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1.5px solid var(--color-rust);
+    border: 1.5px solid var(--color-navy);
     border-radius: 4px;
     background: transparent;
-    color: var(--color-rust);
+    color: var(--color-navy);
     padding: 12px 24px;
     font-size: 0.75rem;
     font-weight: 700;
@@ -1308,7 +1313,7 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
 
   header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item > p > a.button.nav-auth-mobile:any-link:hover,
   header nav .nav-sections .default-content-wrapper > ul > li.nav-auth-mobile-item > p > a.button.nav-auth-mobile:any-link:focus-visible {
-    background: var(--color-rust);
+    background: var(--color-navy);
     color: var(--color-light);
     transform: none;
     box-shadow: none;
