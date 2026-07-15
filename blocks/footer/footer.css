@@ -1,8 +1,7 @@
 footer {
   width: 100%;
-  background-color: light-dark(var(--color-rust), #080d0d);
-  color: var(--color-parchment);
-  border-top: light-dark(none, var(--border-heritage));
+  background-color: var(--tw-navy, #000330);
+  color: var(--tw-cream, #fff1cc);
   font-size: var(--body-font-size-xs);
 }
 
@@ -68,14 +67,14 @@ footer .footer .section:nth-child(3) li {
 }
 
 footer .footer a:any-link {
-  color: var(--color-parchment);
-  text-decoration-color: rgb(245 242 237 / 30%);
+  color: var(--tw-cream, #fff1cc);
+  text-decoration-color: rgb(255 241 204 / 30%);
   transition: color 0.25s, text-decoration-color 0.25s, opacity 0.25s;
 }
 
 footer .footer a:any-link:hover {
-  text-decoration-color: var(--color-gold);
-  color: var(--color-gold);
+  text-decoration-color: var(--tw-white, #fff);
+  color: var(--tw-white, #fff);
 }
 
 footer .footer .section:nth-child(3) ul a {
@@ -117,5 +116,60 @@ footer .footer .icon.icon-logo :is(svg, img) {
 @media (width >= 600px) {
   footer .footer > div {
     padding: 48px var(--content-padding-inline);
+  }
+}
+
+/* ==========================================================================
+   Total Wireless footer layout — multi-column link groups (Shop / Current
+   customers / About), legal link row, centered copyright, social links.
+   Colors are set on the base rules above (navy bg, cream text).
+   ========================================================================== */
+
+/* First section = the three link-group columns */
+footer .footer .section:first-child > .default-content-wrapper,
+footer .footer .section:first-child {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  text-align: left;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+footer .footer .section:first-child > .default-content-wrapper > div {
+  text-align: left;
+}
+
+footer .footer .section:first-child p {
+  font-weight: 700;
+  font-size: var(--body-font-size-s, 14px);
+  margin-bottom: 12px;
+  color: var(--tw-white, #fff);
+}
+
+footer .footer .section:first-child ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Legal row (second section): inline wrap of small links */
+footer .footer .section:nth-child(2) ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+  font-size: var(--body-font-size-xs, 12px);
+}
+
+@media (width >= 600px) {
+  footer .footer .section:first-child > .default-content-wrapper {
+    grid-template-columns: repeat(3, 1fr);
   }
 }

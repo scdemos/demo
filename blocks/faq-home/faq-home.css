@@ -1,0 +1,89 @@
+/* Block: faq-home -- FAQ accordion, design migrated from totalwireless.com/m/home
+   Source computed styles:
+   - question label: GalanoGrotesque 24px / 700 / line-height 32px / #000330
+   - header row padding: 32px 0 (row height ~96px)
+   - divider: 1px solid rgba(0,0,0,0.2) below each item
+   - answer text: GalanoGrotesque 16px / 400 / line-height 24px / #000330
+   - trigger icon: down-caret chevron, 20x20, navy, rotates 180deg when expanded */
+
+main .faq-home {
+  max-width: 1130px;
+  margin: 0 auto;
+}
+
+main .faq-home .faq-home-item {
+  border-bottom: 1px solid rgb(0 0 0 / 20%);
+}
+
+/* Question header row */
+main .faq-home .faq-home-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  padding: 32px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--heading-font-family);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--tw-navy);
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+main .faq-home .faq-home-question:hover {
+  color: var(--tw-navy);
+}
+
+/* Down-caret chevron drawn with borders, rotates when expanded */
+main .faq-home .faq-home-question::after {
+  content: '';
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+  border-right: 2px solid var(--tw-navy);
+  border-bottom: 2px solid var(--tw-navy);
+  transform: rotate(45deg);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+
+main .faq-home .faq-home-question[aria-expanded='true']::after {
+  transform: rotate(225deg);
+}
+
+/* Answer panel */
+main .faq-home .faq-home-answer {
+  padding: 0 0 32px;
+}
+
+main .faq-home .faq-home-answer p {
+  margin: 0;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--tw-navy);
+}
+
+main .faq-home .faq-home-answer p + p {
+  margin-top: 16px;
+}
+
+main .faq-home .faq-home-answer a:any-link {
+  color: var(--tw-navy);
+  text-decoration: underline;
+}
+
+/* Desktop: larger question text matching source (24px / line-height 32px) */
+@media (width >= 900px) {
+  main .faq-home .faq-home-question {
+    font-size: 24px;
+    line-height: 32px;
+  }
+}

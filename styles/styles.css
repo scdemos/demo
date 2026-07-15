@@ -1,3 +1,5 @@
+@import url('brand.css');
+
 /*
  * Copyright 2020 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -729,4 +731,25 @@ main > .section.warm {
   background: var(--gradient-brand);
   background-clip: text;
   color: transparent;
+}
+
+/* ==========================================================================
+   Total Wireless brand token re-assertion.
+   styles.css :root (above) redefines --heading-font-family etc. AFTER the
+   @import 'brand.css', so brand values are re-declared on html:root —
+   higher specificity than the plain :root above AND later in source, so it
+   wins. Keep in sync with brand.css.
+   ========================================================================== */
+html:root {
+  --heading-font-family: "GalanoGrotesque", montserrat, "Trebuchet MS", sans-serif;
+  --body-font-family: "GalanoGrotesque", montserrat, "Trebuchet MS", sans-serif;
+  --font-family: var(--body-font-family);
+  --font-family-serif: var(--heading-font-family);
+  --text-color: var(--tw-text);
+  --link-color: var(--tw-navy);
+  --link-hover-color: var(--tw-navy);
+  --background-color: var(--tw-white);
+  --color-text: var(--tw-text);
+  --color-link: var(--tw-navy);
+  --color-link-hover: var(--tw-navy);
 }

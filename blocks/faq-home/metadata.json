@@ -1,0 +1,36 @@
+{
+  "variantName": "faq-home",
+  "baseBlock": "faq",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:54:00.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "bottom"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "comfortable",
+    "purpose": "faq-accordion",
+    "imagePattern": "none"
+  },
+  "contentPattern": {
+    "structure": "Heading followed by expandable question/answer accordion items authored inline on the page",
+    "buttonCount": 0,
+    "imageCount": 0
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "inline authored FAQ accordions on landing/home pages",
+      "question/answer pairs authored directly on the page (non-index-driven)"
+    ],
+    "notSuitableFor": [
+      "index/query-driven FAQ listings (use base faq block)"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 1,
+    "lastUsed": "2026-07-14T16:54:00.000Z"
+  }
+}

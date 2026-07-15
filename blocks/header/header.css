@@ -1328,3 +1328,37 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     max-width: 1264px;
   }
 }
+
+/* ==========================================================================
+   Total Wireless header brand overrides.
+   White header bar, navy nav links, navy pill "Log in" — matches the
+   migrated brand system (styles/brand.css). Overrides the heritage
+   rust/gold palette in the rules above.
+   ========================================================================== */
+header.block .nav-wrapper {
+  background-color: var(--tw-white, #fff);
+  border-bottom: 1px solid rgb(0 3 48 / 10%);
+}
+
+header nav .nav-sections a:any-link,
+header nav .nav-sections p {
+  color: var(--tw-navy, #000330);
+  font-weight: 700;
+}
+
+header nav .nav-sections a:any-link:hover,
+header nav .nav-sections a:any-link:focus-visible {
+  color: var(--tw-navy, #000330);
+  text-decoration: underline;
+}
+
+header nav .nav-tools a:any-link {
+  color: var(--tw-navy, #000330);
+}
+
+header nav .nav-tools a.button:any-link {
+  background-color: var(--tw-navy, #000330);
+  border-color: var(--tw-navy, #000330);
+  color: var(--tw-white, #fff);
+  border-radius: 40px;
+}

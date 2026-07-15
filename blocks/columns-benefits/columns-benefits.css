@@ -1,0 +1,63 @@
+/* Block: columns-benefits
+   "Pick any plan and get:" benefits strip — a wrapping horizontal row of
+   icon + label chips. Values extracted from totalwireless.com/m/home
+   computed styles (feature-banner__icon-list).
+   Source: flex row, wrap, gap 12px, flex-start; each item icon(28px)+label
+   side-by-side, align-items center, gap 4px; label 24px/32px navy weight 400. */
+
+/* The row: horizontal wrapping strip of chips. */
+.columns-benefits > div {
+  display: flex;
+  flex-flow: column wrap;
+  gap: var(--space-m); /* 16px mobile — one chip per line stacks comfortably */
+}
+
+/* Each cell = one benefit chip (auto width, not a fixed column). */
+.columns-benefits > div > div {
+  flex: 0 1 auto;
+}
+
+/* EDS wraps the <picture> and label together in a <p>; that <p> is the
+   icon + label flex container. */
+.columns-benefits > div > div > p {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.columns-benefits picture {
+  display: inline-flex;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+.columns-benefits img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain !important; /* override global .section img { object-fit: cover } */
+}
+
+/* Label text. */
+.columns-benefits > div > div p p {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.33;
+  color: var(--tw-navy);
+  text-align: start;
+}
+
+@media (width >= 900px) {
+  .columns-benefits > div {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .columns-benefits > div > div p p {
+    font-size: 24px;
+    line-height: 32px;
+  }
+}

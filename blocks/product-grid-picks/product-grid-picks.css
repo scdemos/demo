@@ -1,0 +1,144 @@
+/* ==========================================================================
+   Product Grid Picks — "All the best phones, all in one place"
+   Migrated from totalwireless.com/m/home (source: AEM cmp-carousel product
+   tiles). Source design: borderless, transparent tiles on white, centered
+   content — badge, large phone image, product name, price, and a red pill
+   "Select" CTA. Values from source computed styles; see
+   migration-work/product-grid-picks-extracted.css.
+   ========================================================================== */
+
+.product-grid-picks {
+  --pgp-red: rgb(238 0 0);
+  --pgp-navy: #1a1c35;
+}
+
+.product-grid-picks[aria-busy='true'] {
+  min-height: 300px;
+  opacity: 0.5;
+}
+
+/* Grid: mobile-first single column; source is a 3-up row on desktop. */
+.product-grid-picks .product-grid-picks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+/* Tile: transparent, borderless, no shadow — centered content. */
+.product-grid-picks .product-grid-picks-item {
+  position: relative;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.product-grid-picks .product-grid-picks-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  text-align: center;
+}
+
+/* Badge / promo tag row. */
+.product-grid-picks .product-grid-picks-badge {
+  display: block;
+  font-family: var(--body-font-family);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  color: var(--pgp-navy);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Phone image area: centered, fixed height matching source (~300px). */
+.product-grid-picks .product-grid-picks-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  line-height: 0;
+}
+
+.product-grid-picks .product-grid-picks-image img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.product-grid-picks .product-grid-picks-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Product name. */
+.product-grid-picks .product-grid-picks-title {
+  margin: 18px 0 0;
+  font-family: var(--body-font-family);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--pgp-navy);
+  text-align: center;
+}
+
+/* Price. */
+.product-grid-picks .product-grid-picks-price {
+  margin: 0;
+  font-family: var(--body-font-family);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--tw-text);
+  text-align: center;
+}
+
+/* Select CTA — red pill matching source. */
+.product-grid-picks .product-grid-picks-cta {
+  display: block;
+  margin-top: auto;
+  align-self: stretch;
+  background-color: var(--pgp-red);
+  color: var(--tw-white);
+  border: 0;
+  border-radius: 50px;
+  padding: 11px 30px;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.product-grid-picks .product-grid-picks-item:hover .product-grid-picks-cta {
+  background-color: #c00;
+}
+
+/* Empty / fallback state (shown when the product index can't be loaded). */
+.product-grid-picks .product-grid-picks-empty {
+  color: var(--tw-text);
+  font-size: 16px;
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* Desktop: 3-up row like the source carousel. */
+@media (width >= 900px) {
+  .product-grid-picks .product-grid-picks-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+}

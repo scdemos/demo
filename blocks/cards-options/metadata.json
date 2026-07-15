@@ -1,0 +1,38 @@
+{
+  "variantName": "cards-options",
+  "baseBlock": "cards",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:47:35.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "option-chooser",
+    "imagePattern": "icon"
+  },
+  "contentPattern": {
+    "structure": "3 items: icon + heading + optional description, centered",
+    "buttonCount": 0,
+    "imageCount": 3
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "entry-point / 'how would you like to start' choosers",
+      "icon + heading option grids",
+      "contact / support option cards"
+    ],
+    "notSuitableFor": [
+      "image-forward article cards (use base cards)",
+      "large bento benefit grids (use cards-bento)"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 2,
+    "lastUsed": "2026-07-14T16:47:35.000Z"
+  }
+}

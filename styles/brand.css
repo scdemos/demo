@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Total Wireless brand tokens (migrated from totalwireless.com/m/home)
+   Overrides the boilerplate design tokens with the source site's palette,
+   typography, and spacing. GalanoGrotesque is proprietary; Montserrat
+   (already bundled) is the closest geometric-sans fallback.
+   ========================================================================== */
+
+:root,
+:host {
+  /* brand palette */
+  --tw-navy: #000330;
+  --tw-cream: #fff1cc;
+  --tw-text: #202020;
+  --tw-white: #fff;
+
+  /* fonts — GalanoGrotesque with Montserrat fallback */
+  --heading-font-family: "GalanoGrotesque", montserrat, "Trebuchet MS", sans-serif;
+  --body-font-family: "GalanoGrotesque", montserrat, "Trebuchet MS", sans-serif;
+  --font-family: var(--body-font-family);
+  --font-family-serif: var(--heading-font-family);
+
+  /* semantic colors mapped to brand */
+  --background-color: var(--tw-white);
+  --text-color: var(--tw-text);
+  --link-color: var(--tw-navy);
+  --link-hover-color: var(--tw-navy);
+  --color-text: var(--tw-text);
+  --color-link: var(--tw-navy);
+  --color-link-hover: var(--tw-navy);
+  --color-brand: var(--tw-navy);
+  --color-accent: var(--tw-cream);
+  --color-light: var(--tw-white);
+  --color-dark: var(--tw-navy);
+  --color-shaded: var(--tw-cream);
+  --light-color: var(--tw-cream);
+  --dark-color: var(--tw-navy);
+
+  /* heading sizes (desktop values from source) */
+  --heading-font-size-xxl: 48px;
+  --heading-font-size-xl: 48px;
+  --heading-font-size-l: 24px;
+  --heading-font-size-m: 20px;
+  --heading-font-size-s: 18px;
+  --heading-font-size-xs: 16px;
+  --heading-line-height: 1.25;
+
+  /* body */
+  --body-font-size-m: 16px;
+  --body-line-height: 1.5;
+
+  /* spacing */
+  --section-padding: 24px;
+  --nav-height: 64px;
+}
+
+@media (width >= 600px) {
+  :root,
+  :host {
+    --heading-font-size-xxl: 48px;
+    --heading-font-size-xl: 48px;
+  }
+}
+
+/* ==========================================================================
+   Brand button + link overrides (Total Wireless: solid navy pill buttons,
+   navy underlined links). Overrides the boilerplate rust/gold gradient
+   buttons defined in styles.css.
+   ========================================================================== */
+
+main a.button:any-link,
+main button.button {
+  border: 1px solid var(--tw-navy);
+  border-radius: 40px;
+  padding: 14px 32px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: normal;
+  text-transform: none;
+  background-color: var(--tw-navy);
+  background-image: none;
+  color: var(--tw-white);
+}
+
+main a.button.primary:any-link,
+main button.button.primary {
+  border-color: var(--tw-navy);
+  background-color: var(--tw-navy);
+  color: var(--tw-white);
+}
+
+main a.button:any-link:hover,
+main a.button:any-link:focus-visible,
+main button.button:hover,
+main button.button:focus-visible,
+main a.button.primary:hover,
+main a.button.primary:focus-visible {
+  background-color: #1a1d52;
+  border-color: #1a1d52;
+  color: var(--tw-white);
+  box-shadow: none;
+  transform: none;
+}
+
+/* Secondary = outline navy */
+main a.button.secondary:any-link,
+main button.button.secondary {
+  border: 1.5px solid var(--tw-navy);
+  background-color: transparent;
+  color: var(--tw-navy);
+}
+
+main a.button.secondary:hover,
+main a.button.secondary:focus-visible,
+main button.button.secondary:hover,
+main button.button.secondary:focus-visible {
+  border-color: var(--tw-navy);
+  background-color: rgb(0 3 48 / 6%);
+  color: var(--tw-navy);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Default (non-block) links */
+main a:not(.button):any-link {
+  color: var(--tw-navy);
+}
+
