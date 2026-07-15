@@ -2,9 +2,9 @@
   "type": "xwalk",
   "sites": {
     "totalwireless": {
+      "libraryUrl": "https://main--sta-xwalk-boilerplate--aemysites.aem.page/tools/sidekick/library.json",
       "previewOrg": "scdemos",
-      "previewSite": "totalwireless",
-      "libraryUrl": "https://main--sta-xwalk-boilerplate--aemysites.aem.page/tools/sidekick/library.json"
+      "previewSite": "totalwireless"
     }
   }
 }
