@@ -1,0 +1,38 @@
+{
+  "variantName": "cards-plans",
+  "baseBlock": "cards",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:47:35.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "spacious",
+    "purpose": "plan-pricing",
+    "imagePattern": "icon"
+  },
+  "contentPattern": {
+    "structure": "line stepper + BYO toggle + N plan cards (name, per-line price, feature list, Select CTA)",
+    "buttonCount": 1,
+    "imageCount": 0,
+    "interactive": true
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "interactive plan / pricing comparison grids",
+      "per-line multiplier pricing with a line-count stepper"
+    ],
+    "notSuitableFor": [
+      "static content grids (use cards or cards-bento)",
+      "single hero pricing callouts"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 1,
+    "lastUsed": "2026-07-14T16:47:35.000Z"
+  }
+}

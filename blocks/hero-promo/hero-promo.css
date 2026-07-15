@@ -1,0 +1,202 @@
+/* Hero Promo — Total Wireless promotional banner.
+   Side-by-side text + foreground product image on a teal->mint gradient
+   card with concentric arc rings and rounded corners.
+   Values extracted from totalwireless.com/m/home. Mobile-first. */
+
+/* Full-bleed wrapper override so the card can span the content width */
+.hero-promo-wrapper {
+  max-width: 100%;
+}
+
+/* ---- Card container ---- */
+.hero-promo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow: hidden;
+  padding: 40px 24px;
+  border-radius: 24px;
+
+  /* teal -> mint gradient with concentric arc rings, sampled from the
+     source background asset (left rgb(79,215,203) -> right rgb(231,252,245)) */
+  background-color: rgb(153 235 223);
+  background-image:
+    radial-gradient(circle at 88% 50%, rgb(231 252 245) 0%, transparent 22%),
+    radial-gradient(circle at 88% 50%, rgb(213 248 240) 24%, transparent 40%),
+    radial-gradient(circle at 88% 50%, rgb(192 244 234) 42%, transparent 58%),
+    radial-gradient(circle at 88% 50%, rgb(153 235 223) 60%, transparent 76%),
+    linear-gradient(90deg, rgb(79 215 203) 0%, rgb(153 235 223) 55%, rgb(231 252 245) 100%);
+}
+
+/* ---- Image row (row 1) ---- */
+.hero-promo .hero-promo-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 2; /* on mobile show image below the text */
+}
+
+.hero-promo .hero-promo-image > div {
+  width: 100%;
+}
+
+.hero-promo picture {
+  display: block;
+  line-height: 0;
+}
+
+.hero-promo picture img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: contain;
+
+  /* The DM-optimized webp flattens the transparent product PNG onto white.
+     multiply drops the white so the phone floats on the teal card like the
+     source, without needing a separate transparent asset. */
+  mix-blend-mode: multiply;
+}
+
+/* ---- Text row (row 2) ---- */
+.hero-promo .hero-promo-text {
+  display: flex;
+  flex-direction: column;
+  order: 1; /* text first on mobile */
+}
+
+.hero-promo .hero-promo-text > div {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Heading — source uses the geometric-sans brand face (GalanoGrotesque
+   -> Montserrat), which maps to --body-font-family in this project. */
+.hero-promo h2 {
+  margin: 0;
+  font-family: var(--body-font-family);
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: normal;
+  color: var(--tw-navy);
+}
+
+/* Suppress the global h2::after brand-accent bar inside the hero
+   (lazy-styles.css adds it to h2 in plain sections; out-specify it). */
+:is(main, article.article-body) > .section .hero-promo.block h2::after {
+  display: none;
+  content: none;
+}
+
+/* Subheading / body copy */
+.hero-promo p:not(.button-container) {
+  margin: 0;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  color: var(--tw-navy);
+}
+
+/* Group heading + subheading tighter, separate from the CTAs */
+.hero-promo .hero-promo-text > div > :is(h2, p:not(.button-container)) {
+  margin-bottom: 0;
+}
+
+/* ---- CTAs ---- */
+
+/* decorate() wraps the button-containers in .hero-promo-cta so both
+   buttons sit on one row with the source 24px gap. */
+.hero-promo .hero-promo-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.hero-promo p.button-container {
+  margin: 0;
+}
+
+/* Pill buttons (override brand.css defaults with the source values) */
+.hero-promo a.button:any-link {
+  margin: 0;
+  border: none;
+  border-radius: 9999px;
+  padding: 11px 23px;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  letter-spacing: normal;
+  text-transform: none;
+  background-color: var(--tw-navy);
+  background-image: none;
+  color: var(--tw-white);
+  box-shadow: none;
+}
+
+.hero-promo a.button:any-link:hover,
+.hero-promo a.button:any-link:focus-visible {
+  transform: none;
+  box-shadow: none;
+  background-color: #1a1d52;
+  color: var(--tw-white);
+}
+
+/* First CTA = primary (navy). Second CTA = secondary (white pill). */
+.hero-promo .hero-promo-cta p.button-container:nth-child(2) a.button:any-link {
+  background-color: var(--tw-white);
+  color: rgb(26 28 53);
+}
+
+.hero-promo .hero-promo-cta p.button-container:nth-child(2) a.button:any-link:hover,
+.hero-promo .hero-promo-cta p.button-container:nth-child(2) a.button:any-link:focus-visible {
+  background-color: rgb(240 240 240);
+  color: rgb(26 28 53);
+}
+
+/* ---- Tablet ---- */
+@media (width >= 600px) {
+  .hero-promo {
+    padding: 64px 24px;
+  }
+
+  .hero-promo h2 {
+    font-size: 40px;
+    line-height: 1.2;
+  }
+}
+
+/* ---- Desktop: side-by-side, text left / image right ---- */
+@media (width >= 900px) {
+  .hero-promo {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+  }
+
+  .hero-promo .hero-promo-text {
+    order: 1;
+    flex: 0 0 57.55%;
+    padding: 80px 24px;
+  }
+
+  .hero-promo .hero-promo-image {
+    order: 2;
+    flex: 0 0 42.45%;
+    align-self: stretch;
+  }
+
+  .hero-promo picture img {
+    max-height: 444px;
+  }
+
+  .hero-promo h2 {
+    font-size: 48px;
+    line-height: 60px;
+  }
+}

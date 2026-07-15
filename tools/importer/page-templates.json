@@ -1,0 +1,228 @@
+{
+  "metadata": {
+    "projectType": "xwalk"
+  },
+  "templates": [
+    {
+      "name": "home",
+      "urls": [
+        "https://www.totalwireless.com/m/home"
+      ],
+      "representativeUrl": "https://www.totalwireless.com/m/home",
+      "coverageGaps": [],
+      "description": "Total Wireless mobile home page - hero, plan/product grids, feature promos, and supporting content sections",
+      "blocks": [
+        {
+          "name": "hero-promo",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(4)",
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(21)"
+          ]
+        },
+        {
+          "name": "columns-promo",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(6)",
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(19)"
+          ]
+        },
+        {
+          "name": "cards-options",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(8)",
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(28)"
+          ]
+        },
+        {
+          "name": "columns-benefits",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(10)"
+          ]
+        },
+        {
+          "name": "cards-plans",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(12)"
+          ]
+        },
+        {
+          "name": "teaser-promo",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(14)",
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(23)"
+          ]
+        },
+        {
+          "name": "product-grid-picks",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(17)"
+          ]
+        },
+        {
+          "name": "cards-bento",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(24)"
+          ]
+        },
+        {
+          "name": "faq-home",
+          "instances": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(27)"
+          ]
+        }
+      ],
+      "sections": [
+        {
+          "id": "section-1",
+          "name": "section-1",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(4)",
+          "style": null,
+          "blocks": [
+            "hero-promo"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-2",
+          "name": "section-2",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(6)",
+          "style": null,
+          "blocks": [
+            "columns-promo"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-3",
+          "name": "section-3",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(8)",
+          "style": null,
+          "blocks": [
+            "cards-options"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-4",
+          "name": "section-4",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(10)",
+          "style": null,
+          "blocks": [
+            "columns-benefits"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-5",
+          "name": "section-5",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(12)",
+          "style": null,
+          "blocks": [
+            "cards-plans"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-6",
+          "name": "section-6",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(14)",
+          "style": null,
+          "blocks": [
+            "teaser-promo"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-7",
+          "name": "section-7",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn:nth-child(15)",
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn:nth-child(15)"
+          ]
+        },
+        {
+          "id": "section-8",
+          "name": "section-8",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(17)",
+          "style": null,
+          "blocks": [
+            "product-grid-picks"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-9",
+          "name": "section-9",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(19)",
+          "style": null,
+          "blocks": [
+            "columns-promo"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-10",
+          "name": "section-10",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(21)",
+          "style": null,
+          "blocks": [
+            "hero-promo"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-11",
+          "name": "section-11",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(23)",
+          "style": null,
+          "blocks": [
+            "teaser-promo"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-12",
+          "name": "section-12",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(24)",
+          "style": null,
+          "blocks": [
+            "cards-bento"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-13",
+          "name": "section-13",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(26)",
+          "style": null,
+          "blocks": [],
+          "defaultContent": [
+            "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(26)"
+          ]
+        },
+        {
+          "id": "section-14",
+          "name": "section-14",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(27)",
+          "style": null,
+          "blocks": [
+            "faq-home"
+          ],
+          "defaultContent": []
+        },
+        {
+          "id": "section-15",
+          "name": "section-15",
+          "selector": "body > div.page-content > div.root.container.responsivegrid > div.cmp-container > div.aem-Grid > div.container.responsivegrid.aem-GridColumn > div.cmp-container > div.aem-Grid > div.experiencefragment.aem-GridColumn:nth-child(28)",
+          "style": null,
+          "blocks": [
+            "cards-options"
+          ],
+          "defaultContent": []
+        }
+      ]
+    }
+  ]
+}

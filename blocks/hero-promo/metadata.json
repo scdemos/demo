@@ -1,0 +1,38 @@
+{
+  "variantName": "hero-promo",
+  "baseBlock": "hero",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:47:35.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "top"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "accent",
+    "density": "wide",
+    "purpose": "promo-hero",
+    "imagePattern": "large"
+  },
+  "contentPattern": {
+    "structure": "heading + paragraph + 2 CTAs + product image",
+    "buttonCount": 2,
+    "imageCount": 1
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "full-width promotional banners",
+      "hero offer banners with product imagery",
+      "campaign landing intros"
+    ],
+    "notSuitableFor": [
+      "plain text article intros",
+      "small inline promo tiles (use teaser-promo)"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 2,
+    "lastUsed": "2026-07-14T16:47:35.000Z"
+  }
+}

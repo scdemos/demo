@@ -1,0 +1,148 @@
+/* Cards Plans -- pricing-plan grid migrated from totalwireless.com/m/home.
+   Source: white cards with a teal header (plan name + large price) and a
+   white body listing plan features, with a full-width navy pill CTA.
+   Values extracted from source computed styles; see
+   migration-work/cards-plans-extracted.css. */
+
+/* Brand teal used for the plan-card header (source uses a decorative teal
+   asset; approximated here as a solid Total Wireless teal). */
+.cards-plans {
+  --cards-plans-teal: #00d1c9;
+  --cards-plans-border: rgb(178 178 178);
+}
+
+/* The interactive lines stepper / BYO toggle are not present in the source
+   static pricing grid -- hide the controls to match the original design. */
+.cards-plans .cards-plans-controls {
+  display: none;
+}
+
+/* Plan grid: mobile-first single column. */
+.cards-plans .cards-plans-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Plan card: white body, 1px gray border, 16px radius, flex column. */
+.cards-plans .cards-plans-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--cards-plans-border);
+  border-radius: 16px;
+  background: var(--tw-white);
+  color: var(--tw-text);
+  overflow: hidden;
+}
+
+/* Card cell 1 (name) + cell 2 (price) form the teal header. */
+.cards-plans .cards-plans-card > div:first-child,
+.cards-plans .cards-plans-card > div:nth-child(2) {
+  background: var(--cards-plans-teal);
+  padding-inline: 16px;
+}
+
+.cards-plans .cards-plans-card > div:first-child {
+  padding-top: 20px;
+}
+
+.cards-plans .cards-plans-card > div:nth-child(2) {
+  padding-bottom: 20px;
+}
+
+/* Plan name. */
+.cards-plans .cards-plans-card h3 {
+  margin: 0;
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  text-transform: uppercase;
+  letter-spacing: normal;
+  color: var(--tw-navy);
+}
+
+/* Price line. */
+.cards-plans .cards-plans-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: var(--tw-navy);
+}
+
+.cards-plans .cards-plans-price-amount {
+  font-size: 78px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--tw-navy);
+}
+
+.cards-plans .cards-plans-price-suffix {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tw-navy);
+}
+
+/* Card cell 3 (features + CTA) = white body. */
+.cards-plans .cards-plans-card > div:last-child {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 24px;
+  background: var(--tw-white);
+}
+
+/* Feature list. */
+.cards-plans .cards-plans-card ul {
+  margin: 0;
+  padding: 0 0 0 21px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.cards-plans .cards-plans-card li {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--tw-text);
+}
+
+.cards-plans .cards-plans-card li + li {
+  margin-top: 12px;
+}
+
+/* Select CTA: full-width navy pill anchored to the bottom of the body. */
+.cards-plans .cards-plans-card .button-container {
+  margin: 24px 0 0;
+  margin-top: auto;
+}
+
+.cards-plans .cards-plans-card a.button:any-link {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  border-radius: 9999px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Tablet: two columns. */
+@media (width >= 600px) {
+  .cards-plans .cards-plans-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 19.5px;
+  }
+}
+
+/* Desktop: three columns to match the source carousel viewport. */
+@media (width >= 900px) {
+  .cards-plans .cards-plans-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

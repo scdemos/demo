@@ -1,0 +1,68 @@
+{
+  "definitions": [
+    {
+      "title": "FAQ Home",
+      "id": "faq-home",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block",
+            "template": {
+              "name": "FAQ Home",
+              "model": "faq-home",
+              "filter": "faq-home"
+            }
+          }
+        }
+      }
+    },
+    {
+      "title": "FAQ Item",
+      "id": "faq-home-item",
+      "plugins": {
+        "xwalk": {
+          "page": {
+            "resourceType": "core/franklin/components/block/v1/block/item",
+            "template": {
+              "name": "FAQ Item",
+              "model": "faq-home-item"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "models": [
+    {
+      "id": "faq-home",
+      "fields": []
+    },
+    {
+      "id": "faq-home-item",
+      "fields": [
+        {
+          "component": "richtext",
+          "name": "question",
+          "label": "Question",
+          "valueType": "string",
+          "description": "The question shown on the accordion toggle."
+        },
+        {
+          "component": "richtext",
+          "name": "answer",
+          "label": "Answer",
+          "valueType": "string",
+          "description": "The answer revealed when the question is expanded."
+        }
+      ]
+    }
+  ],
+  "filters": [
+    {
+      "id": "faq-home",
+      "components": [
+        "faq-home-item"
+      ]
+    }
+  ]
+}

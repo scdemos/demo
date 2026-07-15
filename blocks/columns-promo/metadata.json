@@ -1,0 +1,37 @@
+{
+  "variantName": "columns-promo",
+  "baseBlock": "columns",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:47:35.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "colored",
+    "density": "wide",
+    "purpose": "promo-tiles",
+    "imagePattern": "large"
+  },
+  "contentPattern": {
+    "structure": "2 tiles: heading + image + CTA per tile",
+    "buttonCount": 2,
+    "imageCount": 2
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "two side-by-side promotional offer tiles",
+      "dual campaign call-outs with images and CTAs"
+    ],
+    "notSuitableFor": [
+      "simple text-only side-by-side content (use base columns)",
+      "grids of 3+ repeating items (use cards)"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 2,
+    "lastUsed": "2026-07-14T16:47:35.000Z"
+  }
+}

@@ -1,0 +1,138 @@
+/* Columns Promo — two side-by-side promotional split-banner tiles.
+   Source: totalwireless.com/m/home ("Get 4 Free 5G Phones" +
+   "Get a free month of 5G Home Internet"). Values from source
+   computed styles.
+
+   Decorated EDS DOM (decorateMain wraps the bare picture + siblings
+   into a single <p>):
+     .columns-promo > div            -> row (holds both tiles)
+     .columns-promo > div > div      -> tile (also gets .columns-promo-img-col)
+     .columns-promo > div > div > p  -> content wrapper: picture, h2, text, buttons */
+
+.columns-promo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Tile: centered content stack with a rounded card image */
+.columns-promo > div > div {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* All tile content lives inside a single <p> after EDS decoration */
+.columns-promo > div > div > p {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  margin: 0;
+  padding: 40px 24px;
+}
+
+/* Image sits below the text in the source card */
+.columns-promo > div > div picture {
+  order: 3;
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.columns-promo > div > div img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.columns-promo > div > div h2 {
+  order: 0;
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 44px;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--tw-navy);
+}
+
+/* Source promo headings have no accent bar; suppress the global
+   lazy-styles h2::after (which resolves to (0,3,3) specificity). */
+:is(main, article.article-body) > .section .columns-promo.block h2::after {
+  content: none;
+  display: none;
+}
+
+/* Supporting text: any paragraph in the tile that is not a button
+   container and not the wrapper <p> itself. */
+.columns-promo > div > div p:not(.button-container, :first-child) {
+  order: 1;
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  color: var(--tw-navy);
+}
+
+/* CTA row: pill buttons side by side, centered */
+.columns-promo-cta-group {
+  order: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.columns-promo-cta-group .button-container {
+  margin: 0;
+}
+
+.columns-promo > div > div a.button:any-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9999px;
+  padding: 11px 23px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: none;
+  text-decoration: none;
+  background-color: var(--tw-navy);
+  background-image: none;
+  color: var(--tw-white);
+}
+
+/* Second CTA in a tile = secondary (white pill, dark text), matching source */
+.columns-promo-cta-group .button-container:last-child a.button:any-link,
+.columns-promo > div > div a.button.secondary:any-link {
+  border: 0;
+  background-color: var(--tw-white);
+  color: #1a1c35;
+}
+
+@media (width >= 900px) {
+  .columns-promo > div {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 32px;
+  }
+
+  .columns-promo > div > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .columns-promo > div > div > p {
+    flex: 1;
+    padding: 80px 24px;
+    justify-content: center;
+  }
+}

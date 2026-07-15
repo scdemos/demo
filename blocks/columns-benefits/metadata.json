@@ -1,0 +1,37 @@
+{
+  "variantName": "columns-benefits",
+  "baseBlock": "columns",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:47:35.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "benefit-strip",
+    "imagePattern": "icon"
+  },
+  "contentPattern": {
+    "structure": "5 items: icon + short label",
+    "buttonCount": 0,
+    "imageCount": 5
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "horizontal icon + label benefit strips",
+      "plan/feature highlight rows"
+    ],
+    "notSuitableFor": [
+      "content with CTAs or long descriptions (use cards)",
+      "two-tile promotional layouts (use columns-promo)"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 1,
+    "lastUsed": "2026-07-14T16:47:35.000Z"
+  }
+}

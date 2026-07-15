@@ -1,0 +1,154 @@
+/* ==========================================================================
+   Teaser Promo -- full-width navy rounded CTA banner.
+   Layout (desktop): [circular image] [heading + supporting text] ...... [teal pill CTA]
+   Values extracted from computed styles of totalwireless.com/m/home
+   (".cta-banner-wrapper" -- the Mexico international-calling banner).
+   ========================================================================== */
+
+/* local tokens (exact source values; brand navy is #000330 but the banner
+   uses the lighter #1a1c35 navy, and the CTA uses the brand teal accent). */
+main .teaser-promo {
+  --teaser-promo-navy: #1a1c35;
+  --teaser-promo-teal: #00c8b7;
+
+  background-color: var(--teaser-promo-navy);
+  color: var(--tw-white);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 0;
+
+  /* mobile-first: stack image, text, CTA vertically */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  overflow: hidden;
+}
+
+/* rows (image row + text row) become flex items */
+main .teaser-promo > div {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* image cell */
+main .teaser-promo .teaser-promo-img-col {
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
+main .teaser-promo .teaser-promo-img-col picture,
+main .teaser-promo .teaser-promo-img-col img {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* text cell wrapper (row 2) */
+main .teaser-promo > div:last-child {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+main .teaser-promo > div:last-child > div {
+  width: 100%;
+}
+
+/* heading */
+main .teaser-promo h2 {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--heading-font-family);
+  line-height: 1.27;
+  color: var(--tw-white);
+  margin: 0 0 8px;
+}
+
+/* supporting text */
+main .teaser-promo p {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--tw-white);
+  margin: 0;
+}
+
+/* CTA -- teal pill. Overrides the global navy button styling. */
+main .teaser-promo .button-container {
+  margin: 16px 0 0;
+}
+
+main .teaser-promo a.button:any-link {
+  background-color: var(--teaser-promo-teal);
+  background-image: none;
+  border: 0;
+  border-radius: 50px;
+  padding: 11px 30px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--teaser-promo-navy);
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+
+main .teaser-promo a.button:any-link:hover,
+main .teaser-promo a.button:any-link:focus-visible {
+  background-color: #00b3a3;
+  border-color: transparent;
+  color: var(--teaser-promo-navy);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ---- Desktop: single horizontal bar, CTA pushed to the far right ---- */
+@media (width >= 900px) {
+  main .teaser-promo {
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    padding: 0 24px;
+    min-height: 124px;
+  }
+
+  /* image row shrinks to content on desktop (don't stretch full width) */
+  main .teaser-promo > div:first-child {
+    flex: 0 0 auto;
+    width: auto;
+  }
+
+  /* text row grows to fill, its inner content lays out horizontally so the
+     CTA sits at the right edge, vertically centered with the heading. */
+  main .teaser-promo > div:last-child {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  main .teaser-promo > div:last-child > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+  }
+
+  /* copy stack (heading + supporting text) fills available space */
+  main .teaser-promo .teaser-promo-body {
+    flex: 1 1 auto;
+  }
+
+  main .teaser-promo h2 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.27;
+  }
+
+  main .teaser-promo .button-container {
+    margin: 0 0 0 auto;
+    flex: 0 0 auto;
+  }
+}

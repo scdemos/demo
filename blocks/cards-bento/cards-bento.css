@@ -1,0 +1,234 @@
+/* ==========================================================================
+   Cards Bento — "Get more with Total Wireless" value-add grid.
+   Migrated from totalwireless.com/m/home bento box.
+
+   Source layout (desktop, 1236px content): 6 cards in a 12-column grid.
+     Row 1: three equal tall cards (span 4 each)  — 396x576
+     Row 2: one wide card (span 6) + two small cards (span 3 each) — 606/291/291 x 335
+   All cards: 24px radius, 24px gap. Card headings 24px/700/32px.
+   Links "Learn more": 16px/700, no underline.
+   Palette (exact source values, mapped to brand tokens):
+     navy  rgb(0,3,48)    -> var(--tw-navy)
+     white rgb(255,255,255) -> var(--tw-white)
+     teal  rgb(0,200,183) -> --cards-bento-teal (source-specific accent)
+   ========================================================================== */
+
+.cards-bento {
+  --cards-bento-radius: 24px;
+  --cards-bento-gap: 24px;
+  --cards-bento-teal: #00c8b7;
+  --cards-bento-pad: 32px;
+}
+
+.cards-bento > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--cards-bento-gap);
+}
+
+/* --- Card shell --- */
+.cards-bento > ul > li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--cards-bento-radius);
+  overflow: hidden;
+  background-color: var(--tw-cream);
+  color: var(--tw-navy);
+  min-height: 320px;
+}
+
+/* --- Image: full-bleed cover at top of the card --- */
+.cards-bento .cards-bento-card-image {
+  margin: 0;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.cards-bento .cards-bento-card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* --- Body: content sits below image, padded, vertically centered --- */
+.cards-bento .cards-bento-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding: var(--cards-bento-pad);
+}
+
+.cards-bento .cards-bento-card-body > div {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* JS leaves an empty leading <div> in the body; collapse it */
+.cards-bento .cards-bento-card-body > div:empty {
+  display: none;
+}
+
+/* --- Heading --- */
+.cards-bento .cards-bento-card-body :is(h2, h3) {
+  margin: 0;
+  font-family: var(--heading-font-family);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+  color: inherit;
+}
+
+/* --- Body copy --- */
+.cards-bento .cards-bento-card-body p:not(.button-container) {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: inherit;
+}
+
+/* --- Link ("Learn more" / "Shop bundles") --- */
+.cards-bento .cards-bento-card-body a:any-link {
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--tw-navy);
+}
+
+/* --- EDS auto-decorated button reset: keep "Learn more" as a plain bold link,
+       not a filled pill button (matches source text-link treatment) --- */
+.cards-bento .cards-bento-card-body a.button:any-link,
+.cards-bento .cards-bento-card-body .button-container a.button:any-link {
+  display: inline;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  background-color: transparent;
+  color: var(--tw-navy);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.cards-bento .cards-bento-card-body .button-container {
+  margin: 0;
+}
+
+/* ==========================================================================
+   Per-card color themes (nth-child order matches authored source order):
+   1 FIFA (image),  2 Disney+ (image),  3 UFC (solid navy),
+   4 App (light),   5 Bundles (teal),   6 Total Spark (image/navy)
+   ========================================================================== */
+
+/* Row 1 image cards (FIFA, Disney+, UFC) — navy text band with white text,
+   matching the source's dark footer bands over the imagery. */
+.cards-bento > ul > li:nth-child(1),
+.cards-bento > ul > li:nth-child(2),
+.cards-bento > ul > li:nth-child(3) {
+  background-color: var(--tw-navy);
+  color: var(--tw-white);
+}
+
+.cards-bento > ul > li:nth-child(1) a:any-link,
+.cards-bento > ul > li:nth-child(2) a:any-link,
+.cards-bento > ul > li:nth-child(3) a:any-link {
+  color: var(--tw-white);
+}
+
+/* Bundles — teal card, navy text */
+.cards-bento > ul > li:nth-child(5) {
+  background-color: var(--cards-bento-teal);
+  color: var(--tw-navy);
+}
+
+/* Total Spark — navy card (no image in migrated content), white text */
+.cards-bento > ul > li:nth-child(6) {
+  background-color: var(--tw-navy);
+  color: var(--tw-white);
+}
+
+.cards-bento > ul > li:nth-child(6) a:any-link {
+  color: var(--tw-white);
+}
+
+/* Text-only cards get more breathing room since they have no image */
+.cards-bento > ul > li.cards-bento-card-text-only .cards-bento-card-body {
+  padding: 40px var(--cards-bento-pad);
+}
+
+/* ==========================================================================
+   Responsive: 2-up at tablet, full 12-column bento at desktop
+   ========================================================================== */
+
+@media (width >= 600px) {
+  .cards-bento > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= 900px) {
+  .cards-bento {
+    --cards-bento-pad: 40px;
+  }
+
+  .cards-bento > ul {
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-flow: row;
+  }
+
+  /* Row 1: three equal tall cards */
+  .cards-bento > ul > li:nth-child(1),
+  .cards-bento > ul > li:nth-child(2),
+  .cards-bento > ul > li:nth-child(3) {
+    grid-column: span 4;
+    min-height: 560px;
+  }
+
+  /* Row 2: wide card (image + text side by side) + two small cards */
+  .cards-bento > ul > li:nth-child(4) {
+    grid-column: span 6;
+    min-height: 320px;
+    flex-direction: row;
+  }
+
+  .cards-bento > ul > li:nth-child(5),
+  .cards-bento > ul > li:nth-child(6) {
+    grid-column: span 3;
+    min-height: 320px;
+  }
+
+  /* Tall cards (row 1): image fills upper portion, text pinned to lower area */
+  .cards-bento > ul > li:nth-child(1) .cards-bento-card-body,
+  .cards-bento > ul > li:nth-child(2) .cards-bento-card-body,
+  .cards-bento > ul > li:nth-child(3) .cards-bento-card-body {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    margin-top: auto;
+  }
+
+  .cards-bento > ul > li:nth-child(1) .cards-bento-card-image,
+  .cards-bento > ul > li:nth-child(2) .cards-bento-card-image,
+  .cards-bento > ul > li:nth-child(3) .cards-bento-card-image {
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Wide app card (row 2, child 4): image occupies left, text right */
+  .cards-bento > ul > li:nth-child(4) .cards-bento-card-image {
+    flex: 0 0 45%;
+  }
+
+  .cards-bento > ul > li:nth-child(4) .cards-bento-card-body {
+    flex: 1;
+  }
+}

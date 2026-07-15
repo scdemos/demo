@@ -1,0 +1,10 @@
+{
+  "type": "xwalk",
+  "sites": {
+    "totalwireless": {
+      "previewOrg": "scdemos",
+      "previewSite": "totalwireless",
+      "libraryUrl": "https://main--sta-xwalk-boilerplate--aemysites.aem.page/tools/sidekick/library.json"
+    }
+  }
+}

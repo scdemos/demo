@@ -1,0 +1,37 @@
+{
+  "variantName": "product-grid-picks",
+  "baseBlock": "product-grid",
+  "version": "1.0.0",
+  "created": "2026-07-14T16:47:35.000Z",
+  "sourceContext": {
+    "originUrl": "https://www.totalwireless.com/m/home",
+    "originPage": "Total Wireless home page",
+    "blockPosition": "middle"
+  },
+  "visualCharacteristics": {
+    "colorScheme": "light",
+    "density": "compact",
+    "purpose": "product-picks",
+    "imagePattern": "large"
+  },
+  "contentPattern": {
+    "structure": "3 product picks: deal badge + thumbnail + name + Select CTA",
+    "buttonCount": 1,
+    "imageCount": 3
+  },
+  "reuseGuidance": {
+    "suitableFor": [
+      "curated phone / product pick rows",
+      "index-driven 3-up product showcases with deal badges"
+    ],
+    "notSuitableFor": [
+      "full product catalog listings (use base product-grid)",
+      "generic content cards (use cards)"
+    ]
+  },
+  "usage": {
+    "pagesUsing": ["/m/home"],
+    "reuseCount": 1,
+    "lastUsed": "2026-07-14T16:47:35.000Z"
+  }
+}
