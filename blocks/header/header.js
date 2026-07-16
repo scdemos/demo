@@ -16,9 +16,15 @@ import { getBlockContext } from '../../scripts/shared.js';
 const DESKTOP = window.matchMedia('(min-width: 900px)');
 const CAROUSEL_INTERVAL = 6000;
 
-function getNavPath() {
+/**
+ * Candidate nav-fragment paths, in priority order. A `nav` metadata value wins.
+ * Otherwise try `/content/nav` (local `aem up`) then `/nav` (preview/live where
+ * content is published at the root).
+ */
+function getNavPathCandidates() {
   const meta = getMetadata('nav');
-  return (meta ? new URL(meta, window.location).pathname : null) || '/content/nav';
+  if (meta) return [new URL(meta, window.location).pathname];
+  return ['/content/nav', '/nav'];
 }
 
 /* ---------- Announcement carousel ---------- */
@@ -156,8 +162,14 @@ function toggleMobile(nav, open, body) {
 export default async function decorate(block) {
   const { body, eventRoot } = getBlockContext(block);
 
+  let navPath = getNavPathCandidates()[0];
   if (block.textContent === '') {
-    const fragment = await loadFragment(getNavPath());
+    let fragment = null;
+    const candidates = getNavPathCandidates();
+    for (let i = 0; i < candidates.length; i += 1) {
+      fragment = await loadFragment(candidates[i]);
+      if (fragment) { navPath = candidates[i]; break; }
+    }
     if (!fragment) return;
     const nav = document.createElement('nav');
     nav.id = 'nav';
@@ -174,7 +186,7 @@ export default async function decorate(block) {
 
   // Fragment images use paths relative to the nav document (e.g. images/x.svg).
   // Resolve them against the nav directory so they don't break on deep pages.
-  const navDir = getNavPath().replace(/[^/]+$/, '');
+  const navDir = navPath.replace(/[^/]+$/, '');
   nav.querySelectorAll('img[src]').forEach((img) => {
     const src = img.getAttribute('src');
     if (src && !/^(https?:)?\/\//.test(src) && !src.startsWith('/')) {
