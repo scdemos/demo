@@ -1,0 +1,14 @@
+{
+  "type": "da",
+  "sites": {
+    "demo": {
+      "previewOrg": "scdemos",
+      "previewSite": "demo"
+    },
+    "publicissapient": {
+      "libraryUrl": "https://main--sta-boilerplate--aemdemos.aem.page/tools/sidekick/library.json",
+      "previewOrg": "scdemos",
+      "previewSite": "publicissapient"
+    }
+  }
+}

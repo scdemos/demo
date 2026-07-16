@@ -182,6 +182,33 @@ function decorateDefault(block) {
   block.replaceChildren(ul);
 }
 
+/**
+ * Mirror the section's `accent` style onto the block so the accent card
+ * treatment can be scoped to `.cards.accent`. Reads the section class (the
+ * standard EDS section-metadata path) and falls back to the authored
+ * section-metadata table when the section-metadata block is unavailable.
+ */
+function applyAccentVariant(block) {
+  const section = block.closest('.section');
+  if (!section) return;
+  if (section.classList.contains('accent')) {
+    block.classList.add('accent');
+    return;
+  }
+  const meta = section.querySelector('.section-metadata');
+  if (!meta) return;
+  const isAccent = [...meta.querySelectorAll(':scope > div')].some((row) => {
+    const cells = [...row.children];
+    return cells.length === 2
+      && cells[0].textContent.trim().toLowerCase() === 'style'
+      && /\baccent\b/i.test(cells[1].textContent);
+  });
+  if (isAccent) {
+    section.classList.add('accent');
+    block.classList.add('accent');
+  }
+}
+
 export default async function decorate(block) {
   if (block.classList.contains('links')) {
     await decorateLinks(block);
@@ -189,5 +216,6 @@ export default async function decorate(block) {
     decorateBento(block);
   } else {
     decorateDefault(block);
+    applyAccentVariant(block);
   }
 }
