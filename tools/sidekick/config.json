@@ -1,5 +1,6 @@
 {
   "project": "DIYFire",
+  "editUrlPattern": "https://da.live/canvas#/scdemos/demo",
   "plugins": [
     {
       "id": "experimentation",
