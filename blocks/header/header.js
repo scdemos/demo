@@ -134,6 +134,16 @@ function setupDropdown(li, nav) {
 
 function decorateTools(section) {
   section.classList.add('nav-tools');
+  // Reset any EDS button auto-decoration so our own tool styling is authoritative.
+  section.querySelectorAll('.button').forEach((el) => el.classList.remove('button'));
+  section.querySelectorAll('.button-container').forEach((el) => el.classList.remove('button-container'));
+  // EDS wraps section content in a .default-content-wrapper (display:block); hoist
+  // the tool items to be direct flex children so they lay out in a row.
+  const wrapper = section.querySelector('.default-content-wrapper');
+  if (wrapper) {
+    while (wrapper.firstChild) section.append(wrapper.firstChild);
+    wrapper.remove();
+  }
   const links = [...section.querySelectorAll('a')];
   links.forEach((a) => {
     const href = a.getAttribute('href') || '';
@@ -205,6 +215,10 @@ export default async function decorate(block) {
   }
   if (primary) {
     primary.classList.add('nav-sections');
+    // EDS auto-decorates single-link paragraphs as .button pills; strip that in
+    // the nav so every item renders as plain nav text (matches the source).
+    primary.querySelectorAll('.button').forEach((el) => el.classList.remove('button'));
+    primary.querySelectorAll('.button-container').forEach((el) => el.classList.remove('button-container'));
     // EDS wraps section content in a .default-content-wrapper; hoist the nav
     // list up to be a direct child so CSS/JS can target `.nav-sections > ul`.
     const list = primary.querySelector('ul');

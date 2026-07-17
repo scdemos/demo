@@ -1,0 +1,92 @@
+/*
+ * Page nav block — sticky in-page anchor bar (secondary nav).
+ * Sits directly under the sticky site header; links scroll to sections.
+ */
+
+.page-nav.block {
+  margin: 0 calc(50% - 50vw);
+  width: 100vw;
+  background: #fff;
+  border-bottom: 1px solid #ececec;
+}
+
+/* Pinned to the top of the viewport once scrolled past (matches source). */
+.page-nav.block.is-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  margin: 0;
+  width: 100%;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+}
+
+.page-nav .page-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: var(--content-max-width);
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  font-family: var(--body-font-family);
+}
+
+.page-nav .page-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page-nav .page-nav-list li {
+  margin: 0;
+}
+
+.page-nav .page-nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 4px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--brand-muted, #666);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.page-nav .page-nav-link:hover {
+  color: #000;
+}
+
+/* Active section — white text on brand-red pill (matches source). */
+.page-nav .page-nav-link.is-active {
+  padding: 8px 16px;
+  color: #fff;
+  background: var(--brand-red);
+}
+
+/* Right-aligned CTA pill. */
+.page-nav .page-nav-cta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--brand-red);
+  border-radius: 9999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.page-nav .page-nav-cta:hover {
+  background: var(--brand-red-dark);
+}

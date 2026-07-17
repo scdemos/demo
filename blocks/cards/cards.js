@@ -209,6 +209,82 @@ function applyAccentVariant(block) {
   }
 }
 
+/**
+ * Turn the decorated `large` cards into a one-at-a-time carousel of big
+ * landscape tiles (matches the "realities" section on the source): a scroll-
+ * snapping track with the next card peeking, prev/next arrow controls and a
+ * "Slide X of N" status. Content-first: the cards are already authored/rendered
+ * by decorateDefault; this only adds the carousel chrome and behavior.
+ */
+function decorateLargeCarousel(block) {
+  const track = block.querySelector(':scope > ul');
+  if (!track) return;
+  const slides = [...track.children];
+  if (slides.length < 2) return;
+
+  track.classList.add('cards-track');
+
+  const viewport = createTag('div', { class: 'cards-carousel-viewport' });
+  track.before(viewport);
+  viewport.append(track);
+
+  const prev = createTag('button', { type: 'button', class: 'cards-carousel-prev', 'aria-label': 'Previous slide' });
+  const next = createTag('button', { type: 'button', class: 'cards-carousel-next', 'aria-label': 'Next slide' });
+  const controls = createTag('div', { class: 'cards-carousel-controls' }, [prev, next]);
+  block.prepend(controls);
+
+  const status = createTag('div', { class: 'cards-carousel-status', 'aria-live': 'polite' });
+  block.append(status);
+
+  let index = 0;
+  const clamp = (i) => Math.max(0, Math.min(i, slides.length - 1));
+
+  const update = () => {
+    prev.disabled = index === 0;
+    next.disabled = index === slides.length - 1;
+    status.textContent = `Slide ${index + 1} of ${slides.length}`;
+  };
+
+  const goTo = (i) => {
+    index = clamp(i);
+    slides[index].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+    update();
+  };
+
+  prev.addEventListener('click', () => goTo(index - 1));
+  next.addEventListener('click', () => goTo(index + 1));
+
+  // Keep the index/status in sync when the user scrolls/swipes the track.
+  let scrollTimer;
+  track.addEventListener('scroll', () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const nearest = slides.reduce((best, slide, i) => {
+        const dist = Math.abs(slide.offsetLeft - track.scrollLeft);
+        return dist < best.dist ? { i, dist } : best;
+      }, { i: 0, dist: Infinity });
+      index = nearest.i;
+      update();
+    }, 100);
+  }, { passive: true });
+
+  update();
+}
+
+/**
+ * icon-lg variant: reorder each card to heading → image → details, matching
+ * the use-case cards on the source. The default decoration renders an image
+ * cell followed by a body cell (heading + paragraph); this lifts the heading
+ * above the image so the order reads title, graphic, then description.
+ */
+function decorateIconLg(block) {
+  block.querySelectorAll(':scope > ul > li > article').forEach((article) => {
+    const imageCell = [...article.children].find((el) => el.querySelector('img, picture'));
+    const heading = article.querySelector('h2, h3, h4, h5, h6');
+    if (imageCell && heading) article.insertBefore(heading, imageCell);
+  });
+}
+
 export default async function decorate(block) {
   if (block.classList.contains('links')) {
     await decorateLinks(block);
@@ -217,5 +293,7 @@ export default async function decorate(block) {
   } else {
     decorateDefault(block);
     applyAccentVariant(block);
+    if (block.classList.contains('large')) decorateLargeCarousel(block);
+    if (block.classList.contains('icon-lg')) decorateIconLg(block);
   }
 }

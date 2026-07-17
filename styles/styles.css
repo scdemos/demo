@@ -562,12 +562,13 @@ main > .section:first-child {
   padding-block-start: 0;
 
   /* Reduce CLS: contain layout so section appearance causes less reflow.
-     Exclude social-share section: contain creates a containing block for position:fixed,
-     which would break the sticky share buttons. */
+     Exclude social-share and page-nav sections: contain creates a containing
+     block for position:fixed, which would break their sticky/pinned elements. */
   contain: layout;
 }
 
-main > .section:has(.social-share) {
+main > .section:has(.social-share),
+main > .section:has(.page-nav) {
   contain: none;
 }
 
@@ -602,6 +603,16 @@ main .section.highlight {
 
 :is(main, article.article-body) > .section.divider.center {
     text-align: center;
+}
+
+/* section-metadata style=center: center-align a section's content */
+:is(main, article.article-body) > .section.center {
+  text-align: center;
+}
+
+:is(main, article.article-body) > .section.center .button-container {
+  display: flex;
+  justify-content: center;
 }
 
 /* section-metadata or block style: spacer utilities – add to section metadata or block styles for readability gaps */

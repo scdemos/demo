@@ -22,10 +22,10 @@ header .nav-wrapper {
 
 header nav {
   display: grid;
-  grid-template-areas:
-    'announcement announcement announcement'
-    'brand sections tools';
-  grid-template-columns: auto 1fr auto;
+  grid-template:
+    'announcement announcement announcement' auto
+    'brand sections tools' 134px
+    / auto 1fr auto;
   align-items: center;
   max-width: var(--content-max-width);
   margin: 0 auto;
@@ -36,7 +36,12 @@ header nav {
 
 header nav .nav-announcement {
   grid-area: announcement;
-  margin: 0 calc((100vw - 100%) / -2);
+
+  /* Break out of the centered nav container so the red band spans the full
+     viewport width, edge to edge, regardless of the nav's max-width. */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
   background: var(--brand-red);
   color: #fff;
 }
@@ -47,9 +52,9 @@ header nav .nav-announcement-inner {
   justify-content: center;
   gap: 12px;
   max-width: var(--content-max-width);
-  min-height: 56px;
+  height: 56px;
   margin: 0 auto;
-  padding: 8px 24px;
+  padding: 0 24px;
 }
 
 header nav .nav-announcement ul {
@@ -154,7 +159,7 @@ header nav .nav-sections {
 header nav .nav-sections > ul {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 40px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -166,14 +171,14 @@ header nav .nav-sections > ul > li {
 
 header nav .nav-sections > ul > li > a,
 header nav .nav-sections > ul > li > .nav-drop-toggle {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 12px 14px;
+  padding: 6px 0;
   font-family: var(--body-font-family);
   font-size: 16px;
-  font-weight: 400;
-  line-height: 1;
+  font-weight: 500;
+  line-height: 1.5;
   color: #000;
   background: transparent;
   border: 0;
@@ -182,31 +187,26 @@ header nav .nav-sections > ul > li > .nav-drop-toggle {
   white-space: nowrap;
 }
 
-header nav .nav-sections > ul > li > a:hover,
-header nav .nav-sections > ul > li > .nav-drop-toggle:hover {
-  color: var(--brand-red);
-}
-
-/* caret on dropdown toggles */
-header nav .nav-sections .nav-drop-toggle::after {
+/* Animated red underline (source pattern): 2px bar under the text that scales
+   in from the left on hover / when the dropdown is open. No carets. */
+header nav .nav-sections > ul > li > a::after,
+header nav .nav-sections > ul > li > .nav-drop-toggle::after {
   content: '';
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid currentcolor;
-  border-bottom: 2px solid currentcolor;
-  transform: rotate(45deg);
-  transition: transform 0.2s ease;
-  margin-left: 2px;
-  margin-top: -3px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--brand-red);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s ease-in-out;
 }
 
-header nav .nav-sections .nav-drop[aria-expanded='true'] .nav-drop-toggle {
-  color: var(--brand-red);
-}
-
+header nav .nav-sections > ul > li > a:hover::after,
+header nav .nav-sections > ul > li > .nav-drop-toggle:hover::after,
 header nav .nav-sections .nav-drop[aria-expanded='true'] .nav-drop-toggle::after {
-  transform: rotate(-135deg);
-  margin-top: 2px;
+  transform: scaleX(1);
 }
 
 /* dropdown panel */

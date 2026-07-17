@@ -190,6 +190,45 @@
 }
 
 /* ==========================================================================
+   icon-lg variant — use-case cards ordered heading → centered graphic → body.
+   cards.js lifts the heading above the image cell; the graphic is enlarged
+   from the default 48px icon to a prominent centered illustration.
+   ========================================================================== */
+
+.cards.icon-lg > ul > li > article {
+  align-items: center;
+  text-align: center;
+}
+
+/* Lifted heading (now a direct child of article, above the image) */
+.cards.icon-lg > ul > li > article > :is(h2, h3, h4) {
+  margin: 0;
+  padding: var(--space-l) var(--space-l) 0;
+  font-family: var(--font-family);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.cards.icon-lg .cards-card-body {
+  padding-top: 0;
+}
+
+/* Centered graphic cell between heading and body */
+.cards.icon-lg .cards-card-body:has(img),
+.cards.icon-lg .cards-card-body:has(picture) {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-m) var(--space-l);
+}
+
+.cards.icon-lg .cards-card-body img {
+  width: 120px;
+  height: 120px;
+}
+
+/* ==========================================================================
    Accent variant — Bodhi-style icon cards on a warm gradient backdrop
    Applied when the section carries Style=accent (icon + text cards).
    Falls back gracefully: also triggered for image (icon) cards.
@@ -223,6 +262,7 @@
   padding: var(--space-l);
 }
 
+/* stylelint-disable-next-line no-descending-specificity -- accent/icon-lg variants are unrelated; source order is intentional */
 .cards.accent .cards-card-body {
   padding: 0;
 }
@@ -239,4 +279,175 @@
 
 .cards.accent .cards-card-body :is(h2, h3, h4) {
   font-size: 20px;
+}
+
+/* ==========================================================================
+   Large variant — carousel of big landscape cards, one in view with the next
+   peeking, prev/next arrow controls and a "Slide X of N" status. Each card is
+   a full-bleed image with a frosted-glass text panel in the bottom-left.
+   Matches the "realities" section on the source:
+   publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+.cards.large {
+  position: relative;
+}
+
+/* ----- Track (the scroll-snap rail) ----- */
+.cards.large .cards-carousel-viewport {
+  overflow: hidden;
+}
+
+.cards.large > .cards-carousel-viewport > ul.cards-track {
+  display: flex;
+  grid-template-columns: none;
+  gap: var(--space-l);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.cards.large ul.cards-track::-webkit-scrollbar {
+  display: none;
+}
+
+.cards.large > .cards-carousel-viewport > ul.cards-track > li {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.cards.large > .cards-carousel-viewport > ul.cards-track > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Image cell fills the whole card */
+.cards.large .cards-card-body:has(img),
+.cards.large .cards-card-body:has(picture) {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  line-height: 0;
+}
+
+.cards.large .cards-card-body:has(img) p {
+  margin: 0;
+  height: 100%;
+}
+
+.cards.large .cards-card-body picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cards.large .cards-card-body img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* Text cell becomes the frosted-glass panel, anchored bottom-left */
+.cards.large .cards-card-body:not(:has(img), :has(picture)) {
+  position: absolute;
+  bottom: var(--space-l);
+  left: var(--space-l);
+  width: min(454px, 80%);
+  gap: var(--space-m);
+  padding: 24px 20px;
+  background-color: rgb(255 255 255 / 22%);
+  backdrop-filter: blur(12px);
+
+  /* stylelint-disable-next-line property-no-vendor-prefix -- Safari needs the prefix for backdrop-filter */
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 16px;
+}
+
+.cards.large .cards-card-body :is(h2, h3, h4) {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #fff;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- variant overrides base card body styles intentionally */
+.cards.large .cards-card-body p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  color: #fff;
+}
+
+/* ----- Carousel controls (prev/next arrows, top-right) ----- */
+.cards.large .cards-carousel-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
+}
+
+.cards.large .cards-carousel-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: light-dark(#fff, var(--color-card-dark));
+  color: light-dark(var(--color-ink), var(--color-parchment));
+  border: 1px solid light-dark(var(--color-ink), rgb(255 255 255 / 40%));
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.cards.large .cards-carousel-controls button::before {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.cards.large .cards-carousel-prev::before {
+  content: '←';
+}
+
+.cards.large .cards-carousel-next::before {
+  content: '→';
+}
+
+.cards.large .cards-carousel-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cards.large .cards-carousel-controls button:hover:not(:disabled) {
+  background: light-dark(var(--color-ink), var(--color-parchment));
+  color: light-dark(#fff, var(--color-ink));
+}
+
+.cards.large .cards-carousel-status {
+  margin-top: var(--space-m);
+  font-family: var(--font-family-body);
+  font-size: var(--body-font-size-s);
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* Desktop: reveal the next card peeking at the right edge */
+@media (width >= 900px) {
+  .cards.large > .cards-carousel-viewport > ul.cards-track > li {
+    flex-basis: calc(100% - var(--space-l) - 32px);
+  }
+
+  .cards.large .cards-card-body :is(h2, h3, h4) {
+    font-size: 24px;
+  }
 }
