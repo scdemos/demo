@@ -730,3 +730,8 @@ main > .section.warm {
   background-clip: text;
   color: transparent;
 }
+
+/* hide library metadata from being seen in block library */
+.library-metadata-wrapper {
+  display: none;
+}
