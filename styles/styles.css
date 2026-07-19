@@ -149,8 +149,9 @@
   --nav-height: 64px;
   --header-height: var(--nav-height);
 
-  /* boilerplate compatibility – map to design tokens */
-  --background-color: light-dark(var(--color-parchment), var(--color-obsidian));
+  /* boilerplate compatibility – map to design tokens.
+     Page background is pure white to match the source (publicissapient.com). */
+  --background-color: light-dark(var(--color-light), var(--color-obsidian));
   --light-color: var(--color-shaded);
   --dark-color: var(--color-gray-500);
   --text-color: var(--color-text);
@@ -290,8 +291,10 @@ body.appear {
   display: block;
 }
 
+/* Reserve the real header height eagerly (announcement band + main nav) so the
+   page doesn't shift down when the header block hydrates and grows. */
 header {
-  height: var(--nav-height);
+  height: 190px;
 }
 
 header .header,
@@ -567,8 +570,32 @@ main > .section:first-child {
   contain: layout;
 }
 
+/* First section floats up on initial load (matches the source's entrance).
+   The reveal observer only animates sections that start below the fold, so the
+   above-fold first section gets its own eager, one-shot entrance here.
+   Exclude the page-nav wrapper: a lingering transform on it would establish a
+   containing block and break the nav's position:fixed pinning. */
+@media (prefers-reduced-motion: no-preference) {
+  main > .section:first-child > div:not(.page-nav-wrapper) {
+    animation: first-section-enter 0.8s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  }
+
+  @keyframes first-section-enter {
+    from {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
 main > .section:has(.social-share),
-main > .section:has(.page-nav) {
+main > .section:has(.page-nav),
+main > .section:has(.customer-story) {
   contain: none;
 }
 
@@ -605,6 +632,43 @@ main .section.highlight {
     text-align: center;
 }
 
+/* Customer-story section: centered heading above the stacking cards. */
+:is(main, article.article-body) > .section:has(.customer-story) > .default-content-wrapper {
+  text-align: center;
+}
+
+/* Leaders section: centered heading above the people grid. Uses a descendant
+   selector (not direct-child) so it still applies when the section is embedded
+   from a fragment and therefore nested below main. */
+/* stylelint-disable-next-line no-descending-specificity -- unrelated section-heading rule; source order intentional */
+.section:has(.leaders) .default-content-wrapper {
+  text-align: center;
+}
+
+/* Request-demo section: full-bleed red band with a centered white card floating
+   on top (matches the source). Descendant selectors so it applies when the
+   section is embedded from a fragment and nested below main. */
+/* stylelint-disable-next-line no-descending-specificity -- section band override; source order intentional */
+.section:has(.request-demo) {
+  background: var(--color-rust);
+  padding-block: var(--space-4xl);
+}
+
+.section:has(.request-demo) > .request-demo-wrapper {
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+  padding: var(--space-2xl);
+  background: light-dark(var(--color-light), var(--color-card-dark));
+  border-radius: 24px;
+  box-shadow: 0 20px 40px -8px rgb(0 0 0 / 25%);
+}
+
+@media (width >= 900px) {
+  .section:has(.request-demo) > .request-demo-wrapper {
+    padding: var(--space-4xl);
+  }
+}
+
 /* section-metadata style=center: center-align a section's content */
 :is(main, article.article-body) > .section.center {
   text-align: center;
@@ -613,6 +677,35 @@ main .section.highlight {
 :is(main, article.article-body) > .section.center .button-container {
   display: flex;
   justify-content: center;
+}
+
+/* section-metadata style=accent: two-column split — heading/intro on the right,
+   scrolling agent-card list on the left. Matches the "Bodhi agents" section on
+   the source. Mobile stacks (heading first, then the card list). */
+@media (width >= 900px) {
+  :is(main, article.article-body) > .section.accent > div {
+    max-width: none;
+    padding: 0;
+  }
+
+  :is(main, article.article-body) > .section.accent {
+    display: grid;
+    grid-template-columns: 6fr 5fr;
+    column-gap: var(--space-3xl);
+    align-items: center;
+    max-width: var(--grid-container-width);
+    margin-inline: auto;
+    padding-inline: var(--content-padding-inline);
+  }
+
+  /* Heading/intro column sits on the right; card list on the left. */
+  :is(main, article.article-body) > .section.accent > .default-content-wrapper {
+    order: 2;
+  }
+
+  :is(main, article.article-body) > .section.accent > .cards-wrapper {
+    order: 1;
+  }
 }
 
 /* section-metadata or block style: spacer utilities – add to section metadata or block styles for readability gaps */

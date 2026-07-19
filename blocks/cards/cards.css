@@ -195,37 +195,49 @@
    from the default 48px icon to a prominent centered illustration.
    ========================================================================== */
 
+/* Uniform 32px padding around the card content, matching the source. The base
+   cards rule sets `article { display: contents }`, which drops any padding on
+   the article — so restore it as a real flex column and pad it here. */
 .cards.icon-lg > ul > li > article {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  padding: 32px;
   text-align: center;
 }
 
 /* Lifted heading (now a direct child of article, above the image) */
 .cards.icon-lg > ul > li > article > :is(h2, h3, h4) {
   margin: 0;
-  padding: var(--space-l) var(--space-l) 0;
+  padding: 0;
   font-family: var(--font-family);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
   line-height: 1.3;
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
 
 .cards.icon-lg .cards-card-body {
-  padding-top: 0;
+  padding: 0;
 }
 
-/* Centered graphic cell between heading and body */
+/* Centered graphic cell, ~47px below heading and ~34px above the body. */
 .cards.icon-lg .cards-card-body:has(img),
 .cards.icon-lg .cards-card-body:has(picture) {
   display: flex;
   justify-content: center;
-  padding: var(--space-m) var(--space-l);
+  padding: 47px 0 34px;
 }
 
 .cards.icon-lg .cards-card-body img {
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 180px;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- icon-lg paragraph size is an intentional variant override */
+.cards.icon-lg .cards-card-body p {
+  font-size: 18px;
+  line-height: 28px;
 }
 
 /* ==========================================================================
@@ -235,11 +247,12 @@
    ========================================================================== */
 
 .cards.accent {
-  --card-icon-size: 48px;
+  --card-icon-size: 24px;
 }
 
-/* Warm gradient frame behind the card stack (matches source red→white wash) */
+/* Warm gradient frame behind the scrolling card list (source red→white wash) */
 .cards.accent > ul {
+  display: block;
   padding: var(--space-l);
   border-radius: 24px;
   background: linear-gradient(160deg,
@@ -248,12 +261,25 @@
     transparent 100%);
 }
 
-/* Accent cards: white surface, icon left of text (flex row) */
+/* Stack the agent cards vertically with a gap between them */
 .cards.accent > ul > li {
+  margin-bottom: var(--space-m);
   border: 0;
+  border-radius: 16px;
   box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
 }
 
+.cards.accent > ul > li:last-child {
+  margin-bottom: 0;
+}
+
+.cards.accent > ul > li:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+/* Accent cards: white surface, icon left of text (flex row) */
 .cards.accent > ul > li > article {
   display: flex;
   flex-direction: row;
@@ -270,15 +296,35 @@
 .cards.accent .cards-card-body:has(img),
 .cards.accent .cards-card-body:has(picture) {
   flex: 0 0 auto;
+  padding-top: 4px;
 }
 
 .cards.accent .cards-card-body img {
   width: var(--card-icon-size);
   height: var(--card-icon-size);
+  object-fit: contain;
 }
 
 .cards.accent .cards-card-body :is(h2, h3, h4) {
+  margin-bottom: 4px;
   font-size: 20px;
+  color: light-dark(#000, var(--color-parchment));
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- accent desc overrides base body paragraph intentionally */
+.cards.accent .cards-card-body p {
+  margin-bottom: 0;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+/* Desktop: cap the list height and scroll, matching the source's fixed frame */
+@media (width >= 900px) {
+  .cards.accent > ul {
+    max-height: 640px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
 }
 
 /* ==========================================================================

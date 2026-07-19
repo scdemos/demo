@@ -36,6 +36,8 @@ export default function decorate(block) {
       a.classList.add('page-nav-cta');
       nav.dataset.hasCta = 'true';
       nav.append(a);
+      // On-page CTA anchors smooth-scroll too (rather than a hard jump).
+      if (href.startsWith('#')) anchors.push(a);
       return;
     }
     const li = document.createElement('li');
@@ -82,10 +84,14 @@ export default function decorate(block) {
   }, { threshold: 0 });
   stickyObserver.observe(sentinel);
 
-  // Smooth scroll accounting for the sticky bar.
+  // Smooth scroll accounting for the sticky bar. Set scroll-margin-top on the
+  // target so the browser reserves space for the pinned bar (plus breathing
+  // room) and then let scrollIntoView do the scroll. Using scroll-margin rather
+  // than a pre-computed absolute offset keeps the landing accurate even if the
+  // layout above shifts (lazy images, reveal animations) mid-scroll.
   const scrollToTarget = (target) => {
-    const y = window.scrollY + target.getBoundingClientRect().top - getStickyOffset() - 12;
-    window.scrollTo({ top: y, behavior: 'smooth' });
+    target.style.scrollMarginTop = `${getStickyOffset() + 24}px`;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   anchors.forEach((a) => {

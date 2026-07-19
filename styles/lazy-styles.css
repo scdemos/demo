@@ -110,19 +110,6 @@ a:any-link {
 }
 
 /* ==========================================================================
-  Header scroll shadow — appears after user scrolls past hero
-  ========================================================================== */
-
-header .nav-wrapper.scrolled {
-  box-shadow: 0 4px 24px rgb(0 0 0 / 10%);
-}
-
-.dark-scheme header .nav-wrapper.scrolled,
-:root[data-theme='dark'] header .nav-wrapper.scrolled {
-  box-shadow: 0 4px 24px rgb(0 0 0 / 35%);
-}
-
-/* ==========================================================================
   Teaser block — enhanced dark mode glow
   ========================================================================== */
 

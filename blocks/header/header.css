@@ -7,10 +7,13 @@
 
 /* ---------- Wrapper / layout ---------- */
 
-/* Override the global fixed header height (styles.css sets 64px) so the header
-   reserves its real height and the sticky nav never overlaps the first block. */
+/* Reserve the header's real height (announcement band + main nav) up front so
+   the header never collapses to 0 before the nav fragment loads. Using
+   min-height (not height:auto) keeps the space reserved on first paint, which
+   prevents the ~190px downward shift of the page content once the header fills
+   in. It still grows if the content ends up taller. */
 header.header-wrapper {
-  height: auto;
+  min-height: 190px;
 }
 
 header .nav-wrapper {
