@@ -290,6 +290,7 @@ async function loadAndConfigureAlloy(instanceName, webSDKConfig) {
 /**
  * Runs the specified function on every decorated block/section
  * @param {Function} fn The function to call
+ * @returns {Function} a function to stop watching for new decorated blocks/sections
  */
 function onDecoratedElement(fn) {
   // Apply propositions to all already decorated blocks/sections
@@ -304,16 +305,19 @@ function onDecoratedElement(fn) {
       fn();
     }
   });
-  // Watch sections and blocks being decorated async
-  observer.observe(document.querySelector('main'), {
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['data-block-status', 'data-section-status'],
-  });
+  // Watch sections and blocks being decorated async (pages without a `main`, like error
+  // pages, are still watched via the body observer below)
+  const main = document.querySelector('main');
+  if (main) {
+    observer.observe(main, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-block-status', 'data-section-status'],
+    });
+  }
   // Watch anything else added to the body
-  document.querySelectorAll('body').forEach((el) => {
-    observer.observe(el, { childList: true });
-  });
+  observer.observe(document.body, { childList: true });
+  return () => observer.disconnect();
 }
 
 /**
@@ -458,6 +462,12 @@ export async function updateUserConsent(consent) {
 }
 
 let response;
+// Tracks which fetched propositions are handed to alloy for DOM application (dom-action or
+// html-content-item), which of those were effectively rendered, and which were already reported
+// as displayed. renderedPropositionIds/reportedPropositionIds are declared at module top.
+let domActionPropositionIds = new Set();
+let initialDisplayReported = false;
+let personalizationTimedOut = false;
 
 /**
  * Resolves the target selector and actionType for a Form-Based html-content-item.
@@ -544,34 +554,42 @@ function discoverPropositionScopes(root) {
 }
 
 /**
- * Fires a single `decisioning.propositionDisplay` event covering one or more propositions
- * alloy has rendered, so Target Activity reporting records an impression. Idempotent per
- * proposition id for the life of the page.
+ * Reports the specified propositions as displayed to the backend.
+ * @param {Object[]} propositions the propositions that were displayed
+ * @returns a promise that the display event was sent
  */
-function reportPropositionDisplay(instanceName, propositions) {
-  // Idempotent: each proposition is reported at most once for the life of the page, so this is
-  // safe to call per decoration tick (and from deferred page-activation callbacks).
-  const toReport = (propositions || []).filter((p) => p && !reportedPropositionIds.has(p.id));
-  if (!toReport.length) return;
-  toReport.forEach((p) => {
-    renderedPropositionIds.add(p.id);
-    reportedPropositionIds.add(p.id);
-  });
-  window[instanceName]('sendEvent', {
-    xdm: {
-      eventType: 'decisioning.propositionDisplay',
-      _experience: {
-        decisioning: {
-          propositions: toReport.map((p) => ({
-            id: p.id,
-            scope: p.scope,
-            scopeDetails: p.scopeDetails,
-          })),
-          propositionEventType: { display: 1 },
-        },
+function reportDisplayedPropositions(propositions) {
+  return sendAnalyticsEvent({
+    eventType: 'decisioning.propositionDisplay',
+    _experience: {
+      decisioning: {
+        propositions,
+        propositionEventType: { display: 1 },
       },
     },
-  }).catch(() => { /* reporting failure shouldn't break the page */ });
+  });
+}
+
+/**
+ * Reports propositions that were rendered after the initial display report was already sent
+ * (i.e. on blocks that were decorated late), so their displays are not lost.
+ * @param {String[]} propositionIds the ids of the newly rendered propositions
+ */
+function reportLateDisplayedPropositions(propositionIds) {
+  if (!initialDisplayReported) {
+    // The initial report has not been sent yet, and will include those propositions
+    return;
+  }
+  const newlyDisplayed = (response?.propositions || [])
+    .filter((p) => propositionIds.includes(p.id) && !reportedPropositionIds.has(p.id))
+    .map((p) => ({ id: p.id, scope: p.scope, scopeDetails: p.scopeDetails }));
+  if (!newlyDisplayed.length) {
+    return;
+  }
+  newlyDisplayed.forEach((p) => reportedPropositionIds.add(p.id));
+  onPageActivation(() => {
+    reportDisplayedPropositions(newlyDisplayed);
+  });
 }
 
 /**
@@ -608,6 +626,11 @@ async function applyPropositions(instanceName) {
   if (!renderDecisionResponse?.propositions) {
     return [];
   }
+  if (personalizationTimedOut) {
+    // The response came back after the personalization timeout: the page is already showing
+    // the default content, so do not apply the propositions anymore to avoid flickering
+    return renderDecisionResponse;
+  }
   // dom-action (VEC) items carry their own selector and are applied by alloy directly, exactly
   // as upstream does. html-content-item (Form-Based) offers don't carry a selector, so resolve a
   // target from the offer or from `data-mbox` auto-discovery and hand it to alloy via the metadata
@@ -632,47 +655,65 @@ async function applyPropositions(instanceName) {
       }).filter(Boolean),
     }))
     .filter((p) => p.items.length > 0);
-  onDecoratedElement(async () => {
+  // The extended schema filter (dom-action + html-content-item) feeds the display-accuracy set:
+  // only propositions handed to alloy for DOM application count as displayed once rendered.
+  domActionPropositionIds = new Set(propositions.map((p) => p.id));
+  let disconnect;
+  let isApplying = false;
+  let pendingRun = false;
+  const run = async () => {
+    // Re-scan for `data-mbox` scopes decorated after the eager fetch, and warn on any that arrive
+    // too late to be personalized this load.
     const lateScopes = discoverPropositionScopes(document);
     lateScopes.forEach((scope) => {
       if (!response?.propositions?.some((p) => p.scope === scope)) {
         debug('martech', `mbox "${scope}" discovered after eager propositionFetch; not personalized this load`);
       }
     });
-    if (!propositions.length) {
+    if (!propositions.length || personalizationTimedOut) {
+      disconnect?.();
       return;
     }
-    const applyOptions = { propositions };
-    if (Object.keys(htmlContentMetadata).length) {
-      applyOptions.metadata = htmlContentMetadata;
+    // Serialize the applications, so concurrent DOM updates do not apply the same
+    // propositions twice; a trailing run picks up whatever was decorated in the meantime
+    if (isApplying) {
+      pendingRun = true;
+      return;
     }
-    const appliedPropositions = await window[instanceName](
-      'applyPropositions',
-      applyOptions,
-    );
-    // Single guarded pass over the applied items: drop rendered propositions from the retry set
-    // and collect the freshly-rendered ones to report. Reporting display *here* (as alloy
-    // actually renders, across decoration ticks) rather than at page-activation avoids the race
-    // where activation fires before async decoration has applied anything.
-    const renderedNow = [];
-    appliedPropositions.propositions?.forEach((appliedItem) => {
-      if (!appliedItem.renderAttempted) return;
-      propositions = propositions.filter((p) => p.id !== appliedItem.id);
-      if (!renderedPropositionIds.has(appliedItem.id)) {
-        const original = response?.propositions?.find((p) => p.id === appliedItem.id);
-        renderedNow.push({
-          id: appliedItem.id,
-          scope: appliedItem.scope ?? original?.scope,
-          scopeDetails: appliedItem.scopeDetails ?? original?.scopeDetails,
-        });
+    isApplying = true;
+    try {
+      // Form-Based html-content-item offers carry no selector; hand alloy the resolved
+      // selector/actionType per scope via the metadata map.
+      const applyOptions = { propositions };
+      if (Object.keys(htmlContentMetadata).length) {
+        applyOptions.metadata = htmlContentMetadata;
       }
-      renderedPropositionIds.add(appliedItem.id);
-    });
-    // Prerender-aware: defer the display impression until the page is actually activated.
-    if (renderedNow.length) {
-      onPageActivation(() => reportPropositionDisplay(instanceName, renderedNow));
+      const appliedPropositions = await window[instanceName](
+        'applyPropositions',
+        applyOptions,
+      );
+      const newlyRendered = [];
+      appliedPropositions.propositions?.forEach((item) => {
+        if (item.renderAttempted) {
+          renderedPropositionIds.add(item.id);
+          newlyRendered.push(item.id);
+          propositions = propositions.filter((p) => p.id !== item.id);
+        }
+      });
+      reportLateDisplayedPropositions(newlyRendered);
+      if (!propositions.length) {
+        // Everything was applied, no need to keep watching the DOM
+        disconnect?.();
+      }
+    } finally {
+      isApplying = false;
+      if (pendingRun) {
+        pendingRun = false;
+        run();
+      }
     }
-  });
+  };
+  disconnect = onDecoratedElement(run);
   return renderDecisionResponse;
 }
 
@@ -705,6 +746,9 @@ export async function initMartech(webSDKConfig, martechConfig = {}) {
   renderedPropositionIds.clear();
   reportedPropositionIds.clear();
   discoveredScopeMeta.clear();
+  domActionPropositionIds = new Set();
+  initialDisplayReported = false;
+  personalizationTimedOut = false;
   initAlloyQueue(config.alloyInstanceName);
   if (config.dataLayer) {
     initDatalayer(config.dataLayerInstanceName);
@@ -840,22 +884,44 @@ export async function martechEager() {
     return promiseWithTimeout(
       applyPropositions(config.alloyInstanceName),
       config.personalizationTimeout,
-    ).then((result) => {
-      // Page-view tracking is decoupled from proposition rendering. Proposition *display* events
-      // are emitted from applyPropositions as each proposition actually renders (see
-      // reportPropositionDisplay), so they aren't lost to the race between page activation and
-      // the async decoration ticks that apply offers. Here we only fire the plain page view.
-      if (config.trackPageView) {
-        onPageActivation(() => {
-          sendAnalyticsEvent({ eventType: 'web.webpagedetails.pageViews' });
-        });
-      }
-      return result;
-    }).catch(() => {
+    ).catch(() => {
+      // Stop applying propositions that arrive after the timeout: the default content is
+      // already showing and applying them late would flicker the page
+      personalizationTimedOut = true;
       if (alloyConfig.debugEnabled) {
         // eslint-disable-next-line no-console
         console.warn('Could not apply personalization in time. Either backend is taking too long, or user did not give consent in time.');
       }
+    }).finally(() => {
+      // Track the page view (and report displayed propositions) even if the personalization
+      // fetch timed out or returned no propositions, so analytics are not lost
+      onPageActivation(() => {
+        // Only report propositions that were effectively rendered, or that are not
+        // dom-actions (and are handled by project code instead)
+        const propositions = (response?.propositions || [])
+          .filter((p) => !domActionPropositionIds.has(p.id) || renderedPropositionIds.has(p.id))
+          .map((p) => ({ id: p.id, scope: p.scope, scopeDetails: p.scopeDetails }));
+        propositions.forEach((p) => reportedPropositionIds.add(p.id));
+        initialDisplayReported = true;
+        if (!config.trackPageView && !propositions.length) {
+          // Without propositions there is nothing to report, and the page view itself
+          // is tracked elsewhere
+          return;
+        }
+        sendAnalyticsEvent({
+          eventType: config.trackPageView
+            ? 'web.webpagedetails.pageViews'
+            : 'decisioning.propositionDisplay',
+          ...(propositions.length && {
+            _experience: {
+              decisioning: {
+                propositions,
+                propositionEventType: { display: 1 },
+              },
+            },
+          }),
+        });
+      });
     });
   }
   if (config.personalization) {
