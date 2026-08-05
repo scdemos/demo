@@ -29,33 +29,53 @@ export default function decorate(block) {
   const h1 = block.querySelector('h1');
   if (!h1) return;
 
-  // Find the first <p> that appears before the <h1> in the DOM and mark it as a tagline
-  const contentDiv = h1.closest('div');
-  if (!contentDiv) return;
+  // The text region is the hero cell containing the headline. Mark it so the
+  // overlay CSS applies. Prefer the last top-level cell (image is first cell);
+  // fall back to the h1's own wrapper.
+  const textDiv = block.querySelector(':scope > div:last-child') || h1.closest('.hero > div') || h1.parentElement;
+  if (!textDiv) return;
+  textDiv.classList.add('hero-text');
 
-  const textDiv = contentDiv.parentElement;
-  if (textDiv) textDiv.classList.add('hero-text');
+  // Gather the headline + paragraphs in document order from the WHOLE text
+  // region. DA wraps each block in its own <div>, so the eyebrow/CTA/eligibility
+  // paragraphs are NOT necessarily siblings of the h1 — collect them by flow
+  // instead of by direct-child so decoration works for both DA and local markup.
+  const flow = [...textDiv.querySelectorAll('h1, p')];
+  const h1Index = flow.indexOf(h1);
 
-  const children = [...contentDiv.children];
-  const h1Index = children.indexOf(h1);
-
+  // Eyebrow: first non-button <p> that appears before the h1 (e.g. "Oura Ring 5")
   for (let i = 0; i < h1Index; i += 1) {
-    if (children[i].tagName === 'P' && !children[i].classList.contains('button-container')) {
-      children[i].classList.add('hero-tagline');
-      decorateEyebrow(children[i]);
+    if (flow[i].tagName === 'P' && !flow[i].classList.contains('button-container')) {
+      flow[i].classList.add('hero-tagline');
+      decorateEyebrow(flow[i]);
       break;
     }
   }
 
-  // Eligibility note: last plain <p> (e.g. "HSA/FSA eligible") — precede with a
-  // circular checkmark icon; keep the first token bold, the rest regular weight.
-  const notes = children.filter(
-    (c) => c.tagName === 'P'
+  // CTA: a <p> after the h1 whose only content is a single link → blue pill
+  // button. Done here (not just via aem.js decorateButtons) so it applies even
+  // when DA's nesting keeps the link out of decorateButtons' single-child check.
+  const ctaPara = flow.find((el, i) => i > h1Index
+    && el.tagName === 'P'
+    && el.querySelector(':scope > a')
+    && !el.querySelector('img')
+    && el.textContent.trim() === el.querySelector(':scope > a').textContent.trim());
+  if (ctaPara) {
+    ctaPara.classList.add('button-container');
+    const link = ctaPara.querySelector(':scope > a');
+    if (!link.classList.contains('button')) link.classList.add('button');
+  }
+
+  // Eligibility note: last plain <p> after the h1 that is neither the CTA nor
+  // the eyebrow (e.g. "HSA/FSA eligible") — circular checkmark + bold first token.
+  const notes = flow.filter(
+    (c, i) => i > h1Index
+      && c.tagName === 'P'
       && !c.classList.contains('button-container')
       && !c.classList.contains('hero-tagline'),
   );
   const note = notes[notes.length - 1];
-  if (note && children.indexOf(note) > h1Index) decorateEligibility(note);
+  if (note) decorateEligibility(note);
 }
 
 /**
