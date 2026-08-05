@@ -228,10 +228,41 @@ function decorateOverlay(block) {
 }
 
 /**
+ * Normalize a product-card body so its styling works for both local and DA
+ * markup. DA can wrap each authored line in its own <div> and skip the
+ * `.button`/`.button-container` classes (its nesting defeats aem.js's
+ * single-child button check). This flattens wrapper divs so the CSS's
+ * direct-child selectors (`> p:first-child` for "On Sale", price, etc.) match,
+ * and explicitly tags each CTA paragraph/link so the pill styling applies.
+ * @param {Element} body the `.cards-card-body` overlay cell
+ */
+function normalizeProductBody(body) {
+  if (!body) return;
+
+  // Flatten a single wrapping <div> (or DA per-line divs) so paragraphs and the
+  // heading become direct children of the body cell.
+  [...body.children].forEach((child) => {
+    if (child.tagName === 'DIV') {
+      child.replaceWith(...child.childNodes);
+    }
+  });
+
+  // Tag CTA paragraphs: any <p> whose content is a single link (no image).
+  [...body.querySelectorAll(':scope > p')].forEach((p) => {
+    const link = p.querySelector(':scope > a');
+    if (link && !p.querySelector('img') && p.textContent.trim() === link.textContent.trim()) {
+      p.classList.add('button-container');
+      if (!link.classList.contains('button')) link.classList.add('button');
+    }
+  });
+}
+
+/**
  * Decorate regular cards (authored rows with image + body).
  */
 function decorateDefault(block) {
   const ul = createTag('ul');
+  const isProduct = block.classList.contains('product');
 
   [...block.children].forEach((row) => {
     const li = createTag('li');
@@ -257,9 +288,14 @@ function decorateDefault(block) {
       });
     }
 
+    // Product cards: normalize the overlay body so DA's nested markup styles
+    // the same as local (flatten wrapper divs, tag "On Sale" + CTA pills).
+    if (isProduct) normalizeProductBody(li.querySelector('.cards-card-body:last-child, .cards-card-body'));
+
     // Cards with multiple CTAs (e.g. product cards with Shop + Explore) keep
     // their individual links/buttons instead of collapsing into one card link.
-    const hasMultipleCtas = li.querySelectorAll('.cards-card-body a[href]').length > 1;
+    const hasMultipleCtas = isProduct
+      || li.querySelectorAll('.cards-card-body a[href]').length > 1;
     const linkEl = !hasMultipleCtas
       && (li.querySelector('.cards-card-image a[href]') || li.querySelector('.cards-card-body a[href]'));
     if (linkEl) {
