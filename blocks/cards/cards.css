@@ -546,9 +546,12 @@ main > .section.cards-container:has(.cards.product) > div {
 /* This card authors image + content as two default-content cells, so the block
    yields two .cards-card-body divs (image first, content second). */
 
-/* image cell (bare first <p> holding the img) fills the whole card */
+/* Image cell fills the whole card. Targeted by position (first child of the
+   article), not by class, because the image cell is `.cards-card-body` when the
+   image is a raw <img> (local) but `.cards-card-image` when it's a <picture>
+   (DA/EDS optimized) — position-based selectors work for both. */
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:first-child {
+.cards.product article > :first-child {
   position: absolute;
   inset: 0;
   padding: 0;
@@ -556,8 +559,14 @@ main > .section.cards-container:has(.cards.product) > div {
   line-height: 0;
 }
 
+.cards.product article > :first-child picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:first-child img {
+.cards.product article > :first-child img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -575,7 +584,7 @@ main > .section.cards-container:has(.cards.product) > div {
 
 /* second body = overlaid content: tag + title + price + CTAs, bottom-left */
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:last-child {
+.cards.product article > :last-child {
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -589,7 +598,7 @@ main > .section.cards-container:has(.cards.product) > div {
 
 /* "On Sale" pill — top of the text stack, left column */
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:last-child > p:first-child {
+.cards.product article > :last-child > p:first-child {
   justify-self: start;
   margin: 0 0 var(--space-s);
   padding: 6px 12px;
@@ -602,7 +611,7 @@ main > .section.cards-container:has(.cards.product) > div {
   text-transform: uppercase;
 }
 
-.cards.product article > .cards-card-body:last-child :is(h2, h3, h4) {
+.cards.product article > :last-child :is(h2, h3, h4) {
   margin: 0;
   font-family: var(--font-family-serif);
   font-weight: 300;
@@ -613,7 +622,7 @@ main > .section.cards-container:has(.cards.product) > div {
 
 /* price line */
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:last-child > p:not(:first-child, .button-container) {
+.cards.product article > :last-child > p:not(:first-child, .button-container) {
   margin: var(--space-xs) 0 0;
   color: #fff;
   font-size: 1rem;
@@ -623,24 +632,26 @@ main > .section.cards-container:has(.cards.product) > div {
 /* CTA group: Shop (filled) + Explore (outline), side by side, pinned
    bottom-right. The two links author as two consecutive .button-container
    paragraphs (both are <p>, so use sibling combinators, not :first-of-type). */
-.cards.product article > .cards-card-body:last-child .button-container {
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > :last-child .button-container {
   position: absolute;
   bottom: var(--space-xl);
   margin: 0;
 }
 
 /* Shop = the button-container NOT preceded by one; sits left of Explore */
-.cards.product article > .cards-card-body:last-child .button-container:not(.button-container + .button-container) {
+.cards.product article > :last-child .button-container:not(.button-container + .button-container) {
   right: calc(var(--space-xl) + 124px);
 }
 
 /* Explore = the button-container immediately after another; sits at the edge */
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:last-child .button-container + .button-container {
+.cards.product article > :last-child .button-container + .button-container {
   right: var(--space-xl);
 }
 
-.cards.product article > .cards-card-body:last-child .button-container a.button:any-link {
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > :last-child .button-container a.button:any-link {
   padding: 12px 28px;
   border-radius: 999px;
   font-size: 0.9rem;
@@ -648,20 +659,20 @@ main > .section.cards-container:has(.cards.product) > div {
 }
 
 /* Shop (first container) = solid cream; Explore (second) = outline */
-.cards.product article > .cards-card-body:last-child .button-container:not(.button-container + .button-container) a.button:any-link {
+.cards.product article > :last-child .button-container:not(.button-container + .button-container) a.button:any-link {
   border-color: var(--color-parchment);
   background-color: var(--color-parchment);
   color: var(--color-ink);
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-.cards.product article > .cards-card-body:last-child .button-container + .button-container a.button:any-link {
+.cards.product article > :last-child .button-container + .button-container a.button:any-link {
   border-color: rgb(247 241 232 / 70%);
   background-color: transparent;
   color: #fff;
 }
 
-.cards.product article > .cards-card-body:last-child .button-container + .button-container a.button:any-link:hover {
+.cards.product article > :last-child .button-container + .button-container a.button:any-link:hover {
   border-color: #fff;
   background-color: rgb(247 241 232 / 12%);
   color: #fff;
