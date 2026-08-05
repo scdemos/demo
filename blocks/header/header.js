@@ -590,7 +590,17 @@ export default async function decorate(block) {
 
   // Load nav content (skip if aem-embed already provided content)
   if (block.textContent === '') {
-    const fragment = await loadFragment(getNavPath());
+    const navPath = getNavPath();
+    // Try the authored path, then fall back to the basename at root (or vice
+    // versa). DA can publish the fragment at /nav while metadata points to
+    // /content/nav; trying both avoids a 404 that would blank the nav.
+    let fragment = await loadFragment(navPath);
+    if (!fragment) {
+      const alt = navPath.startsWith('/content/')
+        ? navPath.replace('/content/', '/')
+        : `/content${navPath}`;
+      if (alt !== navPath) fragment = await loadFragment(alt);
+    }
     if (!fragment) return;
 
     block.textContent = '';

@@ -45,7 +45,17 @@ export default async function decorate(block) {
   if (block.textContent === '') {
     const footerMeta = getMetadata('footer');
     const footerPath = footerMeta ? new URL(footerMeta, window.location).pathname : '/footer';
-    const fragment = await loadFragment(footerPath);
+    // Try the authored path, then fall back to the basename at root. DA can
+    // publish the fragment at /footer even when metadata points to /content/footer
+    // (or vice-versa); trying both avoids a 404 that would blank the footer.
+    let fragment = await loadFragment(footerPath);
+    if (!fragment) {
+      const alt = footerPath.startsWith('/content/')
+        ? footerPath.replace('/content/', '/')
+        : `/content${footerPath}`;
+      if (alt !== footerPath) fragment = await loadFragment(alt);
+    }
+    if (!fragment) return; // nothing to render; don't crash on a missing fragment
 
     block.textContent = '';
     const footer = document.createElement('div');
