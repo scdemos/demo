@@ -29,53 +29,64 @@ export default function decorate(block) {
   const h1 = block.querySelector('h1');
   if (!h1) return;
 
-  // The text region is the hero cell containing the headline. Mark it so the
-  // overlay CSS applies. Prefer the last top-level cell (image is first cell);
-  // fall back to the h1's own wrapper.
-  const textDiv = block.querySelector(':scope > div:last-child') || h1.closest('.hero > div') || h1.parentElement;
-  if (!textDiv) return;
-  textDiv.classList.add('hero-text');
-
-  // Gather the headline + paragraphs in document order from the WHOLE text
-  // region. DA wraps each block in its own <div>, so the eyebrow/CTA/eligibility
-  // paragraphs are NOT necessarily siblings of the h1 — collect them by flow
-  // instead of by direct-child so decoration works for both DA and local markup.
-  const flow = [...textDiv.querySelectorAll('h1, p')];
+  // Collect the headline + text paragraphs in document order. DA may split the
+  // hero into several top-level cells (image + one cell per line), so scan the
+  // whole block and exclude the image cell's own <p>. Then re-home everything
+  // into the single structure the CSS expects — .hero-text > div > [...] —
+  // regardless of how DA nested it. This makes decoration/layout identical for
+  // both DA and local markup.
+  const imageCell = [...block.children].find((c) => c.querySelector('picture, img') && !c.contains(h1));
+  const flow = [...block.querySelectorAll('h1, p')]
+    .filter((el) => !(imageCell && imageCell.contains(el)));
   const h1Index = flow.indexOf(h1);
 
-  // Eyebrow: first non-button <p> that appears before the h1 (e.g. "Oura Ring 5")
+  // Eyebrow: first non-button <p> before the h1 (e.g. "Oura Ring 5")
   for (let i = 0; i < h1Index; i += 1) {
-    if (flow[i].tagName === 'P' && !flow[i].classList.contains('button-container')) {
+    if (flow[i].tagName === 'P') {
       flow[i].classList.add('hero-tagline');
       decorateEyebrow(flow[i]);
       break;
     }
   }
 
-  // CTA: a <p> after the h1 whose only content is a single link → blue pill
-  // button. Done here (not just via aem.js decorateButtons) so it applies even
-  // when DA's nesting keeps the link out of decorateButtons' single-child check.
+  // CTA: first <p> after the h1 with a link and no image → blue pill button.
   const ctaPara = flow.find((el, i) => i > h1Index
     && el.tagName === 'P'
-    && el.querySelector(':scope > a')
-    && !el.querySelector('img')
-    && el.textContent.trim() === el.querySelector(':scope > a').textContent.trim());
+    && el.querySelector('a')
+    && !el.querySelector('img'));
   if (ctaPara) {
     ctaPara.classList.add('button-container');
-    const link = ctaPara.querySelector(':scope > a');
+    const link = ctaPara.querySelector('a');
     if (!link.classList.contains('button')) link.classList.add('button');
   }
 
-  // Eligibility note: last plain <p> after the h1 that is neither the CTA nor
-  // the eyebrow (e.g. "HSA/FSA eligible") — circular checkmark + bold first token.
-  const notes = flow.filter(
-    (c, i) => i > h1Index
-      && c.tagName === 'P'
-      && !c.classList.contains('button-container')
-      && !c.classList.contains('hero-tagline'),
-  );
+  // Eligibility note: last plain <p> after the h1 (no link/image, not the CTA
+  // or eyebrow) e.g. "HSA/FSA eligible" — circular checkmark + bold first token.
+  const notes = flow.filter((c, i) => i > h1Index
+    && c.tagName === 'P'
+    && c !== ctaPara
+    && !c.classList.contains('hero-tagline')
+    && !c.querySelector('a, img'));
   const note = notes[notes.length - 1];
   if (note) decorateEligibility(note);
+
+  // Re-home the whole text flow into one .hero-text > div so the overlay layout
+  // and typography rules (which target that single structure) always apply,
+  // even when DA delivered the lines in separate cells.
+  const textDiv = document.createElement('div');
+  textDiv.className = 'hero-text';
+  const inner = document.createElement('div');
+  flow.forEach((el) => inner.append(el));
+  textDiv.append(inner);
+
+  // Drop now-empty leftover cells (e.g. DA's per-line wrapper divs), keeping the
+  // image cell, then append the consolidated text region as the last child.
+  [...block.children].forEach((cell) => {
+    if (cell !== imageCell && !cell.querySelector('picture, img') && !cell.textContent.trim()) {
+      cell.remove();
+    }
+  });
+  block.append(textDiv);
 }
 
 /**
