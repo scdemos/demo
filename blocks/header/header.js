@@ -4,7 +4,7 @@
  * Sections: ul > li; add #mega to link for full-width dropdown
  */
 
-import { getMetadata } from '../../scripts/aem.js';
+import { getMetadata, decorateIcons } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
 import { getBlockContext } from '../../scripts/shared.js';
 import {
@@ -16,6 +16,42 @@ import {
 
 const DESKTOP = window.matchMedia('(min-width: 900px)');
 const THEME_KEY = 'demo-theme';
+
+/* Leading line-icons for text-link mega items (Health Features / Experience).
+   Keyed by a slug found in the item's href so it is locale-independent and
+   works no matter how the label is authored. Icons live in /icons. */
+const MEGA_ITEM_ICONS = [
+  ['science-and-research', 'nav-science'],
+  ['sleep-and-rest', 'nav-sleep'],
+  ['womens-health', 'nav-womens-health'],
+  ['stress', 'nav-stress'],
+  ['heart-health', 'nav-heart'],
+  ['activity-and-movement', 'nav-activity'],
+  ['metabolic-health', 'nav-metabolic'],
+  ['membership', 'nav-membership'],
+  ['sizing', 'nav-sizing'],
+  ['integrations', 'nav-integrations'],
+  ['support.ouraring.com', 'nav-support'],
+];
+
+/**
+ * Prepend a leading line-icon to each text-only mega item that maps to one.
+ * The icon is rendered as an <span class="icon icon-{name}"> so the standard
+ * icon-decoration pipeline swaps in the SVG; no icon column is needed in the
+ * nav fragment (keeps it DA/EDS-portable).
+ * @param {Element} item a `.nav-mega-item` list item
+ */
+function decorateMegaItemIcon(item) {
+  const link = item.querySelector(':scope > p > a, :scope > a');
+  if (!link || link.querySelector('.icon') || link.querySelector('img, picture')) return;
+  const href = (link.getAttribute('href') || '').toLowerCase();
+  const match = MEGA_ITEM_ICONS.find(([slug]) => href.includes(slug));
+  if (!match) return;
+  const icon = document.createElement('span');
+  icon.className = `icon icon-${match[1]} nav-mega-item-icon`;
+  link.prepend(icon);
+  item.classList.add('nav-mega-item-has-icon');
+}
 
 function getNavPath() {
   const meta = getMetadata('nav');
@@ -40,6 +76,36 @@ function decorateMega(li) {
 
   li.classList.add('nav-drop-mega');
   const items = [...sub.children].filter((c) => c.tagName === 'LI');
+  const imageItems = items.filter((c) => c.querySelector('picture, img'));
+
+  // Product panel (e.g. Shop): several product images. Lay out as two large
+  // featured tiles followed by a thumbnail-link list, matching the source.
+  if (imageItems.length >= 3) {
+    li.classList.add('nav-drop-mega-product');
+    const tiles = imageItems.slice(0, 2);
+    const thumbs = imageItems.slice(2);
+    tiles.forEach((c) => c.classList.add('nav-mega-tile'));
+    thumbs.forEach((c) => c.classList.add('nav-mega-thumb'));
+    // catch-all link ("Shop all products"): label contains "all", else last thumb
+    const allItem = thumbs.find((c) => /\ball\b/i.test(c.textContent))
+      || thumbs[thumbs.length - 1];
+    if (allItem) allItem.classList.add('nav-mega-thumb-all');
+
+    // Group the thumbnail links into one column so the panel grid is simply
+    // [tile] [tile] [thumb column]; the column stacks its links top-aligned.
+    const thumbCol = document.createElement('ul');
+    thumbCol.className = 'nav-mega-thumb-col';
+    thumbs.forEach((c) => thumbCol.appendChild(c));
+
+    const inner = document.createElement('div');
+    inner.className = 'nav-mega-inner';
+    tiles.forEach((c) => inner.appendChild(c));
+    inner.appendChild(thumbCol);
+    sub.replaceChildren(inner);
+    setupMegaPosition(li);
+    return;
+  }
+
   const promo = items.find((c) => c.querySelector('picture, img'));
   const rest = items.filter((c) => c !== promo);
 
@@ -53,6 +119,7 @@ function decorateMega(li) {
       c.style.setProperty('--mega-group', group);
       row += 1;
       c.style.setProperty('--mega-row', row);
+      decorateMegaItemIcon(c);
     } else {
       group += 1;
       row = 0;
@@ -77,21 +144,27 @@ function decorateMega(li) {
   while (sub.firstChild) inner.appendChild(sub.firstChild);
   sub.appendChild(inner);
 
-  // Position dropdown: full viewport width, arrow under trigger
+  // swap the injected icon spans for their SVG <img> (icons/*.svg)
+  decorateIcons(inner);
+
+  setupMegaPosition(li);
+}
+
+/**
+ * Pin a mega panel directly beneath the full-width header bar and keep it there
+ * on resize. Full viewport width; the panel overlays content below it.
+ * @param {Element} li the .nav-drop-mega list item
+ */
+function setupMegaPosition(li) {
   const sync = () => {
     if (!li.isConnected) return;
-    const trigger = li.querySelector(':scope > p');
     const menu = li.querySelector(':scope > ul');
-    if (!trigger || !menu) return;
+    if (!menu) return;
     const navBar = li.closest('.nav-wrapper');
     if (navBar) {
       const rect = navBar.getBoundingClientRect();
       menu.style.setProperty('--mega-top', `${rect.bottom}px`);
     }
-    const t = trigger.getBoundingClientRect();
-    const m = menu.getBoundingClientRect();
-    const x = t.left + t.width / 2 - m.left;
-    menu.style.setProperty('--mega-pointer-x', `${Math.round(x)}px`);
   };
   li.megaSync = sync;
   sync();
@@ -331,14 +404,11 @@ async function initAuth(nav, tools) {
   const logoutLabel = getDefaultAuthLabel('logout');
 
   const loginCandidate = tools.querySelector('a[href*="login" i], a[data-auth-link]');
-  const shouldCreateLink = !loginCandidate;
+  // Auth is opt-in: only activate when a login link is authored in the tools
+  // section. Sites without an authored login link get no auth UI at all.
+  if (!loginCandidate) return null;
 
-  const desktopLink = loginCandidate || document.createElement('a');
-  if (shouldCreateLink) {
-    desktopLink.href = getLoginUrl();
-    desktopLink.className = 'button nav-auth-link nav-auth-desktop';
-    tools.append(desktopLink);
-  }
+  const desktopLink = loginCandidate;
 
   desktopLink.dataset.authLink = 'true';
   if (!desktopLink.classList.contains('button')) desktopLink.classList.add('button');

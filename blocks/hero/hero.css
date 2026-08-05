@@ -1,8 +1,19 @@
 /* Hero block – Heritage Elite, mobile-first */
 
+/* This block intentionally layers the full-bleed image rules before the
+   overlay-text rules; source order is meaningful, so relax this check. */
+/* stylelint-disable no-descending-specificity */
+
 .hero-container .hero-wrapper {
   max-width: unset;
   padding: 0;
+}
+
+/* The fixed nav floats over the hero: pull the hero up under the header's
+   reserved flow height so the image starts at the very top of the viewport
+   and the transparent nav overlaps it (source behavior). */
+main > .section.hero-container:first-child {
+  margin-top: calc(-1 * var(--nav-height));
 }
 
 .hero {
@@ -21,17 +32,10 @@
   line-height: 0;
 }
 
-/* Gradient fade effect at the bottom of the hero image */
+/* No gradient fade: the source hero shows the raw photo at full contrast all
+   the way to the bottom of the first viewport. */
 .hero > div:first-child::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65%;
-  background: linear-gradient(to bottom, transparent 0%, light-dark(var(--color-parchment), var(--color-obsidian)) 100%);
-  pointer-events: none;
-  z-index: 1;
+  content: none;
 }
 
 
@@ -51,30 +55,71 @@
   display: block;
 }
 
-.hero picture img {
+.hero picture img,
+.hero > div:first-child img,
+.hero .hero-img img {
   display: block;
   width: 100%;
-  max-height: 580px;
+  height: 100%;
+  max-height: none;
   object-fit: cover;
-  opacity: 0.55;
+  object-position: center;
+  opacity: 1;
 }
 
-/* Text overlay */
-.hero > div:last-child {
+/* Single raw <img> hero: fill the full first viewport so the image reaches the
+   bottom of the fold (true full-bleed, no cream gap before the next section). */
+.hero:not(.no-image) {
+  min-height: 100svh;
+}
+
+.hero > div:first-child,
+.hero .hero-img {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  margin: 0;
+}
+
+/* Stretch the full wrapper chain (div > p) so the raw <img> fills the row */
+.hero > div:first-child > div,
+.hero .hero-img > div,
+.hero > div:first-child > div > p,
+.hero .hero-img > div > p {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  line-height: 0;
+}
+
+/* Text overlay — Oura layout: heading group in the upper area, CTA group pinned
+   near the bottom over the rock. The overlay fills the hero; the inner column is
+   full-height so the button can be pushed down with margin-top:auto. */
+.hero > div:last-child,
+.hero .hero-text {
   position: absolute;
   inset: 0;
   z-index: 2;
-  padding: 40px var(--content-padding-inline);
+  padding: clamp(140px, 22vh, 260px) var(--content-padding-inline) clamp(24px, 4vh, 48px);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .hero > div:last-child > div {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  text-align: center;
   gap: var(--space-m);
   max-width: 600px;
+  height: 100%;
+}
+
+/* Push the CTA cluster (button + eligibility) to the bottom of the hero */
+.hero > div:last-child > div > p.button-container {
+  margin-top: auto;
 }
 
 /* Hide the second image row when hero block decoration hasn't run (Target offer injection) */
@@ -112,56 +157,110 @@
   }
 }
 
-/* Tagline */
+/* Eyebrow (e.g. "Oura Ring 5") — sentence case, sits above the headline */
 .hero .hero-tagline {
-  font-family: var(--font-family-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-gold);
-  text-transform: uppercase;
-  letter-spacing: 5px;
+  font-family: var(--body-font-family);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: 0;
   margin: 0;
 }
 
-/* Heading */
+/* Superscript numeral badge after the eyebrow label (the "5" in "Oura Ring 5"):
+   solid dark circle, white numeral, raised slightly above baseline. */
+.hero .hero-eyebrow-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65em;
+  height: 1.65em;
+  margin-left: 0.5em;
+  vertical-align: 0.35em;
+  border-radius: 50%;
+  background-color: var(--color-text-warm, #4a4742);
+  color: #fff;
+  font-size: 0.62em;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Eligibility note ("HSA/FSA eligible") — white text + circular check icon,
+   because it sits over the dark rock area of the hero photo. Scoped through the
+   .hero-text wrapper so it out-specifies the `.hero p:not(...)` base rule. */
+.hero .hero-text p.hero-eligibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: var(--space-m);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.hero .hero-text p.hero-eligibility strong {
+  font-weight: 700;
+}
+
+.hero .hero-check-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 1.5em;
+  height: 1.5em;
+  color: #fff;
+}
+
+.hero .hero-check-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Heading — Oura light display serif, solid color */
 .hero h1 {
   margin: 0;
   font-family: var(--font-family-serif);
-  font-size: clamp(2rem, 8vw, 4.5rem);
-  font-weight: 500;
+  font-size: clamp(2.75rem, 9vw, 4.5rem);
+  font-weight: 300;
   line-height: 1.05;
-  color: light-dark(var(--color-ink), var(--color-parchment));
+  letter-spacing: -0.04em;
+  color: var(--color-text);
 }
 
 .hero h1 em {
-  font-weight: 400;
+  font-weight: 300;
   font-style: italic;
-  background: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
-  background-clip: text;
-  color: transparent;
+  color: inherit;
 }
 
-.dark-scheme .hero h1 em,
-:root[data-theme='dark'] .hero h1 em {
-  background: linear-gradient(135deg, var(--color-rust-bright) 0%, var(--color-gold) 100%);
-  background-clip: text;
-  color: transparent;
-}
-
-/* Body text — hidden on mobile */
+/* Subheading + eligibility note — always visible, centered over the image */
 .hero p:not(.button-container, .hero-tagline) {
-  display: none;
+  display: block;
   max-width: 550px;
   margin: 0;
-  font-family: var(--font-family-serif);
+  font-family: var(--body-font-family);
   font-size: 1.15rem;
-  color: light-dark(var(--color-ink), var(--color-muted));
-  line-height: 1.7;
+  color: var(--color-text);
+  line-height: 1.6;
   letter-spacing: 0.01em;
 }
 
 .hero p.button-container {
   margin-top: var(--space-s);
+}
+
+/* Hero CTA — Oura uses a solid blue pill button here (site accent token) */
+.hero a.button:any-link {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+  color: #fff;
+}
+
+.hero a.button:any-link:hover,
+.hero a.button:any-link:focus-visible {
+  border-color: var(--color-accent-hover);
+  background-color: var(--color-accent-hover);
+  color: #fff;
 }
 
 /* Icon */
@@ -200,13 +299,15 @@
 
 /* Desktop */
 @media (width >= 900px) {
+  /* Keep the top-heavy / bottom-tight asymmetry: copy anchored to the upper
+     third, CTA cluster near the very bottom (over the rock). */
   .hero > div:last-child {
-    padding: 100px 5vw;
+    padding: clamp(150px, 24vh, 280px) 5vw clamp(24px, 4vh, 48px);
   }
 
   .hero > div:last-child > div {
-    max-width: 1000px;
-    margin: 0 25%;
+    max-width: 640px;
+    margin: 0 auto;
   }
 
   .hero h1 {
@@ -216,7 +317,7 @@
 
 @media (width >= 1200px) {
   .hero > div:last-child {
-    padding: 100px 6vw;
+    padding: clamp(160px, 25vh, 300px) 6vw clamp(28px, 4vh, 52px);
   }
 
   .hero h1 {

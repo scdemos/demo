@@ -15,6 +15,14 @@ main .social-share:hover {
   opacity: 1;
 }
 
+/* Hidden while the footer is in view so it never overlaps the footer */
+main .social-share.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-50%) translateX(20px);
+}
+
 main .social-share .social-share-dock {
   position: relative;
   isolation: isolate;

@@ -254,3 +254,668 @@
     max-height: 300px;
   }
 }
+
+/* ==========================================================================
+   Overlay variant – full-bleed image cards with the heading overlaid at the
+   bottom (Oura "Membership" cards). Image fills the card; a gradient scrim and
+   white serif heading sit on top.
+   ========================================================================== */
+
+/* Membership intro (heading + "Why Oura" button) above the overlay cards:
+   centered, no h2 accent dash — matches the source. Scoped to the section that
+   contains the overlay cards so other card sections keep their default style. */
+.section:has(.cards.overlay) .default-content-wrapper {
+  text-align: center;
+}
+
+.section:has(.cards.overlay) .default-content-wrapper h2 {
+  max-width: 20ch;
+  margin-inline: auto;
+  font-family: var(--font-family-serif);
+  font-weight: 300;
+  color: #4a4741;
+}
+
+/* italic serif "a voice" (authored as <em>) */
+/* stylelint-disable-next-line no-descending-specificity */
+.section:has(.cards.overlay) .default-content-wrapper h2 em {
+  font-style: italic;
+}
+
+/* suppress the global thin brand-gradient bar under this h2 */
+.section:has(.cards.overlay) .default-content-wrapper h2::after {
+  content: none;
+}
+
+.section:has(.cards.overlay) .default-content-wrapper .button-container {
+  text-align: center;
+  margin-bottom: var(--space-4xl);
+}
+
+/* "Why Oura" button — filled with the same #4A4741 tone as the heading */
+.section:has(.cards.overlay) .default-content-wrapper .button-container a.button:any-link {
+  border-color: #4a4741;
+  background-color: #4a4741;
+  color: #fff;
+}
+
+/* Carousel viewport: horizontal-scrolling row; next card peeks at the edge. */
+.cards.overlay {
+  display: block;
+  max-width: none;
+}
+
+.cards.overlay .cards-carousel-viewport {
+  overflow: auto hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cards.overlay .cards-carousel-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.overlay > .cards-carousel-viewport > ul {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: var(--space-m);
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Portrait cards; flex-basis sized so ~3.2 fit per row → the 4th peeks in. */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.overlay > .cards-carousel-viewport > ul > li {
+  position: relative;
+  flex: 0 0 clamp(240px, 30%, 380px);
+  aspect-ratio: 3 / 4;
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--color-ink);
+  box-shadow: none;
+  scroll-snap-align: start;
+  transition: transform 0.35s var(--ease-out-smooth, ease);
+}
+
+.cards.overlay > .cards-carousel-viewport > ul > li > article {
+  display: block;
+  height: 100%;
+}
+
+/* Image fills the card */
+.cards.overlay .cards-card-image {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  line-height: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.overlay .cards-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Bottom gradient scrim for headline legibility */
+.cards.overlay > .cards-carousel-viewport > ul > li::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 70%) 0%, rgb(0 0 0 / 12%) 45%, transparent 68%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Category pill — top-left, semi-transparent dark bg, icon + label */
+.cards.overlay .cards-card-pill {
+  position: absolute;
+  top: var(--space-m);
+  left: var(--space-m);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 7px 14px 7px 10px;
+  border-radius: 999px;
+  background: rgb(28 27 26 / 45%);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: var(--body-font-size-s);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.cards.overlay .cards-card-pill-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.cards.overlay .cards-card-pill-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Circular white "+" button — top-right */
+.cards.overlay .cards-card-plus {
+  position: absolute;
+  top: var(--space-m);
+  right: var(--space-m);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-ink);
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 0;
+}
+
+/* Headline overlaid bottom-left */
+.cards.overlay .cards-card-body {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 2;
+  padding: var(--space-l);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.overlay .cards-card-body :is(h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-family-serif);
+  font-weight: 300;
+  font-size: 1.9rem;
+  line-height: 1.1;
+  color: #fff;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.overlay .cards-card-body :is(h2, h3, h4) em {
+  font-style: italic;
+}
+
+/* Footer: divider line + prev/next controls at the bottom-right */
+.cards.overlay .cards-carousel-footer {
+  margin-top: var(--space-l);
+  padding-top: var(--space-l);
+  border-top: 1px solid light-dark(rgb(28 27 26 / 15%), rgb(247 241 232 / 20%));
+}
+
+.cards.overlay .cards-carousel-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-s);
+}
+
+.cards.overlay .cards-carousel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.cards.overlay .cards-carousel-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Prev = outlined circle; Next = filled dark circle */
+.cards.overlay .cards-carousel-prev {
+  border: 1px solid light-dark(rgb(28 27 26 / 30%), rgb(247 241 232 / 40%));
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.cards.overlay .cards-carousel-next {
+  border: 1px solid var(--color-ink);
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.cards.overlay .cards-carousel-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cards.overlay .cards-carousel-btn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+@media (width >= 900px) {
+  .cards.overlay > .cards-carousel-viewport > ul > li {
+    flex-basis: clamp(300px, 30%, 420px);
+  }
+}
+
+/* ==========================================================================
+   Product variant – large full-bleed image cards with the product name, price,
+   an "On Sale" tag, and Shop/Explore CTAs overlaid on the image (Oura hero
+   product cards shown directly under the hero).
+   ========================================================================== */
+
+/* Full-bleed: the product section spans the whole viewport (only small side
+   gutters), overriding the section wrapper's centered max-width. Scoped to the
+   section that actually contains a product-cards block. */
+main > .section.cards-container:has(.cards.product) > div {
+  max-width: none;
+  padding-inline: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product > ul {
+  grid-template-columns: 1fr;
+  gap: var(--content-padding-inline);
+  max-width: none;
+  margin-inline: 0;
+
+  /* follow the site-wide content gutter so tiles align with every other block */
+  padding-inline: var(--content-padding-inline);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product > ul > li {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  border: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--color-ink);
+  box-shadow: none;
+}
+
+.cards.product > ul > li:hover {
+  transform: none;
+  box-shadow: 0 20px 40px rgb(28 27 26 / 20%);
+  border-color: transparent;
+}
+
+/* This card authors image + content as two default-content cells, so the block
+   yields two .cards-card-body divs (image first, content second). */
+
+/* image cell (bare first <p> holding the img) fills the whole card */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:first-child {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:first-child img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product > ul > li::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 45%) 0%, transparent 45%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* second body = overlaid content: tag + title + price + CTAs, bottom-left */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:last-child {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: var(--space-xl);
+}
+
+/* "On Sale" pill — top of the text stack, left column */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:last-child > p:first-child {
+  justify-self: start;
+  margin: 0 0 var(--space-s);
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--color-parchment);
+  color: var(--color-ink);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cards.product article > .cards-card-body:last-child :is(h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-family-serif);
+  font-weight: 300;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.05;
+  color: #fff;
+}
+
+/* price line */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:last-child > p:not(:first-child, .button-container) {
+  margin: var(--space-xs) 0 0;
+  color: #fff;
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+/* CTA group: Shop (filled) + Explore (outline), side by side, pinned
+   bottom-right. The two links author as two consecutive .button-container
+   paragraphs (both are <p>, so use sibling combinators, not :first-of-type). */
+.cards.product article > .cards-card-body:last-child .button-container {
+  position: absolute;
+  bottom: var(--space-xl);
+  margin: 0;
+}
+
+/* Shop = the button-container NOT preceded by one; sits left of Explore */
+.cards.product article > .cards-card-body:last-child .button-container:not(.button-container + .button-container) {
+  right: calc(var(--space-xl) + 124px);
+}
+
+/* Explore = the button-container immediately after another; sits at the edge */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:last-child .button-container + .button-container {
+  right: var(--space-xl);
+}
+
+.cards.product article > .cards-card-body:last-child .button-container a.button:any-link {
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Shop (first container) = solid cream; Explore (second) = outline */
+.cards.product article > .cards-card-body:last-child .button-container:not(.button-container + .button-container) a.button:any-link {
+  border-color: var(--color-parchment);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.product article > .cards-card-body:last-child .button-container + .button-container a.button:any-link {
+  border-color: rgb(247 241 232 / 70%);
+  background-color: transparent;
+  color: #fff;
+}
+
+.cards.product article > .cards-card-body:last-child .button-container + .button-container a.button:any-link:hover {
+  border-color: #fff;
+  background-color: rgb(247 241 232 / 12%);
+  color: #fff;
+}
+
+@media (width >= 900px) {
+  .cards.product > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================================================
+   On dark (ink) sections – e.g. the "In the News" band – give cards a matching
+   dark surface so the inherited cream text stays legible (Oura news cards).
+   Placed last to satisfy no-descending-specificity ordering.
+   ========================================================================== */
+main .section.ink .cards > ul > li {
+  background: var(--color-card-dark);
+  border-color: rgb(247 241 232 / 12%);
+  box-shadow: none;
+}
+
+main .section.ink .cards > ul > li:hover {
+  border-color: rgb(247 241 232 / 40%);
+  box-shadow: 0 24px 48px rgb(0 0 0 / 45%);
+}
+
+main .section.ink .cards .cards-card-body :is(h2, h3, h4),
+main .section.ink .cards .cards-card-body :is(h2, h3, h4) a {
+  color: var(--color-parchment);
+}
+
+/* ==========================================================================
+   "In the News" — dark section: eyebrow + two columns (featured overlay card
+   left, vertical news-card stack right). Scoped to the ink section that holds
+   a `.cards.no-images` block so it doesn't affect other ink sections.
+   ========================================================================== */
+main .section.ink:has(.cards.no-images) {
+  padding-block: var(--space-4xl);
+}
+
+main .section.ink:has(.cards.no-images) > div {
+  max-width: var(--nav-desktop-max-width, 1264px);
+  margin-inline: auto;
+}
+
+/* leftover empty wrapper from section-metadata — never render it */
+main .section.ink:has(.cards.no-images) > .section-metadata-wrapper {
+  display: none;
+}
+
+/* eyebrow: small uppercase light label, not a big serif heading; sits above
+   the featured card content (z-index over the image). */
+main .section.ink:has(.cards.no-images) .default-content-wrapper h2 {
+  position: relative;
+  z-index: 2;
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-s);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-parchment);
+  margin: 0 0 var(--space-l);
+}
+
+/* suppress the stray accent dash under the eyebrow */
+main .section.ink:has(.cards.no-images) .default-content-wrapper h2::after {
+  content: none;
+}
+
+/* Featured card: image with pill badge, bottom gradient, overlaid headline
+   + Read More pill. The wrapper's children stack over the image. */
+main .section.ink:has(.cards.no-images) .default-content-wrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--space-xl);
+}
+
+/* featured image fills the card */
+main .section.ink:has(.cards.no-images) .default-content-wrapper > p:has(img) {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  z-index: 0;
+}
+
+main .section.ink:has(.cards.no-images) .default-content-wrapper > p:has(img) img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* bottom gradient scrim for headline legibility */
+main .section.ink:has(.cards.no-images) .default-content-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 75%) 0%, rgb(0 0 0 / 15%) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* "FEATURED ARTICLE" pill badge, top-left over the image */
+main .section.ink:has(.cards.no-images) .default-content-wrapper > p:has(strong) {
+  position: absolute;
+  top: var(--space-xl);
+  left: var(--space-xl);
+  z-index: 2;
+  margin: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--color-parchment);
+}
+
+main .section.ink:has(.cards.no-images) .default-content-wrapper > p:has(strong) strong {
+  color: var(--color-ink);
+  font-size: var(--body-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* featured headline, overlaid lower-left — bold sans-serif (source) */
+main .section.ink:has(.cards.no-images) .default-content-wrapper h3 {
+  position: relative;
+  z-index: 2;
+  margin: 0 0 var(--space-m);
+  max-width: 18ch;
+  font-family: var(--body-font-family);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+  line-height: 1.15;
+  color: var(--color-parchment);
+}
+
+/* Read More pill: light bg, dark text, up-right arrow */
+main .section.ink:has(.cards.no-images) .default-content-wrapper p.button-container {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .section.ink:has(.cards.no-images) .default-content-wrapper p.button-container a.button:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  border-color: var(--color-parchment);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+  border-radius: 999px;
+  padding: 10px 20px;
+}
+
+main .section.ink:has(.cards.no-images) .default-content-wrapper p.button-container a.button:any-link::after {
+  content: '\2197';
+  font-size: 1em;
+  line-height: 1;
+}
+
+/* Two-column layout: featured card (left) | news-card stack (right).
+   The section pipeline emits the featured content and the cards block as two
+   SEPARATE sibling wrappers, so the SECTION (not a single wrapper) is the grid
+   container and each wrapper becomes a column. */
+@media (width >= 900px) {
+  main .section.ink:has(.cards.no-images) {
+    display: grid;
+    grid-template-columns:
+      minmax(var(--space-l), 1fr)
+      minmax(0, calc(var(--nav-desktop-max-width, 1264px) * 0.52))
+      var(--space-2xl)
+      minmax(0, calc(var(--nav-desktop-max-width, 1264px) * 0.48))
+      minmax(var(--space-l), 1fr);
+    align-items: stretch;
+  }
+
+  /* override the centered-wrapper defaults now that these are grid items */
+  main .section.ink:has(.cards.no-images) > div {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  main .section.ink:has(.cards.no-images) .default-content-wrapper {
+    grid-column: 2;
+    height: 100%;
+    min-height: 0;
+  }
+
+  main .section.ink:has(.cards.no-images) .cards-wrapper {
+    grid-column: 4;
+  }
+}
+
+/* News-card stack: vertical, cream cards with sans headline + circular arrow */
+main .section.ink:has(.cards.no-images) .cards.no-images > ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  grid-template-columns: none;
+  max-width: none;
+  height: 100%;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .section.ink:has(.cards.no-images) .cards.no-images > ul > li {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: 16px;
+  background: var(--color-parchment);
+  box-shadow: none;
+  padding: var(--space-l) 72px var(--space-l) var(--space-l);
+}
+
+main .section.ink:has(.cards.no-images) .cards.no-images > ul > li:hover {
+  transform: none;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 30%);
+  border-color: transparent;
+}
+
+/* headline: clean sans, dark, not underlined */
+/* stylelint-disable-next-line no-descending-specificity */
+main .section.ink:has(.cards.no-images) .cards.no-images .cards-card-body :is(h2, h3, h4),
+main .section.ink:has(.cards.no-images) .cards.no-images .cards-card-body :is(h2, h3, h4) a {
+  font-family: var(--body-font-family);
+  font-weight: 500;
+  font-size: var(--body-font-size-m);
+  line-height: 1.3;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+/* circular dark arrow button, bottom-right */
+main .section.ink:has(.cards.no-images) .cards.no-images > ul > li::after {
+  content: '\2197';
+  position: absolute;
+  right: var(--space-l);
+  bottom: var(--space-l);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  font-size: 1.1rem;
+  line-height: 1;
+  pointer-events: none;
+}

@@ -71,6 +71,8 @@ function buildEmbedBlocks(main) {
   youtubeVideos.forEach((anchor) => {
     if (anchor.closest('.embed.block')) return;
     if (anchor.querySelector('.icon')) return;
+    // opt out: links ending in #_dnb (e.g. a YouTube channel link in the footer) stay as links
+    if (anchor.hash === DNB_HASH) return;
 
     let url;
     try {
@@ -250,6 +252,33 @@ async function loadTemplate(main, template) {
   }
 }
 
+/**
+ * Apply any `section-metadata` blocks to their section as data-* attributes and
+ * remove the block, so keys like `tab-id`/`tab-title` never render as text and
+ * blocks that read `section.dataset` (e.g. tabs) work.
+ *
+ * In DA/production this is done server-side; this pass makes local preview match.
+ * It is a no-op in production because the server has already removed the block.
+ * @param {Element} main
+ */
+function applySectionMetadata(main) {
+  if (!main) return;
+  main.querySelectorAll('div.section-metadata').forEach((sectionMeta) => {
+    const section = sectionMeta.closest('.section');
+    if (!section) return;
+    const meta = readBlockConfig(sectionMeta);
+    Object.keys(meta).forEach((key) => {
+      if (key === 'style') {
+        meta.style.split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+          .forEach((s) => section.classList.add(s));
+      } else {
+        section.dataset[toCamelCase(key)] = meta[key];
+      }
+    });
+    sectionMeta.remove();
+  });
+}
+
 // Structural EDS wrappers a Target offer can inject (e.g. a replaceHtml offer that brings in a
 // whole authored section). These are decorated by the section pipeline, not as blocks — calling
 // decorateBlock/loadBlock on them would try to load a non-existent block named after the wrapper.
@@ -398,6 +427,7 @@ async function loadLazy(doc) {
     await loadSection(sections[i], loadFragments);
     if (i === 0 && sampleRUM.enhance) sampleRUM.enhance();
   }
+  applySectionMetadata(main);
   await dynamicBlocks(main);
   applyContentProtection();
   decorateCodeBlocks(main);

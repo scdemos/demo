@@ -1,5 +1,57 @@
 /* stylelint-disable max-line-length */
 
+/*
+ * Oura brand fonts (design migration from ouraring.com).
+ * Source uses proprietary "Editorial New" (display serif) + "AkkuratLL" (grotesque sans).
+ * These are now SELF-HOSTED under a valid license (files in /fonts). Fraunces + Inter
+ * remain in the @import only as fallbacks for weights the Oura files don't ship
+ * (and to cover the swap window); font-display: swap + font-size-adjust keep the
+ * swap visually stable.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+
+/* Oura display serif — "Editorial New" (PP Editorial New) */
+@font-face {
+  font-family: 'Editorial New';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../fonts/PPEditorialNew-Light.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Editorial New';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url('../fonts/PPEditorialNew-Ultralight.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Editorial New';
+  font-style: italic;
+  font-weight: 200;
+  font-display: swap;
+  src: url('../fonts/PPEditorialNew-UltralightItalic.woff2') format('woff2');
+}
+
+/* Oura grotesque sans — "AkkuratLL" */
+@font-face {
+  font-family: akkuratll;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/AkkuratLL-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: akkuratll;
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('../fonts/AkkuratLL-Light.woff2') format('woff2');
+}
+
 /* Project primary font – used by --font-family in styles.css */
 @font-face {
   font-family: montserrat;

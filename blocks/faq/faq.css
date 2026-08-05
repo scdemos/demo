@@ -72,7 +72,7 @@ main .faq .faq-answer p {
 
 main .faq .faq-empty {
   font-style: italic;
-  color: var(--color-muted);
+  color: var(--color-text-muted);
 }
 
 @media (width >= 600px) {

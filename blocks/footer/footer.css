@@ -1,16 +1,16 @@
+/* Oura footer — dark, multi-band (brand + payment, newsletter + link columns, legal) */
+
 footer {
   width: 100%;
-  background-color: light-dark(var(--color-rust), #080d0d);
-  color: var(--color-parchment);
-  border-top: light-dark(none, var(--border-heritage));
-  font-size: var(--body-font-size-xs);
+  background-color: var(--color-ink, #1c1b1a);
+  color: var(--color-parchment, #f7f1e8);
+  font-size: var(--body-font-size-s);
 }
 
 footer .footer > div {
-  max-width: 1100px;
+  max-width: var(--nav-desktop-max-width, 1400px);
   margin: 0 auto;
-  padding: 40px var(--content-padding-inline);
-  text-align: center;
+  padding: 56px var(--content-padding-inline) 40px;
 }
 
 footer .footer p {
@@ -18,104 +18,320 @@ footer .footer p {
   line-height: 1.55;
 }
 
-/* Row 1: Disclaimer */
-footer .footer .section:first-child {
-  padding-bottom: var(--space-m);
-  font-size: var(--body-font-size-s);
-  font-weight: 400;
+footer .footer a:any-link {
+  color: var(--color-parchment, #f7f1e8);
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, color 0.2s ease;
 }
 
-/* Row 2: Tagline */
-footer .footer .section:nth-child(2) p {
-  font-family: var(--font-family-serif);
-  font-weight: 400;
-  font-size: var(--body-font-size-s);
-  opacity: 0.7;
-  margin-top: var(--space-s);
+footer .footer a:any-link:hover {
+  opacity: 1;
+  color: #fff;
 }
 
-/* Row 3: Copyright + social icons (merged) */
-footer .footer .section:nth-child(3) {
-  margin-top: var(--space-m);
-  border-top: 1px solid rgb(255 255 255 / 15%);
-  padding-top: var(--space-m);
+footer .footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-footer .footer .section:nth-child(3) .default-content-wrapper {
+/* ===== Band 1: brand logo + payment badges ===== */
+footer .footer .footer-brand-band {
+  padding-bottom: var(--space-2xl);
+}
+
+/* logo (left) + payment badges (right) on one row, space-between */
+footer .footer .footer-brand-band .default-content-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-l);
+  align-items: flex-start;
+}
+
+footer .footer .footer-brand-band p {
+  margin: 0;
+}
+
+footer .footer .footer-brand-band p img {
+  width: 132px;
+  height: auto;
+  opacity: 0.9;
+
+  /* external SVG logo → force white for the dark footer */
+  filter: brightness(0) invert(1);
+}
+
+footer .footer .footer-brand-band ul {
+  display: flex;
   flex-wrap: wrap;
   gap: var(--space-s);
 }
 
-footer .footer .footer-separator {
-  opacity: 0.4;
-  margin-inline: var(--space-xs);
+footer .footer .footer-brand-band li {
+  display: inline-flex;
+  padding: 0;
+  margin: 0;
 }
 
-footer .footer .section:nth-child(3) ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+footer .footer .footer-brand-band li img {
+  display: block;
+  width: 48px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+/* ===== Band 2: newsletter (lead) ===== */
+footer .footer .footer-lead-band {
+  padding-bottom: var(--space-xl);
+  max-width: 420px;
+}
+
+footer .footer .footer-lead-band h2 {
+  margin: 0 0 var(--space-l);
+  font-family: var(--font-family-serif);
+  font-weight: 300;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--color-parchment, #f7f1e8);
+}
+
+footer .footer .footer-newsletter-form {
   display: flex;
   align-items: center;
+  max-width: 340px;
+  margin-bottom: var(--space-m);
+
+  /* bordered/outlined rounded box (source), not a bare underline */
+  border: 1px solid rgb(247 241 232 / 40%);
+  border-radius: 8px;
+  padding-right: var(--space-xs);
+}
+
+footer .footer .footer-newsletter-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 12px 14px;
+}
+
+footer .footer .footer-newsletter-input::placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
+footer .footer .footer-newsletter-input:focus-visible {
+  outline: none;
+}
+
+footer .footer .footer-newsletter-submit {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 6px 4px;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+footer .footer .footer-newsletter-submit:hover {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+footer .footer .footer-lead-band p:has(a[href='/privacy-policy']) {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+footer .footer .footer-lead-band a[href='/privacy-policy'] {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+/* ===== Band 3: link columns ===== */
+footer .footer .footer-links-band {
+  padding-block: var(--space-l);
+  border-top: 1px solid rgb(247 241 232 / 12%);
+}
+
+footer .footer .footer-links-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+}
+
+footer .footer .footer-link-col {
+  min-width: 0;
+}
+
+footer .footer .footer-links-band h3 {
+  margin: 0 0 var(--space-m);
+  font-family: var(--body-font-family);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+  text-transform: none;
+}
+
+footer .footer .footer-links-band ul {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-s);
 }
 
-footer .footer .section:nth-child(3) li {
+footer .footer .footer-links-band li {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* external-link up-right arrow on the four cross-domain links (source) */
+footer .footer .footer-links-band a[href*='support.ouraring.com/hc/']:not([href*='articles/197'])::after,
+footer .footer .footer-links-band a[href*='articles/44414370533139']::after,
+footer .footer .footer-links-band a[href*='cloud.ouraring.com']::after,
+footer .footer .footer-links-band a[href*='organizations.ouraring.com']::after {
+  content: ' \2197';
+  white-space: nowrap;
+}
+
+/* "Blog" in "The Pulse Blog" is italic */
+footer .footer .footer-links-band a em {
+  font-style: italic;
+}
+
+/* ===== Band 4: legal bar ===== */
+
+/* The section pipeline nests content under .default-content-wrapper, so that
+   wrapper (not the band) is the flex/layout host. */
+footer .footer .footer-legal-band {
+  padding-top: var(--space-l);
+  border-top: 1px solid rgb(247 241 232 / 12%);
+  font-size: 0.72rem;
+}
+
+footer .footer .footer-legal-band .default-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+footer .footer .footer-legal-band ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-m);
+}
+
+footer .footer .footer-legal-band li {
   margin: 0;
 }
 
-footer .footer a:any-link {
-  color: var(--color-parchment);
-  text-decoration-color: rgb(245 242 237 / 30%);
-  transition: color 0.25s, text-decoration-color 0.25s, opacity 0.25s;
+/* stylelint-disable-next-line no-descending-specificity */
+footer .footer .footer-legal-band p:not(:has(.footer-locale-toggle)) {
+  opacity: 0.55;
+  line-height: 1.6;
 }
 
-footer .footer a:any-link:hover {
-  text-decoration-color: var(--color-gold);
-  color: var(--color-gold);
-}
-
-footer .footer .section:nth-child(3) ul a {
-  text-decoration: none;
-  color: inherit;
-  opacity: 0.7;
-  transition: opacity 0.25s, transform 0.25s;
-}
-
-footer .footer .section:nth-child(3) ul a:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-footer .footer .icon {
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) invert(1);
-  transition: transform 0.25s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
-}
-
-footer .footer .icon.icon-logo {
+footer .footer .footer-locale-toggle {
   display: inline-flex;
   align-items: center;
-  width: auto;
-  height: 1.2em;
-  vertical-align: middle;
-  margin-inline: 4px;
-  filter: none;
-  color: var(--color-parchment);
+  gap: var(--space-xs);
+  border: 1px solid rgb(247 241 232 / 30%);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 8px 18px;
+  font: inherit;
+  font-size: 0.75rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-footer .footer .icon.icon-logo :is(svg, img) {
-  width: auto;
-  height: 100%;
-  object-fit: contain;
+footer .footer .footer-locale-toggle::before {
+  content: '🌐';
+  font-size: 0.85em;
 }
 
+footer .footer .footer-locale-toggle:hover {
+  border-color: rgb(247 241 232 / 70%);
+  background: rgb(247 241 232 / 8%);
+}
+
+/* ===== Tablet ===== */
 @media (width >= 600px) {
+  footer .footer .footer-brand-band .default-content-wrapper {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  footer .footer .footer-links-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== Desktop: newsletter (left ~1/3) beside link columns (right ~2/3) ===== */
+@media (width >= 900px) {
+  /* Main band = lead + links side by side. They are separate footer sections,
+     so lay the footer's inner wrapper out as a grid and place them in row 1. */
   footer .footer > div {
-    padding: 48px var(--content-padding-inline);
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    column-gap: var(--space-4xl);
+    align-items: start;
+  }
+
+  footer .footer .footer-brand-band {
+    grid-column: 1 / -1;
+  }
+
+  footer .footer .footer-lead-band {
+    grid-column: 1;
+    grid-row: 2;
+    padding-bottom: 0;
+    border-top: 0;
+  }
+
+  footer .footer .footer-links-band {
+    grid-column: 2;
+    grid-row: 2;
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  footer .footer .footer-links-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2xl);
+  }
+
+  /* legal band spans full width; legal links + copyright left, locale right */
+  footer .footer .footer-legal-band {
+    grid-column: 1 / -1;
+  }
+
+  footer .footer .footer-legal-band .default-content-wrapper {
+    position: relative;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  footer .footer .footer-legal-band ul,
+  footer .footer .footer-legal-band p:not(:has(.footer-locale-toggle)) {
+    flex: 1 1 100%;
+  }
+
+  footer .footer .footer-legal-band p:has(.footer-locale-toggle) {
+    position: absolute;
+    right: 0;
+    bottom: var(--space-l);
+    margin: 0;
   }
 }

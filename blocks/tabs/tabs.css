@@ -18,12 +18,108 @@ main .section .tabs {
   -webkit-text-fill-color: currentcolor;
 }
 
+/* ==========================================================================
+   "Form Meets Function" intro (default content above the day-in-the-life tabs).
+   Two-column composition matching the source: left = eyebrow + mixed-type
+   headline; right = narrow body paragraph + "How It Works" button, offset lower.
+   Scoped to the tabs-container's intro so it doesn't affect other sections.
+   ========================================================================== */
+@media (width >= 900px) {
+  main .section.tabs-container > .default-content-wrapper {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: start;
+    column-gap: var(--space-4xl);
+    max-width: var(--nav-desktop-max-width, 1264px);
+    margin-inline: auto;
+  }
+
+  /* eyebrow spans the top of the left column */
+  main .section.tabs-container > .default-content-wrapper > p:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  main .section.tabs-container > .default-content-wrapper > h2 {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0;
+    max-width: 12ch;
+  }
+
+  /* right column: body paragraph, narrow measure, pushed down */
+  main .section.tabs-container > .default-content-wrapper > p:not(:first-child, .button-container) {
+    grid-column: 2;
+    grid-row: 2;
+    max-width: 400px;
+    margin-top: 3.5rem;
+  }
+
+  /* button sits under the paragraph, left-aligned within the right column */
+  main .section.tabs-container > .default-content-wrapper > p.button-container {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: var(--space-l);
+    text-align: left;
+  }
+}
+
+/* Eyebrow: uppercase, letter-spaced, warm near-black, bold */
+main .section.tabs-container > .default-content-wrapper > p:first-child {
+  margin: 0 0 var(--space-l);
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-s);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-warm);
+}
+
+/* Headline: sans-serif roman for the main phrase; the <em> trailing phrase is
+   an elegant serif italic, larger, on its own line, offset to the right. */
+main .section.tabs-container > .default-content-wrapper > h2 {
+  font-family: var(--body-font-family);
+  font-weight: 400;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  color: var(--color-text-warm);
+}
+
+main .section.tabs-container > .default-content-wrapper > h2 em {
+  display: block;
+  margin-top: 0.1em;
+  margin-left: 1.5em;
+  font-family: var(--font-family-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: 1.35em;
+  line-height: 1;
+}
+
+/* suppress the global thin accent dash under this h2 */
+main .section.tabs-container > .default-content-wrapper > h2::after {
+  content: none;
+}
+
+/* body paragraph + em share the warm near-black */
+main .section.tabs-container > .default-content-wrapper > h2 em,
+main .section.tabs-container > .default-content-wrapper > p:not(:first-child, .button-container) {
+  color: var(--color-text-warm);
+}
+
+/* "How It Works" button: white text */
+main .section.tabs-container > .default-content-wrapper > p.button-container a.button:any-link {
+  color: #fff;
+}
+
 .tabs .tabs-wrapper {
   max-width: var(--grid-container-width);
   margin: 0 auto;
 }
 
 /* Section header above tabs */
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tabs-wrapper .section h2 {
   font-family: var(--font-family-serif);
   font-size: 2.5rem;
@@ -33,6 +129,7 @@ main .section .tabs {
   letter-spacing: -0.02em;
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tabs-wrapper .section p {
   font-family: var(--font-family-serif);
   font-size: 1.1rem;
@@ -114,12 +211,384 @@ main .section .tabs {
   display: block;
 }
 
+/* ==========================================================================
+   Tab panel three-part row: left media, center app-UI placeholder cards,
+   right testimonial. Placeholder stat cards are illustrative design elements,
+   not migrated content.
+   ========================================================================== */
+.tabs .tab-panel-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-l);
+  align-items: center;
+  max-width: var(--nav-desktop-max-width, 1264px);
+  margin-inline: auto;
+}
+
+@media (width >= 900px) {
+  .tabs .tab-panel-layout {
+    grid-template-columns: 1.1fr 1fr 0.9fr;
+    gap: var(--space-2xl);
+  }
+}
+
+.tabs .tab-panel-media {
+  border-radius: 20px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.tabs .tab-panel-media img {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   Center "app UI" cards — translucent, scene-tinted with LIGHT text, matching
+   the source. Each tab sets a --scene tint; cards read as frosted glass over
+   that hue. Cards are decorative illustration (aria-hidden), not user data.
+   ========================================================================== */
+.tabs .tab-statcards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+
+  /* scene tint (overridden per tab below); light text throughout */
+  --scene: #3a352e;
+  --scene-accent: #f4ede0;
+
+  color: #f7f2ea;
+}
+
+.tabs .tab-statcards-gold {
+  --scene: #6f5730;
+  --scene-accent: #ffd79a;
+}
+
+.tabs .tab-statcards-sage {
+  --scene: #4a5a4c;
+  --scene-accent: #cfe3c9;
+}
+
+.tabs .tab-statcards-brown {
+  --scene: #5a4636;
+  --scene-accent: #e8c9a6;
+}
+
+.tabs .tab-statcards-night {
+  --scene: #2b3350;
+  --scene-accent: #b9c4ec;
+}
+
+.tabs .tab-statcards-rose {
+  --scene: #7c4a5b;
+  --scene-accent: #f4c2d2;
+}
+
+.tabs .tab-statcard {
+  position: relative;
+  border-radius: 18px;
+  padding: var(--space-l);
+  color: inherit;
+
+  /* frosted, tinted glass over the scene hue */
+  background:
+    linear-gradient(160deg, rgb(255 255 255 / 16%), rgb(255 255 255 / 6%)),
+    color-mix(in srgb, var(--scene) 78%, black);
+  border: 1px solid rgb(255 255 255 / 16%);
+  box-shadow: 0 18px 40px -22px rgb(0 0 0 / 65%);
+  backdrop-filter: blur(6px);
+}
+
+.tabs .tab-statcard-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-s);
+}
+
+.tabs .tab-statcard-label {
+  margin: 0;
+  font-size: var(--body-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(247 242 234 / 85%);
+}
+
+.tabs .tab-statcard-ago,
+.tabs .tab-statcard-status {
+  font-size: var(--body-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(247 242 234 / 60%);
+}
+
+.tabs .tab-statcard-status {
+  display: block;
+  margin: var(--space-xs) 0 0;
+}
+
+.tabs .tab-statcard-value {
+  margin: var(--space-xs) 0 0;
+  font-family: var(--font-family-serif);
+  font-size: 2rem;
+  font-weight: 300;
+  color: #fff;
+}
+
+.tabs .tab-statcard-sub {
+  margin: 0 0 var(--space-m);
+  font-size: var(--body-font-size-s);
+  color: rgb(247 242 234 / 70%);
+}
+
+/* sleep hypnogram bar chart */
+.tabs .tab-statcard-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 64px;
+}
+
+.tabs .tab-statcard-chart span {
+  flex: 1 1 auto;
+  border-radius: 2px;
+  background: var(--scene-accent);
+  opacity: 0.9;
+}
+
+.tabs .tab-statcard-axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-xs);
+  font-size: var(--body-font-size-xs);
+  color: rgb(247 242 234 / 60%);
+}
+
+/* line charts (heart rate / stress) */
+.tabs .tab-statcard-linechart {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-xs);
+  height: 60px;
+  margin-top: var(--space-s);
+  color: var(--scene-accent);
+}
+
+.tabs .tab-statcard-linechart svg {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tabs .tab-statcard-yaxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: var(--body-font-size-xs);
+  color: rgb(247 242 234 / 55%);
+}
+
+/* activity goal slider */
+.tabs .tab-statcard-slider {
+  margin-top: var(--space-m);
+}
+
+.tabs .tab-statcard-slider-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 22%);
+}
+
+.tabs .tab-statcard-slider-track span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--scene-accent);
+}
+
+.tabs .tab-statcard-slider-track i {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 35%);
+  transform: translate(-50%, -50%);
+}
+
+/* readiness / bedtime arc gauge */
+.tabs .tab-statcard-gauge {
+  position: relative;
+  width: 120px;
+  margin: 0 auto var(--space-s);
+  color: var(--scene-accent);
+}
+
+.tabs .tab-statcard-gauge svg {
+  width: 100%;
+  display: block;
+}
+
+.tabs .tab-statcard-score {
+  position: absolute;
+  inset: auto 0 0;
+  text-align: center;
+  font-family: var(--font-family-serif);
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: #fff;
+}
+
+.tabs .tab-statcard-gauge-icon {
+  position: absolute;
+  inset: auto 0 2px;
+  display: flex;
+  justify-content: center;
+}
+
+.tabs .tab-statcard-gauge-icon svg {
+  width: 22px;
+  height: 22px;
+  color: var(--scene-accent);
+}
+
+.tabs .tab-statcard-gauge-marks {
+  display: flex;
+  justify-content: space-between;
+  width: 120px;
+  margin: 0 auto var(--space-s);
+  font-size: var(--body-font-size-xs);
+  color: rgb(247 242 234 / 60%);
+}
+
+.tabs .tab-statcard-readiness,
+.tabs .tab-statcard-bedtime {
+  text-align: center;
+}
+
+.tabs .tab-statcard-headline {
+  margin: var(--space-xs) 0 var(--space-xs);
+  font-family: var(--font-family-serif);
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: #fff;
+}
+
+.tabs .tab-statcard-body {
+  margin: 0;
+  font-size: var(--body-font-size-s);
+  line-height: 1.5;
+  color: rgb(247 242 234 / 78%);
+}
+
+/* in-card buttons ("Measure heart rate", "Learn more") */
+.tabs .tab-statcard-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-m);
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 45%);
+  color: #fff;
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-s);
+  font-weight: 500;
+  cursor: default;
+}
+
+.tabs .tab-statcard-btn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--scene-accent);
+}
+
+/* notification pill above the cards */
+.tabs .tab-statcard-notification {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 88%);
+  box-shadow: 0 12px 30px -18px rgb(0 0 0 / 60%);
+  color: var(--color-ink);
+}
+
+.tabs .tab-statcard-notification-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  color: var(--color-ink);
+}
+
+.tabs .tab-statcard-notification-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tabs .tab-statcard-notification-text {
+  flex: 1 1 auto;
+  font-size: var(--body-font-size-s);
+  font-weight: 500;
+}
+
+.tabs .tab-statcard-notification-time {
+  flex: 0 0 auto;
+  font-size: var(--body-font-size-xs);
+  color: var(--color-muted-on-light, #6a655e);
+}
+
+/* right testimonial card */
+.tabs .tab-panel-testimonial {
+  position: relative;
+  padding: var(--space-xl) var(--space-l) var(--space-l);
+}
+
+.tabs .tab-panel-testimonial::before {
+  content: '\201C';
+  display: block;
+  font-family: var(--font-family-serif);
+  font-size: 4rem;
+  line-height: 0.6;
+  color: var(--color-ink);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.tabs .tab-panel-testimonial p {
+  font-family: var(--font-family-serif);
+  font-size: 1.35rem;
+  line-height: 1.4;
+  color: var(--color-ink);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.tabs .tab-panel-testimonial p:last-child {
+  margin-top: var(--space-m);
+  font-family: var(--body-font-family);
+  font-size: var(--body-font-size-s);
+  font-style: normal;
+  color: var(--color-muted-on-light, #6a655e);
+}
+
 /* Tab section content */
 .tabs .tab .section {
   margin: 0;
   padding: var(--space-xl) var(--content-padding-inline);
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tab .section h2 {
   font-family: var(--font-family-serif);
   font-weight: 500;
@@ -131,6 +600,7 @@ main .section .tabs {
    .tabs .tabs-wrapper .section h2/p rules target ALL sections inside tabs-wrapper
    (including tab panels), but they were designed only for an optional intro-header
    section above the tab list. Reset them here for actual tab panel content. */
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tab .section p {
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
@@ -141,6 +611,7 @@ main .section .tabs {
   line-height: 1.65;
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tab .section h2,
 .tabs .tab .section h3 {
   text-align: left;
@@ -180,10 +651,12 @@ main .section .tabs {
 }
 
 /* Columns text — left aligned */
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tab .columns h2 {
   text-align: left;
 }
 
+/* stylelint-disable-next-line no-descending-specificity */
 .tabs .tab .columns p {
   text-align: left;
 }

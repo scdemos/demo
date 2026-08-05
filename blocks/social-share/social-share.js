@@ -229,4 +229,15 @@ export default function decorate(block) {
 
   dock.append(list, status);
   block.replaceChildren(dock);
+
+  // Hide the floating rail while the footer is in view so it never overlaps it.
+  const footer = document.querySelector('footer');
+  if (footer && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        block.classList.toggle('is-hidden', entry.isIntersecting);
+      });
+    }, { rootMargin: '0px 0px -10% 0px' });
+    io.observe(footer);
+  }
 }

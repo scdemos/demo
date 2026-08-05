@@ -21,10 +21,12 @@
   --bp-desktop: 900px;
   --bp-wide: 1200px;
 
-  /* grid */
-  --grid-container-width: 83.4%;
+  /* grid — tight, near-full-bleed content gutter (~1.25% of viewport per side),
+     matching the source. The single --content-padding-inline token below is the
+     gutter every standard block inherits. */
+  --grid-container-width: 100%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
-  --grid-gutter-width: 8.3%;
+  --grid-gutter-width: 1.25%;
 
   /* spacing scale for consistent global layout */
   --space-xs: 4px;
@@ -36,25 +38,29 @@
   --space-3xl: 64px;
   --space-4xl: 96px;
 
-  /* global layout rhythm */
-  --content-padding-inline: var(--space-m);
+  /* global layout rhythm — content gutter = ~1.25% of viewport per side */
+  --content-padding-inline: 1.25vw;
   --main-block-space: var(--space-l);
   --section-block-space: var(--space-l);
 
   /* color scheme */
   color-scheme: light dark;
 
-  /* heritage palette */
-  --color-rust: #a14f2b;
-  --color-gold: #c5a059;
-  --color-parchment: #f5f2ed;
-  --color-ink: #1a1a1a;
+  /* Oura brand palette — exact values sampled from ouraring.com */
+  --color-rust: #1c1b1a;   /* primary/brand → Oura near-black (pill buttons, brand marks) */
+  --color-gold: #3f3c39;   /* hover/accent → warm charcoal */
+  --color-parchment: #f7f1e8;  /* Oura cream (marketing background, bg-sand) */
+  --color-ink: #1c1b1a;    /* deepest near-black → dark surfaces, brand, pill buttons */
+  --color-text-warm: #4a4741; /* Oura primary text/headline → warm near-black rgb(74,71,65) */
+  --color-oura-blue: #2a72de;      /* Oura CTA accent blue rgb(42,114,222) */
+  --color-oura-blue-dark: #205fc0; /* CTA blue hover (darkened ~10%) */
 
-  /* heritage dark palette */
-  --color-obsidian: #060d0d;
-  --color-card-dark: #162121;
-  --color-rust-bright: #d16a3e;
-  --color-muted: #8b9a9a;
+  /* Oura dark palette */
+  --color-obsidian: #1c1b1a;   /* dark section background */
+  --color-card-dark: #2a2826;
+  --color-rust-bright: #f7f1e8; /* on-dark accent → cream */
+  --color-muted: #a8a5a0;      /* Oura muted grey rgb(168,165,160) — for use ON DARK surfaces (footer, ink) */
+  --color-muted-on-light: #6a655e; /* AA-passing warm grey for muted text on cream/white (5.1:1) */
 
   /* color tokens – grays and palette */
   --color-gray-100: #f1f1f1;
@@ -108,29 +114,43 @@
   /* semantic / named colors */
   --color-light: rgb(255 255 255);
   --color-dark: rgb(0 0 0);
-  --color-text: light-dark(var(--color-ink), var(--color-parchment));
-  --color-link: light-dark(var(--color-ink), var(--color-parchment));
-  --color-link-hover: light-dark(var(--color-rust), var(--color-gold));
+  --color-text: light-dark(var(--color-text-warm), var(--color-parchment));
+  --color-text-muted: light-dark(var(--color-muted-on-light), var(--color-muted)); /* captions, eyebrows, copyright — AA on both schemes */
+  --color-link: light-dark(var(--color-text-warm), var(--color-parchment));
+  --color-link-hover: light-dark(var(--color-ink), var(--color-gold));
   --color-brand: var(--color-rust);
-  --color-accent: var(--color-gold);
+  --color-accent: var(--color-oura-blue); /* Oura CTA blue — site-wide interactive accent */
+  --color-accent-hover: var(--color-oura-blue-dark);
   --color-shaded: light-dark(var(--color-parchment), var(--color-card-dark));
 
-  /* fonts */
-  --font-family: montserrat, "Trebuchet MS", sans-serif;
-  --font-family-serif: "EB Garamond", georgia, serif;
+  /* clean-named background alias (marketing cream in light, obsidian in dark) */
+  --color-bg: light-dark(var(--color-parchment), var(--color-obsidian));
+
+  /* fonts – Oura brand (self-hosted, licensed): AkkuratLL sans + Editorial New serif.
+     Fraunces/Inter kept as fallbacks for the swap window + unshipped weights. */
+  --font-family: akkuratll, inter, "Helvetica Neue", helvetica, arial, sans-serif;
+  --font-family-serif: "Editorial New", fraunces, georgia, serif;
   --font-family-mono: "JetBrains Mono", "Courier New", monospace;
   --body-font-family: var(--font-family);
   --heading-font-family: var(--font-family-serif);
 
-  /* heading sizes */
-  --heading-font-size-xxl: 32.44px;
-  --heading-font-size-xl: 28.83px;
-  --heading-font-size-l: 25.63px;
-  --heading-font-size-m: 22.78px;
-  --heading-font-size-s: 20.25px;
+  /* heading sizes – Oura scale (H1 72px display serif) */
+  --heading-font-size-xxl: 72px;
+  --heading-font-size-xl: 48px;
+  --heading-font-size-l: 32px;
+  --heading-font-size-m: 24px;
+  --heading-font-size-s: 20px;
   --heading-font-size-xs: 18px;
   --heading-font-size-xxs: 16px;
-  --heading-line-height: 1.15;
+
+  /* Oura display headings run tight: H1 121/110≈1.1, large displays 80/80=1.0 */
+  --heading-line-height: 1.05;
+
+  /* negative tracking on large serif/display headings (source H1 = -0.05em) */
+  --heading-letter-spacing: -0.04em;
+
+  /* uppercase eyebrow tracking (source = 0.9px/18px ≈ 0.05em, not 0.12em) */
+  --eyebrow-letter-spacing: 0.05em;
 
   /* body sizes */
   --body-font-size-xxxl: 25px;
@@ -147,7 +167,7 @@
   --header-height: var(--nav-height);
 
   /* boilerplate compatibility – map to design tokens */
-  --background-color: light-dark(var(--color-parchment), var(--color-obsidian));
+  --background-color: var(--color-bg);
   --light-color: var(--color-shaded);
   --dark-color: var(--color-gray-500);
   --text-color: var(--color-text);
@@ -188,7 +208,6 @@
   :host {
     --heading-font-size-xxl: 44px;
     --heading-font-size-xl: 36px;
-    --content-padding-inline: var(--space-l);
     --main-block-space: var(--space-xl);
     --section-block-space: var(--space-xl);
   }
@@ -206,15 +225,7 @@
     --heading-font-size-m: 24px;
     --heading-font-size-s: 20px;
     --heading-font-size-xs: 18px;
-    --content-padding-inline: var(--space-xl);
     --section-block-space: var(--space-3xl);
-  }
-}
-
-@media (width >= 1200px) {
-  :root,
-  :host {
-    --grid-container-width: 1200px;
   }
 }
 
@@ -262,7 +273,7 @@ html {
 }
 
 ::selection {
-  background: light-dark(rgb(161 79 43 / 20%), rgb(197 160 89 / 30%));
+  background: light-dark(rgb(28 27 26 / 15%), rgb(247 241 232 / 25%));
   color: inherit;
 }
 
@@ -271,11 +282,6 @@ body {
   margin: 0;
   box-sizing: border-box;
   background-color: var(--background-color);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 12% 8%,
-      light-dark(rgb(197 160 89 / 9%), rgb(197 160 89 / 4%)) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at 88% 82%,
-      light-dark(rgb(161 79 43 / 6%), rgb(161 79 43 / 3%)) 0%, transparent 50%);
   color: var(--text-color);
   font-family: var(--body-font-family);
   font-size: var(--body-font-size-m);
@@ -316,30 +322,43 @@ h6 {
   margin-top: 0.8em;
   margin-bottom: 0.4em;
   font-family: var(--heading-font-family);
-  font-weight: 500;
+  font-weight: 300;
   line-height: var(--heading-line-height);
   scroll-margin: 40px;
 }
 
+/* Oura display headings (h1/h2/h3) use the light serif; small headings (h4-h6)
+   are the uppercase grotesque eyebrow style seen on the source. */
 h1 {
-  font-size: var(--heading-font-size-xxl);
-  letter-spacing: -0.02em;
+  font-size: clamp(40px, 8vw, var(--heading-font-size-xxl));
+  letter-spacing: var(--heading-letter-spacing);
 }
 
 h2 {
-  font-size: var(--heading-font-size-xl);
-  letter-spacing: -0.015em;
+  font-size: clamp(32px, 5vw, var(--heading-font-size-xl));
+  letter-spacing: var(--heading-letter-spacing);
 }
 
-h3 { font-size: var(--heading-font-size-m); }
-h4 { font-size: var(--heading-font-size-s); }
-h5 { font-size: var(--heading-font-size-xs); }
-h6 { font-size: var(--heading-font-size-xxs); }
+h3 {
+  font-size: var(--heading-font-size-m);
+  letter-spacing: -0.02em;
+}
+
+h4,
+h5,
+h6 {
+  font-family: var(--body-font-family);
+  font-weight: 600;
+  letter-spacing: var(--eyebrow-letter-spacing);
+  text-transform: uppercase;
+}
+
+h4 { font-size: var(--heading-font-size-xs); }
+h5 { font-size: var(--heading-font-size-xxs); }
+h6 { font-size: 14px; }
 
 @media (width >= 600px) {
   h3 { font-size: var(--heading-font-size-l); }
-  h4 { font-size: var(--heading-font-size-m); }
-  h5 { font-size: var(--heading-font-size-s); }
 }
 
 
@@ -420,20 +439,19 @@ button.button {
   gap: var(--space-xs);
   max-width: 100%;
   margin: 0;
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
-  border-radius: 4px;
-  padding: 20px 50px;
+  border: 1px solid light-dark(var(--color-ink), var(--color-parchment));
+  border-radius: 999px;
+  padding: 14px 36px;
   font: inherit;
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 500;
+  font-size: 0.95rem;
   line-height: 1.2;
   text-align: center;
   text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  background-color: light-dark(var(--color-rust), var(--color-rust-bright));
-  background-image: linear-gradient(135deg, rgb(255 255 255 / 12%), rgb(0 0 0 / 8%));
-  color: var(--color-light);
+  letter-spacing: 0.01em;
+  background-color: light-dark(var(--color-ink), var(--color-parchment));
+  background-image: none;
+  color: light-dark(#fff, var(--color-ink));
   cursor: pointer;
   overflow: hidden;
   position: relative;
@@ -471,10 +489,10 @@ a.button:any-link:hover,
 a.button:any-link:focus-visible,
 button.button:hover,
 button.button:focus-visible {
-  background-color: var(--color-gold);
-  border-color: var(--color-gold);
-  transform: translateY(-3px);
-  box-shadow: 0 14px 30px light-dark(rgb(161 79 43 / 30%), rgb(209 106 62 / 35%)), 0 0 0 1px var(--color-gold);
+  background-color: light-dark(var(--color-gold), #fff);
+  border-color: light-dark(var(--color-gold), #fff);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px light-dark(rgb(28 27 26 / 22%), rgb(0 0 0 / 45%));
   cursor: pointer;
   text-decoration: none;
 }
