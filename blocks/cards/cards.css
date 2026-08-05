@@ -287,17 +287,30 @@
   content: none;
 }
 
-.section:has(.cards.overlay) .default-content-wrapper .button-container {
+/* stylelint-disable no-descending-specificity */
+.section:has(.cards.overlay) .default-content-wrapper .button-container,
+.section:has(.cards.overlay) .default-content-wrapper p:has(> a:only-child) {
   text-align: center;
   margin-bottom: var(--space-4xl);
 }
 
-/* "Why Oura" button — filled with the same #4A4741 tone as the heading */
-.section:has(.cards.overlay) .default-content-wrapper .button-container a.button:any-link {
-  border-color: #4a4741;
+/* "Why Oura" button — filled pill in the same #4A4741 tone as the heading.
+   Targets the intro link directly (the wrapper only has this one link) so it
+   styles as a pill whether or not decorateButtons applied `.button` — DA's
+   markup nesting can prevent that class from being added. Pill padding/shape is
+   set here too, since without `.button` the base button styles don't apply. */
+.section:has(.cards.overlay) .default-content-wrapper p a:any-link {
+  display: inline-block;
+  padding: 12px 28px;
+  border: 1px solid #4a4741;
+  border-radius: 999px;
   background-color: #4a4741;
   color: #fff;
+  font-size: 0.95rem;
+  text-decoration: none;
+  white-space: nowrap;
 }
+/* stylelint-enable no-descending-specificity */
 
 /* Carousel viewport: horizontal-scrolling row; next card peeks at the edge. */
 .cards.overlay {
@@ -700,10 +713,12 @@ main .section.ink .cards > ul > li:hover {
   box-shadow: 0 24px 48px rgb(0 0 0 / 45%);
 }
 
+/* stylelint-disable no-descending-specificity */
 main .section.ink .cards .cards-card-body :is(h2, h3, h4),
 main .section.ink .cards .cards-card-body :is(h2, h3, h4) a {
   color: var(--color-parchment);
 }
+/* stylelint-enable no-descending-specificity */
 
 /* ==========================================================================
    "In the News" — dark section: eyebrow + two columns (featured overlay card
