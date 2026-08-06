@@ -1,0 +1,247 @@
+{
+  "url": "https://ouraring.com/blog/introducing-oura-ring-5/",
+  "timestamp": "2026-08-05T21:15:48.157Z",
+  "paths": {
+    "documentPath": "/blog/introducing-oura-ring-5/index",
+    "htmlFilePath": "/blog/introducing-oura-ring-5/index.plain.html",
+    "mdFilePath": "/blog/introducing-oura-ring-5/index.md",
+    "dirPath": "/blog/introducing-oura-ring-5",
+    "filename": "index"
+  },
+  "screenshot": "/backups/scdemos/demo/repo/import-work-blog/screenshot.png",
+  "html": {
+    "filePath": "/backups/scdemos/demo/repo/import-work-blog/cleaned.html",
+    "size": 461316
+  },
+  "metadata": {
+    "title": "Introducing Oura Ring 5: The World’s Smallest Smart Ring - The Pulse Blog",
+    "viewport": "width=device-width, initial-scale=1.0",
+    "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "description": "Smaller and more accurate than ever, Oura Ring 5 delivers more than 50 health metrics in an ultra lightweight, discreet design.",
+    "og:locale": "en_US",
+    "og:type": "article",
+    "og:title": "Introducing Oura Ring 5: The World’s Smallest Smart Ring",
+    "og:description": "Smaller and more accurate than ever, Oura Ring 5 delivers more than 50 health metrics in an ultra lightweight, discreet design.",
+    "og:url": "https://ouraring.com/blog/introducing-oura-ring-5/",
+    "og:site_name": "The Pulse Blog",
+    "article:publisher": "https://www.facebook.com/ouraring",
+    "article:published_time": "2026-05-28T12:00:08+00:00",
+    "article:modified_time": "2026-08-03T17:20:35+00:00",
+    "og:image": "https://ouraring.com/blog/wp-content/uploads/2026/05/oura-ring-5-smart-ring-min.png",
+    "og:image:width": "2100",
+    "og:image:height": "1575",
+    "og:image:type": "image/png",
+    "author": "Oura Team",
+    "twitter:card": "summary_large_image",
+    "twitter:creator": "@ouraring",
+    "twitter:site": "@ouraring",
+    "twitter:label1": "Written by",
+    "twitter:data1": "Oura Team",
+    "twitter:label2": "Est. reading time",
+    "twitter:data2": "3 minutes",
+    "generator": "WP Rocket 3.23.1",
+    "msapplication-TileImage": "https://ouraring.com/blog/wp-content/uploads/2020/08/cropped-oura-o-270x270.png",
+    "canonical": "https://ouraring.com/blog/introducing-oura-ring-5/",
+    "jsonLd": {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Article",
+          "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#article",
+          "isPartOf": {
+            "@id": "https://ouraring.com/blog/introducing-oura-ring-5/"
+          },
+          "author": {
+            "name": "Oura Team",
+            "@id": "https://ouraring.com/blog/#/schema/person/6702adb7b36480a38e7e089a523d63f8"
+          },
+          "headline": "Introducing Oura Ring 5: The World’s Smallest Smart Ring",
+          "datePublished": "2026-05-28T12:00:08+00:00",
+          "dateModified": "2026-08-03T17:20:35+00:00",
+          "mainEntityOfPage": {
+            "@id": "https://ouraring.com/blog/introducing-oura-ring-5/"
+          },
+          "wordCount": 668,
+          "publisher": {
+            "@id": "https://ouraring.com/blog/#organization"
+          },
+          "image": {
+            "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#primaryimage"
+          },
+          "thumbnailUrl": "https://ouraring.com/blog/wp-content/uploads/2026/05/oura-ring-5-smart-ring-min.png",
+          "articleSection": [
+            "Meet Oura",
+            "News",
+            "Oura 101"
+          ],
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://ouraring.com/blog/introducing-oura-ring-5/",
+          "url": "https://ouraring.com/blog/introducing-oura-ring-5/",
+          "name": "Introducing Oura Ring 5: The World’s Smallest Smart Ring - The Pulse Blog",
+          "isPartOf": {
+            "@id": "https://ouraring.com/blog/#website"
+          },
+          "primaryImageOfPage": {
+            "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#primaryimage"
+          },
+          "image": {
+            "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#primaryimage"
+          },
+          "thumbnailUrl": "https://ouraring.com/blog/wp-content/uploads/2026/05/oura-ring-5-smart-ring-min.png",
+          "datePublished": "2026-05-28T12:00:08+00:00",
+          "dateModified": "2026-08-03T17:20:35+00:00",
+          "description": "Smaller and more accurate than ever, Oura Ring 5 delivers more than 50 health metrics in an ultra lightweight, discreet design.",
+          "breadcrumb": {
+            "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#breadcrumb"
+          },
+          "inLanguage": "en-US",
+          "potentialAction": [
+            {
+              "@type": "ReadAction",
+              "target": [
+                "https://ouraring.com/blog/introducing-oura-ring-5/"
+              ]
+            }
+          ]
+        },
+        {
+          "@type": "ImageObject",
+          "inLanguage": "en-US",
+          "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#primaryimage",
+          "url": "https://ouraring.com/blog/wp-content/uploads/2026/05/oura-ring-5-smart-ring-min.png",
+          "contentUrl": "https://ouraring.com/blog/wp-content/uploads/2026/05/oura-ring-5-smart-ring-min.png",
+          "width": 2100,
+          "height": 1575,
+          "caption": "oura ring 5 smart ring"
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://ouraring.com/blog/introducing-oura-ring-5/#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://ouraring.com/blog/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "The Pulse",
+              "item": "https://ouraring.com/blog/the-pulse/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Introducing Oura Ring 5: The World’s Smallest Smart Ring"
+            }
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://ouraring.com/blog/#website",
+          "url": "https://ouraring.com/blog/",
+          "name": "The Pulse Blog",
+          "description": "",
+          "publisher": {
+            "@id": "https://ouraring.com/blog/#organization"
+          },
+          "potentialAction": [
+            {
+              "@type": "SearchAction",
+              "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "https://ouraring.com/blog/?s={search_term_string}"
+              },
+              "query-input": {
+                "@type": "PropertyValueSpecification",
+                "valueRequired": true,
+                "valueName": "search_term_string"
+              }
+            }
+          ],
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://ouraring.com/blog/#organization",
+          "name": "Oura",
+          "alternateName": "Oura Ring",
+          "url": "https://ouraring.com/blog/",
+          "logo": {
+            "@type": "ImageObject",
+            "inLanguage": "en-US",
+            "@id": "https://ouraring.com/blog/#/schema/logo/image/",
+            "url": "https://ouraring.com/blog/wp-content/uploads/2025/08/Blog-Hero-Image-2025-08-29T163759.309.png",
+            "contentUrl": "https://ouraring.com/blog/wp-content/uploads/2025/08/Blog-Hero-Image-2025-08-29T163759.309.png",
+            "width": 700,
+            "height": 525,
+            "caption": "Oura"
+          },
+          "image": {
+            "@id": "https://ouraring.com/blog/#/schema/logo/image/"
+          },
+          "sameAs": [
+            "https://www.facebook.com/ouraring",
+            "https://x.com/ouraring",
+            "https://www.instagram.com/ouraring",
+            "https://www.pinterest.com/ouraring/",
+            "https://www.tiktok.com/@ouraring",
+            "https://www.youtube.com/channel/UCf-xFf4xPcT9DVdOkcCaScg"
+          ],
+          "description": "Discover the Oura, the advanced smart ring designed to make health a daily practice. Engineered in Finland, Oura utilizes highly accurate biometric sensors to deliver continuous, personalized insights into your sleep, fitness, stress, and overall wellbeing.",
+          "legalName": "Oura"
+        },
+        {
+          "@type": "Person",
+          "@id": "https://ouraring.com/blog/#/schema/person/6702adb7b36480a38e7e089a523d63f8",
+          "name": "Oura Team",
+          "image": {
+            "@type": "ImageObject",
+            "inLanguage": "en-US",
+            "@id": "https://ouraring.com/blog/wp-content/uploads/2022/10/Oura-Team-96x96.png",
+            "url": "https://ouraring.com/blog/wp-content/uploads/2022/10/Oura-Team-96x96.png",
+            "contentUrl": "https://ouraring.com/blog/wp-content/uploads/2022/10/Oura-Team-96x96.png",
+            "caption": "Oura Team"
+          },
+          "description": "Oura was founded in Finland in 2013 with a singular focus: to improve the way we live our lives. United by a shared mission to empower people to own their potential, the Oura Team is made up of scientists, engineers, data analysts, researchers, health writers, and more. We are here to help you navigate the vulnerability of health through personal guidance, and we all are unwavering in our commitment to accuracy, validation, and design.",
+          "url": "https://ouraring.com/blog/author/oura-admin/"
+        }
+      ]
+    }
+  },
+  "images": {
+    "count": 18,
+    "mapping": {
+      "https://ouraring.com/blog/wp-content/themes/look-child/assets/images/icon_search.svg": "./images/c167a6ca6cb9d0e59930c021a9524fca.png",
+      "https://ouraring.com/blog/wp-content/themes/look-child/assets/images/glob.svg": "./images/c433533d09df14747b854313eb1a88f4.png",
+      "https://ouraring.com/blog/wp-content/themes/look-child/assets/images/twitter-x-icon.svg": "./images/4f5918f97c7241b4c984279b442dbff9.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/05/oura-ring-5-smart-ring-min-1400x1050.png.webp": "./images/b96b144e7e51f0d90b515221a9aad332.png",
+      "https://yt3.ggpht.com/eGtBLino5zwagUz1hcTShDH0OWgDy8gjxewFbdpUM9qfz8jJmdlhQzCjIOlHnqbiyzX9TUKK3g=s68-c-k-c0x00ffffff-no-rj": "./images/add4da427a36f9f5959e4eb5dc3d33b3.jpg",
+      "https://i.ytimg.com/vi_webp/8C8dC9yQ7m8/sddefault.webp": "./images/01bb26bc91f12ad32c3f29606c3f7366.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/06/Standard-JPG-FY26_OR5_Togetherness_Black_DeepRose_01.jpg.webp": "./images/9d7f952c8cd7a077ca187df5d9a85bfd.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/05/FY26_OR5_ActivityFitness_DeepRose_07.jpg.webp": "./images/18c8aa7912db95ab760e54fabf151c05.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/05/Blog-Hero-Image-16.png.webp": "./images/042388cde87651c920b8e0311dd43287.png",
+      "https://ouraring.com/blog/wp-content/uploads/2024/12/Symptom-Radar-Blog-300x270.png": "./images/5386d1e7df1decb81582a390a6e4ae48.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/07/Blog-Feature-Image-7-min-300x270.png.webp": "./images/1b01f200c394e67c53fa228daf652ff3.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/07/Blog-Feature-Image-9-min-300x270.png.webp": "./images/c3fce7411f41edc28490036827efa8cc.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/07/oura-automatic-activity-detection-min-300x270.png.webp": "./images/68b24d99014151ddf9427c0a21114cb3.png",
+      "https://ouraring.com/blog/wp-content/uploads/2024/12/Symptom-Radar-Blog.png": "./images/e8f316ce9fc5eca4b7bcceec46f5416d.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/07/Blog-Feature-Image-9-min.png.webp": "./images/1ded984c7d62ab28ba048de7029b7f63.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/05/Screenshot-2026-05-27-at-1.05.59-PM.png.webp": "./images/a3b5ea3a1b53a799d5838faad0376fdc.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/07/Blog-Feature-Image-7-min.png.webp": "./images/27ce8bde7906aafd950012506b43e9e2.png",
+      "https://ouraring.com/blog/wp-content/webp-express/webp-images/doc-root/wp-content/uploads/2026/07/oura-automatic-activity-detection-min.png.webp": "./images/82adae225eb268fa94130ef660d4ccbd.png"
+    },
+    "stats": {
+      "total": 20,
+      "converted": 15,
+      "skipped": 3,
+      "failed": 2,
+      "tooLarge": 0,
+      "limitReached": 0
+    }
+  }
+}
