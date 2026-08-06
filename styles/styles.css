@@ -46,21 +46,36 @@
   /* color scheme */
   color-scheme: light dark;
 
-  /* Oura brand palette — exact values sampled from ouraring.com */
-  --color-rust: #1c1b1a;   /* primary/brand → Oura near-black (pill buttons, brand marks) */
-  --color-gold: #3f3c39;   /* hover/accent → warm charcoal */
-  --color-parchment: #f7f1e8;  /* Oura cream (marketing background, bg-sand) */
-  --color-ink: #1c1b1a;    /* deepest near-black → dark surfaces, brand, pill buttons */
-  --color-text-warm: #4a4741; /* Oura primary text/headline → warm near-black rgb(74,71,65) */
-  --color-oura-blue: #2a72de;      /* Oura CTA accent blue rgb(42,114,222) */
-  --color-oura-blue-dark: #205fc0; /* CTA blue hover (darkened ~10%) */
+  /* ============================================================
+     Oura brand palette — Nordic wellness-tech retheme.
+     Warm near-black canvas, sand/cream light surface, brushed
+     titanium neutral, signature warm-amber primary accent paired
+     with a calm muted-teal secondary. Dark-first (mirrors the app).
+     ============================================================ */
+  --color-ink: #14110f;         /* warm near-black — canvas / dark surfaces / brand marks */
+  --color-obsidian: #14110f;    /* dark section background (alias of ink) */
+  --color-rust: #14110f;        /* primary/brand mark → warm near-black (legacy alias) */
+  --color-parchment: #f3ede3;   /* sand/cream light surface (bg-sand) */
+  --color-card-dark: #201b17;   /* matte raised card on the dark canvas */
+  --color-text-warm: #3a352f;   /* primary text/headline on light → warm near-black */
+  --color-gold: #d8a15c;        /* hover/accent → signature warm amber (legacy alias reused as accent) */
+  --color-rust-bright: #f3ede3; /* on-dark surface → cream */
 
-  /* Oura dark palette */
-  --color-obsidian: #1c1b1a;   /* dark section background */
-  --color-card-dark: #2a2826;
-  --color-rust-bright: #f7f1e8; /* on-dark accent → cream */
-  --color-muted: #a8a5a0;      /* Oura muted grey rgb(168,165,160) — for use ON DARK surfaces (footer, ink) */
-  --color-muted-on-light: #6a655e; /* AA-passing warm grey for muted text on cream/white (5.1:1) */
+  /* signature accents */
+  --color-amber: #d8a15c;       /* primary accent — warm amber (CTAs, data rings, links) */
+  --color-amber-dark: #c08842;  /* amber hover (darkened ~12%) */
+  --color-teal: #3f8e8c;        /* secondary accent — calm muted teal */
+  --color-teal-dark: #347473;   /* teal hover */
+  --color-titanium: #c7c2ba;    /* brushed-titanium neutral (borders, hairlines, chrome) */
+
+  /* legacy Oura-blue aliases kept so existing selectors keep resolving —
+     now point at the amber accent so nothing renders blue. */
+  --color-oura-blue: var(--color-amber);
+  --color-oura-blue-dark: var(--color-amber-dark);
+
+  /* muted greys */
+  --color-muted: #a8a29a;          /* muted warm grey — for use ON DARK surfaces (footer, ink) */
+  --color-muted-on-light: #6a655e; /* AA-passing warm grey for muted text on cream (5.1:1) */
 
   /* color tokens – grays and palette */
   --color-gray-100: #f1f1f1;
@@ -118,9 +133,10 @@
   --color-text-muted: light-dark(var(--color-muted-on-light), var(--color-muted)); /* captions, eyebrows, copyright — AA on both schemes */
   --color-link: light-dark(var(--color-text-warm), var(--color-parchment));
   --color-link-hover: light-dark(var(--color-ink), var(--color-gold));
-  --color-brand: var(--color-rust);
-  --color-accent: var(--color-oura-blue); /* Oura CTA blue — site-wide interactive accent */
-  --color-accent-hover: var(--color-oura-blue-dark);
+  --color-brand: var(--color-ink);
+  --color-accent: var(--color-amber); /* warm amber — site-wide interactive accent */
+  --color-accent-hover: var(--color-amber-dark);
+  --color-accent-secondary: var(--color-teal); /* calm muted teal — secondary accent */
   --color-shaded: light-dark(var(--color-parchment), var(--color-card-dark));
 
   /* clean-named background alias (marketing cream in light, obsidian in dark) */
@@ -174,15 +190,18 @@
   --link-color: var(--color-link);
   --link-hover-color: var(--color-link-hover);
 
-  /* heritage border */
-  --border-heritage: 2px solid light-dark(rgb(161 79 43 / 20%), rgb(245 242 237 / 20%));
-  --border-radius-heritage: 24px;
+  /* hairline border — brushed titanium, scheme-aware */
+  --border-heritage: 1px solid light-dark(rgb(58 53 47 / 18%), rgb(199 194 186 / 18%));
+  --border-radius-heritage: 20px;
 
-  /* gradient and glow tokens */
-  --gradient-brand: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
-  --gradient-brand-dark: linear-gradient(135deg, var(--color-rust-bright) 0%, var(--color-gold) 100%);
-  --shadow-glow-rust: 0 0 40px rgb(161 79 43 / 30%);
-  --shadow-glow-gold: 0 0 40px rgb(197 160 89 / 25%);
+  /* gradient and glow tokens — signature amber→teal / amber→warm-neutral */
+  --gradient-brand: linear-gradient(135deg, var(--color-amber) 0%, var(--color-teal) 100%);
+  --gradient-brand-dark: linear-gradient(135deg, var(--color-amber) 0%, var(--color-teal) 100%);
+  --gradient-cta: linear-gradient(135deg, var(--color-amber) 0%, var(--color-amber-dark) 55%, var(--color-teal) 140%);
+  --gradient-warm: linear-gradient(135deg, var(--color-amber) 0%, var(--color-titanium) 100%);
+  --shadow-glow-rust: 0 0 40px rgb(216 161 92 / 28%);
+  --shadow-glow-gold: 0 0 40px rgb(216 161 92 / 25%);
+  --shadow-glow-teal: 0 0 40px rgb(63 142 140 / 22%);
   --shadow-lift-m: 0 20px 40px -8px rgb(0 0 0 / 15%);
   --shadow-lift-l: 0 30px 60px -12px rgb(0 0 0 / 22%);
   --shadow-card: 0 2px 8px rgb(0 0 0 / 5%), 0 1px 2px rgb(0 0 0 / 7%);
@@ -288,6 +307,20 @@ body {
   line-height: var(--body-line-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Signature subtle grain over the canvas — matte, not glossy. A fixed,
+   very-low-opacity fractal-noise layer sits behind content; slightly stronger
+   on the dark scheme where it reads as brushed paper. Pure CSS, no asset. */
+body.appear::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: light-dark(0.02, 0.045);
+  mix-blend-mode: soft-light;
 }
 
 :root body {
@@ -477,12 +510,13 @@ button {
   font: inherit;
 }
 
-/* Primary variant */
+/* Primary variant — signature amber→teal gradient CTA */
 a.button.primary:any-link,
 button.button.primary {
-  border-color: var(--color-rust);
-  background-color: var(--color-rust);
-  color: var(--color-light);
+  border-color: transparent;
+  background-color: var(--color-amber);
+  background-image: var(--gradient-cta);
+  color: #fff;
 }
 
 a.button:any-link:hover,
@@ -508,9 +542,11 @@ a.button.primary:hover,
 a.button.primary:focus-visible,
 button.button.primary:hover,
 button.button.primary:focus-visible {
-  border-color: var(--color-gold);
-  background-color: var(--color-gold);
-  color: var(--color-light);
+  border-color: transparent;
+  background-color: var(--color-amber-dark);
+  background-image: var(--gradient-cta);
+  color: #fff;
+  box-shadow: var(--shadow-glow-gold);
 }
 
 a.button:any-link:focus-visible,
