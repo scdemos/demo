@@ -162,7 +162,13 @@
   gap: var(--space-2xl);
   max-width: var(--article-max);
   margin: 0 auto;
-  padding: var(--space-2xl) var(--content-padding-inline) var(--space-4xl);
+
+  /* Clear the fixed, transparent header (position: fixed reserves no flow
+     space) so the eyebrow/title don't sit under the nav. */
+  padding:
+    calc(var(--nav-height, 64px) + var(--space-2xl))
+    var(--content-padding-inline)
+    var(--space-4xl);
 }
 
 @media (width >= 900px) {
