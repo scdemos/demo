@@ -135,8 +135,8 @@ main .networth-calculator .networth-calculator-metric {
 }
 
 main .networth-calculator .networth-calculator-metric:hover {
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 35%));
-  box-shadow: 0 8px 24px light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 8%));
+  border-color: light-dark(var(--color-gold), rgb(var(--rgb-amber) / 35%));
+  box-shadow: 0 8px 24px light-dark(rgb(var(--rgb-amber) / 10%), rgb(var(--rgb-amber) / 8%));
 }
 
 main .networth-calculator .networth-calculator-metric h3 {

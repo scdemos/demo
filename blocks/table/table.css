@@ -55,7 +55,7 @@
 }
 
 .table table tbody tr:hover {
-  background-color: light-dark(rgb(161 79 43 / 4%), rgb(197 160 89 / 5%));
+  background-color: light-dark(rgb(var(--rgb-amber) / 4%), rgb(var(--rgb-amber) / 5%));
 }
 
 .table table th p,
@@ -78,7 +78,7 @@
 }
 
 .table.striped tbody tr:nth-child(odd):hover {
-  background-color: light-dark(rgb(161 79 43 / 6%), rgb(197 160 89 / 8%));
+  background-color: light-dark(rgb(var(--rgb-amber) / 6%), rgb(var(--rgb-amber) / 8%));
 }
 
 /* bordered variant */

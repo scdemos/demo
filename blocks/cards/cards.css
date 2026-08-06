@@ -25,8 +25,8 @@
 
 .cards > ul > li:hover {
   transform: translateY(-8px);
-  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+  box-shadow: 0 24px 48px light-dark(rgb(var(--rgb-amber) / 18%), rgb(var(--rgb-amber) / 18%));
+  border-color: light-dark(var(--color-gold), rgb(var(--rgb-amber) / 45%));
 }
 
 /* Article wrapper — layout-invisible so the card link remains the direct flex child */
@@ -126,7 +126,7 @@
 
 .cards.bento > ul > li:hover {
   transform: translateY(-10px);
-  box-shadow: 0 32px 64px -12px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  box-shadow: 0 32px 64px -12px light-dark(rgb(var(--rgb-amber) / 25%), rgb(var(--rgb-amber) / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(var(--rgb-amber) / 40%));
   border-color: var(--color-gold);
 }
 
@@ -187,7 +187,7 @@
   outline: 2px solid var(--color-gold);
   outline-offset: 3px;
   border-radius: var(--border-radius-heritage);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 20%);
+  box-shadow: 0 0 0 4px rgb(var(--rgb-amber) / 20%);
 }
 
 /* Image — stretch to card edges */
@@ -273,7 +273,7 @@
   margin-inline: auto;
   font-family: var(--font-family-serif);
   font-weight: 300;
-  color: #4a4741;
+  color: var(--color-text-warm);
 }
 
 /* italic serif "a voice" (authored as <em>) */
@@ -294,7 +294,8 @@
   margin-bottom: var(--space-4xl);
 }
 
-/* "Why Oura" button — filled pill in the same #4A4741 tone as the heading.
+/* "Why Oura" button — filled pill in the same warm-charcoal tone as the heading
+   (var(--color-text-warm)).
    Targets the intro link directly (the wrapper only has this one link) so it
    styles as a pill whether or not decorateButtons applied `.button` — DA's
    markup nesting can prevent that class from being added. Pill padding/shape is
@@ -302,9 +303,9 @@
 .section:has(.cards.overlay) .default-content-wrapper p a:any-link {
   display: inline-block;
   padding: 12px 28px;
-  border: 1px solid #4a4741;
+  border: 1px solid var(--color-text-warm);
   border-radius: 999px;
-  background-color: #4a4741;
+  background-color: var(--color-text-warm);
   color: #fff;
   font-size: 0.95rem;
   text-decoration: none;
@@ -395,7 +396,7 @@
   gap: var(--space-xs);
   padding: 7px 14px 7px 10px;
   border-radius: 999px;
-  background: rgb(28 27 26 / 45%);
+  background: rgb(var(--rgb-ink) / 45%);
   backdrop-filter: blur(6px);
   color: #fff;
   font-size: var(--body-font-size-s);
@@ -461,7 +462,7 @@
 .cards.overlay .cards-carousel-footer {
   margin-top: var(--space-l);
   padding-top: var(--space-l);
-  border-top: 1px solid light-dark(rgb(28 27 26 / 15%), rgb(247 241 232 / 20%));
+  border-top: 1px solid light-dark(rgb(var(--rgb-ink) / 15%), rgb(var(--rgb-parchment) / 20%));
 }
 
 .cards.overlay .cards-carousel-controls {
@@ -488,7 +489,7 @@
 
 /* Prev = outlined circle; Next = filled dark circle */
 .cards.overlay .cards-carousel-prev {
-  border: 1px solid light-dark(rgb(28 27 26 / 30%), rgb(247 241 232 / 40%));
+  border: 1px solid light-dark(rgb(var(--rgb-ink) / 30%), rgb(var(--rgb-parchment) / 40%));
   background: transparent;
   color: var(--color-ink);
 }
@@ -552,7 +553,7 @@ main > .section.cards-container:has(.cards.product) > div {
 
 .cards.product > ul > li:hover {
   transform: none;
-  box-shadow: 0 20px 40px rgb(28 27 26 / 20%);
+  box-shadow: 0 20px 40px rgb(var(--rgb-ink) / 20%);
   border-color: transparent;
 }
 
@@ -680,14 +681,14 @@ main > .section.cards-container:has(.cards.product) > div {
 
 /* stylelint-disable-next-line no-descending-specificity */
 .cards.product article > :last-child .button-container + .button-container a.button:any-link {
-  border-color: rgb(247 241 232 / 70%);
+  border-color: rgb(var(--rgb-parchment) / 70%);
   background-color: transparent;
   color: #fff;
 }
 
 .cards.product article > :last-child .button-container + .button-container a.button:any-link:hover {
   border-color: #fff;
-  background-color: rgb(247 241 232 / 12%);
+  background-color: rgb(var(--rgb-parchment) / 12%);
   color: #fff;
 }
 
@@ -704,12 +705,12 @@ main > .section.cards-container:has(.cards.product) > div {
    ========================================================================== */
 main .section.ink .cards > ul > li {
   background: var(--color-card-dark);
-  border-color: rgb(247 241 232 / 12%);
+  border-color: rgb(var(--rgb-parchment) / 12%);
   box-shadow: none;
 }
 
 main .section.ink .cards > ul > li:hover {
-  border-color: rgb(247 241 232 / 40%);
+  border-color: rgb(var(--rgb-parchment) / 40%);
   box-shadow: 0 24px 48px rgb(0 0 0 / 45%);
 }
 

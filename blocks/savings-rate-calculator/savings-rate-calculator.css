@@ -143,8 +143,8 @@ main .savings-rate-calculator .savings-rate-calculator-metric {
 }
 
 main .savings-rate-calculator .savings-rate-calculator-metric:hover {
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 35%));
-  box-shadow: 0 8px 24px light-dark(rgb(161 79 43 / 10%), rgb(197 160 89 / 8%));
+  border-color: light-dark(var(--color-gold), rgb(var(--rgb-amber) / 35%));
+  box-shadow: 0 8px 24px light-dark(rgb(var(--rgb-amber) / 10%), rgb(var(--rgb-amber) / 8%));
 }
 
 main .savings-rate-calculator .savings-rate-calculator-metric h3 {

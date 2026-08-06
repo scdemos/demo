@@ -35,8 +35,8 @@ main .social-share .social-share-dock::before {
   z-index: -1;
   border-radius: 999px;
   background:
-    radial-gradient(circle at top, rgb(197 160 89 / 20%), transparent 58%),
-    radial-gradient(circle at bottom, rgb(161 79 43 / 20%), transparent 60%);
+    radial-gradient(circle at top, rgb(var(--rgb-amber) / 20%), transparent 58%),
+    radial-gradient(circle at bottom, rgb(var(--rgb-amber) / 20%), transparent 60%);
   filter: blur(20px);
   opacity: 0.8;
   pointer-events: none;
@@ -49,7 +49,7 @@ main .social-share .social-share-list {
   margin: 0;
   padding: 0.55rem;
   list-style: none;
-  border: 1px solid light-dark(rgb(161 79 43 / 16%), rgb(245 242 237 / 12%));
+  border: 1px solid light-dark(rgb(var(--rgb-amber) / 16%), rgb(245 242 237 / 12%));
   border-radius: 999px;
   background:
     linear-gradient(
@@ -100,12 +100,12 @@ main .social-share .social-share-action {
 main .social-share .social-share-action:hover,
 main .social-share .social-share-action:focus-visible {
   color: light-dark(var(--color-rust), var(--color-gold));
-  border-color: light-dark(rgb(161 79 43 / 22%), rgb(197 160 89 / 28%));
+  border-color: light-dark(rgb(var(--rgb-amber) / 22%), rgb(var(--rgb-amber) / 28%));
   transform: translateX(-2px) scale(1.04);
   outline: none;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 72%),
-    0 18px 24px -18px rgb(161 79 43 / 55%);
+    0 18px 24px -18px rgb(var(--rgb-amber) / 55%);
 }
 
 main .social-share .social-share-action svg {

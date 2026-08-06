@@ -17,7 +17,7 @@ main .teaser {
 main .teaser:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lift-m);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
+  border-color: light-dark(var(--color-gold), rgb(var(--rgb-amber) / 40%));
 }
 
 main .teaser > div {

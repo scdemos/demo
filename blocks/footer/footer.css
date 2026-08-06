@@ -104,7 +104,7 @@ footer .footer .footer-newsletter-form {
   margin-bottom: var(--space-m);
 
   /* bordered/outlined rounded box (source), not a bare underline */
-  border: 1px solid rgb(247 241 232 / 40%);
+  border: 1px solid rgb(var(--rgb-parchment) / 40%);
   border-radius: 8px;
   padding-right: var(--space-xs);
 }
@@ -159,7 +159,7 @@ footer .footer .footer-lead-band a[href='/privacy-policy'] {
 /* ===== Band 3: link columns ===== */
 footer .footer .footer-links-band {
   padding-block: var(--space-l);
-  border-top: 1px solid rgb(247 241 232 / 12%);
+  border-top: 1px solid rgb(var(--rgb-parchment) / 12%);
 }
 
 footer .footer .footer-links-grid {
@@ -213,7 +213,7 @@ footer .footer .footer-links-band a em {
    wrapper (not the band) is the flex/layout host. */
 footer .footer .footer-legal-band {
   padding-top: var(--space-l);
-  border-top: 1px solid rgb(247 241 232 / 12%);
+  border-top: 1px solid rgb(var(--rgb-parchment) / 12%);
   font-size: 0.72rem;
 }
 
@@ -243,7 +243,7 @@ footer .footer .footer-locale-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--space-xs);
-  border: 1px solid rgb(247 241 232 / 30%);
+  border: 1px solid rgb(var(--rgb-parchment) / 30%);
   border-radius: 999px;
   background: transparent;
   color: inherit;
@@ -260,8 +260,8 @@ footer .footer .footer-locale-toggle::before {
 }
 
 footer .footer .footer-locale-toggle:hover {
-  border-color: rgb(247 241 232 / 70%);
-  background: rgb(247 241 232 / 8%);
+  border-color: rgb(var(--rgb-parchment) / 70%);
+  background: rgb(var(--rgb-parchment) / 8%);
 }
 
 /* ===== Tablet ===== */

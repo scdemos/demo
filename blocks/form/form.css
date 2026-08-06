@@ -77,7 +77,7 @@ main .form form {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
   border-color: var(--color-gold);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 12%);
+  box-shadow: 0 0 0 4px rgb(var(--rgb-amber) / 12%);
 }
 
 .form input:disabled,
@@ -257,7 +257,7 @@ main .form form {
   background: var(--color-gold);
   border-color: var(--color-gold);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 25%));
+  box-shadow: 0 8px 20px light-dark(rgb(var(--rgb-amber) / 25%), rgb(var(--rgb-amber) / 25%));
 }
 
 .form .button-wrapper button.button.secondary {

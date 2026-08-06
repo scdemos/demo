@@ -68,6 +68,14 @@
   --color-teal-dark: #347473;   /* teal hover */
   --color-titanium: #c7c2ba;    /* brushed-titanium neutral (borders, hairlines, chrome) */
 
+  /* RGB channel tokens — the SAME brand hues as space-separated channels so blocks
+     can alpha-composite them, e.g. rgb(var(--rgb-amber) / 18%). Repointing these
+     retints every block border/shadow/tint site-wide (single chokepoint). */
+  --rgb-amber: 216 161 92;      /* = --color-amber #d8a15c */
+  --rgb-teal: 63 142 140;       /* = --color-teal #3f8e8c */
+  --rgb-ink: 20 17 15;          /* = --color-ink #14110f */
+  --rgb-parchment: 243 237 227; /* = --color-parchment #f3ede3 */
+
   /* legacy Oura-blue aliases kept so existing selectors keep resolving —
      now point at the amber accent so nothing renders blue. */
   --color-oura-blue: var(--color-amber);
@@ -202,6 +210,7 @@
   --shadow-glow-rust: 0 0 40px rgb(216 161 92 / 28%);
   --shadow-glow-gold: 0 0 40px rgb(216 161 92 / 25%);
   --shadow-glow-teal: 0 0 40px rgb(63 142 140 / 22%);
+  --grain-opacity: light-dark(0.02, 0.045); /* canvas grain — stronger on dark (brushed paper) */
   --shadow-lift-m: 0 20px 40px -8px rgb(0 0 0 / 15%);
   --shadow-lift-l: 0 30px 60px -12px rgb(0 0 0 / 22%);
   --shadow-card: 0 2px 8px rgb(0 0 0 / 5%), 0 1px 2px rgb(0 0 0 / 7%);
@@ -292,7 +301,7 @@ html {
 }
 
 ::selection {
-  background: light-dark(rgb(28 27 26 / 15%), rgb(247 241 232 / 25%));
+  background: light-dark(rgb(var(--rgb-ink) / 15%), rgb(var(--rgb-parchment) / 25%));
   color: inherit;
 }
 
@@ -319,7 +328,7 @@ body.appear::before {
   z-index: -1;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: light-dark(0.02, 0.045);
+  opacity: var(--grain-opacity);
   mix-blend-mode: soft-light;
 }
 
@@ -425,7 +434,7 @@ pre {
 
 :not(pre) > code {
   padding: 0.1em 0.35em;
-  background: rgb(161 79 43 / 10%);
+  background: rgb(var(--rgb-amber) / 10%);
   border-radius: 4px;
   color: var(--color-rust);
 }
@@ -526,7 +535,7 @@ button.button:focus-visible {
   background-color: light-dark(var(--color-gold), #fff);
   border-color: light-dark(var(--color-gold), #fff);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px light-dark(rgb(28 27 26 / 22%), rgb(0 0 0 / 45%));
+  box-shadow: 0 10px 24px light-dark(rgb(var(--rgb-ink) / 22%), rgb(0 0 0 / 45%));
   cursor: pointer;
   text-decoration: none;
 }
@@ -568,22 +577,24 @@ button.button:disabled:focus-visible {
   pointer-events: none;
 }
 
+/* Secondary CTA carries the calm muted-teal accent — the counterpart to the
+   amber primary. Together they express the signature amber↔teal duality. */
 a.button.secondary,
 button.button.secondary {
-  border: 1.5px solid var(--color-rust);
+  border: 1.5px solid var(--color-accent-secondary);
   background-color: transparent;
-  color: var(--color-rust);
+  color: light-dark(var(--color-teal-dark), var(--color-teal));
 }
 
 a.button.secondary:hover,
 a.button.secondary:focus-visible,
 button.button.secondary:hover,
 button.button.secondary:focus-visible {
-  border-color: var(--color-gold);
-  background-color: light-dark(rgb(197 160 89 / 8%), rgb(197 160 89 / 12%));
-  color: var(--color-gold);
+  border-color: var(--color-accent-secondary);
+  background-color: light-dark(rgb(var(--rgb-teal) / 8%), rgb(var(--rgb-teal) / 14%));
+  color: light-dark(var(--color-teal-dark), var(--color-teal));
   transform: translateY(-3px);
-  box-shadow: 0 14px 30px light-dark(rgb(197 160 89 / 18%), rgb(197 160 89 / 22%));
+  box-shadow: 0 14px 30px light-dark(rgb(var(--rgb-teal) / 18%), rgb(var(--rgb-teal) / 22%));
 }
 
 /* main content area – use design tokens for rhythm */
@@ -762,15 +773,15 @@ main > .section.warm {
   background-image:
     repeating-linear-gradient(
       45deg,
-      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 0,
-      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 1px,
+      light-dark(rgb(var(--rgb-amber) / 4%), rgb(245 242 237 / 2%)) 0,
+      light-dark(rgb(var(--rgb-amber) / 4%), rgb(245 242 237 / 2%)) 1px,
       transparent 1px,
       transparent 12px
     ),
     repeating-linear-gradient(
       -45deg,
-      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 0,
-      light-dark(rgb(161 79 43 / 4%), rgb(245 242 237 / 2%)) 1px,
+      light-dark(rgb(var(--rgb-amber) / 4%), rgb(245 242 237 / 2%)) 0,
+      light-dark(rgb(var(--rgb-amber) / 4%), rgb(245 242 237 / 2%)) 1px,
       transparent 1px,
       transparent 12px
     );
