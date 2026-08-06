@@ -5,9 +5,12 @@
    full-bleed overlay treatment used on marketing pages.
    ========================================================================== */
 
-/* Article measure — a narrow readable column, centered. */
+/* Article measures — the outer two-column width, and the readable body column.
+   Hero elements and the content grid align to the same left edge (--article-max),
+   so the layout reads as a single left-anchored column with a right sidebar. */
 .article main {
-  --article-measure: 720px;
+  --article-max: 1120px;
+  --article-measure: 640px;
 }
 
 /* --------------------------------------------------------------------------
@@ -17,11 +20,11 @@
   position: relative;
   min-height: 0;
   margin-top: 0;
-  padding: var(--space-2xl) var(--content-padding-inline) 0;
+  padding: 0;
   background: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
 }
 
 /* order: title (text cell) first, image second, byline (appended) last */
@@ -38,7 +41,7 @@
 }
 
 /* Title cell — reset the overlay positioning from hero.css to normal flow,
-   left-aligned, constrained to the article measure. */
+   left-aligned, full column width (the column itself is constrained by the grid). */
 .article .hero .hero-text,
 .article .hero > div:last-child {
   position: static;
@@ -46,8 +49,8 @@
   z-index: auto;
   display: block;
   width: 100%;
-  max-width: var(--article-measure);
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 0;
 }
 
@@ -85,13 +88,13 @@
   text-align: left;
 }
 
-/* Hero image — contained, full column width, gentle rounding, ~2:1 crop */
+/* Hero image — full column width, gentle rounding, ~16:10 crop */
 .article .hero .hero-img {
   position: static;
   inset: auto;
   width: 100%;
-  max-width: var(--article-measure);
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   height: auto;
 }
 
@@ -122,8 +125,8 @@
   justify-content: flex-start;
   gap: 0 var(--space-s);
   width: 100%;
-  max-width: var(--article-measure);
-  margin: var(--space-l) auto 0;
+  max-width: none;
+  margin: var(--space-m) 0 0;
   padding-top: var(--space-m);
   border-top: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 18%));
 }
@@ -151,22 +154,44 @@
 }
 
 /* --------------------------------------------------------------------------
-   Article body — one narrow centered column of clean editorial content.
+   Two-column layout — left column (hero + body) beside a right sidebar.
    -------------------------------------------------------------------------- */
-.article main .article-body {
-  display: block;
+.article main .article-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2xl);
+  max-width: var(--article-max);
+  margin: 0 auto;
   padding: var(--space-2xl) var(--content-padding-inline) var(--space-4xl);
 }
 
+@media (width >= 900px) {
+  .article main .article-layout.has-aside {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--space-4xl);
+    align-items: start;
+  }
+}
+
+.article main .article-main {
+  min-width: 0;
+}
+
+/* Article body — clean editorial content, full left-column width */
+.article main .article-body {
+  display: block;
+  padding: var(--space-2xl) 0 0;
+}
+
 .article main .article-body .section {
-  max-width: var(--article-measure);
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 0;
 }
 
 .article main .article-body .default-content-wrapper {
-  max-width: var(--article-measure);
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
 }
 
 /* Body copy — 18px / 1.5, warm dark, generous paragraph spacing */
@@ -263,4 +288,138 @@
 .article main .article-body p.button-container a.button:any-link:hover {
   background: var(--color-oura-blue-dark);
   text-decoration: none;
+}
+
+/* --------------------------------------------------------------------------
+   Right sidebar — Recent Posts list + "Join the Community" promo card.
+   -------------------------------------------------------------------------- */
+.article main .article-aside {
+  min-width: 0;
+}
+
+@media (width >= 900px) {
+  .article main .article-aside {
+    position: sticky;
+    top: calc(var(--nav-height, 64px) + var(--space-l));
+  }
+}
+
+.article main .article-aside .section {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* "Recent Posts" heading */
+.article main .article-aside h3 {
+  margin: 0 0 var(--space-l);
+  font-family: var(--body-font-family);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.article main .article-aside h3::after {
+  content: none;
+}
+
+/* Recent Posts list — divided rows, no bullets */
+.article main .article-aside ul {
+  list-style: none;
+  margin: 0 0 var(--space-2xl);
+  padding: 0;
+  border-top: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 14%));
+}
+
+.article main .article-aside li {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 14%));
+}
+
+.article main .article-aside li a:any-link {
+  display: block;
+  padding: var(--space-m) 0;
+  font-size: var(--body-font-size-s);
+  line-height: 1.4;
+  color: light-dark(var(--color-text-warm), var(--color-parchment));
+  text-decoration: none;
+}
+
+.article main .article-aside li a:hover,
+.article main .article-aside li a:focus-visible {
+  color: #51b7e0;
+}
+
+/* "Join the Community" promo card — image with overlaid title + Shop Now pill */
+.article main .article-aside p:has(img) {
+  position: relative;
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.article main .article-aside p:has(img) img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+/* dark scrim so the overlaid title + button read on any photo */
+.article main .article-aside p:has(img)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 25%) 0%, transparent 35%, transparent 55%, rgb(0 0 0 / 35%) 100%);
+  pointer-events: none;
+}
+
+/* "Join the Community" caption — pill at the top of the card */
+.article main .article-aside p:has(img) + p {
+  position: absolute;
+  top: var(--space-l);
+  left: 50%;
+  z-index: 1;
+  margin: 0;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #fff;
+  font-size: var(--body-font-size-s);
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+/* "Shop Now" button — pill near the bottom of the card */
+.article main .article-aside p:has(img) ~ p:last-child {
+  position: absolute;
+  bottom: var(--space-l);
+  left: 50%;
+  top: auto;
+  z-index: 1;
+  margin: 0;
+  transform: translateX(-50%);
+  background: none;
+  padding: 0;
+}
+
+.article main .article-aside p:has(img) ~ p:last-child a:any-link {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 999px;
+  background: #a2d3e8;
+  color: var(--color-ink);
+  font-size: var(--body-font-size-s);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.article main .article-aside p:has(img) ~ p:last-child a:hover {
+  background: #8ec7e0;
 }

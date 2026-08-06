@@ -37,11 +37,35 @@ export default function init(root = document) {
     if (authorDate) hero.append(authorDate);
   }
 
-  // Wrap all non-hero content sections in <article> for semantic correctness
+  // Two-column layout (matches the source blog): the LEFT column holds the hero
+  // (title → image → byline) followed by the article body; the RIGHT column is a
+  // sidebar built from sections flagged `Style: aside`. A .article-layout grid
+  // wraps both so the sidebar aligns to the top next to the title.
   const contentSections = [...main.querySelectorAll(':scope > .section:not(.hero-container)')];
-  if (contentSections.length && !main.querySelector('article.article-body')) {
+  if (contentSections.length && !main.querySelector('.article-layout')) {
+    const layout = createTag('div', { class: 'article-layout' });
+    const mainCol = createTag('div', { class: 'article-main' });
     const article = createTag('article', { class: 'article-body' });
-    contentSections[0].before(article);
-    contentSections.forEach((s) => article.append(s));
+    const asideSections = [];
+
+    // Anchor the grid where the hero currently sits, then move the hero into
+    // the left column so the sidebar can rise to the same top edge.
+    (hero || contentSections[0]).before(layout);
+    if (hero) mainCol.append(hero);
+
+    contentSections.forEach((s) => {
+      if (s.classList.contains('aside')) asideSections.push(s);
+      else article.append(s);
+    });
+
+    mainCol.append(article);
+    layout.append(mainCol);
+
+    if (asideSections.length) {
+      const aside = createTag('aside', { class: 'article-aside' });
+      asideSections.forEach((s) => aside.append(s));
+      layout.append(aside);
+      layout.classList.add('has-aside');
+    }
   }
 }
