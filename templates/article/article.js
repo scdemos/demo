@@ -1,28 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { createTag, formatDate } from '../../scripts/shared.js';
 
-function buildBreadcrumb(root = document) {
-  const segments = window.location.pathname.split('/').filter(Boolean);
-  if (!segments.length) return null;
-
-  const nav = createTag('nav', { class: 'article-breadcrumb', 'aria-label': 'Breadcrumb' });
-  const list = createTag('ol');
-  const title = root.querySelector('main .hero h1')?.textContent?.trim() || root.title;
-
-  list.append(createTag('li', {}, createTag('a', { href: '/' }, 'Home')));
-
-  let path = '';
-  segments.slice(0, -1).forEach((segment) => {
-    path += `/${segment}`;
-    const label = segment.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-    list.append(createTag('li', {}, createTag('a', { href: path }, label)));
-  });
-
-  list.append(createTag('li', { 'aria-current': 'page' }, title));
-  nav.append(list);
-  return nav;
-}
-
 function buildAuthorDate() {
   const author = getMetadata('author');
   const date = getMetadata('date');
@@ -50,16 +28,13 @@ export default function init(root = document) {
   if (!main) return;
 
   const hero = main.querySelector('.hero');
-  const heroText = main.querySelector('.hero > div:last-child > div');
 
-  if (hero && !main.querySelector('.article-breadcrumb')) {
-    const breadcrumb = buildBreadcrumb(root);
-    if (breadcrumb) hero.insertAdjacentElement('afterend', breadcrumb);
-  }
-
-  if (heroText && !heroText.querySelector('.article-author-container')) {
+  // Byline sits BELOW the hero image (matches the source blog: title → image →
+  // author/date). Append it to the hero itself, not the title cell, and let CSS
+  // order place it last.
+  if (hero && !hero.querySelector('.article-author-container')) {
     const authorDate = buildAuthorDate();
-    if (authorDate) heroText.append(authorDate);
+    if (authorDate) hero.append(authorDate);
   }
 
   // Wrap all non-hero content sections in <article> for semantic correctness
