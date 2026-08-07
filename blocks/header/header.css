@@ -556,6 +556,19 @@ header nav .nav-sections .default-content-wrapper > ul > li > ul > li:not(.nav-m
     text-decoration: none;
   }
 
+  /* icon + label rows in the mobile accordion: lay the link out as a left-aligned
+     flex row so the leading icon sits beside its label (desktop uses the same
+     pattern, scoped to min-width:900). The link may be wrapped in a <p> and can
+     live in a grouped (.nav-mega-has-groups) list, so match it as a descendant
+     of the icon-bearing item rather than a direct child. */
+  header nav .nav-sections .default-content-wrapper > ul > li.nav-drop-mega > ul li.nav-mega-item-has-icon a:has(.nav-mega-item-icon) {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    text-align: left;
+    justify-content: flex-start;
+  }
+
   header nav .nav-sections .default-content-wrapper > ul > li > ul > .nav-mega-inner > li.nav-mega-heading + li.nav-mega-heading {
     margin-top: var(--space-m);
     padding-top: var(--space-m);
