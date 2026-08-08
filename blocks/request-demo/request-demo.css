@@ -1,0 +1,293 @@
+/* ==========================================================================
+   Request demo — two-column band: value proposition (left) + demo form (right).
+   Source: publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+.request-demo.block {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+
+/* ----- Left column ----- */
+.request-demo .request-demo-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+}
+
+.request-demo .request-demo-info :is(h2, h3) {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* Checkmark value points */
+.request-demo .request-demo-points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.request-demo .request-demo-points li {
+  position: relative;
+  padding-left: 36px;
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  line-height: 1.4;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+.request-demo .request-demo-points li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  background-color: light-dark(var(--color-ink), var(--color-parchment));
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>') no-repeat center / contain;
+}
+
+/* Stat callouts — each stat expands to fill an equal share of the column so
+   they spread evenly across the width (matching the source's flex-1 layout). */
+.request-demo .request-demo-stats {
+  display: flex;
+  gap: var(--space-l);
+  margin-top: var(--space-m);
+}
+
+.request-demo .request-demo-stat {
+  flex: 1;
+}
+
+.request-demo .request-demo-stat-num {
+  display: block;
+  font-family: var(--font-family);
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: light-dark(#000, var(--color-parchment));
+}
+
+.request-demo .request-demo-stat-label {
+  margin: 4px 0 0;
+  font-family: var(--font-family-body);
+  font-size: 16px;
+  line-height: 1.4;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* Trusted-by line (last paragraph in the left column) */
+.request-demo .request-demo-info > p:last-of-type {
+  margin: 0;
+  padding-top: var(--space-m);
+  border-top: 1px solid light-dark(var(--color-gray-200, #ddd), rgb(255 255 255 / 18%));
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* Client logos */
+.request-demo .request-demo-logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+.request-demo .request-demo-logos img {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ----- Right column: form ----- */
+.request-demo .request-demo-form-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+.request-demo .request-demo-form-col :is(h2, h3) {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1.1;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- unrelated column paragraph; source order intentional */
+.request-demo .request-demo-form-col > p {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  line-height: 1.5;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+.request-demo .request-demo-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+  margin-top: var(--space-s);
+}
+
+.request-demo .request-demo-required {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  color: light-dark(rgb(102 102 102), var(--color-gray-300));
+}
+
+.request-demo .request-demo-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-l);
+}
+
+.request-demo .request-demo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.request-demo .request-demo-field label {
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.request-demo .request-demo-field :is(input, select, textarea) {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid light-dark(var(--color-gray-200, #ccc), rgb(255 255 255 / 30%));
+  border-radius: 8px;
+  background: light-dark(#fff, var(--color-card-dark));
+  font-family: var(--font-family-body);
+  font-size: 16px;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.request-demo .request-demo-field :is(input, select, textarea):focus {
+  outline: 2px solid var(--color-rust);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.request-demo .request-demo-message textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+/* Footer: consent + submit */
+.request-demo .request-demo-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+}
+
+.request-demo .request-demo-consent {
+  display: flex;
+  gap: 10px;
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  line-height: 1.4;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+.request-demo .request-demo-consent input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--color-rust);
+}
+
+.request-demo .request-demo-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 12px 28px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--color-rust);
+  font-family: var(--font-family-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.request-demo .request-demo-submit::after {
+  content: '→';
+  transition: transform 0.25s ease;
+}
+
+.request-demo .request-demo-submit:hover {
+  background: var(--color-gold);
+}
+
+.request-demo .request-demo-submit:hover::after {
+  transform: translateX(4px);
+}
+
+/* Privacy / legal note */
+.request-demo .request-demo-privacy {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  line-height: 1.5;
+  color: light-dark(rgb(102 102 102), var(--color-gray-300));
+}
+
+/* ==========================================================================
+   Tablet+: name/company fields sit three-across; consent + submit share a row.
+   ========================================================================== */
+@media (width >= 600px) {
+  .request-demo .request-demo-fields {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Message spans the full width */
+  .request-demo .request-demo-message {
+    grid-column: 1 / -1;
+  }
+
+  .request-demo .request-demo-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-xl);
+  }
+
+  .request-demo .request-demo-submit {
+    align-self: auto;
+    flex: 0 0 auto;
+  }
+}
+
+/* ==========================================================================
+   Desktop: two columns — value prop beside the form.
+   ========================================================================== */
+@media (width >= 900px) {
+  .request-demo.block {
+    grid-template-columns: 5fr 7fr;
+    gap: var(--space-4xl);
+  }
+
+  .request-demo .request-demo-form-col :is(h2, h3) {
+    font-size: 50px;
+  }
+}
