@@ -335,3 +335,44 @@ footer .footer .footer-locale-toggle:hover {
     margin: 0;
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact: trims the generous band padding for a shorter, denser footer */
+footer.compact .footer > div {
+  padding-block: var(--space-xl) var(--space-l);
+}
+
+footer.compact .footer .footer-brand-band {
+  padding-bottom: var(--space-l);
+}
+
+footer.compact .footer .footer-lead-band {
+  padding-bottom: var(--space-m);
+}
+
+/* bordered: an amber hairline across the very top of the footer as a section divider */
+footer.bordered {
+  border-top: 1px solid rgb(var(--rgb-amber) / 30%);
+}
+
+/* centered: center-aligns the brand band and legal bar (single-column style) */
+footer.centered .footer .footer-brand-band .default-content-wrapper {
+  align-items: center;
+  text-align: center;
+}
+
+footer.centered .footer .footer-brand-band ul {
+  justify-content: center;
+}
+
+@media (width >= 900px) {
+  footer.centered .footer .footer-legal-band .default-content-wrapper {
+    justify-content: center;
+    text-align: center;
+  }
+
+  footer.centered .footer .footer-legal-band ul {
+    justify-content: center;
+  }
+}

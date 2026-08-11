@@ -271,3 +271,55 @@ main .form form {
   color: var(--color-gold);
   transform: translateY(-2px);
 }
+
+/* ===== Variations ===== */
+
+/* compact — tighter padding and gaps for dense or embedded placements */
+.form.compact form,
+main .form.compact form {
+  gap: var(--space-xs);
+  padding: var(--space-m);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.form.compact input,
+.form.compact textarea,
+.form.compact select {
+  padding: var(--space-s) 10px;
+}
+
+.form.compact .button-wrapper {
+  margin-top: var(--space-xs);
+}
+
+/* ink — dark, amber-lit card treatment regardless of the active color scheme */
+/* stylelint-disable-next-line no-descending-specificity */
+.form.ink form,
+main .form.ink form {
+  border-color: rgb(var(--rgb-parchment) / 14%);
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.form.ink input,
+.form.ink textarea,
+.form.ink select {
+  border-color: rgb(var(--rgb-parchment) / 22%);
+  background: rgb(var(--rgb-parchment) / 6%);
+  color: var(--color-parchment);
+}
+
+/* inline — fields flow into a responsive row for compact newsletter/lookup forms */
+@media (width >= 600px) {
+  .form.inline form,
+  main .form.inline form {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    align-items: end;
+  }
+
+  .form.inline .button-wrapper {
+    justify-content: flex-start;
+  }
+}

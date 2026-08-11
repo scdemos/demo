@@ -225,3 +225,53 @@
     font-size: var(--heading-font-size-s);
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact — tighter step cards and gaps for dense multi-step journeys */
+.journey-map.compact .journey-map-track {
+  gap: var(--space-s);
+}
+
+.journey-map.compact .journey-map-step {
+  padding: var(--space-m);
+}
+
+.journey-map.compact .journey-map-step-content {
+  margin-top: var(--space-xs);
+}
+
+@media (width >= 900px) {
+  .journey-map.compact .journey-map-step {
+    padding: var(--space-m);
+  }
+}
+
+/* elevated — raised rounded step cards with heritage border and hover lift */
+.journey-map.elevated .journey-map-step {
+  border: var(--border-heritage);
+  border-inline-start-width: 3px;
+  border-radius: var(--border-radius-heritage);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.35s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)), box-shadow 0.35s;
+}
+
+.journey-map.elevated .journey-map-step:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift-m);
+}
+
+.journey-map.elevated .journey-map-step.is-active {
+  box-shadow: var(--shadow-lift-m);
+}
+
+/* teal — recolors active/progress accents from amber to the secondary teal */
+.journey-map.teal .journey-map-step.is-active {
+  border-inline-start-color: var(--color-accent-secondary);
+  box-shadow: 0 4px 16px light-dark(rgb(var(--rgb-teal) / 12%), rgb(var(--rgb-teal) / 10%));
+}
+
+.journey-map.teal .journey-map-progress-item.is-active .journey-map-progress-dot {
+  border-color: var(--color-accent-secondary);
+  box-shadow: 0 0 0 4px rgb(var(--rgb-teal) / 20%);
+}

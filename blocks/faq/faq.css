@@ -86,3 +86,66 @@ main .faq .faq-empty {
     font-size: var(--heading-font-size-m);
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact — dense list for long FAQ sets: tighter rows, category gaps and answer type */
+main .faq.compact .faq-category {
+  margin-bottom: var(--space-l);
+}
+
+main .faq.compact .faq-question {
+  padding: var(--space-s) 0;
+  font-weight: 500;
+}
+
+main .faq.compact .faq-answer {
+  padding-bottom: var(--space-s);
+}
+
+main .faq.compact .faq-answer p {
+  font-size: var(--body-font-size-s);
+  line-height: 1.55;
+}
+
+/* boxed — each question becomes a heritage-bordered, rounded card that lifts on hover */
+main .faq.boxed {
+  max-width: 860px;
+}
+
+main .faq.boxed .faq-item {
+  margin-bottom: var(--space-m);
+  padding: 0 var(--space-l);
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  background: light-dark(var(--color-light), var(--color-card-dark));
+  transition: border-color 0.35s, box-shadow 0.35s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+main .faq.boxed .faq-item:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-lift-m);
+}
+
+/* ink — self-contained dark amber-accented panel regardless of page theme */
+main .faq.ink {
+  padding: var(--space-2xl) var(--space-xl);
+  border-radius: var(--border-radius-heritage);
+  background: var(--color-ink);
+  color: var(--color-parchment);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .faq.ink .faq-item {
+  border-bottom-color: rgb(var(--rgb-parchment) / 15%);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .faq.ink .faq-category-heading,
+main .faq.ink .faq-question {
+  color: var(--color-parchment);
+}
+
+main .faq.ink .faq-answer p {
+  color: rgb(var(--rgb-parchment) / 85%);
+}

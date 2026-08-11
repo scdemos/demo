@@ -364,3 +364,38 @@ main .search .search-filter-item label {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact — tighter card grid and reduced result padding for dense listings */
+main .search.compact .search-results-cards {
+  gap: var(--space-m);
+}
+
+main .search.compact .search-result.is-card .search-result-content {
+  padding: var(--space-s);
+  gap: var(--space-xs);
+}
+
+/* teal — retints focus ring, result strip and card hover to the calm secondary teal */
+main .search.teal .search-query-form input[type="search"]:focus {
+  outline-color: var(--color-accent-secondary);
+  border-color: var(--color-accent-secondary);
+  box-shadow: 0 0 0 4px rgb(var(--rgb-teal) / 12%);
+}
+
+main .search.teal .search-result-strip {
+  background: var(--color-accent-secondary);
+}
+
+main .search.teal .search-result.is-card:hover {
+  box-shadow: 0 20px 40px rgb(var(--rgb-teal) / 16%);
+  border-color: var(--color-accent-secondary);
+}
+
+/* two-up — wider two-column card grid for image-forward or long-title results */
+@media (width >= 900px) {
+  main .search.two-up .search-results-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

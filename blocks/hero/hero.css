@@ -395,3 +395,48 @@ main > .section.hero-container:first-child {
   background-clip: unset;
   color: var(--color-rust);
 }
+
+/* ==========================================================================
+   Variations (author-facing modifier classes)
+   ========================================================================== */
+
+/* teal – secondary-accent background theme (pairs with no-image); parchment
+   copy with an amber italic accent. Use for a calm, cool-toned hero panel. */
+.hero.teal {
+  background-color: var(--color-teal);
+}
+
+.hero.teal h1,
+.hero.teal p:not(.button-container, .hero-tagline) {
+  color: var(--color-parchment);
+}
+
+:root .hero.teal h1 em {
+  background: none;
+  background-clip: unset;
+  color: var(--color-gold);
+}
+
+/* left – left-aligned overlay copy anchored to the start edge instead of
+   centered; use when the hero photo's focal subject sits on the right. */
+.hero.left > div:last-child,
+.hero.left .hero-text {
+  justify-content: flex-start;
+}
+
+.hero.left > div:last-child > div {
+  align-items: flex-start;
+  text-align: left;
+}
+
+/* scrim – dark bottom-up gradient over the photo so overlay text stays legible
+   on busy or light images; use when default copy washes out against the image. */
+.hero.scrim > div:first-child::after,
+.hero.scrim .hero-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgb(var(--rgb-ink) / 65%) 0%, rgb(var(--rgb-ink) / 15%) 45%, transparent 72%);
+  pointer-events: none;
+}

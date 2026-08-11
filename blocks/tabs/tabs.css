@@ -729,3 +729,62 @@ main .section.tabs-container > .default-content-wrapper > p.button-container a.b
     font-size: var(--heading-font-size-m);
   }
 }
+
+/* ==========================================================================
+   Variations (author-facing modifier classes)
+   ========================================================================== */
+
+/* contained – keeps the tabs block within the normal content column instead of
+   breaking full-bleed to 100vw; use when tabs sit inside a narrow article flow. */
+main .section .tabs.contained,
+main .section.tabs.contained {
+  width: auto;
+  max-width: var(--grid-container-width);
+  margin-inline: auto;
+}
+
+/* pill – segmented pill tab bar instead of the underline row: rounded track,
+   filled amber active pill; use for a compact toggle/filter feel. */
+.tabs.pill .tabs-list {
+  gap: var(--space-xs);
+  border-bottom: 0;
+  padding: var(--space-xs);
+  background: light-dark(rgb(var(--rgb-ink) / 6%), rgb(var(--rgb-parchment) / 8%));
+  border-radius: 999px;
+}
+
+.tabs.pill .tabs-list button {
+  border-bottom: 0;
+  border-radius: 999px;
+  padding: 12px 24px;
+}
+
+.tabs.pill .tabs-list button.is-active,
+.tabs.pill .tabs-list button[aria-selected='true'] {
+  border-bottom-color: transparent;
+  background: var(--color-accent);
+  color: var(--color-parchment);
+  -webkit-text-fill-color: var(--color-parchment);
+  opacity: 1;
+}
+
+/* compact – tighter tab buttons and reduced panel padding for dense dashboards
+   or when several tab blocks stack on one page. */
+.tabs.compact .tabs-list button {
+  padding: 12px 14px;
+  font-size: var(--body-font-size-xs);
+}
+
+.tabs.compact .tabs-content {
+  margin-top: var(--space-s);
+}
+
+.tabs.compact .tab .section {
+  padding: var(--space-m) var(--content-padding-inline);
+}
+
+@media (width >= 900px) {
+  .tabs.compact .tabs-list button {
+    padding: 14px 28px;
+  }
+}

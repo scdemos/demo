@@ -290,3 +290,68 @@
     padding-inline: var(--space-l);
   }
 }
+
+/* ===== Variations ===== */
+
+/* grid-options — lay answer options out as a responsive 2-column grid instead of a stack */
+.quiz.grid-options .quiz-options {
+  grid-template-columns: 1fr;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.quiz.grid-options .quiz-option {
+  justify-content: center;
+}
+
+@media (width >= 600px) {
+  .quiz.grid-options .quiz-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-s);
+  }
+}
+
+/* ink — self-contained dark amber-accented card regardless of page theme */
+.quiz.ink .quiz-slider-shell,
+.quiz.ink .quiz-questions-list > .quiz-question {
+  border-color: rgb(var(--rgb-amber) / 25%);
+  background: var(--color-ink);
+  color: var(--color-parchment);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.quiz.ink .quiz-option {
+  border-color: rgb(var(--rgb-parchment) / 20%);
+  color: var(--color-parchment);
+}
+
+.quiz.ink .quiz-option:has(input:checked) {
+  color: var(--color-ink);
+}
+
+.quiz.ink .quiz-nav,
+.quiz.ink .quiz-complete-banner {
+  border-top-color: rgb(var(--rgb-parchment) / 15%);
+}
+
+/* teal — recolors the interactive accent from amber to the secondary teal */
+.quiz.teal .quiz-nav-dot.is-active {
+  background: var(--color-accent-secondary);
+}
+
+.quiz.teal .quiz-option:has(input:checked) {
+  border-color: var(--color-accent-secondary);
+  background: var(--color-accent-secondary);
+  color: var(--color-parchment);
+}
+
+.quiz.teal .quiz-submit {
+  border-color: var(--color-accent-secondary);
+  color: var(--color-parchment);
+  background: var(--color-accent-secondary);
+}
+
+.quiz.teal .quiz-submit:hover {
+  border-color: var(--color-teal-dark);
+  background: var(--color-teal-dark);
+  box-shadow: 0 8px 20px light-dark(rgb(var(--rgb-teal) / 30%), rgb(var(--rgb-teal) / 25%));
+}

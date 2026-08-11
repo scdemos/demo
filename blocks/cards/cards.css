@@ -946,3 +946,69 @@ main .section.ink:has(.cards.no-images) .cards.no-images > ul > li::after {
   line-height: 1;
   pointer-events: none;
 }
+
+/* ==========================================================================
+   Variations (author-facing modifier classes)
+   ========================================================================== */
+
+/* compact – dense grid with tight gaps + padding and more columns; use for
+   large sets of short cards (feature chips, small article lists). */
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.compact > ul {
+  gap: var(--space-s);
+  max-width: 300px;
+}
+
+.cards.compact .cards-card-body {
+  padding: var(--space-s) var(--space-m);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.compact .cards-card-body :is(h2, h3, h4) {
+  font-size: var(--body-font-size-m);
+}
+
+@media (width >= 600px) {
+  .cards.compact > ul {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: none;
+  }
+}
+
+@media (width >= 900px) {
+  .cards.compact > ul {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+/* elevated – borderless floating cards with a soft lift shadow and heritage
+   radius; use to make a card row read as premium / above the page surface. */
+/* stylelint-disable no-descending-specificity */
+.cards.elevated > ul > li {
+  border: 0;
+  border-radius: var(--border-radius-heritage);
+  box-shadow: var(--shadow-lift-m);
+}
+
+.cards.elevated > ul > li:hover {
+  box-shadow: var(--shadow-lift-l);
+  border-color: transparent;
+}
+
+/* teal – secondary-accent color theme: teal hairline + tinted surface, headings
+   in teal, teal glow on hover; use to set a card group apart from amber cards. */
+.cards.teal > ul > li {
+  border-color: rgb(var(--rgb-teal) / 35%);
+  background: light-dark(rgb(var(--rgb-teal) / 6%), var(--color-card-dark));
+}
+
+.cards.teal > ul > li:hover {
+  border-color: var(--color-teal);
+  box-shadow: var(--shadow-glow-teal);
+}
+/* stylelint-enable no-descending-specificity */
+
+/* stylelint-disable-next-line no-descending-specificity */
+.cards.teal .cards-card-body :is(h2, h3, h4) {
+  color: var(--color-teal);
+}

@@ -261,3 +261,44 @@ main .n8n-form input:invalid:not(:placeholder-shown):focus-visible {
     box-shadow: 0 1px 4px light-dark(rgb(0 0 0 / 12%), rgb(0 0 0 / 30%));
   }
 }
+
+/* ===== Variations ===== */
+
+/* elevated — lifts the wrapper into a rounded parchment card with brand shadow */
+.section .n8n-form.elevated .n8n-form-wrapper {
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  box-shadow: light-dark(var(--shadow-lift-m), var(--shadow-card-dark));
+}
+
+/* teal — retint the focus/submit accents to the calm secondary teal */
+/* stylelint-disable no-descending-specificity */
+main .n8n-form.teal input:focus,
+main .n8n-form.teal input:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-accent-secondary);
+}
+/* stylelint-enable no-descending-specificity */
+
+/* stylelint-disable-next-line no-descending-specificity */
+.n8n-form.teal button.button {
+  border-color: var(--color-accent-secondary);
+  background-color: var(--color-accent-secondary);
+}
+
+.n8n-form.teal button.button:hover,
+.n8n-form.teal button.button:focus-visible {
+  border-color: var(--color-teal-dark);
+  background-color: var(--color-teal-dark);
+  box-shadow: var(--shadow-glow-teal);
+}
+
+/* centered — narrows the form and centers labels for a focused single-column CTA */
+.n8n-form.centered .n8n-form-form {
+  max-width: 420px;
+}
+
+.n8n-form.centered .field-wrapper,
+.n8n-form.centered label {
+  text-align: center;
+}

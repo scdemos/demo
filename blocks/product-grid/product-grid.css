@@ -117,3 +117,77 @@
     padding: var(--space-l);
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact — denser 2-up-then-4-up grid with tighter cards for large catalogs */
+.product-grid.compact .product-grid-list {
+  gap: var(--space-m);
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.product-grid.compact .product-grid-body {
+  padding: var(--space-s);
+}
+
+.product-grid.compact .product-grid-title {
+  font-size: var(--body-font-size-s);
+}
+
+@media (width >= 900px) {
+  .product-grid.compact .product-grid-list {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .product-grid.compact .product-grid-body {
+    padding: var(--space-m);
+  }
+}
+
+/* elevated — borderless floating cards on a warm amber-tinted panel */
+.product-grid.elevated {
+  padding: var(--space-xl);
+  border-radius: var(--border-radius-heritage);
+  background: light-dark(rgb(var(--rgb-amber) / 8%), rgb(var(--rgb-amber) / 6%));
+}
+
+.product-grid.elevated .product-grid-item {
+  border-color: transparent;
+  box-shadow: var(--shadow-card);
+}
+
+.product-grid.elevated .product-grid-item:hover {
+  box-shadow: var(--shadow-lift-l);
+}
+
+/* showcase — single-column hero rows with side-by-side image and body on wide screens */
+.product-grid.showcase .product-grid-list {
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+}
+
+.product-grid.showcase .product-grid-title {
+  font-size: var(--heading-font-size-s);
+}
+
+@media (width >= 900px) {
+  .product-grid.showcase .product-grid-link {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .product-grid.showcase .product-grid-image {
+    flex: 1 1 55%;
+  }
+
+  .product-grid.showcase .product-grid-image img {
+    height: 100%;
+    aspect-ratio: 4 / 3;
+  }
+
+  .product-grid.showcase .product-grid-body {
+    flex: 1 1 45%;
+    justify-content: center;
+    padding: var(--space-2xl);
+  }
+}

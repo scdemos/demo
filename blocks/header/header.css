@@ -1786,3 +1786,32 @@ header nav .nav-tools .nav-language-menu a:focus-visible {
     max-width: 1264px;
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact: a lower-profile bar — smaller nav height and reduced desktop top padding */
+header.compact {
+  --nav-height: 52px;
+}
+
+header.compact nav {
+  min-height: var(--nav-height);
+}
+
+@media (width >= 900px) {
+  header.compact nav {
+    padding-top: var(--space-s);
+  }
+}
+
+/* bordered: a persistent hairline under the bar (a divider even before a panel opens) */
+header.bordered .nav-wrapper {
+  border-bottom: 1px solid light-dark(rgb(var(--rgb-ink) / 12%), rgb(var(--rgb-parchment) / 14%));
+}
+
+/* solid: opaque parchment/obsidian fill instead of the transparent hero overlay —
+   for pages that don't have a full-bleed hero behind the header */
+header.solid .nav-wrapper {
+  background-color: var(--nav-bg-mega);
+  box-shadow: var(--header-drop-shadow);
+}

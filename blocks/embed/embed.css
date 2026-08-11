@@ -79,3 +79,46 @@
   border-left: 14px solid rgb(255 255 255 / 90%);
   margin-left: 4px;
 }
+
+/* ===== Variations ===== */
+
+/* framed — wraps the embed in a heritage-bordered, rounded, lifted card */
+.embed.framed .embed-placeholder {
+  border-radius: var(--border-radius-heritage);
+  border: var(--border-heritage);
+  box-shadow: var(--shadow-lift-m);
+}
+
+.embed.framed .embed-placeholder-play button:hover {
+  border-color: var(--color-accent);
+}
+
+/* portrait — 9:16 aspect for vertical video / social reels, capped narrow */
+.embed.portrait .embed-placeholder {
+  aspect-ratio: 9 / 16;
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+/* wide — breaks out to a cinematic full-bleed width with a soft amber glow */
+.embed.wide {
+  max-width: min(100%, 1200px);
+}
+
+.embed.wide .embed-placeholder {
+  border-radius: var(--border-radius-heritage);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+@media (width >= 900px) {
+  .embed.wide {
+    width: 100vw;
+    max-width: 100vw;
+    margin-inline: calc(50% - 50vw);
+  }
+
+  .embed.wide .embed-placeholder {
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+}

@@ -166,3 +166,51 @@
     transform: translateY(-50%);
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact: tighter panel + denser option buttons for a smaller footprint */
+.auth-toggle.compact {
+  padding: var(--space-s);
+  font-size: var(--body-font-size-xs);
+}
+
+.auth-toggle.compact .auth-header {
+  margin-bottom: var(--space-xs);
+}
+
+.auth-toggle.compact .auth-options {
+  gap: var(--space-xs);
+}
+
+.auth-toggle.compact .auth-option-button {
+  padding: var(--space-xs) var(--space-s);
+}
+
+/* ghost: transparent frosted panel with an amber hairline instead of a solid fill */
+.auth-toggle.ghost {
+  border-color: rgb(var(--rgb-amber) / 40%);
+  background: light-dark(rgb(var(--rgb-parchment) / 78%), rgb(var(--rgb-ink) / 72%));
+  backdrop-filter: blur(12px) saturate(140%);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+.auth-toggle.ghost .auth-option-button {
+  border-color: rgb(var(--rgb-amber) / 45%);
+  background: transparent;
+}
+
+.auth-toggle.ghost .auth-option-button:hover {
+  border-color: var(--color-accent);
+  background: rgb(var(--rgb-amber) / 12%);
+}
+
+/* pill: fully rounded panel + pill-shaped option buttons for a softer chrome */
+.auth-toggle.pill {
+  border-radius: var(--border-radius-heritage) 0 0 var(--border-radius-heritage);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.auth-toggle.pill .auth-option-button {
+  border-radius: 999px;
+}

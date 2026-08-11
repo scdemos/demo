@@ -170,3 +170,57 @@ main .social-share .social-share-sr-only {
     transform: translateY(-2px) scale(1.03);
   }
 }
+
+/* ===== Variations ===== */
+
+/* solid: filled amber pill buttons instead of frosted glass — high-contrast CTA feel */
+main .social-share.solid .social-share-list {
+  background: light-dark(rgb(var(--rgb-parchment) / 92%), rgb(var(--rgb-ink) / 92%));
+}
+
+main .social-share.solid .social-share-action {
+  color: var(--color-ink);
+  border-color: transparent;
+  background: var(--gradient-cta);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+main .social-share.solid .social-share-action:hover,
+main .social-share.solid .social-share-action:focus-visible {
+  color: var(--color-ink);
+  border-color: transparent;
+  box-shadow: var(--shadow-lift-m);
+}
+
+/* compact: smaller footprint — tighter dock, gaps and buttons for dense pages */
+main .social-share.compact .social-share-list {
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .social-share.compact .social-share-action {
+  inline-size: 2.2rem;
+  block-size: 2.2rem;
+}
+
+main .social-share.compact .social-share-action svg {
+  inline-size: 0.9rem;
+  block-size: 0.9rem;
+}
+
+/* inline: dock to the bottom-center as a horizontal bar on all viewports,
+   rather than the vertical right rail (useful under article footers) */
+main .social-share.inline {
+  inset-block: auto calc(env(safe-area-inset-bottom, 0px) + var(--space-m));
+  inset-inline: 50% auto;
+  transform: translateX(-50%);
+}
+
+main .social-share.inline:hover {
+  transform: translateX(-50%);
+}
+
+main .social-share.inline .social-share-list {
+  flex-direction: row;
+}

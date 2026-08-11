@@ -1,1 +1,32 @@
 /* stylelint-disable no-empty-source */
+
+/* ===== Variations ===== */
+
+/* narrow: constrain the fragment to a comfortable reading measure, centered */
+.fragment.narrow {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+/* bleed: break the fragment out to full viewport width (edge-to-edge media or
+   banners living inside a padded section) */
+.fragment.bleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* card: present the fragment as a rounded matte panel with a hairline border */
+.fragment.card {
+  padding: var(--space-l);
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  box-shadow: var(--shadow-card);
+}
+
+@media (width >= 900px) {
+  .fragment.card {
+    padding: var(--space-2xl);
+  }
+}

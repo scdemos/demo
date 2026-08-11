@@ -41,3 +41,61 @@
     order: unset;
   }
 }
+
+/* ==========================================================================
+   Variations (author-facing modifier classes)
+   ========================================================================== */
+
+/* split – hard 50/50 columns with a vertical hairline divider and no image
+   rounding; use for side-by-side comparisons where both columns weigh equally. */
+@media (width >= 900px) {
+  .columns.split > div {
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .columns.split > div > div {
+    flex: 1 1 50%;
+    padding-inline: var(--space-2xl);
+  }
+
+  .columns.split > div > div + div {
+    border-left: var(--border-heritage);
+  }
+
+  .columns.split > div > div:first-child {
+    padding-inline-start: 0;
+  }
+
+  .columns.split > div > div:last-child {
+    padding-inline-end: 0;
+  }
+}
+
+/* card – wraps each column in a padded parchment panel with heritage border and
+   radius; use to present columns as distinct grouped blocks rather than open text. */
+.columns.card > div > div {
+  padding: var(--space-l);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.columns.card img {
+  border-radius: 12px;
+}
+
+/* teal-band – full-tint teal section: the columns sit on a teal-washed panel
+   with light text; use to call out a promo or highlighted pairing. */
+.columns.teal-band {
+  padding: var(--space-2xl) var(--space-xl);
+  background: light-dark(rgb(var(--rgb-teal) / 10%), rgb(var(--rgb-teal) / 18%));
+  border-radius: var(--border-radius-heritage);
+  color: light-dark(var(--color-text-warm), var(--color-parchment));
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+.columns.teal-band > div > div :is(h2, h3) {
+  color: var(--color-teal);
+}

@@ -86,3 +86,45 @@
 .table.bordered table td {
   border: 1px solid var(--table-border-color);
 }
+
+/* ==========================================================================
+   Variations (author-facing modifier classes)
+   ========================================================================== */
+
+/* compact – tight cell padding + smaller text for dense reference/spec tables
+   with many rows; use when scanning many values matters more than breathing room. */
+.table.compact table th,
+.table.compact table td {
+  padding: 0.4em 0.6em;
+}
+
+.table.compact table {
+  font-size: var(--body-font-size-xs);
+}
+
+/* spacious – roomy cell padding for short, high-emphasis comparison tables;
+   use when a table has few rows and should feel airy and premium. */
+.table.spacious table th,
+.table.spacious table td {
+  padding: 1.25em 1.5em;
+}
+
+/* accent-header – amber brand-gradient header row with light text and a
+   heritage-rounded top; use to make the header stand out as a labeled band. */
+/* stylelint-disable-next-line no-descending-specificity */
+.table.accent-header table thead tr {
+  border: 0;
+}
+
+.table.accent-header table thead th {
+  background: var(--gradient-brand);
+  color: var(--color-parchment);
+}
+
+.table.accent-header table thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.table.accent-header table thead th:last-child {
+  border-top-right-radius: 12px;
+}

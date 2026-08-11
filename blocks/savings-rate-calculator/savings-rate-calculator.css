@@ -198,3 +198,43 @@ main .savings-rate-calculator .savings-rate-calculator-progress-fill {
     align-items: start;
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact — condensed padding and gaps for sidebars or dense pages */
+main .savings-rate-calculator.compact .savings-rate-calculator-layout {
+  gap: var(--space-xs);
+}
+
+main .savings-rate-calculator.compact .savings-rate-calculator-form {
+  gap: 4px;
+  padding: var(--space-s);
+}
+
+main .savings-rate-calculator.compact .savings-rate-calculator-metric {
+  padding: var(--space-s);
+}
+
+/* elevated — frames the whole calculator as a raised parchment card */
+main .savings-rate-calculator.elevated {
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  padding: var(--space-xl);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  box-shadow: light-dark(var(--shadow-lift-m), var(--shadow-card-dark));
+}
+
+/* teal — retints active preset, progress bar and card accents to the secondary teal */
+main .savings-rate-calculator.teal .savings-rate-calculator-presets button.is-active {
+  border-color: var(--color-accent-secondary);
+  background: light-dark(rgb(var(--rgb-teal) / 10%), rgb(var(--rgb-teal) / 22%));
+}
+
+main .savings-rate-calculator.teal .savings-rate-calculator-progress-fill {
+  background: var(--color-accent-secondary);
+}
+
+main .savings-rate-calculator.teal .savings-rate-calculator-metric:hover {
+  border-color: var(--color-accent-secondary);
+  box-shadow: 0 8px 24px rgb(var(--rgb-teal) / 12%);
+}

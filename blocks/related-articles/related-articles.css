@@ -300,3 +300,64 @@ main .related-articles.bento .related-articles-card-featured h3 {
     font-size: 2.4rem;
   }
 }
+
+/* ===== Variations ===== */
+
+/* stacked — vertical single-column list with a leading accent bar instead of a slider */
+main .related-articles.stacked .related-articles-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  overflow-x: visible;
+  overscroll-behavior-x: auto;
+  scroll-snap-type: none;
+  gap: var(--space-m);
+  padding-bottom: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .related-articles.stacked .related-articles-card {
+  flex: none;
+  border-inline-start: 3px solid var(--color-accent);
+}
+
+main .related-articles.stacked .related-articles-card-strip {
+  display: none;
+}
+
+main .related-articles.stacked .related-articles-controls {
+  display: none;
+}
+
+/* elevated — floating shadow-lifted cards on a frosted amber-tinted surface */
+main .related-articles.elevated {
+  padding-block: var(--space-2xl);
+  border-radius: var(--border-radius-heritage);
+  background: light-dark(rgb(var(--rgb-amber) / 8%), rgb(var(--rgb-amber) / 6%));
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
+main .related-articles.elevated .related-articles-card {
+  border-color: transparent;
+  box-shadow: var(--shadow-card);
+  background: light-dark(var(--color-light), var(--color-card-dark));
+}
+
+main .related-articles.elevated .related-articles-card:hover,
+main .related-articles.elevated .related-articles-card:focus-within {
+  box-shadow: var(--shadow-lift-l);
+}
+
+/* teal — retints strips, hover borders and shadows to the secondary teal accent */
+main .related-articles.teal .related-articles-card-strip {
+  background: var(--color-accent-secondary);
+}
+
+main .related-articles.teal .related-articles-card:hover,
+main .related-articles.teal .related-articles-card:focus-within {
+  border-color: var(--color-accent-secondary);
+  box-shadow: var(--shadow-glow-teal);
+}
+
+main .related-articles.teal .related-articles-arrow:hover:not(:disabled) {
+  border-color: var(--color-accent-secondary);
+}

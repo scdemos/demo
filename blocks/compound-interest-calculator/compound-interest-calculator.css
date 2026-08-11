@@ -231,3 +231,38 @@ main .compound-interest-calculator .compound-interest-calculator-table tbody tr:
     align-items: start;
   }
 }
+
+/* ===== Variations ===== */
+
+/* compact — condensed padding and gaps for sidebars or dense pages */
+main .compound-interest-calculator.compact .compound-interest-calculator-layout {
+  gap: var(--space-xs);
+}
+
+main .compound-interest-calculator.compact .compound-interest-calculator-form {
+  gap: 4px;
+  padding: var(--space-s);
+}
+
+main .compound-interest-calculator.compact .compound-interest-calculator-metric {
+  padding: var(--space-s);
+}
+
+/* elevated — frames the whole calculator as a raised parchment card */
+main .compound-interest-calculator.elevated {
+  border: var(--border-heritage);
+  border-radius: var(--border-radius-heritage);
+  padding: var(--space-xl);
+  background: light-dark(var(--color-parchment), var(--color-card-dark));
+  box-shadow: light-dark(var(--shadow-lift-m), var(--shadow-card-dark));
+}
+
+/* teal — retints result-card and table accents to the calm secondary teal */
+main .compound-interest-calculator.teal .compound-interest-calculator-metric:hover {
+  border-color: var(--color-accent-secondary);
+  box-shadow: 0 8px 24px rgb(var(--rgb-teal) / 12%);
+}
+
+main .compound-interest-calculator.teal .compound-interest-calculator-table thead th {
+  background: light-dark(rgb(var(--rgb-teal) / 10%), rgb(var(--rgb-teal) / 14%));
+}

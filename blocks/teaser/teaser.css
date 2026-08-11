@@ -122,8 +122,60 @@ main .section.login-teaser-image {
     main .section.login-teaser-image > .teaser-wrapper {
       min-height: 25rem;
     }
-  
+
     main .section.login-teaser-image > .teaser-wrapper {
       padding: var(--space-xl);
     }
   }
+
+/* ==========================================================================
+   Variations (author-facing modifier classes)
+   ========================================================================== */
+
+/* spacious – generous padding and larger serif text for a standalone
+   callout/quote; use when the teaser is a hero-adjacent statement, not an aside. */
+main .teaser.spacious {
+  font-size: var(--body-font-size-xxl);
+}
+
+main .teaser.spacious > div {
+  padding: var(--space-3xl) var(--space-2xl);
+}
+
+/* ink – dark inverted surface with parchment text and an amber link accent;
+   use to break up a run of light teasers or sit a teaser over a light section. */
+main .teaser.ink {
+  background: var(--color-ink);
+  border-color: rgb(var(--rgb-parchment) / 15%);
+  color: var(--color-parchment);
+}
+
+main .teaser.ink:hover {
+  border-color: rgb(var(--rgb-amber) / 45%);
+  box-shadow: var(--shadow-glow-gold);
+}
+
+main .teaser.ink > div > div a {
+  color: var(--color-gold);
+  text-decoration-color: var(--color-gold);
+}
+
+/* accent-bar – left amber accent bar with left-aligned text for an editorial
+   pull-quote / notice feel; use when a centered card reads too formal. */
+main .teaser.accent-bar {
+  text-align: left;
+  border: 0;
+  border-left: 4px solid var(--color-accent);
+  border-radius: 0;
+  background: light-dark(rgb(var(--rgb-amber) / 8%), var(--color-card-dark));
+}
+
+main .teaser.accent-bar:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-accent);
+}
+
+main .teaser.accent-bar > div {
+  align-items: flex-start;
+}
