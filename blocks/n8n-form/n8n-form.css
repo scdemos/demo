@@ -1,0 +1,263 @@
+/* N8N Form Block Styling */
+
+.section .n8n-form-wrapper {
+  background-color: light-dark(var(--color-gray-100), var(--color-card-dark));
+  padding: 32px;
+  border-radius: 12px;
+  width: 100%;
+  contain: layout;
+}
+
+.n8n-form .n8n-form-form {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Form Header */
+.n8n-form .form-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.n8n-form .form-title {
+  font-size: var(--heading-font-size-m);
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--text-color);
+}
+
+.n8n-form .form-description {
+  font-size: var(--body-font-size-m);
+  color: var(--text-color);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+/* Form Fields Container */
+.n8n-form .form-fields {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  grid-template-columns: 1fr;
+}
+
+/* Field Wrapper Styling */
+.n8n-form .field-wrapper {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Label Styling */
+.n8n-form label {
+  font-size: var(--body-font-size-s);
+  font-weight: 600;
+  color: var(--text-color);
+  display: block;
+}
+
+.n8n-form label[data-required]::after {
+  content: ' *';
+  color: light-dark(var(--color-red-500), var(--color-red-300));
+  font-weight: 700;
+}
+
+/* Input ring uses box-shadow (fixed 2px) so focus/hover never shifts layout */
+main .n8n-form input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: var(--body-font-size-s);
+  font-family: var(--body-font-family);
+  background-color: light-dark(var(--color-light), rgb(25 29 35));
+  color: var(--text-color);
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 0 0 2px light-dark(var(--color-gray-300), var(--color-gray-600));
+}
+
+main .n8n-form input::placeholder {
+  color: light-dark(var(--color-gray-400), var(--color-gray-500));
+}
+
+main .n8n-form input:hover {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px light-dark(var(--color-gray-300), var(--color-gray-600));
+}
+
+main .n8n-form input:focus,
+main .n8n-form input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px light-dark(var(--color-rust), var(--color-rust-bright));
+}
+
+main .n8n-form input:invalid:not(:placeholder-shown) {
+  box-shadow: 0 0 0 2px light-dark(var(--color-red-500), var(--color-red-400));
+}
+
+main .n8n-form input:invalid:not(:placeholder-shown):focus,
+main .n8n-form input:invalid:not(:placeholder-shown):focus-visible {
+  box-shadow: 0 0 0 2px light-dark(var(--color-red-500), var(--color-red-400));
+}
+
+/* Button Styling – override global button.button / .primary (fixed rust, no dark shift) */
+.n8n-form .submit-wrapper {
+  margin-top: 8px;
+  width: fit-content;
+  justify-self: center;
+}
+
+.n8n-form button.button {
+  width: auto;
+  min-width: 180px;
+  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: var(--body-font-size-m);
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: normal;
+  background-color: light-dark(var(--color-rust), var(--color-rust-bright));
+  background-image: none;
+  color: var(--color-parchment);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0%);
+}
+
+.n8n-form button.button::after {
+  content: none;
+}
+
+.n8n-form button.button:hover {
+  background-color: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-parchment);
+  transform: none;
+  box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 35%));
+}
+
+.n8n-form button.button:focus-visible {
+  background-color: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-parchment);
+  transform: none;
+  box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 15%), rgb(0 0 0 / 35%));
+  outline: 2px solid light-dark(var(--color-rust), var(--color-rust-bright));
+  outline-offset: 2px;
+}
+
+.n8n-form button.button:active {
+  box-shadow: 0 0 4px light-dark(rgb(0 0 0 / 2%), rgb(0 0 0 / 20%));
+}
+
+.n8n-form button.button:disabled,
+.n8n-form button.button:disabled:hover,
+.n8n-form button.button:disabled:focus-visible {
+  background-color: light-dark(var(--color-gray-500), var(--color-gray-600));
+  border-color: light-dark(var(--color-gray-500), var(--color-gray-600));
+  color: var(--color-parchment);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Success and Error Messages */
+.n8n-form .success-message,
+.n8n-form .error-message {
+  padding: 24px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.n8n-form .success-message {
+  background-color: light-dark(var(--color-green-100), rgb(30 144 41 / 20%));
+  border: 2px solid light-dark(var(--color-green-200), var(--color-green-400));
+  color: light-dark(var(--color-green-600), var(--color-green-200));
+}
+
+.n8n-form .success-message h3 {
+  margin: 0 0 12px;
+  font-size: var(--body-font-size-l);
+  color: inherit;
+}
+
+.n8n-form .success-message p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.n8n-form .error-message {
+  background-color: light-dark(var(--color-red-100), rgb(199 16 0 / 20%));
+  border: 2px solid light-dark(var(--color-red-200), var(--color-red-400));
+  color: light-dark(var(--color-red-600), var(--color-red-200));
+}
+
+.n8n-form .error-message p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Loading State */
+.n8n-form[data-submitting="true"] {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Responsive Design */
+@media (width >= 600px) {
+  .n8n-form .form-fields {
+    gap: 20px;
+  }
+
+  .n8n-form button.button {
+    padding: 14px 48px;
+  }
+}
+
+@media (width >= 900px) {
+  .section .n8n-form-wrapper {
+    padding: 48px;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: more) {
+  main .n8n-form input,
+  main .n8n-form input:hover {
+    border-width: 3px;
+    box-shadow: 0 0 0 3px light-dark(var(--color-gray-300), var(--color-gray-600));
+  }
+
+  main .n8n-form input:focus,
+  main .n8n-form input:focus-visible {
+    box-shadow: 0 0 0 3px light-dark(var(--color-rust), var(--color-rust-bright));
+  }
+
+  main .n8n-form input:invalid:not(:placeholder-shown),
+  main .n8n-form input:invalid:not(:placeholder-shown):focus,
+  main .n8n-form input:invalid:not(:placeholder-shown):focus-visible {
+    box-shadow: 0 0 0 3px light-dark(var(--color-red-500), var(--color-red-400));
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  main .n8n-form input,
+  .n8n-form button.button {
+    transition: none;
+  }
+
+  .n8n-form button.button:hover {
+    box-shadow: 0 1px 4px light-dark(rgb(0 0 0 / 12%), rgb(0 0 0 / 30%));
+  }
+}

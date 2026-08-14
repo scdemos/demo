@@ -18,6 +18,8 @@
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 40%)),
+              0 1px 2px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
@@ -25,6 +27,11 @@
   transform: translateY(-8px);
   box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
   border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+}
+
+/* Article wrapper — layout-invisible so the card link remains the direct flex child */
+.cards > ul > li > article {
+  display: contents;
 }
 
 /* Card link */

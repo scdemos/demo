@@ -652,6 +652,15 @@ button:disabled {
   font-size: 0.85em;
 }
 
+.slide-card code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.875em;
+  padding: 0.1em 0.35em;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  color: var(--color-rust);
+}
+
 /* ——— Breakpoints (600 / 900 / 1200) ——— */
 @media (width <= 900px) {
   .presenter-shell {

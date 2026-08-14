@@ -10,6 +10,8 @@ import {
   decorateTemplateAndTheme,
   waitForFirstImage,
   loadSection,
+  loadBlock,
+  readBlockConfig,
   sampleRUM,
   loadCSS,
   loadScript,
@@ -17,7 +19,10 @@ import {
   toCamelCase,
   toClassName,
 } from './aem.js';
-import { getAllMetadata } from './shared.js';
+import {
+  initMartech, martechEager, martechLazy, martechDelayed,
+} from '../plugins/martech/src/index.js';
+import { getAllMetadata, getLocale, isUE } from './shared.js';
 import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
@@ -108,8 +113,8 @@ async function loadFragments(section) {
   const { loadFragment } = await import('../blocks/fragment/fragment.js');
   await Promise.all(fragments.map(async (a) => {
     try {
-      const { pathname } = new URL(a.href);
-      const frag = await loadFragment(pathname);
+      const { pathname, hash } = new URL(a.href);
+      const frag = await loadFragment(`${pathname}${hash}`);
       a.parentElement.replaceWith(...frag.children);
     } catch (error) {
       console.error('Fragment loading failed', error);
@@ -172,9 +177,67 @@ export function decorateMain(main) {
   if (document.contains(main)) initPageSchemas();
 }
 
-async function loadTemplate(main) {
+/**
+ * Add a "copy" button to every <pre><code> block in `main`. The EDS html
+ * pipeline renders fenced code blocks as <pre><code>…</code></pre>, so this
+ * works for any authored code snippet across the site.
+ *
+ * Idempotent: skips blocks that have already been decorated.
+ */
+function decorateCodeBlocks(main) {
+  if (!main || !navigator.clipboard) return;
+  const blocks = main.querySelectorAll('pre:has(> code)');
+  blocks.forEach((pre) => {
+    if (pre.parentElement?.classList.contains('code-block')) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.replaceWith(wrapper);
+    wrapper.append(pre);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-block-copy';
+    button.setAttribute('aria-label', 'Copy code to clipboard');
+    button.innerHTML = `
+      <span class="code-block-copy-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="11" height="11" rx="2"/>
+          <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+        </svg>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="5 13 10 18 19 7"/>
+        </svg>
+      </span>
+      <span class="code-block-copy-label">Copy</span>
+    `;
+    wrapper.append(button);
+
+    let resetTimer = null;
+    button.addEventListener('click', async () => {
+      const code = pre.querySelector('code');
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code.textContent || '');
+        button.classList.add('is-copied');
+        button.querySelector('.code-block-copy-label').textContent = 'Copied';
+        button.setAttribute('aria-label', 'Code copied to clipboard');
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          button.classList.remove('is-copied');
+          button.querySelector('.code-block-copy-label').textContent = 'Copy';
+          button.setAttribute('aria-label', 'Copy code to clipboard');
+        }, 2000);
+      } catch (e) {
+        // Clipboard access can be blocked (insecure context, permission denied).
+        // Silently no-op — the button just doesn't update.
+      }
+    });
+  });
+}
+
+async function loadTemplate(main, template) {
   try {
-    const template = getMetadata('template');
     if (template) {
       const mod = await import(`../templates/${template}/${template}.js`);
       loadCSS(`${window.hlx.codeBasePath}/templates/${template}/${template}.css`);
@@ -183,15 +246,108 @@ async function loadTemplate(main) {
       }
     }
   } catch (error) {
-     
     console.error('template loading failed', error);
   }
 }
 
+// Structural EDS wrappers a Target offer can inject (e.g. a replaceHtml offer that brings in a
+// whole authored section). These are decorated by the section pipeline, not as blocks — calling
+// decorateBlock/loadBlock on them would try to load a non-existent block named after the wrapper.
+const isStructuralDiv = (el) => el.classList.contains('section')
+  || el.classList.contains('section-metadata')
+  || [...el.classList].some((c) => c.endsWith('-wrapper') || c.endsWith('-container'));
+
+function watchForTargetInjectedBlocks(main) {
+  const observer = new MutationObserver((mutations) => {
+    const toDecorate = new Set();
+
+    mutations.forEach(({ addedNodes }) => {
+      addedNodes.forEach((node) => {
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        [node, ...node.querySelectorAll('div[class]')].forEach((el) => {
+          if (
+            el.tagName === 'DIV'
+            && el.classList.length > 0
+            && !el.classList.contains('block')
+            && !isStructuralDiv(el)
+            && !el.dataset.blockStatus
+            && !el.closest('.block')
+          ) {
+            toDecorate.add(el);
+          }
+        });
+      });
+    });
+
+    if (!toDecorate.size) return;
+
+    // Stay connected: Target/alloy apply offers across multiple mutation ticks, so disconnecting
+    // after the first batch would leave later-injected blocks undecorated. Already-decorated
+    // blocks are skipped above via the `block` class / `data-block-status` guards.
+
+    toDecorate.forEach((block) => {
+      const wrapper = block.parentElement;
+      const sectionMeta = wrapper?.querySelector('div.section-metadata');
+      if (sectionMeta) {
+        const section = block.closest('.section');
+        if (section) {
+          const meta = readBlockConfig(sectionMeta);
+          Object.keys(meta).forEach((key) => {
+            if (key === 'style') {
+              meta.style.split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+                .forEach((s) => section.classList.add(s));
+            } else {
+              section.dataset[toCamelCase(key)] = meta[key];
+            }
+          });
+          sectionMeta.remove();
+        }
+      }
+    });
+
+    [...toDecorate].forEach((block) => {
+      decorateBlock(block);
+      decorateButtons(block);
+      decorateIcons(block);
+    });
+    Promise.all([...toDecorate].map((block) => loadBlock(block)))
+      .catch(() => { /* a failed block load shouldn't break the page */ });
+  });
+
+  observer.observe(main, { childList: true, subtree: true });
+}
+
+
 async function loadEager(doc) {
-  document.documentElement.lang = 'en';
+  getLocale();
   decorateTemplateAndTheme();
   applyTheme();
+
+  // Consent stub — wire to real CMP later; true for demo
+  const isConsentGiven = true;
+  const personalizationEnabled = !!getMetadata('target') && isConsentGiven;
+
+  const martechLoadedPromise = !IS_EDITOR && initMartech(
+    {
+      datastreamId: 'd73be188-bc37-4ede-a5da-8aa7cd1e343b',
+      orgId: '138A07885EE042D20A495CFA@AdobeOrg',
+      defaultConsent: 'in',
+      edgeConfigOverrides: {
+        com_adobe_target: {
+          propertyToken: '2375354b-3ff1-6d5d-1304-7c38fccd590b',
+        },
+      },
+    },
+    {
+      personalization: personalizationEnabled,
+      launchUrls: ['https://assets.adobedtm.com/ace20f3fb313/d4fa519d75cf/launch-452113bfea88.min.js'],
+      // Decision scopes + selector mapping are auto-discovered from section-metadata
+      // `mbox` rows (server-rendered as `data-mbox` attributes), so no hardcoded
+      // config is needed here. See the plugins/martech README,
+      // "Working with Form-Based Activities".
+    },
+  );
+
   const main = doc.querySelector('main');
   if (main) {
     if (window.isErrorPage) loadErrorPage(main);
@@ -200,11 +356,18 @@ async function loadEager(doc) {
       await runEager(document, { audiences: AUDIENCES }, getExperimentationContext());
     }
     decorateMain(main);
+    // Re-decorate EDS block markup that a Target offer injects after decoration has
+    // already run (e.g. a replaceHtml offer that brings in authored block HTML). Started
+    // before martechEager applies propositions so the observer is live when offers land.
+    if (personalizationEnabled && !IS_EDITOR) watchForTargetInjectedBlocks(main);
     document.body.classList.add('appear');
-    await loadSection(main.querySelector('.section'), async (s) => {
-      await waitForFirstImage(s);
-      await loadFragments(s);
-    });
+    await Promise.all([
+      martechLoadedPromise && martechLoadedPromise.then(martechEager),
+      loadSection(main.querySelector('.section'), async (s) => {
+        await waitForFirstImage(s);
+        await loadFragments(s);
+      }),
+    ]);
   }
 
   try {
@@ -223,6 +386,7 @@ async function loadLazy(doc) {
   loadHeader(headerEl);
   const templateName = getMetadata('template');
   if (templateName) {
+    document.body.classList.add(templateName);
     await loadTemplate(doc, templateName);
   }
 
@@ -236,12 +400,14 @@ async function loadLazy(doc) {
   }
   await dynamicBlocks(main);
   applyContentProtection();
+  decorateCodeBlocks(main);
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
   if (hash && element) element.scrollIntoView();
 
   loadFooter(footerEl);
+  if (!IS_EDITOR) await martechLazy();
 
   /* Scroll reveal: sections below the viewport animate in as they enter */
   if (main && 'IntersectionObserver' in window) {
@@ -320,14 +486,21 @@ async function loadLazy(doc) {
   }
 }
 
-(() => {
-  const hasQE = new URL(window.location.href).searchParams.has('quick-edit');
-  if (hasQE) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
-})();
+const IS_QUICK_EDIT = new URL(window.location.href).searchParams.has('quick-edit');
+if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
+
+const DA_PREVIEW = new URL(window.location.href).searchParams.get('dapreview');
+
+// Authoring surfaces (Sidekick quick-edit + Universal Editor). Martech (tracking +
+// personalization) is bypassed entirely here so offers never mutate the DOM while authoring
+// and the Target-injected-block observer can't fight UE/quick-edit DOM changes.
+const IS_EDITOR = IS_QUICK_EDIT || isUE() || DA_PREVIEW;
 
 function loadDelayed() {
-  window.setTimeout(() => import('./delayed.js'), 3000);
-  // load anything that can be postponed to the latest here
+  window.setTimeout(() => {
+    if (!IS_EDITOR) martechDelayed();
+    import('./delayed.js');
+  }, 3000);
 }
 
 /**

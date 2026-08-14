@@ -1,0 +1,43 @@
+# FIRE
+
+> An educational platform for the FIRE (Financial Independence, Retire Early) movement, helping Canadians build wealth through disciplined saving, intentional spending, and long-term investing.
+
+diyFIRE provides interactive tools, guided learning paths, and a comprehensive content library covering Canadian registered accounts, investment strategies, and personal finance fundamentals. The core philosophy: financial independence is less about retiring early and more about gaining the freedom to pursue meaningful work without financial pressure.
+
+## Getting Started
+
+- [Home](https://demo2.bbird.live/): Platform overview and the diyFIRE philosophy
+- [Start Here](https://demo2.bbird.live/start-here): 5-minute quiz that generates a personalized FIRE plan
+- [New to Investing](https://demo2.bbird.live/new-to-investing): Foundational guide for those beginning their financial independence journey
+- [Already Investing](https://demo2.bbird.live/already-investing): Resources for those further along the path
+- [Guided Journey](https://demo2.bbird.live/guided-journey): Structured, step-by-step learning path
+- [About Us](https://demo2.bbird.live/about-us): Team background and mission
+
+## Learn
+
+- [Learn Hub](https://demo2.bbird.live/learn): Full content library organized by topic
+- [FIRE](https://demo2.bbird.live/learn/fire): What FIRE is, its flavours, and how to pursue it
+- [TFSA](https://demo2.bbird.live/learn/tfsa): Tax-Free Savings Account — rules, contribution room, and strategy
+- [RRSP](https://demo2.bbird.live/learn/rrsp): Registered Retirement Savings Plan — deductions, withdrawals, and optimal use
+- [FHSA](https://demo2.bbird.live/learn/fhsa): First Home Savings Account — Canada's newest registered account
+- [RESP](https://demo2.bbird.live/learn/resp): Registered Education Savings Plan — saving for a child's education
+- [Investing](https://demo2.bbird.live/learn/investing): ETFs, stocks, bonds, and investment strategy fundamentals
+- [Retirement](https://demo2.bbird.live/learn/retirement): Retirement planning including CPP, OAS, and GIS
+- [Unregistered Accounts](https://demo2.bbird.live/learn/unregistered-cash): Non-registered investment strategies
+- [TFSA vs RRSP vs FHSA](https://demo2.bbird.live/learn/accounts/tfsa-vs-rrsp-vs-fhsa): Side-by-side account comparison guide
+
+## Tools & Calculators
+
+- [Savings Rate Calculator](https://demo2.bbird.live/tools/savings-rate): Calculate and optimize your savings rate toward FIRE
+- [Compound Interest Calculator](https://demo2.bbird.live/tools/compound-interest-calculator): Project investment growth over time
+- [Net Worth Tracker](https://demo2.bbird.live/tools/net-worth): Track and visualize your net worth progress
+
+## Products
+
+- [Books](https://demo2.bbird.live/products/books): Curated personal finance reading list
+- [Courses](https://demo2.bbird.live/products/courses): Structured learning programs
+- [Tools](https://demo2.bbird.live/products/tools): Premium financial planning tools
+
+## FAQs
+
+- [FAQs](https://demo2.bbird.live/faqs): Frequently asked questions about FIRE and investing

@@ -1,6 +1,38 @@
 import { getMetadata } from './aem.js';
 
 /**
+ * Locale config: maps URL prefix to locale metadata.
+ * Root locale uses empty string key.
+ * Add or remove entries to match the site's language support.
+ */
+export const LOCALES = {
+  '': { lang: 'en' },
+  '/de': { lang: 'de' },
+  '/es': { lang: 'es' },
+  '/fr': { lang: 'fr' },
+  '/ja': { lang: 'ja' },
+  '/zh': { lang: 'zh' },
+  '/hi': { lang: 'hi' }
+};
+
+/**
+ * Detect the current locale from the URL pathname and apply its lang to <html>.
+ * @param {Object} [locales] - Locale map (defaults to LOCALES)
+ * @returns {{ prefix: string, lang: string }}
+ */
+export function getLocale(locales = LOCALES) {
+  const { pathname } = window.location;
+  const matches = Object.keys(locales).filter(
+    (prefix) => prefix !== '' && pathname.startsWith(`${prefix}/`),
+  );
+  const prefix = matches.sort((a, b) => b.length - a.length)[0] || '';
+  const locale = locales[prefix] || locales[''];
+
+  document.documentElement.lang = locale?.lang || 'en';
+  return { prefix, ...locale };
+}
+
+/**
  * Page metadata `gated=true` — same signal as CDN worker HTML gating; author preview uses this too.
  * @returns {boolean}
  */
