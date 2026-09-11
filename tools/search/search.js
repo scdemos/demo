@@ -710,7 +710,7 @@ function filterContentByTarget(content, targetType, customSelector) {
 
       case 'section-metadata': {
         // Look for section metadata (divs with specific classes or patterns)
-        const sections = doc.querySelectorAll('.section-metadata, [class*="section"], [data-aue-type="section"]');
+        const sections = doc.querySelectorAll('.section-metadata, [class*="section"]');
         return Array.from(sections).map((section) => section.textContent || section.innerText || '').join(' ');
       }
 
@@ -816,7 +816,7 @@ function replaceInTargetedContent(content, searchTerm, replaceTerm, targetType, 
       }
 
       case 'section-metadata': {
-        targetElements = Array.from(doc.querySelectorAll('.section-metadata, [class*="section"], [data-aue-type="section"]'));
+        targetElements = Array.from(doc.querySelectorAll('.section-metadata, [class*="section"]'));
         break;
       }
 

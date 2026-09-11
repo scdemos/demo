@@ -1,5 +1,4 @@
-import { createTag } from '../../scripts/shared.js';
-import { moveInstrumentation } from '../../ue/scripts/ue-utils.js';
+import { createTag, moveInstrumentation } from '../../scripts/shared.js';
 
 function buildStep(row, index) {
   const cols = [...row.children];
