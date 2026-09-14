@@ -28,7 +28,8 @@ function isAuthorEnvironment() {
   const host = window.location.hostname;
   return host.includes('localhost')
     || host.includes('aem.page')
-    || host.includes('aem.reviews');
+    || host.includes('aem.reviews')
+    || host.endsWith('.preview.da.live');
 }
 
 /**
