@@ -29,8 +29,7 @@ function isAuthorEnvironment() {
   return host.includes('localhost')
     || host.includes('aem.page')
     || host.includes('aem.reviews')
-    || host.endsWith('.ue.da.live')
-    || host.endsWith('.stage-ue.da.live');
+    || host.endsWith('.preview.da.live');
 }
 
 /**

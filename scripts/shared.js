@@ -325,11 +325,21 @@ export function getAllMetadata(scope, doc = document) {
 }
 
 /**
- * Check if the current page is in the Universal Editor.
- * @returns {boolean}
+ * Move instrumentation attributes from a given element to another given element.
+ * @param {Element} from the element to copy attributes from
+ * @param {Element} to the element to copy attributes to
  */
-export function isUE() {
-  return window.location.hostname.includes('ue.da') || window.location.host.includes('localhost:4712');
+export function moveInstrumentation(from, to) {
+  [...from.attributes]
+    .map(({ nodeName }) => nodeName)
+    .filter((attr) => attr.startsWith('data-aue-') || attr.startsWith('data-richtext-'))
+    .forEach((attr) => {
+      const value = from.getAttribute(attr);
+      if (value) {
+        to.setAttribute(attr, value);
+        from.removeAttribute(attr);
+      }
+    });
 }
 
 /**

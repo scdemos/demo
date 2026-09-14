@@ -1,6 +1,6 @@
 # Tags Plugin
 
-A multi-select, searchable tag picker for Adobe Document Authoring (DA) Edge Delivery Services and Universal Editor (UE) environments.
+A multi-select, searchable tag picker for Adobe Document Authoring (DA) on Edge Delivery Services.
 
 ## Features
 
@@ -37,7 +37,7 @@ A multi-select, searchable tag picker for Adobe Document Authoring (DA) Edge Del
    - `value`: The label shown in the UI.
    - `comments`: (Optional) Additional info shown in the UI.
 
-3. **Open `tools/tags/tags.html` in the DA/UE environment**.
+3. **Open `tools/tags/tags.html` in the DA environment**.
    - The plugin will automatically fetch and display tags from your repo.
    - Use the search box to filter tags.
    - Select tags using checkboxes.

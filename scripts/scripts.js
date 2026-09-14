@@ -22,7 +22,7 @@ import {
 import {
   initMartech, martechEager, martechLazy, martechDelayed,
 } from '../plugins/martech/src/index.js';
-import { getAllMetadata, getLocale, isUE } from './shared.js';
+import { getAllMetadata, getLocale } from './shared.js';
 import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
@@ -491,10 +491,10 @@ if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod
 
 const DA_PREVIEW = new URL(window.location.href).searchParams.get('dapreview');
 
-// Authoring surfaces (Sidekick quick-edit + Universal Editor). Martech (tracking +
+// Authoring surfaces (Sidekick quick-edit + DA preview). Martech (tracking +
 // personalization) is bypassed entirely here so offers never mutate the DOM while authoring
-// and the Target-injected-block observer can't fight UE/quick-edit DOM changes.
-const IS_EDITOR = IS_QUICK_EDIT || isUE() || DA_PREVIEW;
+// and the Target-injected-block observer can't fight preview/quick-edit DOM changes.
+const IS_EDITOR = IS_QUICK_EDIT || DA_PREVIEW;
 
 function loadDelayed() {
   window.setTimeout(() => {
@@ -516,11 +516,6 @@ export async function loadPage() {
   await loadEager(document);
   await loadLazy(document);
   loadDelayed();
-}
-
-// UE Editor support before page load
-if (/\.(stage-ue|ue)\.da\.live$/.test(window.location.hostname)) {
-  await import(`${window.hlx.codeBasePath}/ue/scripts/ue.js`).then(({ default: ue }) => ue());
 }
 
 if (!window.hlx?.suppressLoadPage) {
