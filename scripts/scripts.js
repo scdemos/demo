@@ -167,12 +167,36 @@ async function inlineColorIcons(scope) {
   });
 }
 
+/**
+ * Apply authored section-metadata to its section: `Style` rows become section
+ * CSS classes (e.g. Style=center → `.section.center`) and any other row becomes
+ * a data-* attribute. Core `decorateSections` in aem.js doesn't do this, so we
+ * handle it here after sections are wrapped.
+ * @param {Element} main
+ */
+function decorateSectionMetadata(main) {
+  main.querySelectorAll(':scope > .section .section-metadata').forEach((meta) => {
+    const section = meta.closest('.section');
+    const config = readBlockConfig(meta);
+    Object.keys(config).forEach((key) => {
+      if (key === 'style') {
+        config.style.split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+          .forEach((s) => section.classList.add(s));
+      } else {
+        section.dataset[toCamelCase(key)] = config[key];
+      }
+    });
+    meta.parentElement.remove();
+  });
+}
+
 export function decorateMain(main) {
   decorateButtons(main);
   decorateIcons(main);
   inlineColorIcons(main);
   buildAutoBlocks(main);
   decorateSections(main);
+  decorateSectionMetadata(main);
   decorateBlocks(main);
   if (document.contains(main)) initPageSchemas();
 }

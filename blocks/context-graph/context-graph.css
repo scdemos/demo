@@ -1,0 +1,275 @@
+/* ==========================================================================
+   Context graph — central "Enterprise Context Graph" dome ringed by selectable
+   platform nodes. Selecting a node highlights it, dims the others, and shows
+   that platform's detail panel below.
+   Source: publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+.context-graph.block {
+  --node-active: var(--color-rust);
+  --node-muted: light-dark(#9a9a9a, #8a8a8a);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3xl);
+}
+
+/* ----- Stage: center image + surrounding nodes ----- */
+.context-graph .context-graph-stage {
+  position: relative;
+  width: 100%;
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+.context-graph .context-graph-center {
+  width: 62%;
+  margin: 0 auto;
+}
+
+.context-graph .context-graph-center picture,
+.context-graph .context-graph-center img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ----- Platform nodes ----- */
+.context-graph .context-graph-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  /* Background matches the section so the label masks (breaks) the arc line
+     that passes behind it — the text sits centered over the arc. */
+  padding: 6px 16px;
+  background: var(--background-color, #f5f5f5);
+  border: 0;
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.context-graph .context-graph-node :is(h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--node-muted);
+  transition: color 0.3s ease;
+}
+
+.context-graph .context-graph-node p {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--node-muted);
+  transition: color 0.3s ease;
+}
+
+/* Active node: brand red, full opacity */
+.context-graph .context-graph-node.is-active :is(h2, h3, h4) {
+  color: var(--node-active);
+}
+
+.context-graph .context-graph-node.is-active p {
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* Dimmed (non-selected) nodes fade their text back — but keep the node
+   background fully opaque so it still masks the arc line passing behind it. */
+.context-graph .context-graph-node.is-dimmed :is(h2, h3, h4),
+.context-graph .context-graph-node.is-dimmed p {
+  opacity: 0.5;
+}
+
+.context-graph .context-graph-node:hover :is(h2, h3, h4),
+.context-graph .context-graph-node:hover p {
+  opacity: 1;
+}
+
+.context-graph .context-graph-node:focus-visible {
+  outline: 2px solid var(--node-active);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+/* ----- Platform tiles (persistent 3-up row below the graph) ----- */
+.context-graph .context-graph-tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-l);
+  width: 100%;
+  max-width: 1060px;
+}
+
+.context-graph .context-graph-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 16px;
+  background: transparent;
+  border: 0;
+  border-top: 4px solid light-dark(var(--color-gray-200, #ddd), rgb(255 255 255 / 18%));
+  cursor: pointer;
+  text-align: center;
+  color: inherit;
+  transition: opacity 0.3s ease, border-color 0.3s ease;
+}
+
+.context-graph .context-graph-tile h3 {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 30px;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- tile and node paragraph rules are unrelated; source order is intentional */
+.context-graph .context-graph-tile p {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  line-height: 28px;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* Active tile: brand-red top rule only (title stays black, matching source) */
+.context-graph .context-graph-tile.is-active {
+  border-top-color: var(--node-active);
+}
+
+/* Dimmed (non-selected) tiles fade back */
+.context-graph .context-graph-tile.is-dimmed {
+  opacity: 0.55;
+}
+
+.context-graph .context-graph-tile:hover {
+  opacity: 1;
+  border-top-color: var(--node-active);
+}
+
+.context-graph .context-graph-tile:focus-visible {
+  outline: 2px solid var(--node-active);
+  outline-offset: 4px;
+}
+
+/* Undo EDS button auto-decoration — render "Learn more" as an inline black arrow link */
+.context-graph .context-graph-tile a.button:any-link,
+.context-graph .context-graph-tile a:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.context-graph .context-graph-tile .button-container {
+  margin: 0;
+}
+
+.context-graph .context-graph-tile a::after {
+  content: '→';
+  transition: transform 0.25s ease;
+}
+
+.context-graph .context-graph-tile a:hover::after {
+  transform: translateX(4px);
+}
+
+/* ----- Mobile: image on top, nodes stack below (default flow) ----- */
+@media (width < 900px) {
+  .context-graph .context-graph-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-m);
+  }
+
+  .context-graph .context-graph-center {
+    order: -1;
+    width: 90%;
+  }
+}
+
+/* ----- Desktop: absolutely position nodes around the dome ----- */
+@media (width >= 900px) {
+  /* Dome is ~half as tall as wide (16/9-ish arc). At 54% width the dome height
+     is ~ (0.54 * maxwidth / 2). Reserve just enough height for the top node
+     label to sit above the apex. */
+  .context-graph .context-graph-stage {
+    min-height: 440px;
+  }
+
+  /* Faint outer arc connecting the three platform nodes (behind the dome).
+     Sized so the ellipse passes through each node's vertical centre — the
+     side nodes sit lower than the apex, so the arc dips to meet them and each
+     label's background masks (breaks) the line where it crosses. */
+  .context-graph .context-graph-stage::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 11%;
+    width: 78%;
+    height: 87%;
+    border: 1px solid light-dark(var(--color-gray-200, #e0e0e0), rgb(255 255 255 / 18%));
+    border-bottom: 0;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .context-graph .context-graph-node {
+    position: absolute;
+    width: 210px;
+    z-index: 1;
+  }
+
+  .context-graph .context-graph-node[data-position='top'] {
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .context-graph .context-graph-node[data-position='left'] {
+    bottom: 40px;
+    left: 2%;
+  }
+
+  .context-graph .context-graph-node[data-position='right'] {
+    bottom: 40px;
+    right: 2%;
+  }
+
+  .context-graph .context-graph-center {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 56%;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+
+  .context-graph .context-graph-tiles {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+}

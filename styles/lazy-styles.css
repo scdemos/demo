@@ -109,34 +109,6 @@ a:any-link {
   }
 }
 
-/* H2 accent — thin brand-gradient bar beneath h2 in plain content sections */
-:is(main, article.article-body) > .section:not(.hero-container, .gradient, .ink, .rust) h2::after {
-  content: '';
-  display: block;
-  width: 2.5rem;
-  height: 2px;
-  margin-top: 0.35em;
-  background: var(--gradient-brand);
-  border-radius: 1px;
-}
-
-:is(main, article.article-body) > .section.center:not(.hero-container, .gradient, .ink, .rust) h2::after {
-  margin-inline: auto;
-}
-
-/* ==========================================================================
-  Header scroll shadow — appears after user scrolls past hero
-  ========================================================================== */
-
-header .nav-wrapper.scrolled {
-  box-shadow: 0 4px 24px rgb(0 0 0 / 10%);
-}
-
-.dark-scheme header .nav-wrapper.scrolled,
-:root[data-theme='dark'] header .nav-wrapper.scrolled {
-  box-shadow: 0 4px 24px rgb(0 0 0 / 35%);
-}
-
 /* ==========================================================================
   Teaser block — enhanced dark mode glow
   ========================================================================== */

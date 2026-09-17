@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Customer story — "stacking cards" showcase.
+   Full-bleed photo card with an overlaid text panel (eyebrow, large light
+   headline, description, three stats, "Learn more") on the left.
+   Source: publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+.customer-story.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+}
+
+/* Cards stack on scroll: each pins near the top so the next slides up and
+   covers it. Pinned cards scale down slightly (set via --card-scale by JS as
+   the next card approaches), so the stack recedes behind the active card. */
+.customer-story .customer-story-card {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  align-items: flex-start;
+  min-height: 480px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 -4px 24px rgb(0 0 0 / 8%);
+  transform: scale(var(--card-scale, 1));
+  transform-origin: center top;
+  transition: transform 0.1s linear;
+}
+
+/* ----- Full-bleed background photo ----- */
+.customer-story .customer-story-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* The image may be wrapped in a <p> (EDS default). Force every wrapper and the
+   image itself to fill the card so the photo covers it edge to edge. */
+.customer-story .customer-story-media,
+.customer-story .customer-story-media p,
+.customer-story .customer-story-media picture,
+.customer-story .customer-story-media img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+.customer-story .customer-story-media picture,
+.customer-story .customer-story-media img {
+  display: block;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* ----- Overlaid text panel ----- */
+.customer-story .customer-story-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  width: 100%;
+  padding: var(--space-xl);
+  color: light-dark(var(--color-ink), var(--color-parchment));
+
+  /* Legibility scrim so text stays readable over the photo */
+  background: linear-gradient(
+    to right,
+    light-dark(rgb(255 255 255 / 92%), rgb(20 20 20 / 88%)) 0%,
+    light-dark(rgb(255 255 255 / 82%), rgb(20 20 20 / 72%)) 55%,
+    transparent 100%
+  );
+}
+
+/* ----- Eyebrow pill ----- */
+.customer-story .customer-story-eyebrow {
+  align-self: flex-start;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: light-dark(rgb(0 0 0 / 6%), rgb(255 255 255 / 12%));
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* ----- Headline ----- */
+.customer-story .customer-story-content :is(h2, h3, h4) {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1.15;
+  color: light-dark(#000, var(--color-parchment));
+}
+
+/* ----- Description ----- */
+.customer-story .customer-story-content p:not(.customer-story-eyebrow, .customer-story-stat-label) {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  line-height: 28px;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* ----- Stats row ----- */
+.customer-story .customer-story-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-m);
+  margin-top: var(--space-m);
+  padding-top: var(--space-l);
+  border-top: 1px solid light-dark(rgb(0 0 0 / 15%), rgb(255 255 255 / 25%));
+}
+
+.customer-story .customer-story-stat-num {
+  display: block;
+  font-family: var(--font-family);
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: light-dark(#000, var(--color-parchment));
+}
+
+.customer-story .customer-story-stat-label {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+/* ----- Learn more link ----- */
+.customer-story .customer-story-link:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: var(--space-s);
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  font-weight: 600;
+  color: light-dark(#000, var(--color-parchment));
+  text-decoration: none;
+}
+
+.customer-story .customer-story-link::after {
+  content: '→';
+  transition: transform 0.25s ease;
+}
+
+.customer-story .customer-story-link:hover::after {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   Desktop: taller cards, text panel constrained to the left, wider stat row
+   ========================================================================== */
+@media (width >= 900px) {
+  .customer-story .customer-story-card {
+    min-height: 620px;
+  }
+
+  .customer-story .customer-story-content {
+    width: 58%;
+    padding: 48px 40px;
+  }
+
+  .customer-story .customer-story-content :is(h2, h3, h4) {
+    font-size: 42px;
+  }
+
+  .customer-story .customer-story-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-l);
+  }
+
+  .customer-story .customer-story-stat-num {
+    font-size: 42px;
+  }
+
+  .customer-story .customer-story-stat-label {
+    font-size: 18px;
+  }
+}

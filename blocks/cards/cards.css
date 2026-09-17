@@ -1,4 +1,9 @@
-/* Default cards */
+/* ==========================================================================
+   Cards — Publicis Sapient design system
+   Source: publicissapient.com/industries/financial-services
+   Minimalist content cards: white rounded surface, no heavy borders/shadows,
+   typographic hierarchy (eyebrow / title / body) and generous spacing.
+   ========================================================================== */
 
 .cards > ul {
   list-style: none;
@@ -7,34 +12,30 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-l);
-  max-width: 340px;
-  margin-inline: auto;
 }
 
 .cards > ul > li {
-  border: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 10%));
-  background: light-dark(var(--color-light), var(--color-card-dark));
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  background-color: light-dark(var(--color-light), var(--color-card-dark));
+  border: 1px solid light-dark(var(--color-gray-200), rgb(255 255 255 / 10%));
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 40%)),
-              0 1px 2px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+  transition: transform 0.3s var(--ease-out-smooth), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .cards > ul > li:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 24px 48px light-dark(rgb(161 79 43 / 18%), rgb(197 160 89 / 18%));
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 45%));
+  transform: translateY(-4px);
+  border-color: light-dark(var(--color-rust), var(--color-rust-bright));
+  box-shadow: 0 12px 28px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 45%));
 }
 
-/* Article wrapper — layout-invisible so the card link remains the direct flex child */
+/* Article wrapper is layout-invisible so the link/body stay direct children */
 .cards > ul > li > article {
   display: contents;
 }
 
-/* Card link */
+/* Card link (whole-card clickable) */
 .cards .cards-card-link {
   display: flex;
   flex-direction: column;
@@ -45,212 +46,454 @@
   cursor: pointer;
 }
 
-/* Image */
-.cards .cards-card-image {
-  line-height: 0;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.cards .cards-card-image img {
-  display: block;
-  height: auto;
-  max-width: 100%;
-  margin-inline: auto;
-  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cards > ul > li:hover .cards-card-image img {
-  transform: scale(1.05);
-}
-
-/* Body */
+/* ===== Text body ===== */
 .cards .cards-card-body {
-  padding: var(--space-m);
+  padding: var(--space-l);
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Image / icon cell ===== */
+.cards .cards-card-body:has(img),
+.cards .cards-card-body:has(picture) {
+  padding: var(--space-l) var(--space-l) 0;
+  line-height: 0;
+}
+
+/* Empty authored cell (image slot with no image) — collapse it */
+.cards .cards-card-body:empty {
+  display: none;
+}
+
+.cards .cards-card-body img {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .cards .cards-card-body :is(h2, h3, h4) {
-  margin-top: 0;
-  line-height: 1.2;
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-family);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: light-dark(var(--color-ink), var(--color-parchment));
 }
 
 .cards .cards-card-body p {
-  color: light-dark(var(--color-gray-700), var(--color-muted));
-  font-size: var(--body-font-size-s);
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-family-body);
+  font-size: 18px;
   line-height: 1.55;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
 }
+
+/* ===== CTA container pushes to the bottom of the card ===== */
+.cards .cards-card-body p:has(> a),
+.cards .cards-card-body p.button-container {
+  margin-top: auto;
+  padding-top: var(--space-s);
+}
+
+.cards .cards-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== CTA link (Learn more) — plain arrow-style link, undo button decoration ===== */
+.cards .cards-card-body a.button:any-link,
+.cards .cards-card-body a:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-family-body);
+  font-size: var(--body-font-size-m);
+  font-weight: 600;
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  text-decoration: none;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+  overflow: visible;
+}
+
+.cards .cards-card-body a.button:any-link::after,
+.cards .cards-card-body a:any-link::after {
+  content: '→';
+  transition: transform 0.25s ease;
+}
+
+.cards .cards-card-body a:hover {
+  color: light-dark(var(--color-gold), var(--color-rust));
+  text-decoration: none;
+  background: none;
+  box-shadow: none;
+}
+
+/* Title links inherit color (higher specificity, placed after base link rules) */
+.cards .cards-card-body :is(h2, h3, h4) a:any-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cards .cards-card-body :is(h2, h3, h4) a:hover {
+  color: var(--color-rust);
+  text-decoration: none;
+}
+
+/* ===== Eyebrow label (first <p> immediately before the title) ===== */
+.cards .cards-card-body > p:first-child:has(+ h2),
+.cards .cards-card-body > p:first-child:has(+ h3),
+.cards .cards-card-body > p:first-child:has(+ h4) {
+  margin-bottom: var(--space-m);
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  text-transform: none;
+}
+
+.cards .cards-card-body a:hover::after {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   Responsive grid
+   ========================================================================== */
 
 /* Tablet: 2 columns */
 @media (width >= 600px) {
   .cards > ul {
     grid-template-columns: repeat(2, 1fr);
-    max-width: none;
+    gap: var(--space-xl);
   }
 }
 
-/* Desktop */
+/* Desktop: 3 columns */
 @media (width >= 900px) {
   .cards > ul {
-    grid-template-columns: repeat(auto-fill, minmax(257px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  .cards .cards-card-body {
-    padding: var(--space-l);
+  .cards .cards-card-body :is(h2, h3, h4) {
+    font-size: 22px;
   }
-}
-
-/* Links variant empty state */
-.cards .cards-links-empty {
-  margin: 0;
-  padding: var(--space-m);
-  color: light-dark(var(--color-gray-600), var(--color-gray-400));
 }
 
 /* ==========================================================================
-   Bento variant
+   icon-lg variant — use-case cards ordered heading → centered graphic → body.
+   cards.js lifts the heading above the image cell; the graphic is enlarged
+   from the default 48px icon to a prominent centered illustration.
    ========================================================================== */
 
-.cards.bento > ul {
-  max-width: 1400px;
-  gap: 24px;
+/* Uniform 32px padding around the card content, matching the source. The base
+   cards rule sets `article { display: contents }`, which drops any padding on
+   the article — so restore it as a real flex column and pad it here. */
+.cards.icon-lg > ul > li > article {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  text-align: center;
 }
 
-.cards.bento > ul > li {
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
-  padding: 45px;
-  background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.4s ease, background-color 0.4s ease;
-}
-
-.cards.bento > ul > li:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 32px 64px -12px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 20%)), 0 0 0 1px light-dark(var(--color-gold), rgb(197 160 89 / 40%));
-  border-color: var(--color-gold);
-}
-
-/* Featured card */
-.cards.bento > ul > li.cards-card-featured {
-  border: none;
-  background-color: var(--color-rust);
-  color: var(--color-parchment);
-}
-
-/* Tag */
-.cards.bento .cards-card-tag {
-  font-family: var(--font-family-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: var(--color-gold);
-  margin: 0 0 30px;
-}
-
-/* Headings */
-.cards.bento .cards-card-body :is(h2, h3) {
-  font-family: var(--font-family-serif);
-  font-weight: 500;
-  font-size: 2.2rem;
-  line-height: 1.1;
-  letter-spacing: -1px;
+/* Lifted heading (now a direct child of article, above the image) */
+.cards.icon-lg > ul > li > article > :is(h2, h3, h4) {
   margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.3;
   color: light-dark(var(--color-ink), var(--color-parchment));
 }
 
-.cards.bento .cards-card-featured .cards-card-body :is(h2, h3) {
-  font-size: 3.2rem;
-}
-
-/* Body text */
-.cards.bento .cards-card-body p:not(.cards-card-tag) {
-  line-height: 1.5;
-}
-
-.cards.bento .cards-card-featured .cards-card-body p:not(.cards-card-tag) {
-  font-family: var(--font-family-serif);
-  font-size: 1.2rem;
-  opacity: 0.9;
-  margin-top: 35px;
-  max-width: 550px;
-}
-
-.cards.bento > ul > li:not(.cards-card-featured) .cards-card-body p:not(.cards-card-tag) {
-  font-size: 0.95rem;
-  opacity: 0.8;
-  color: light-dark(var(--color-ink), var(--color-muted));
-}
-
-/* Focus */
-.cards.bento .cards-card-link:focus-visible {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 3px;
-  border-radius: var(--border-radius-heritage);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 20%);
-}
-
-/* Image — stretch to card edges */
-.cards.bento .cards-card-image {
-  margin: -45px -45px 24px;
-  width: calc(100% + 90px);
-  border-radius: var(--border-radius-heritage);
-}
-
-/* Body — no extra padding, card has its own */
-.cards.bento .cards-card-body {
+.cards.icon-lg .cards-card-body {
   padding: 0;
 }
 
-/* Medium desktop: 2-column equal cards */
+/* Centered graphic cell, ~47px below heading and ~34px above the body. */
+.cards.icon-lg .cards-card-body:has(img),
+.cards.icon-lg .cards-card-body:has(picture) {
+  display: flex;
+  justify-content: center;
+  padding: 47px 0 34px;
+}
+
+.cards.icon-lg .cards-card-body img {
+  width: 180px;
+  height: 180px;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- icon-lg paragraph size is an intentional variant override */
+.cards.icon-lg .cards-card-body p {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+/* ==========================================================================
+   Accent variant — Bodhi-style icon cards on a warm gradient backdrop
+   Applied when the section carries Style=accent (icon + text cards).
+   Falls back gracefully: also triggered for image (icon) cards.
+   ========================================================================== */
+
+.cards.accent {
+  --card-icon-size: 24px;
+}
+
+/* Warm gradient frame behind the scrolling card list (source red→white wash) */
+.cards.accent > ul {
+  display: block;
+  padding: var(--space-l);
+  border-radius: 24px;
+  background: linear-gradient(160deg,
+    light-dark(rgb(233 1 48 / 12%), rgb(233 1 48 / 22%)) 0%,
+    light-dark(rgb(233 1 48 / 4%), rgb(233 1 48 / 6%)) 45%,
+    transparent 100%);
+}
+
+/* Stack the agent cards vertically with a gap between them */
+.cards.accent > ul > li {
+  margin-bottom: var(--space-m);
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+.cards.accent > ul > li:last-child {
+  margin-bottom: 0;
+}
+
+.cards.accent > ul > li:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 6%);
+}
+
+/* Accent cards: white surface, icon left of text (flex row) */
+.cards.accent > ul > li > article {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-m);
+  padding: var(--space-l);
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- accent/icon-lg variants are unrelated; source order is intentional */
+.cards.accent .cards-card-body {
+  padding: 0;
+}
+
+.cards.accent .cards-card-body:has(img),
+.cards.accent .cards-card-body:has(picture) {
+  flex: 0 0 auto;
+  padding-top: 4px;
+}
+
+.cards.accent .cards-card-body img {
+  width: var(--card-icon-size);
+  height: var(--card-icon-size);
+  object-fit: contain;
+}
+
+.cards.accent .cards-card-body :is(h2, h3, h4) {
+  margin-bottom: 4px;
+  font-size: 20px;
+  color: light-dark(#000, var(--color-parchment));
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- accent desc overrides base body paragraph intentionally */
+.cards.accent .cards-card-body p {
+  margin-bottom: 0;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+/* Desktop: cap the list height and scroll, matching the source's fixed frame */
 @media (width >= 900px) {
-  .cards.bento > ul {
-    grid-template-columns: repeat(2, 1fr);
-    grid-auto-rows: auto;
-  }
-
-  .cards.bento > ul > li {
-    padding: 60px;
-  }
-
-  .cards.bento .cards-card-image {
-    margin: -60px -60px 30px;
-    width: calc(100% + 120px);
-    aspect-ratio: 16 / 9;
-  }
-
-  .cards.bento .cards-card-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
+  .cards.accent > ul {
+    max-height: 640px;
+    overflow-y: auto;
+    scrollbar-width: thin;
   }
 }
 
-/* Large desktop: 12-column bento grid */
-@media (width >= 1200px) {
-  .cards.bento > ul {
-    grid-template-columns: repeat(12, 1fr);
+/* ==========================================================================
+   Large variant — carousel of big landscape cards, one in view with the next
+   peeking, prev/next arrow controls and a "Slide X of N" status. Each card is
+   a full-bleed image with a frosted-glass text panel in the bottom-left.
+   Matches the "realities" section on the source:
+   publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+.cards.large {
+  position: relative;
+}
+
+/* ----- Track (the scroll-snap rail) ----- */
+.cards.large .cards-carousel-viewport {
+  overflow: hidden;
+}
+
+.cards.large > .cards-carousel-viewport > ul.cards-track {
+  display: flex;
+  grid-template-columns: none;
+  gap: var(--space-l);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.cards.large ul.cards-track::-webkit-scrollbar {
+  display: none;
+}
+
+.cards.large > .cards-carousel-viewport > ul.cards-track > li {
+  position: relative;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+
+.cards.large > .cards-carousel-viewport > ul.cards-track > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Image cell fills the whole card */
+.cards.large .cards-card-body:has(img),
+.cards.large .cards-card-body:has(picture) {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  line-height: 0;
+}
+
+.cards.large .cards-card-body:has(img) p {
+  margin: 0;
+  height: 100%;
+}
+
+.cards.large .cards-card-body picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cards.large .cards-card-body img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* Text cell becomes the frosted-glass panel, anchored bottom-left */
+.cards.large .cards-card-body:not(:has(img), :has(picture)) {
+  position: absolute;
+  bottom: var(--space-l);
+  left: var(--space-l);
+  width: min(454px, 80%);
+  gap: var(--space-m);
+  padding: 24px 20px;
+  background-color: rgb(255 255 255 / 22%);
+  backdrop-filter: blur(12px);
+
+  /* stylelint-disable-next-line property-no-vendor-prefix -- Safari needs the prefix for backdrop-filter */
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 16px;
+}
+
+.cards.large .cards-card-body :is(h2, h3, h4) {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #fff;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- variant overrides base card body styles intentionally */
+.cards.large .cards-card-body p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  color: #fff;
+}
+
+/* ----- Carousel controls (prev/next arrows, top-right) ----- */
+.cards.large .cards-carousel-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-s);
+  margin-bottom: var(--space-l);
+}
+
+.cards.large .cards-carousel-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: light-dark(#fff, var(--color-card-dark));
+  color: light-dark(var(--color-ink), var(--color-parchment));
+  border: 1px solid light-dark(var(--color-ink), rgb(255 255 255 / 40%));
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+.cards.large .cards-carousel-controls button::before {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.cards.large .cards-carousel-prev::before {
+  content: '←';
+}
+
+.cards.large .cards-carousel-next::before {
+  content: '→';
+}
+
+.cards.large .cards-carousel-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cards.large .cards-carousel-controls button:hover:not(:disabled) {
+  background: light-dark(var(--color-ink), var(--color-parchment));
+  color: light-dark(#fff, var(--color-ink));
+}
+
+.cards.large .cards-carousel-status {
+  margin-top: var(--space-m);
+  font-family: var(--font-family-body);
+  font-size: var(--body-font-size-s);
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* Desktop: reveal the next card peeking at the right edge */
+@media (width >= 900px) {
+  .cards.large > .cards-carousel-viewport > ul.cards-track > li {
+    flex-basis: calc(100% - var(--space-l) - 32px);
   }
 
-  .cards.bento > ul > li {
-    grid-column: span 3;
-  }
-
-  .cards.bento > ul > li.cards-card-featured {
-    grid-column: span 6;
-  }
-
-  /* Text-only cards (no image) span double width */
-  .cards.bento > ul > li.cards-card-text-only {
-    grid-column: span 6;
-  }
-
-  .cards.bento .cards-card-image {
-    aspect-ratio: 4 / 3;
-  }
-
-  .cards.bento .cards-card-featured .cards-card-image {
-    max-height: 300px;
+  .cards.large .cards-card-body :is(h2, h3, h4) {
+    font-size: 24px;
   }
 }
