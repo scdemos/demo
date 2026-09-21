@@ -56,6 +56,7 @@
  */
 const SCHEMA_DOM_ACTION = 'https://ns.adobe.com/personalization/dom-action';
 const SCHEMA_HTML_CONTENT_ITEM = 'https://ns.adobe.com/personalization/html-content-item';
+const SCHEMA_REDIRECT_ITEM = 'https://ns.adobe.com/personalization/redirect-item';
 // Selectors that target the document chrome rather than visible content. If a dom-action item
 // arrives with one of these, alloy's applyPropositions injects directly into <head>/<body>/<html>.
 const NON_VISUAL_SELECTORS = new Set(['head', 'body', 'html']);
@@ -506,12 +507,30 @@ export async function updateUserConsent(consent) {
 }
 
 let response;
-// Tracks which fetched propositions are handed to alloy for DOM application (dom-action or
-// html-content-item), which of those were effectively rendered, and which were already reported
-// as displayed. renderedPropositionIds/reportedPropositionIds are declared at module top.
+// Tracks which fetched propositions are handed to Alloy for application, which of those were
+// effectively rendered, and which were already reported as displayed.
+// renderedPropositionIds/reportedPropositionIds are declared at module top.
 let domActionPropositionIds = new Set();
 let initialDisplayReported = false;
 let personalizationTimedOut = false;
+
+function getRedirectUrl(item, scope) {
+  const rawUrl = item?.data?.content;
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    debug('martech', `dropping redirect-item with no URL for scope "${scope}"`);
+    return null;
+  }
+  try {
+    const url = new URL(rawUrl, window.location.href);
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      throw new Error(`unsupported protocol "${url.protocol}"`);
+    }
+    return url.href;
+  } catch {
+    debug('martech', `dropping redirect-item with invalid URL "${rawUrl}" for scope "${scope}"`);
+    return null;
+  }
+}
 
 /**
  * Resolves the target selector and actionType for a Form-Based html-content-item.
@@ -682,11 +701,15 @@ async function applyPropositions(instanceName) {
   const htmlContentMetadata = {};
   let propositions = window.structuredClone(renderDecisionResponse.propositions)
     .filter((p) => p.items.some(
-      (i) => i.schema === SCHEMA_DOM_ACTION || i.schema === SCHEMA_HTML_CONTENT_ITEM,
+      (i) => i.schema === SCHEMA_DOM_ACTION
+        || i.schema === SCHEMA_HTML_CONTENT_ITEM,
     ))
     .map((p) => ({
       ...p,
       items: p.items.map((item) => {
+        if (item.schema === SCHEMA_REDIRECT_ITEM) {
+          return null;
+        }
         if (item.schema === SCHEMA_HTML_CONTENT_ITEM) {
           const target = resolveHtmlContentTarget(item, p.scope);
           if (!target) {
@@ -964,7 +987,7 @@ export async function martechEager() {
           // is tracked elsewhere
           return;
         }
-        sendAnalyticsEvent({
+        const displayEvent = sendAnalyticsEvent({
           eventType: config.trackPageView
             ? 'web.webpagedetails.pageViews'
             : 'decisioning.propositionDisplay',
@@ -977,6 +1000,17 @@ export async function martechEager() {
             },
           }),
         });
+        if (!personalizationTimedOut) {
+          const redirects = (response?.propositions || []).flatMap((proposition) => (
+            proposition.items
+              .filter((item) => item.schema === SCHEMA_REDIRECT_ITEM)
+              .map((item) => getRedirectUrl(item, proposition.scope))
+              .filter(Boolean)
+          ));
+          displayEvent.catch(() => {}).then(() => {
+            redirects.forEach((url) => window.location.replace(url));
+          });
+        }
       });
     });
   }
