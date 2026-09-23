@@ -1,0 +1,56 @@
+body.library header, body.library footer {
+  display: none;
+}
+
+.library-metadata-container > div:not(.library-metadata-wrapper) {
+    /*border: lightgrey 1px solid;*/
+}
+
+.library-metadata-container {
+    position: relative;
+}
+
+.library-metadata-container .library-metadata-wrapper {
+    display: block;
+    background-color: lightgrey;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #FFFFFF;
+    border-radius: 15px;
+    position: absolute;
+    top: 0px;
+    margin-top: 15px;
+    margin-left: 15px;
+    padding: 0px 5px;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.library-metadata-container:hover {
+    border: 1px solid grey;
+}
+
+.library-metadata-container:hover .library-metadata-wrapper {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.library-metadata-wrapper .library-metadata {
+    display: grid;
+}
+
+.library-metadata-wrapper .library-metadata p {
+    margin: 5px;
+}
+
+.library-metadata-wrapper .library-metadata > div {
+    display: flex;
+}
+
+.library-metadata-wrapper .library-metadata > div > :first-child{
+    flex: 0 0 150px;
+    display: none;
+}
