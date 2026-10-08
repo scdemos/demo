@@ -656,9 +656,13 @@ async function fetchDaConfig(org, repo) {
 }
 
 function rewriteDaConfigForNewSite(configJson, newSiteName, baselineSite) {
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const baselineRef = `${ORG}/${baselineSite}`;
   const newRef = `${ORG}/${newSiteName}`;
-  return configJson.replace(new RegExp(baselineRef.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newRef);
+  const baselineHost = new RegExp(`[a-z0-9-]+--${esc(baselineSite)}--${esc(ORG)}\\.aem\\.(page|live)`, 'g');
+  return configJson
+    .replace(new RegExp(esc(baselineRef), 'g'), newRef)
+    .replace(baselineHost, `main--${newSiteName}--${ORG}.aem.$1`);
 }
 
 async function createDaConfig(org, repo, content) {
