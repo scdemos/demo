@@ -35,3 +35,36 @@ data:
             - reqProperty: path
               equals: "/cdn-test"
         action: block
+  originSelectors:
+    rules:
+      # lhcom.bbird.live (lh-com, Edge Delivery): www's app and feed URLs go to the lh-edge Worker;
+      # everything else on lhcom.bbird.live stays on the Edge Delivery origin. demo2 is not affected.
+      - name: lhcom-solo-pages-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '\.solo(_continue|\.continue)(\..*)?$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          skipCache: true
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
+      - name: lhcom-feeds-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '^(/content/(mobile|dam)/.*|/graphql/execute\.json/.*|/\.well-known/(assetlinks\.json|apple-app-site-association)|/service/secured/api/core/authenticate/loginPageUrl|.*\.csi-owa-[a-z-]+\.json)$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
+    origins:
+      - name: lh-edge
+        domain: lhedge.bbird.live
+        timeout: 20
