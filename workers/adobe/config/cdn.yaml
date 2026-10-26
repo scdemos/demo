@@ -64,6 +64,21 @@ data:
           originName: lh-edge
           headers:
             X-LH-Public-Host: lhcom.bbird.live
+      # More of www's URLs that lh-edge answers on lhcom.bbird.live (fragment catalog, aircraft list,
+      # service worker, market switch, gzipped sitemaps, generated llms.txt, captcha check,
+      # micro-frontend hand-off). lh-edge passes anything it doesn't answer to the Edge Delivery origin.
+      - name: lhcom-www-endpoints-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '^(/content/experience-fragments/.+\.csi-xf\.json|/service-worker\.js|/sitemap/[^/]+\.xml\.gz|/[a-z]{2}(/[a-z]{2})?/llms\.txt|/service/secured/api/captcha/verify|.+\.(aircraft\.json|changelocale(\.html)?|mfe\.html))$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
       # lhcom.bbird.live/migration-status: Adobe IMS sign-in first (Worker lh-backends, module gate).
       # The Worker fetches the page from the Edge Delivery origin for members of the allowed orgs.
       - name: lhcom-migration-status-to-gate
