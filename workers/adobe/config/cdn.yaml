@@ -58,7 +58,7 @@ data:
             - reqProperty: domain
               equals: "lhcom.bbird.live"
             - reqProperty: originalPath
-              matches: '^(/content/(mobile|dam)/.*|/graphql/execute\.json/.*|/\.well-known/(assetlinks\.json|apple-app-site-association)|/service/secured/api/core/authenticate/loginPageUrl|/service/secured/api/search|/service/secured/api/core/booking/(defaultairport|bookinglist)|/apps/dcep/deeplink/goodfortrain/stele|.*\.csi-owa-[a-z-]+\.json)$'
+              matches: '^(/content/(mobile|dam)/.*|(/api/content)?/graphql/execute\.json/.*|/\.well-known/(assetlinks\.json|apple-app-site-association)|/service/secured/api/core/authenticate/loginPageUrl|/service/secured/api/search|/service/secured/api/core/booking/(defaultairport|bookinglist)|/apps/dcep/deeplink/goodfortrain/stele|.*\.csi-owa-[a-z-]+\.json)$'
         action:
           type: selectOrigin
           originName: lh-edge
