@@ -35,3 +35,56 @@ data:
             - reqProperty: path
               equals: "/cdn-test"
         action: block
+  originSelectors:
+    rules:
+      # lhcom.bbird.live (lh-com, Edge Delivery): www's app and feed URLs go to the lh-edge Worker;
+      # everything else on lhcom.bbird.live stays on the Edge Delivery origin. demo2 is not affected.
+      - name: lhcom-solo-pages-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '\.solo(_continue|\.continue)(\..*)?$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          skipCache: true
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
+      - name: lhcom-feeds-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '^(/content/(mobile|dam)/.*|/graphql/execute\.json/.*|/\.well-known/(assetlinks\.json|apple-app-site-association)|/service/secured/api/core/authenticate/loginPageUrl|/service/secured/api/search|/service/secured/api/core/booking/(defaultairport|bookinglist)|/apps/dcep/deeplink/goodfortrain/stele|.*\.csi-owa-[a-z-]+\.json)$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
+      # lhcom.bbird.live/migration-status: Adobe IMS sign-in first (Worker lh-backends, module gate).
+      # The Worker fetches the page from the Edge Delivery origin for members of the allowed orgs.
+      - name: lhcom-migration-status-to-gate
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '^/(migration-status.*|_lh-auth/.*)$'
+        action:
+          type: selectOrigin
+          originName: lh-backends
+          skipCache: true
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
+    origins:
+      - name: lh-edge
+        domain: lhedge.bbird.live
+        timeout: 20
+      - name: lh-backends
+        domain: lh-backends.aem-poc-lab.workers.dev
+        # the gate's session cookie must reach the Worker (default: the CDN drops Cookie)
+        forwardCookie: true
+        timeout: 20
