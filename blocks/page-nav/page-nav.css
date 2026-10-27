@@ -1,0 +1,114 @@
+/*
+ * Page nav block — sticky in-page anchor bar (secondary nav).
+ * A light-grey rounded pill holding the section links (left) and a white
+ * "Request a demo" CTA (right). Pins to the top of the viewport once scrolled
+ * past. Matches publicissapient.com/industries/financial-services.
+ */
+
+/* Match the width of a normal content block (same grid width as .section >
+   div). border-box + no side padding lets the grey pill span the full block
+   width, and keeps the box the exact same size in the in-flow and pinned
+   states so there's no resize when it sticks. */
+.page-nav.block {
+  box-sizing: border-box;
+  max-width: var(--grid-container-width);
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Pinned to the top of the viewport once scrolled past. Same max-width +
+   margin:0 auto as the in-flow state, so the bar keeps its block width and
+   centered position — no size change when it sticks. */
+.page-nav.block.is-fixed {
+  position: fixed;
+  top: 12px;
+  left: 0;
+  right: 0;
+  z-index: 40;
+}
+
+.page-nav .page-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 4px 4px 4px 8px;
+  background: var(--color-parchment, #f5f5f5);
+  border-radius: 9999px;
+  font-family: var(--body-font-family);
+}
+
+.page-nav .page-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page-nav .page-nav-list li {
+  margin: 0;
+}
+
+.page-nav .page-nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--brand-muted, #666);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 9999px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.page-nav .page-nav-link:hover {
+  color: #000;
+}
+
+/* Active section — white text on brand-red pill (matches source). */
+.page-nav .page-nav-link.is-active {
+  color: #fff;
+  background: var(--brand-red);
+}
+
+.page-nav .page-nav-link.is-active:hover {
+  color: #fff;
+}
+
+/* Right-aligned CTA — white pill with black text + a subtle light-grey
+   border (source uses #949494, 16px text), not a hard black outline. */
+.page-nav .page-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  background: #fff;
+  border: 1px solid #949494;
+  border-radius: 9999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.page-nav .page-nav-cta::after {
+  content: '→';
+  transition: transform 0.25s ease;
+}
+
+.page-nav .page-nav-cta:hover {
+  color: #fff;
+  background: #000;
+  border-color: #000;
+}
+
+.page-nav .page-nav-cta:hover::after {
+  transform: translateX(4px);
+}

@@ -1,0 +1,38 @@
+/* ==========================================================================
+   Brand tokens — extracted from publicissapient.com
+   Source: https://www.publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+:root {
+  /* fonts */
+  --heading-font-family: "Lexend Deca", "Trebuchet MS", sans-serif;
+  --body-font-family: roboto, helvetica, arial, sans-serif;
+
+  /* brand colors */
+  --brand-red: #e90130;
+  --brand-red-dark: #b40024;
+  --brand-black: #000;
+  --brand-white: #fff;
+  --brand-muted: #666;
+
+  /* semantic colors */
+  --background-color: var(--brand-white);
+  --text-color: var(--brand-black);
+  --link-color: var(--brand-red);
+  --link-hover-color: var(--brand-red-dark);
+  --light-color: #f5f5f5;
+  --dark-color: #111;
+
+  /* spacing */
+  --section-padding: 80px;
+  --nav-height: 134px;
+  --content-max-width: 1280px;
+
+  /* heading sizes (desktop) */
+  --heading-size-xxl: 50px;
+  --heading-size-xl: 36px;
+  --heading-size-l: 22px;
+  --heading-size-m: 16px;
+  --heading-size-s: 18px;
+  --heading-size-xs: 16px;
+}

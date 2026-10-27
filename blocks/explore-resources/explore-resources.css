@@ -1,0 +1,190 @@
+/* ==========================================================================
+   Explore resources — intro column beside a row of resource cards.
+   Source: publicissapient.com/industries/financial-services
+   ========================================================================== */
+
+.explore-resources.block {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+/* ----- Full-bleed background image (optional first row) ----- */
+.explore-resources .explore-resources-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: 24px;
+}
+
+.explore-resources .explore-resources-bg picture,
+.explore-resources .explore-resources-bg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* When a background is present, become a positioning context and lift the
+   real content above the image. */
+.explore-resources.has-bg {
+  position: relative;
+  padding: var(--space-xl);
+}
+
+/* ----- Intro column ----- */
+.explore-resources .explore-resources-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-l);
+}
+
+.explore-resources .explore-resources-intro :is(h2, h3) {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1.1;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.explore-resources .explore-resources-intro p {
+  margin: 0;
+  font-family: var(--font-family-body);
+  font-size: 18px;
+  line-height: 28px;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* "Learn more" arrow pill */
+.explore-resources .explore-resources-cta:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 24px;
+  border: 1px solid light-dark(var(--color-ink), var(--color-parchment));
+  border-radius: 9999px;
+  background: none;
+  font-family: var(--font-family-body);
+  font-size: 16px;
+  font-weight: 600;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.explore-resources .explore-resources-cta::after {
+  content: '→';
+  transition: transform 0.25s ease;
+}
+
+.explore-resources .explore-resources-cta:hover {
+  background: light-dark(var(--color-ink), var(--color-parchment));
+  color: light-dark(#fff, var(--color-ink));
+}
+
+.explore-resources .explore-resources-cta:hover::after {
+  transform: translateX(4px);
+}
+
+/* ----- Cards ----- */
+.explore-resources .explore-resources-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-l);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.explore-resources .explore-resources-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  padding: 32px;
+  background: light-dark(var(--color-light), var(--color-card-dark));
+  border-radius: 16px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.3s var(--ease-out-smooth), box-shadow 0.3s ease;
+}
+
+a.explore-resources-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px light-dark(rgb(0 0 0 / 10%), rgb(0 0 0 / 45%));
+}
+
+/* Category eyebrow with a magnifier glyph */
+.explore-resources .explore-resources-category {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 var(--space-m);
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+.explore-resources .explore-resources-category::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  background-color: currentcolor;
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat center / contain;
+}
+
+.explore-resources .explore-resources-title {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: light-dark(var(--color-ink), var(--color-parchment));
+}
+
+/* Date pinned to the bottom, above a full-width top rule */
+.explore-resources .explore-resources-date {
+  margin: auto 0 0;
+  padding-top: var(--space-m);
+  border-top: 1px solid light-dark(var(--color-gray-200, #ddd), rgb(255 255 255 / 18%));
+  font-family: var(--font-family-mono);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: light-dark(rgb(68 68 68), var(--color-gray-300));
+}
+
+/* ==========================================================================
+   Tablet: cards side by side.
+   ========================================================================== */
+@media (width >= 600px) {
+  .explore-resources .explore-resources-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xl);
+  }
+}
+
+/* ==========================================================================
+   Desktop: intro column beside the cards; larger heading.
+   ========================================================================== */
+@media (width >= 900px) {
+  .explore-resources.block {
+    grid-template-columns: 1fr 2fr;
+    gap: var(--space-2xl);
+  }
+
+  .explore-resources .explore-resources-intro :is(h2, h3) {
+    font-size: 50px;
+  }
+
+  .explore-resources .explore-resources-title {
+    font-size: 28px;
+  }
+}
