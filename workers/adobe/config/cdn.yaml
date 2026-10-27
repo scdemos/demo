@@ -81,6 +81,22 @@ data:
           originName: lh-edge
           headers:
             X-LH-Public-Host: lhcom.bbird.live
+      # The Swiss market roots /ch/<ll>/... (de, en; fr and it later), their XML sitemaps and the plain sitemap index
+      # (/ch, /ch/<ll> and the .xml.gz names are in the rule above). lh-edge answers a market root it
+      # serves from the root's own documents, else from its language version (de/de, de/en); a root it
+      # doesn't serve passes to the Edge Delivery origin unchanged.
+      - name: lhcom-ch-market-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '^(/ch/.+|/sitemap/sitemap_lh(_ch_[a-z]{2})?\.xml)$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
       # lhcom.bbird.live/migration-status: Adobe IMS sign-in first (Worker lh-backends, module gate).
       # The Worker fetches the page from the Edge Delivery origin for members of the allowed orgs.
       - name: lhcom-migration-status-to-gate
