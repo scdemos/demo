@@ -1,0 +1,6 @@
+@import url('../hero/hero.css');
+
+.video-hero-container .video-hero-wrapper {
+  max-width: unset;
+  padding: 0;
+}
