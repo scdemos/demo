@@ -97,6 +97,22 @@ data:
           originName: lh-edge
           headers:
             X-LH-Public-Host: lhcom.bbird.live
+      # The account, sign-in and deep link endpoints AEM's Java services answer on www (/service/secured/api/...,
+      # /sso/..., /deeplink/..., /apps/dcep/deeplink/...), the language switch (/apps/selectlanguage) and web pages
+      # as app screens (/<cc>/<ll>/<page>.v2.sdui). lh-edge answers them like the demo host (account services run on
+      # test data; a visitor is signed out).
+      - name: lhcom-service-endpoints-to-lh-edge
+        when:
+          allOf:
+            - reqProperty: domain
+              equals: "lhcom.bbird.live"
+            - reqProperty: originalPath
+              matches: '^(/service/secured/api/.+|/sso/.+|/deeplink/.+|/apps/dcep/deeplink/.+|/apps/selectlanguage|/[a-z]{2}/[a-z]{2}/.+\.v2\.sdui)$'
+        action:
+          type: selectOrigin
+          originName: lh-edge
+          headers:
+            X-LH-Public-Host: lhcom.bbird.live
       # lhcom.bbird.live/migration-status: Adobe IMS sign-in first (Worker lh-backends, module gate).
       # The Worker fetches the page from the Edge Delivery origin for members of the allowed orgs.
       - name: lhcom-migration-status-to-gate
