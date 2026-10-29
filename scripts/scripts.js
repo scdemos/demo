@@ -26,6 +26,9 @@ import { getAllMetadata, getLocale } from './shared.js';
 import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
+const IS_PREFLIGHT_HOST = window.location.hostname.endsWith('.preview.da.live');
+const preflightSources = new WeakMap();
+
 const AUDIENCES = {
   mobile: () => window.innerWidth < 600,
   desktop: () => window.innerWidth >= 600,
@@ -167,6 +170,15 @@ async function inlineColorIcons(scope) {
   });
 }
 
+function capturePreflightSources(main) {
+  const clone = main.cloneNode(true);
+  preflightSources.set(main, clone);
+  ['.section', '.block'].forEach((selector) => {
+    const copies = clone.querySelectorAll(selector);
+    main.querySelectorAll(selector).forEach((el, i) => preflightSources.set(el, copies[i]));
+  });
+}
+
 export function decorateMain(main) {
   decorateButtons(main);
   decorateIcons(main);
@@ -174,6 +186,7 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
+  if (IS_PREFLIGHT_HOST) capturePreflightSources(main);
   if (document.contains(main)) initPageSchemas();
 }
 
@@ -519,8 +532,8 @@ function registerPreflight() {
   window.aem = window.aem || {};
   window.aem.preflight = async () => {
     await pageLoaded;
-    const { default: preflight } = await import('./preflight.js');
-    return preflight(document);
+    const { default: preflight } = await import('./preflight/preflight.js');
+    return preflight(document, preflightSources);
   };
 }
 
@@ -532,7 +545,7 @@ export async function loadPage() {
 }
 
 if (!window.hlx?.suppressLoadPage) {
-  registerPreflight();
+  if (IS_PREFLIGHT_HOST) registerPreflight();
   loadPage();
 
   (async function loadDa() {
