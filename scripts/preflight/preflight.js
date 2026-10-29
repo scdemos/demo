@@ -14,21 +14,15 @@ const SECTION_INTERNAL_ATTRS = ['data-section-status'];
 
 const blockLabel = (name) => `'${name}' block`;
 
-function ownSources(doc, sourceOf, selector) {
-  const root = sourceOf(doc.querySelector('main'), null);
-  return [...doc.querySelectorAll(`main ${selector}`)]
-    .map((el) => ({ el, source: sourceOf(el, null) }))
-    .filter(({ source }) => source && root?.contains(source));
-}
+const sectionsOf = (main) => [...main.querySelectorAll(':scope > .section')];
 
-function authoredBlocks(doc, sourceOf) {
-  return ownSources(doc, sourceOf, '[data-block-name]')
-    .map(({ el, source }) => ({ block: el, name: el.dataset.blockName, source }));
-}
+const blocksOf = (main) => [...main.querySelectorAll('.block[data-block-name]')]
+  .map((source) => ({ name: source.dataset.blockName, source }));
 
-function unknownBlocks(doc, sourceOf) {
+function unknownBlocks(doc, main) {
+  if (!main) return null;
   const names = Object.keys(BLOCKS);
-  return authoredBlocks(doc, sourceOf).flatMap(({ name }) => {
+  return blocksOf(main).flatMap(({ name }) => {
     const entry = BLOCKS[name];
     if (!entry) {
       return [{ message: `Unknown block '${name}'.`, hint: didYouMean(name, names) || 'Use a block from the block library.' }];
@@ -43,9 +37,10 @@ function unknownBlocks(doc, sourceOf) {
   });
 }
 
-function unknownVariants(doc, sourceOf) {
+function unknownVariants(doc, main) {
+  if (!main) return null;
   const gated = getMetadata('gated', doc).trim().toLowerCase() === 'true';
-  return authoredBlocks(doc, sourceOf).flatMap(({ name, source }) => {
+  return blocksOf(main).flatMap(({ name, source }) => {
     const entry = BLOCKS[name];
     if (!entry || entry.authored === false) return [];
     const allowed = entry.variants || [];
@@ -69,12 +64,13 @@ function unknownVariants(doc, sourceOf) {
   });
 }
 
-function blockContent(doc, sourceOf) {
-  return authoredBlocks(doc, sourceOf).flatMap(({ block, name, source }) => {
+function blockContent(doc, main) {
+  if (!main) return null;
+  return blocksOf(main).flatMap(({ name, source }) => {
     const validate = BLOCKS[name]?.validate;
     if (!validate) return [];
     try {
-      return validate(source, block) || [];
+      return validate(source) || [];
     } catch (error) {
       console.error(`preflight validator for ${name} failed`, error);
       return [];
@@ -82,46 +78,51 @@ function blockContent(doc, sourceOf) {
   });
 }
 
-function tabGrouping(doc, sourceOf) {
-  const main = sourceOf(doc.querySelector('main'));
-  const sections = [...main.querySelectorAll(':scope > div')];
-  const tabIndexes = sections
-    .map((section, i) => (section.hasAttribute('data-tab-id') ? i : null))
+function tabGrouping(doc, main) {
+  if (!main) return null;
+  const sections = sectionsOf(main);
+  const isTab = (section) => section?.hasAttribute('data-tab-id');
+  if (!sections.some(isTab)) return null;
+  const claimed = new Set();
+  sections.forEach((section, i) => {
+    if (!section.querySelector('.tabs.block')) return;
+    for (let j = i + 1; isTab(sections[j]); j += 1) claimed.add(j);
+  });
+  const leftover = sections
+    .map((section, i) => (isTab(section) && !claimed.has(i) ? i : null))
     .filter((i) => i !== null);
-  if (!tabIndexes.length) return null;
-  const span = tabIndexes[tabIndexes.length - 1] - tabIndexes[0] + 1;
-  if (span === tabIndexes.length) return [];
+  if (!leftover.length || leftover[leftover.length - 1] - leftover[0] + 1 === leftover.length) return [];
   return [{
-    message: 'Tab sections are separated by other sections; all tab sections on a page are merged into one set of tabs.',
-    hint: 'Place all sections with a Tab ID next to each other.',
+    message: 'Tab sections not following a tabs block are separated by other sections; they are all merged into one set of tabs.',
+    hint: 'Place sections with a Tab ID right after each other, or after a tabs block.',
   }];
 }
 
-function sectionMetadata(doc, sourceOf) {
-  return ownSources(doc, sourceOf, '.section')
-    .flatMap(({ source }) => {
-      const styles = [...source.classList]
-        .filter((cls) => cls !== 'section' && !cls.endsWith('-container')
-          && !SECTION_STYLES.includes(cls) && !matchesAny(UTILITY_CLASSES, cls))
-        .map((cls) => ({
-          message: `Unknown section style '${cls}'.`,
-          hint: didYouMean(cls, SECTION_STYLES) || `Supported styles: ${SECTION_STYLES.join(', ')}.`,
-        }));
-      const keys = [...source.attributes]
-        .map(({ name }) => name)
-        .filter((name) => name.startsWith('data-') && !SECTION_INTERNAL_ATTRS.includes(name))
-        .map((name) => name.slice('data-'.length))
-        .filter((key) => !SECTION_KEYS.includes(key))
-        .map((key) => ({
-          message: `Unknown section metadata '${key}'.`,
-          hint: didYouMean(key, SECTION_KEYS) || `Supported section metadata: Style, ${SECTION_KEYS.join(', ')}.`,
-        }));
-      return [...styles, ...keys];
-    });
+function sectionMetadata(doc, main) {
+  if (!main) return null;
+  return sectionsOf(main).flatMap((section) => {
+    const styles = [...section.classList]
+      .filter((cls) => cls !== 'section' && !/-(container|wrapper)$/.test(cls)
+        && !SECTION_STYLES.includes(cls) && !matchesAny(UTILITY_CLASSES, cls))
+      .map((cls) => ({
+        message: `Unknown section style '${cls}'.`,
+        hint: didYouMean(cls, SECTION_STYLES) || `Supported styles: ${SECTION_STYLES.join(', ')}.`,
+      }));
+    const keys = [...section.attributes]
+      .map(({ name }) => name)
+      .filter((name) => name.startsWith('data-') && !SECTION_INTERNAL_ATTRS.includes(name))
+      .map((name) => name.slice('data-'.length))
+      .filter((key) => !SECTION_KEYS.includes(key))
+      .map((key) => ({
+        message: `Unknown section metadata '${key}'.`,
+        hint: didYouMean(key, SECTION_KEYS) || `Supported section metadata: Style, ${SECTION_KEYS.join(', ')}.`,
+      }));
+    return [...styles, ...keys];
+  });
 }
 
-function template(doc, sourceOf) {
-  const raw = getMetadata('template', doc);
+function template(doc, main) {
+  const raw = getMetadata('template', doc).trim();
   if (!raw) return null;
   const name = toClassName(raw);
   const validate = TEMPLATES[name];
@@ -132,7 +133,13 @@ function template(doc, sourceOf) {
       hint: didYouMean(name, names) || `Supported templates: ${names.join(', ')}.`,
     }];
   }
-  return validate(doc, sourceOf);
+  if (raw !== name) {
+    return [{
+      message: `Template '${raw}' is not loaded.`,
+      hint: `Set Template to '${name}'.`,
+    }];
+  }
+  return validate(doc, main || doc.querySelector('main'));
 }
 
 const CHECKS = [
@@ -144,9 +151,9 @@ const CHECKS = [
   { id: 'template', title: 'Template', run: template },
 ];
 
-async function runCheck({ id, title, run }, doc, sourceOf) {
+async function runCheck({ id, title, run }, doc, main) {
   try {
-    return result({ id, title, ...fromIssues(await run(doc, sourceOf)) });
+    return result({ id, title, ...fromIssues(await run(doc, main)) });
   } catch (error) {
     return result({
       id,
@@ -157,7 +164,6 @@ async function runCheck({ id, title, run }, doc, sourceOf) {
   }
 }
 
-export default async function preflight(doc = document, sources = new WeakMap(), checks = CHECKS) {
-  const sourceOf = (el, fallback = el) => (el && sources.get(el)) || fallback;
-  return Promise.all(checks.map((check) => runCheck(check, doc, sourceOf)));
+export default async function preflight(doc = document, source = null, checks = CHECKS) {
+  return Promise.all(checks.map((check) => runCheck(check, doc, source)));
 }

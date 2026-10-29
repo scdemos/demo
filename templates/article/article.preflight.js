@@ -2,9 +2,9 @@ import { getMetadata } from '../../scripts/aem.js';
 
 const isDate = (value) => /^\d+$/.test(value) || !Number.isNaN(new Date(value).getTime());
 
-export default function validate(doc) {
+export default function validate(doc, main) {
   const issues = [];
-  if (!doc.querySelector('main .hero h1')) {
+  if (!main.querySelector('.hero h1')) {
     issues.push({
       message: 'Article has no hero block with an H1.',
       hint: 'Start the article with a hero block whose title is Heading 1.',

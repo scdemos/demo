@@ -11,11 +11,9 @@ function readDetails(cell) {
   return details;
 }
 
-export default function validate(doc, sourceOf) {
+export default function validate(doc, main) {
   const issues = [];
-  const columns = doc.querySelector('main .columns');
-  const source = columns && sourceOf(columns);
-  const details = readDetails(source?.querySelector(':scope > div > div'));
+  const details = readDetails(main.querySelector('.columns > div > div'));
   if (!details.date) {
     issues.push({
       message: 'Event has no date.',
