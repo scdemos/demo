@@ -512,13 +512,27 @@ export async function decorateEmbed(main) {
   await dynamicBlocks(main);
 }
 
+let resolvePageLoaded;
+const pageLoaded = new Promise((resolve) => { resolvePageLoaded = resolve; });
+
+function registerPreflight() {
+  window.aem = window.aem || {};
+  window.aem.preflight = async () => {
+    await pageLoaded;
+    const { default: preflight } = await import('./preflight.js');
+    return preflight(document);
+  };
+}
+
 export async function loadPage() {
   await loadEager(document);
   await loadLazy(document);
+  resolvePageLoaded();
   loadDelayed();
 }
 
 if (!window.hlx?.suppressLoadPage) {
+  registerPreflight();
   loadPage();
 
   (async function loadDa() {
