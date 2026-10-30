@@ -3,6 +3,8 @@ Demo Project - Cloud Adoption
 ## Environments
 - Preview: https://main--demo--scdemos.aem.page/
 - Live: https://main--demo--scdemos.aem.live/
+- CDN (production): https://demo.bbird.live/
+- Authoring (DA): https://da.live/#/scdemos/demo
 
 ## Documentation
 
