@@ -26,6 +26,9 @@ import { getAllMetadata, getLocale } from './shared.js';
 import { initPageSchemas } from './schema.js';
 import dynamicBlocks from '../blocks/dynamic/index.js';
 
+const IS_PREFLIGHT_HOST = window.location.hostname.endsWith('.preview.da.live');
+let preflightSource = null;
+
 const AUDIENCES = {
   mobile: () => window.innerWidth < 600,
   desktop: () => window.innerWidth >= 600,
@@ -174,6 +177,7 @@ export function decorateMain(main) {
   buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
+  if (IS_PREFLIGHT_HOST && document.contains(main)) preflightSource = main.cloneNode(true);
   if (document.contains(main)) initPageSchemas();
 }
 
@@ -512,13 +516,27 @@ export async function decorateEmbed(main) {
   await dynamicBlocks(main);
 }
 
+let resolvePageLoaded;
+const pageLoaded = new Promise((resolve) => { resolvePageLoaded = resolve; });
+
+function registerPreflight() {
+  window.aem = window.aem || {};
+  window.aem.preflight = async () => {
+    await pageLoaded;
+    const { default: preflight } = await import('./preflight/preflight.js');
+    return preflight(document, preflightSource);
+  };
+}
+
 export async function loadPage() {
   await loadEager(document);
   await loadLazy(document);
+  resolvePageLoaded();
   loadDelayed();
 }
 
 if (!window.hlx?.suppressLoadPage) {
+  if (IS_PREFLIGHT_HOST) registerPreflight();
   loadPage();
 
   (async function loadDa() {
