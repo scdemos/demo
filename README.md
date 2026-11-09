@@ -21,9 +21,9 @@ demo manulifeim.com/institutional/tw/en
 create a demo for https://www.manulifeim.com/institutional/tw/en
 ```
 
-That's the only input, plus one click. The agent then:
-1. derives `<slug>` from the URL and creates `github.com/scdemos/<slug>`, seeded with this base's code. Every demo stays in the `scdemos` space for tracking.
-2. opens [the AEM Code Sync install page](https://github.com/apps/aem-code-sync/installations/new). **Your one click:** choose scdemos → Only select repositories → add `<slug>` → Install/Save. The Config Service then connects the repo to DA, with no `fstab.yaml`.
+That's the only input. No org-admin rights are needed. The agent then:
+1. derives `<slug>` from the URL and opens a `new-demo: <slug>` issue on this repo. The [provisioning workflow](.github/workflows/provision-demo.yaml) creates `github.com/scdemos/<slug>`, seeds it with this base's code, adds it to AEM Code Sync and gives you `maintain` access. Every demo stays in `scdemos`, and the issues form the audit log.
+2. relies on Code Sync and the Config Service to connect the repo to DA, with no `fstab.yaml`
 3. creates `da.live/#/scdemos/<slug>` through the DA MCP and copies the base content into it
 4. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
 5. maps the customer pages onto the existing blocks and variants
@@ -31,6 +31,8 @@ That's the only input, plus one click. The agent then:
 7. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
 8. QA-checks against the original site
 9. hands back the preview, DA and repo links
+
+**One-time admin setup** for zero-touch provisioning: an `scdemos` org owner adds the repo secret `DEMO_PROVISION_TOKEN` to `scdemos/demo`. It must be a classic PAT from an org-owner or bot account, with the `repo` and `admin:org` scopes. Optionally, set the variable `DEMO_BASE_REF` to seed from a branch other than `main`.
 
 **Where things live:**
 - Orchestrator skill: [`.skills/customer-demo/SKILL.md`](.skills/customer-demo/SKILL.md)

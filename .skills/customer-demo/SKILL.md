@@ -7,8 +7,8 @@ description: Turn the scdemos/demo base site into a fully baked, customer-brande
 
 You turn **one customer URL** into a working, customer-relevant demo site built on the
 `scdemos/demo` base. The solution consultant (SC) should have to do **one thing**: run
-`/customer-demo <url>`, plus one click to install AEM Code Sync on the new repo.
-Everything else is your job: repo, DA, brand, content, features and QA. Do not stop to ask
+`/customer-demo <url>`. Everything else is your job: repo (through the self-service
+provisioning issue), Code Sync, DA, brand, content, features and QA. Do not stop to ask
 questions that you can answer yourself.
 
 The base already ships the block library, section styles, experimentation/audiences/campaigns,
@@ -61,53 +61,57 @@ Do these checks silently, and only report failures:
 
 ### 1. Provision in scdemos (repo → Code Sync → DA → content)
 
-Do these steps in this order. Step 1c is the **only planned SC action** in the whole run.
+SCs are **not** org admins, so the agent never creates the repo directly. Provisioning
+goes through the self-service workflow in `scdemos/demo`
+(`.github/workflows/provision-demo.yaml`). A bot with org-admin rights:
+- creates the repo
+- seeds it with the base code
+- adds it to AEM Code Sync
+- gives the SC `maintain` access
 
-#### 1a. Create the GitHub repo
-- Call GitHub MCP `create_repository` with:
-  - `organization: "scdemos"`, `name: "<slug>"`
-  - `description: "<Customer> demo built from scdemos/demo (source: <url>)"`
-  - `private: false`, `autoInit: false`
-- If the call fails with 403, the SC lacks repo-create rights in `scdemos`. That is a ⛔
-  blocker: tell them to ask an `scdemos` owner for access.
+Each request is a GitHub issue, so the issue list is the audit log for every demo
+(observability and accounting). **No SC action is needed.**
 
-#### 1b. Seed the code
-Run this from a temp dir, never in the SC's working copy:
+#### 1a. Request the repo (zero-touch)
+- Open the issue with GitHub MCP `issue_write` (method `create`) on `scdemos/demo`:
+  - title: `new-demo: <slug>`
+  - body: `<customer url>` on the first line, then `Customer: <Customer name>`
+  - labels: `["demo-request"]`
+- Do **1d, 2, 3 and 4** while you wait. None of them need the repo.
+
+#### 1b. Wait for provisioning
+- Every ~20 s, read the issue comments with `issue_read` (method `get_comments`). Stop after 10 min.
+  - `provisioned ✅`: read the comment. It lists the repo, preview and DA URLs and the Code
+    Sync status. Continue.
+  - `⛔ … already exists`: choose the next slug suffix, then open a new issue.
+  - `⛔ … secret is not configured` or `⛔ … not a member`: this is a setup problem, not
+    something the SC can fix. Fall back to **1e**.
+  - Any other `⛔`: report the run link in one line, then fall back to **1e**.
+- If the comment says `⚠️ AEM Code Sync`, the bot couldn't add the repo to the app. Open
+  https://github.com/apps/aem-code-sync/installations/new for the SC with
+  `openBrowserPage`, with a one-line instruction: **scdemos → Only select repositories →
+  add `<slug>` → Save**.
+- Start the background poll so you know when aem.page serves the code:
+  ```bash
+  node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo scdemos/<slug> --da scdemos/<slug> --wait 900
+  ```
+
+#### 1c. Personalize the code
+After provisioning, the SC has `maintain` access. Clone into a temp dir, never into the
+SC's working copy:
 ```bash
-git clone --depth 1 https://github.com/scdemos/demo.git <tmp>/<slug>
-cd <tmp>/<slug> && rm -rf .git && git init -b main
+git clone https://github.com/scdemos/<slug>.git <tmp>/<slug>
 ```
-Before the first commit:
-- **Do not add `fstab.yaml`.** Once Code Sync is installed, the Config Service creates the
-  site config and maps it to `https://content.da.live/scdemos/<slug>/` automatically.
+In the clone:
+- **Do not add `fstab.yaml`.** Code Sync and the Config Service map the repo to
+  `https://content.da.live/scdemos/<slug>/` automatically.
 - Set `"project"` in `tools/sidekick/config.json` to `"<Customer> Demo"`.
 - In `README.md`, set the Environments section to `main--<slug>--scdemos.aem.page/.live`
   and `da.live/#/scdemos/<slug>`.
 
-Then commit and push:
-```bash
-git add -A && git commit -m "chore: seed from scdemos/demo"
-git remote add origin https://github.com/scdemos/<slug>.git && git push -u origin main
-```
-
-#### 1c. Code Sync: the one SC action
-The app can't be installed through an API, and `scdemos` installs it per repository, so
-this always needs the SC:
-1. Open **https://github.com/apps/aem-code-sync/installations/new** for the SC with
-   `openBrowserPage`. If that tool isn't available, print the link.
-2. Tell the SC, in one short message:
-   > Install AEM Code Sync on the new repo: choose **scdemos** → **Only select repositories**
-   > → add **`<slug>`** → **Install** (or **Save** if scdemos already has the app). I'll
-   > keep going and pick it up automatically.
-3. Start the background poll. Don't block on it; use async mode:
-   ```bash
-   node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo scdemos/<slug> --da scdemos/<slug> --wait 900
-   ```
-4. **Keep working on 1d, 2, 3, 4 and 5 while it polls.** Only phase 6 (build/verify on
-   aem.page) needs Code Sync.
-5. When the poll reports `code-sync ✅`, run `git commit --allow-empty -m "chore: trigger code sync" && git push`
-   if `aem.page/scripts/aem.js` is still 404.
-6. If the poll times out, re-show the link once and wait. This is a ⛔ blocker for phase 6.
+Commit with `chore: personalize for <Customer>`, then push. If no local git credentials are
+available, use GitHub MCP `push_files` instead. This and every later code change go to the
+customer repo.
 
 #### 1d. Create the DA site folder
 Use the DA MCP. Create the folder by writing its first document:
@@ -116,6 +120,15 @@ Use the DA MCP. Create the folder by writing its first document:
   visible at `https://da.live/#/scdemos/<slug>`.
 - If DA returns 401/403, that is a ⛔ blocker: the SC needs write access to the `scdemos`
   DA org.
+
+#### 1e. Fallback when the workflow is unavailable
+- Try GitHub MCP `create_repository` with `organization: "scdemos"`, name `<slug>`,
+  `private: false`, `autoInit: false`. This works only for org admins.
+  - On success: seed it from `scdemos/demo` with local git (clone the base, `rm -rf .git`,
+    `git init -b main`, commit, push). Then open the Code Sync install page as in 1b.
+  - On 403: send **one** message asking an `scdemos` admin to create the empty public repo
+    `<slug>`, or to fix the provisioning setup. Include the issue link. Keep doing the
+    non-repo phases meanwhile.
 
 #### Access note
 The demo uses customer assets. `.aem.page` is not indexed, so in the handoff call the
@@ -136,11 +149,11 @@ https://www.aem.live/docs/authentication-setup-site.
 
 ### Failure policy (phases 0–2)
 
-Talk to the SC before the handoff only for:
-- the Code Sync install (always, step 1c)
-- `create_repository` returning 403 in `scdemos`
-- DA returning 401/403 for `scdemos/<slug>`
-- the Code Sync poll timing out
+Talk to the SC before the handoff only when:
+- provisioning falls back to 1e and the SC is not an admin
+- the bot couldn't add the repo to Code Sync (one click, see 1b)
+- DA returns 401/403 for `scdemos/<slug>`
+- the Code Sync poll times out
 
 Each time, send **one** message with the exact link or action, then resume automatically.
 
