@@ -294,3 +294,53 @@
   background-clip: unset;
   color: var(--color-rust);
 }
+
+/* Banner variant: full-bleed photo, dark scrim, white sans text (Manulife IM style) */
+.hero.banner.block {
+  background-color: var(--color-obsidian);
+}
+
+.hero.banner.block > div:first-child::after {
+  inset: 0;
+  height: auto;
+  background: linear-gradient(90deg, rgb(27 29 43 / 85%) 0%, rgb(27 29 43 / 55%) 45%, rgb(27 29 43 / 0%) 80%);
+}
+
+main .hero.banner.block > div:first-child picture img {
+  min-height: 420px;
+  max-height: 560px;
+  opacity: 1;
+}
+
+.hero.banner.block > div:last-child > div {
+  max-width: 640px;
+  margin: 0;
+}
+
+.hero.banner.block h1 {
+  font-family: var(--font-family);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-light);
+}
+
+.hero.banner.block h1 em {
+  font-family: var(--font-family-serif);
+  background: none;
+  color: var(--color-light);
+}
+
+.hero.banner.block p:not(.button-container, .hero-tagline) {
+  font-family: var(--font-family);
+  font-size: var(--body-font-size-m);
+  line-height: 1.75;
+  color: var(--color-light);
+}
+
+@media (width >= 900px) {
+  .hero.banner.block > div:last-child {
+    padding: 80px max(var(--content-padding-inline), calc((100vw - 1200px) / 2));
+  }
+}
