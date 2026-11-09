@@ -18,7 +18,15 @@
       "--color-card-dark": "card / surface on dark",
       "--color-muted": "secondary / muted text"
     },
-    "semantic": ["--color-brand", "--color-accent", "--color-text", "--color-link", "--color-link-hover", "--background-color", "--color-shaded"],
+    "semantic": [
+      "--color-brand",
+      "--color-accent",
+      "--color-text",
+      "--color-link",
+      "--color-link-hover",
+      "--background-color",
+      "--color-shaded"
+    ],
     "typography": {
       "--font-family": "body font stack (declared in styles/fonts.css, file in /fonts)",
       "--font-family-serif": "heading font stack (via --heading-font-family)",
@@ -30,7 +38,18 @@
       "--border-heritage": "decorative border",
       "--nav-height": "header height"
     },
-    "hardcodedHex": ["blocks/header/header.css", "blocks/footer/footer.css", "blocks/quiz/quiz.css"]
+    "hardcodedHex": [
+      "blocks/header/header.css",
+      "blocks/footer/footer.css",
+      "blocks/quiz/quiz.css"
+    ],
+    "extraTokens": {
+      "--nav-text-transform": "nav label casing (base default uppercase)",
+      "--nav-letter-spacing": "nav label tracking (base default 1.5px)",
+      "--footer-logo-filter": "e.g. brightness(0) invert(1) when a dark raster logo sits on the dark footer",
+      "--border-radius-card": "cards + columns image radius (base default 12px)"
+    },
+    "rgbLiterals": "~87 rgb(161 79 43 / x%), rgb(197 160 89 / x%), rgb(209 106 62 / x%), rgb(245 242 237 / x%), rgb(6 13 13 / x%), rgb(22 33 33 / x%) tints in blocks/styles: remap mechanically to the new brand rgb values."
   },
   "sectionStyles": {
     "$comment": "Applied with a Section Metadata block, key 'style'.",
@@ -46,30 +65,121 @@
     "dark-scheme": "force dark color-scheme"
   },
   "blocks": {
-    "hero": { "variants": ["gold", "ink", "rust", "no-image"], "use": "page-top banner, headline + CTA, optional light/dark image pair" },
-    "cards": { "variants": ["bento"], "use": "grid of image + text cards; bento = asymmetric mosaic" },
-    "columns": { "variants": [], "use": "side-by-side text/media (split layouts, feature rows)" },
-    "teaser": { "variants": [], "use": "single promo: image + heading + copy + CTA" },
-    "tabs": { "variants": [], "use": "tabbed content panels" },
-    "faq": { "variants": [], "use": "accordion Q&A" },
-    "table": { "variants": ["bordered", "striped", "no-header"], "use": "data tables (fund facts, performance, fees)" },
-    "related-articles": { "variants": ["bento"], "use": "auto list of articles/insights from query-index" },
-    "product-grid": { "variants": [], "use": "grid driven by a JSON index (products, funds, strategies)" },
-    "journey-map": { "variants": [], "use": "numbered steps / process" },
-    "quiz": { "variants": [], "use": "interactive questionnaire (risk profiler, product finder)" },
-    "compound-interest-calculator": { "variants": [], "use": "financial calculator" },
-    "networth-calculator": { "variants": [], "use": "financial calculator" },
-    "savings-rate-calculator": { "variants": [], "use": "financial calculator" },
-    "form": { "variants": [], "use": "spreadsheet-driven form" },
-    "n8n-form": { "variants": [], "use": "form posting to an n8n webhook (contact / subscribe)" },
-    "embed": { "variants": ["embed-twitter"], "use": "video / social embeds" },
-    "modal": { "variants": [], "use": "fragment opened in a dialog" },
-    "fragment": { "variants": [], "use": "reusable content include" },
-    "search": { "variants": [], "use": "site search over query-index" },
-    "social-share": { "variants": [], "use": "share links on articles" },
-    "auth-toggle": { "variants": [], "use": "logged-in / logged-out content switch" },
-    "header": { "variants": [], "use": "global nav from /nav document" },
-    "footer": { "variants": [], "use": "global footer from /footer document" }
+    "hero": {
+      "variants": [
+        "banner",
+        "gold",
+        "ink",
+        "rust",
+        "no-image"
+      ],
+      "use": "page-top banner. banner = full-bleed photo, dark scrim, white sans text (corporate/FS sites); default = faded heritage hero"
+    },
+    "cards": {
+      "variants": [
+        "text",
+        "list",
+        "stats",
+        "bento"
+      ],
+      "use": "text = text-only tiles with arrow links (capabilities, news); list = rows with date/title/byline + thumbnail right (insights); stats = big figures + label (AUM, headcount); default = image + body grid; bento = mosaic"
+    },
+    "columns": {
+      "variants": [],
+      "use": "side-by-side text/media (split layouts, feature rows)"
+    },
+    "teaser": {
+      "variants": [],
+      "use": "single promo: image + heading + copy + CTA"
+    },
+    "tabs": {
+      "variants": [],
+      "use": "tabbed content panels"
+    },
+    "faq": {
+      "variants": [],
+      "use": "INDEX-DRIVEN: rows are category names, Q&A come from /faq-index.json. For authored Q&A use tabs instead."
+    },
+    "table": {
+      "variants": [
+        "bordered",
+        "striped",
+        "no-header"
+      ],
+      "use": "data tables (fund facts, performance, fees)"
+    },
+    "related-articles": {
+      "variants": [
+        "bento"
+      ],
+      "use": "auto list of articles/insights from query-index"
+    },
+    "product-grid": {
+      "variants": [],
+      "use": "grid driven by a JSON index (products, funds, strategies)"
+    },
+    "journey-map": {
+      "variants": [],
+      "use": "GATED step-by-step checklist (\"complete each checkpoint to unlock\"). Not a timeline: use table striped (Year | Milestone) for history."
+    },
+    "quiz": {
+      "variants": [],
+      "use": "interactive questionnaire (risk profiler, product finder)"
+    },
+    "compound-interest-calculator": {
+      "variants": [],
+      "use": "financial calculator; currency/locale from metadata (currency, locale)"
+    },
+    "networth-calculator": {
+      "variants": [],
+      "use": "financial calculator; currency/locale from metadata"
+    },
+    "savings-rate-calculator": {
+      "variants": [],
+      "use": "financial calculator; currency/locale from metadata"
+    },
+    "form": {
+      "variants": [],
+      "use": "spreadsheet-driven form: row 1 = link to /forms/<name>.json (field,type,label,options,required,...), row 2 = submit URL (https://demo.bbird.live/contact-us/ allows any origin)"
+    },
+    "n8n-form": {
+      "variants": [],
+      "use": "form posting to an n8n webhook (contact / subscribe)"
+    },
+    "embed": {
+      "variants": [
+        "embed-twitter"
+      ],
+      "use": "video / social embeds"
+    },
+    "modal": {
+      "variants": [],
+      "use": "fragment opened in a dialog"
+    },
+    "fragment": {
+      "variants": [],
+      "use": "reusable content include"
+    },
+    "search": {
+      "variants": [],
+      "use": "site search over query-index"
+    },
+    "social-share": {
+      "variants": [],
+      "use": "share links on articles"
+    },
+    "auth-toggle": {
+      "variants": [],
+      "use": "logged-in / logged-out content switch"
+    },
+    "header": {
+      "variants": [],
+      "use": "global nav from /nav document"
+    },
+    "footer": {
+      "variants": [],
+      "use": "global footer from /footer document"
+    }
   },
   "templates": {
     "article": "insight / article pages (metadata: Template = article)",
@@ -90,5 +200,12 @@
     "New variants go in the existing block CSS as .blockname.variant; never fork a block.",
     "A new block is only allowed when no block + variant can express the content model; record it in this manifest.",
     "Every color/font/radius change goes through brand slots first; block CSS should only need structural changes."
-  ]
+  ],
+  "pageMetadata": {
+    "social-share": "off hides the floating share dock (delayed.js)",
+    "currency": "ISO code for calculators (USD, TWD, CAD…)",
+    "locale": "Intl locale for calculators (en-US…)",
+    "Experiment / Experiment Variants": "page-level A/B: variants are full pages, relative paths OK",
+    "Campaign-<name>": "value must be the served URL of the campaign page: a DA doc named index is served at the FOLDER url (/campaigns/x/), not /campaigns/x/index"
+  }
 }

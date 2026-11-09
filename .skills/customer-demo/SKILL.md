@@ -160,17 +160,18 @@ The demo uses customer assets. `.aem.page` is not indexed, so in the handoff cal
 preview URL unlisted, not protected. If the SC wants authentication, link
 https://www.aem.live/docs/authentication-setup-site.
 
-### 2. Seed DA content from the base
+### 2. Seed DA content (write it, don't copy it)
 
-- Copy `scdemos/demo` → `scdemos/<slug>`. List the files recursively with
-  `da_list_sources`, then call `da_copy_content` for each file. Overwrite the
-  placeholder `index.html` from step 1d.
-  - Skip `drafts/`, `demo-docs/` and locale folders.
-  - Include `nav`, `footer`, `metadata`, `placeholders`, the experiment/campaign pages and
-    the sample indexes. Later phases overwrite them; until then they keep every base
-    feature working.
-- Once Code Sync is ✅ (the site config exists), run `da_preview_content` on `/`, `/nav`
-  and `/footer` so the site renders. Until then, queue the preview.
+`da_copy_content` **cannot copy between sites**: it returns `{}` and copies nothing.
+Don't try to clone the base content. Write fresh documents with `da_create_source`, using
+the base pages as the **markup reference** (`da_get_source scdemos/demo index.html` shows
+the block table structure):
+- `nav.html`: brand `:logo:` link, then the nav list, then `:search:`. Don't add a
+  Robots metadata table in nav; it renders in the header.
+- `footer.html`, the `metadata.json` sheet (url, robots, currency, locale), and
+  `forms/<name>.json` for the forms.
+- The base keeps icons in **neither** git nor DA. Commit `icons/logo.svg` and
+  `icons/search.svg` to the customer repo.
 
 ### Failure policy (phases 0–2)
 
@@ -184,13 +185,30 @@ Each time, send **one** message with the exact link or action, then resume autom
 
 ### 3. Discover
 
-1. Open the customer URL in a browser (Playwright). Capture:
-   - a full-page screenshot at 1440 px and at 390 px
-   - the computed styles of `body`, `h1`–`h3`, `a`, the primary button and the header
-   - the header nav links and the footer links
-2. Pick pages: the home page plus up to 7 top-nav pages, **one per distinct template**
-   (listing, article/insight, product/fund detail, about, contact). Record the list in
-   the session SQL as a `pages` table with columns `url, template, status`.
+Enterprise sites block bots (manulifeim.com returns 403 to `curl` and to DA's server-side fetch).
+**Always use a real browser** (the integrated browser / Playwright page):
+1. **Brand**: run one `page.evaluate` that returns computed styles for body, h1–h3, p, a,
+   the primary button and the header, the top 18 colors by frequency, `document.fonts`, the
+   nav links, the logo and favicon URLs, and hero/section image URLs.
+2. **Pages**: in the same page context, `fetch()` each top-nav page's HTML, parse it with
+   `DOMParser`, and extract an outline (h1–h3, p, li, img src/alt). AEM-Sites customers
+   serve full SSR HTML, so one call covers 8 pages.
+3. **Screenshots**: the integrated browser has a **fixed panel viewport** (about 840 px);
+   `setViewportSize` is ignored. For 1440/390 px QA, use headless Chromium through
+   `playwright-core` (Chromium is already in `~/Library/Caches/ms-playwright`). Scroll the
+   whole page first so `will-reveal` sections render.
+4. Record the pages in session SQL (`url, template, status`). Dismiss cookie and
+   disclaimer modals before taking screenshots.
+
+### 3b. Assets pipeline (bot-protected CDNs)
+1. In the customer page context: `fetch(img)` → `createImageBitmap` → `OffscreenCanvas`
+   resize (≤1600 px, JPEG q≈0.8) → base64. Batch about 10 images per call.
+2. Decode to files, push them to a **temporary branch** `assets` of the (public) customer
+   repo, and call `da_upload_media(sourceUrl: raw.githubusercontent.com/scdemos/<slug>/assets/<file>)`.
+   Use `sourceUrl`, not `base64Data`, to keep tool payloads small.
+3. Delete the branch: `git push origin --delete assets`.
+4. Logos are often SVGs with hidden embedded rasters. Prefer the site's header PNG wrapped
+   in an `<svg><image href="data:…">` as `icons/logo.svg`.
 
 ### 4. Brand (reskin, no rebuild)
 
@@ -213,7 +231,19 @@ Logo and favicon:
 - Upload the logo to DA with `da_upload_media` and reference it in `nav`.
 - Replace `favicon.ico`.
 
-Also re-check the hard-coded hex values in the files listed in `brandSlots.hardcodedHex`.
+Also re-check the hard-coded hex values in the files listed in `brandSlots.hardcodedHex`, and
+remap the old-brand `rgb()` literals (`brandSlots.rgbLiterals`) mechanically with `sed`.
+Then:
+- Set `brandSlots.extraTokens`: nav casing, footer logo filter, card radius.
+- **Fold** button and heading changes into the existing rules. Don't append an override
+  layer; stylelint `no-duplicate-selectors` will fail.
+- Remove decorative base effects the customer doesn't use: body gradient blobs, button
+  shine, hover lift.
+- Proprietary font: pick an open match. Source Sans 3 matched Manulife JH Sans. Download
+  the latin woff2 from Google Fonts CSS2 with a Chrome user agent, and add a
+  `size-adjust` fallback face.
+- Serif-italic emphasis (`h1 em`, `h2 em`) is a common corporate pattern. The base ships
+  EB Garamond italic.
 
 Commit the change as `feat: apply <customer> brand tokens`.
 
@@ -242,44 +272,51 @@ Implement every new variant, section style and block in the working repo:
 Commit and push. Code Sync deploys it to aem.page.
 
 ### 7. Content
-
-For each page, run `generate-import-html`, which uses the mapping from step 5. Then:
-- Rewrite `nav` and `footer` to match the customer's IA (top level plus key links).
-- Write the documents to DA with `da_create_source` / `da_update_source`, then call
-  `da_preview_content`.
-- Images: download them from the customer page, upload them with `da_upload_media`, and
-  keep meaningful `alt` text.
-- Dynamic or regulated data (fund prices, NAV, logins, document libraries): use static
-  sample values in a `table` / `product-grid` index, and add a short note in the page
-  metadata saying the data is a demo.
-- Update the `metadata` sheet: title suffix, `og:image` and the default template.
-- Generate `query-index` content by previewing the insight/article pages.
+- Write each page with `da_create_source`, using real customer copy from discovery and
+  images from `https://content.da.live/scdemos/<slug>/media/<file>`.
+- Every page gets a metadata table: Title, Description, and `Social-share: off` on
+  corporate pages.
+- **Preview in bulk** through the Admin API. It needs a signed-in browser tab on
+  `admin.hlx.page/login/scdemos/<slug>/main`:
+  `POST /preview/scdemos/<slug>/main/*` with body `{"paths":[...],"forceUpdate":true}`.
+  This is also the only reliable way to preview **sheets**: the DA MCP preview of
+  `metadata.json` fails with an html2md 404.
+- Poll `GET /job/scdemos/<slug>/main/preview/<job>/details`.
+- Publish with `POST /live/...`. Its job topic is `publish`, not `live`.
+- Data-heavy or regulated content (AUM, fund facts): use `cards stats` / `table striped`
+  plus a "Demo content for illustration only" note.
+- Links: point every CTA at a page you actually create, or at an anchor (`/about-us#news`).
+  No 404s.
 
 ### 8. Bake in demo features
-
-Customize every feature so it uses the customer's own content:
-- **Experimentation**: on the home page, add an experiment with a challenger that has a
-  different hero headline or CTA, written in the customer's voice.
-- **Audiences**: give the home hero a `mobile` / `desktop` audience variant.
-- **Campaigns**: add one campaign variant on the home page that matches a real customer
-  theme (e.g. a fund launch or market outlook).
-- **Interactive**: add one quiz or calculator page that suits the customer's industry.
-- **Forms**: add a contact or subscribe form using `form` / `n8n-form`.
-- **Demo walkthrough**: write a `tools/demo` script with 5–7 stops that tell the story
-  (authoring in DA, preview → publish, experimentation overlay, personalization,
-  Lighthouse 100).
+- **Experiment** (home): `Experiment: home-hero`, `Experiment Variants: /experiments/home-hero/challenger-1`.
+  The variant is a full page; use another real customer hero (carousel slides are
+  perfect). Verify with `?experiment=home-hero/challenger-1`.
+- **Campaign**: `Campaign-<name>: /campaigns/<name>/`. Use the **folder URL**: a DA doc
+  named `index` is served at `/campaigns/<name>/`, not `/…/index`. Verify with
+  `?campaign=<name>`. (The base needed two plugin fixes for multi-word names and relative
+  URLs; they are in the base now.)
+- **Interactive**: a calculator block on a solutions page. Set `currency`/`locale` in
+  the metadata sheet.
+- **Form**: `forms/contact-us.json` plus a `form` block on contact-us. Point submit at
+  `https://demo.bbird.live/contact-us/`, which allows any origin. Create
+  `/contact-us-thanks`.
+- **Walkthrough**: commit `tools/demo/<slug>-walkthrough.json` (see
+  `demo-walkthrough.schema.json`) with 5–7 slides: site, authoring, performance,
+  experiment, campaign, engagement. Open it with
+  `/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`.
 
 ### 9. QA loop (maximum 3 passes per page)
-
-For each page:
-- Take Playwright screenshots of the original and of `https://main--<slug>--scdemos.aem.page/<path>`,
-  at 1440 and 390 px.
-- List the top 5 visual differences (spacing, type scale, colors, section order, missing
-  content). Fix them through tokens or variants first, then content.
-- Run a Lighthouse/PSI check on the home page. The target is 100 for performance,
-  accessibility, best practices and SEO, and it must not go below 90.
-- Make sure the preview has no console errors, and that the sidekick and experimentation
-  overlay load.
+- Headless screenshots at 1440 and 390 px of every page. Check: blocks decorated, no
+  broken images, no console 404s. A 404 often means a block expects an index (`faq` →
+  `/faq-index.json`).
+- Compare with the original screenshot, fix the top deltas through tokens or variants,
+  and re-shoot.
+- Lighthouse: the keyless PSI API quota is often exhausted. Run
+  `npx lighthouse@12 <aem.page url>` with `CHROME_PATH` set to the Playwright Chromium.
+  Expect Performance 100. SEO is low only because of noindex (intentional). Contrast
+  failures on `.hlx-preview-overlay` are preview-only and can be ignored. Best Practices
+  is lowered by the base martech cookies.
 
 ### 10. Handoff (the only long message to the SC)
 
