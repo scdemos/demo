@@ -1,0 +1,72 @@
+/* Quote: testimonial */
+
+.quote figure {
+  display: grid;
+  gap: var(--gap-l);
+  max-width: var(--container-narrow);
+  margin: 0 auto;
+}
+
+.quote.block blockquote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--color-text-strong);
+  font-size: var(--step-4);
+  font-weight: var(--weight-black);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-snug);
+  text-wrap: balance;
+}
+
+.quote.block blockquote::before {
+  content: '“';
+  display: block;
+  height: 0.6em;
+  color: var(--color-highlight);
+  font-size: 2.4em;
+  line-height: 1;
+}
+
+.quote.block blockquote p {
+  margin: 0;
+}
+
+.quote.block blockquote p + p {
+  margin-top: 0.6em;
+}
+
+.quote figcaption {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-s);
+  color: var(--color-text-muted);
+}
+
+.quote .quote-who {
+  display: grid;
+}
+
+.quote .quote-who strong {
+  color: var(--color-text-strong);
+}
+
+.quote .quote-monogram,
+.quote .quote-avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font-weight: var(--weight-black);
+}
+
+.quote .quote-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -4,23 +4,22 @@
 
 .auth-toggle {
   position: fixed;
-  inset: auto -14rem calc(var(--space-l) + env(safe-area-inset-bottom, 0px)) auto;
+  inset: auto -15rem calc(var(--gap-m) + env(safe-area-inset-bottom, 0px)) auto;
   transform: none;
   z-index: 10050;
-  width: min(13rem, calc(100vw - 1.5rem));
-  padding: var(--space-m);
+  width: min(14rem, calc(100vw - 1.5rem));
+  padding: var(--gap-s);
   overflow: visible;
-  border: var(--border-heritage);
-  border-right: 0;
-  border-radius: var(--space-s) 0 0 var(--space-s);
-  background: light-dark(var(--color-parchment), var(--color-card-dark));
-  color: var(--text-color);
-  box-shadow: -0.5rem 0 1.25rem rgb(0 0 0 / 18%);
-  font-family: var(--body-font-family);
-  font-size: var(--body-font-size-xs);
+  border: var(--border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  box-shadow: var(--shadow-3);
+  font-family: var(--font-sans);
+  font-size: var(--step-n1);
   line-height: 1.4;
   opacity: 0;
-  transition: right 0.3s ease, opacity 0.2s ease;
+  transition: right var(--duration-2) var(--ease-out), opacity var(--duration-2) var(--ease-out);
 }
 
 .auth-toggle.visible {
@@ -45,21 +44,21 @@
   min-width: 2.75rem;
   min-height: 2.75rem;
   margin: 0;
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
-  border-right: 0;
-  border-radius: var(--space-s) 0 0 var(--space-s);
-  background: light-dark(var(--color-rust), var(--color-rust-bright));
-  color: var(--color-light);
-  padding: 0.75rem 0.5rem;
+  border: 0;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  padding: var(--gap-s) var(--gap-2xs);
   cursor: pointer;
   font: inherit;
   text-align: center;
-  box-shadow: -0.25rem 0 0.75rem rgb(0 0 0 / 15%);
-  transition: left 0.2s ease, opacity 0.2s ease;
+  box-shadow: var(--shadow-2);
+  transition: left var(--duration-2) var(--ease-out), opacity var(--duration-2) var(--ease-out), background-color var(--duration-2) var(--ease-out);
 }
 
 .auth-handle:hover {
   left: -2.75rem;
+  background: var(--color-accent-fill-hover);
 }
 
 .auth-handle.hidden {
@@ -69,11 +68,11 @@
 
 .auth-handle-icon {
   color: inherit;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: 0.6875rem;
+  font-weight: var(--weight-bold);
   line-height: 1.1;
   text-align: center;
-  letter-spacing: 0.025rem;
+  letter-spacing: 0.08em;
   writing-mode: vertical-rl;
   text-orientation: mixed;
 }
@@ -82,33 +81,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-s);
-  color: inherit;
-  font-size: var(--body-font-size-xs);
-  font-weight: 700;
+  margin-bottom: var(--gap-xs);
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .auth-close {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
   border: 0;
+  border-radius: var(--radius-pill);
   background: none;
-  color: inherit;
+  color: var(--color-text-muted);
   cursor: pointer;
   font-size: 1rem;
   line-height: 1;
   padding: 0;
-  opacity: 0.8;
+  transition: background-color var(--duration-2) var(--ease-out), color var(--duration-2) var(--ease-out);
 }
 
 .auth-close:hover {
-  opacity: 1;
+  background: var(--color-surface-sunken);
+  color: var(--color-text-strong);
 }
 
 .auth-options {
   display: flex;
   flex-direction: column;
-  gap: var(--space-s);
+  gap: var(--gap-2xs);
 }
 
 .auth-option-button {
@@ -116,38 +121,39 @@
   display: block;
   width: 100%;
   margin: 0;
-  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: 4px;
-  background: light-dark(var(--color-light), var(--color-gray-800));
-  color: var(--text-color);
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-strong);
   cursor: pointer;
-  font-family: var(--body-font-family);
-  font-size: var(--body-font-size-xs);
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
   line-height: 1.2;
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 0.5rem 0.75rem;
-  transition: border-color 0.18s ease, background-color 0.18s ease;
+  padding: 0.625rem var(--gap-s);
+  transition: border-color var(--duration-2) var(--ease-out), background-color var(--duration-2) var(--ease-out), color var(--duration-2) var(--ease-out);
 }
 
 .auth-option-button:hover {
-  border-color: light-dark(var(--color-rust), var(--color-rust-bright));
-  background: light-dark(var(--color-gray-100), var(--color-gray-700));
+  border-color: var(--color-accent-fill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
 }
 
 .auth-option-button.current-state {
-  border-color: light-dark(var(--color-green-400), var(--color-green-300));
-  background: light-dark(var(--color-green-100), rgb(30 144 41 / 22%));
-  color: light-dark(var(--color-green-600), var(--color-green-200));
+  border-color: transparent;
+  background: var(--color-success-soft);
+  color: var(--color-success);
   cursor: default;
   pointer-events: none;
 }
 
-.auth-option-button.current-state:hover {
-  border-color: light-dark(var(--color-green-400), var(--color-green-300));
-  background: light-dark(var(--color-green-100), rgb(30 144 41 / 22%));
+.auth-handle:focus-visible,
+.auth-close:focus-visible,
+.auth-option-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .auth-handle.bounce {

@@ -40,7 +40,14 @@ const ANONYMOUS_SESSION = {
  * Loads `/auth/session` JSON (anonymous on non-OK or failure).
  * `redirect: 'manual'` — Cloudflare Access replies with 302 to *.cloudflareaccess.com;
  */
-export async function getSessionState() {
+let sessionPromise;
+
+export function getSessionState() {
+  sessionPromise ??= fetchSessionState();
+  return sessionPromise;
+}
+
+async function fetchSessionState() {
   try {
     const response = await fetch(authUrl(AUTH_PATHS.session), {
       method: 'GET',

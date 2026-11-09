@@ -1,0 +1,360 @@
+.booking .booking-layout {
+  display: grid;
+  gap: var(--gap-xl);
+  align-items: start;
+}
+
+@media (width >= 900px) {
+  .booking .booking-layout {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.booking .booking-form {
+  padding: var(--gap-l);
+  border: var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+@media (width >= 600px) {
+  .booking .booking-form {
+    padding: var(--gap-xl);
+  }
+}
+
+/* stepper */
+.booking .booking-stepper {
+  display: flex;
+  gap: var(--gap-2xs);
+  margin: 0 0 var(--gap-xl);
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.booking .booking-stepper li {
+  flex: 1;
+  padding-top: var(--gap-xs);
+  border-top: 3px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+  counter-increment: step;
+}
+
+.booking .booking-stepper li::before {
+  content: counter(step, decimal-leading-zero) ' ';
+  font-variant-numeric: tabular-nums;
+}
+
+.booking .booking-stepper li[aria-current='step'] {
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
+}
+
+.booking .booking-stepper li.is-done {
+  border-color: var(--color-text-strong);
+  color: var(--color-text-strong);
+}
+
+.booking .booking-stepper[hidden],
+.booking .booking-panel[hidden] {
+  display: none;
+}
+
+/* panels and fields */
+.booking .booking-panel {
+  display: grid;
+  gap: var(--gap-m);
+}
+
+.booking .booking-step-title {
+  margin: 0;
+  font-size: var(--step-2);
+}
+
+.booking .booking-step-title:focus {
+  outline: none;
+}
+
+.booking .booking-step-title:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.booking .booking-fieldset {
+  display: grid;
+  gap: var(--gap-s);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.booking .booking-legend {
+  padding: 0;
+  margin-bottom: var(--gap-s);
+}
+
+.booking .booking-row {
+  display: grid;
+  gap: var(--gap-m);
+}
+
+@media (width >= 600px) {
+  .booking .booking-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.booking .booking-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2xs);
+}
+
+.booking .booking-field > label {
+  color: var(--color-text-strong);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+}
+
+.booking .booking-hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.booking input:not([type='radio'], [type='checkbox']),
+.booking select,
+.booking textarea {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7em 1em;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-s);
+  background-color: var(--color-surface);
+  color: var(--color-text-strong);
+  font: inherit;
+  transition: border-color var(--duration-1) var(--ease-out);
+}
+
+.booking select {
+  appearance: none;
+  padding-right: 2.5em;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentcolor 50%),
+    linear-gradient(135deg, currentcolor 50%, transparent 50%);
+  background-position: calc(100% - 1.3em) 55%, calc(100% - 1em) 55%;
+  background-size: 0.3em 0.3em;
+  background-repeat: no-repeat;
+}
+
+.booking textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.booking input:hover,
+.booking select:hover,
+.booking textarea:hover {
+  border-color: var(--color-text-muted);
+}
+
+.booking input:focus-visible,
+.booking select:focus-visible,
+.booking textarea:focus-visible {
+  border-color: var(--color-focus);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.booking [aria-invalid='true']:not([type='radio']) {
+  border-color: var(--color-danger);
+}
+
+.booking .booking-error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+}
+
+.booking .booking-error:empty {
+  display: none;
+}
+
+/* choice cards */
+.booking .booking-choices {
+  display: grid;
+  gap: var(--gap-xs);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.booking .booking-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-xs);
+  padding: var(--gap-s);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color var(--duration-1) var(--ease-out), background-color var(--duration-1) var(--ease-out);
+}
+
+.booking .booking-choice:hover {
+  border-color: var(--color-text-muted);
+}
+
+.booking .booking-choice:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.booking .booking-choice:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.booking .booking-choice:has(input[aria-invalid='true']) {
+  border-color: var(--color-danger);
+}
+
+.booking .booking-choice input,
+.booking .booking-checkbox input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.2em 0 0;
+  accent-color: var(--color-accent);
+}
+
+.booking .booking-choice-body {
+  display: grid;
+  gap: var(--gap-3xs);
+}
+
+.booking .booking-choice strong {
+  color: var(--color-text-strong);
+}
+
+.booking .booking-choice-body span {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.booking .booking-checkbox {
+  display: flex;
+  font-weight: var(--weight-regular);
+  align-items: flex-start;
+  gap: var(--gap-xs);
+  font-size: var(--step-n1);
+  cursor: pointer;
+}
+
+/* summary */
+.booking .booking-summary {
+  display: grid;
+  gap: var(--gap-2xs);
+  margin: 0;
+}
+
+.booking .booking-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap-s);
+  padding-block: var(--gap-2xs);
+  border-bottom: var(--border);
+}
+
+.booking .booking-summary dt {
+  color: var(--color-text-muted);
+}
+
+.booking .booking-summary dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
+  text-align: right;
+}
+
+/* actions and status */
+.booking .booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--gap-xs);
+  margin-top: var(--gap-s);
+}
+
+.booking .booking-actions [data-step='next']:only-child,
+.booking .booking-actions [type='submit']:only-child {
+  margin-left: auto;
+}
+
+.booking .booking-status {
+  margin: var(--gap-m) 0 0;
+  padding: var(--gap-m);
+  border-radius: var(--radius-m);
+  font-weight: var(--weight-semibold);
+}
+
+.booking .booking-status:empty {
+  display: none;
+}
+
+.booking .booking-status[data-state='error'] {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.booking .booking-done {
+  padding: var(--gap-l);
+  border-radius: var(--radius-m);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.booking .booking-done:focus {
+  outline: none;
+}
+
+.booking .booking-done:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.booking .booking-done > * {
+  margin: 0;
+}
+
+.booking .booking-done :is(h2, h3) {
+  color: var(--color-text-strong);
+}
+
+/* aside */
+.booking .booking-aside {
+  display: grid;
+  gap: var(--gap-m);
+}
+
+.booking .booking-aside-panel {
+  padding: var(--gap-l);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-sunken);
+}
+
+.booking .booking-aside-panel > :first-child {
+  margin-top: 0;
+}
+
+.booking .booking-aside-panel > :last-child {
+  margin-bottom: 0;
+}
+
+.booking .booking-aside-panel :is(h2, h3) {
+  font-size: var(--step-1);
+}

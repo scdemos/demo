@@ -1,618 +1,454 @@
-/*
- * Header block – simple, maintainable nav
- * Nav fragment: plain.html via loadFragment (brand, sections, tools)
- * Sections: ul > li; add #mega to link for full-width dropdown
- */
+import { getMetadata, readBlockConfig } from '../../scripts/aem.js';
+import { createTag, getMarket } from '../../scripts/shared.js';
 
-import { getMetadata } from '../../scripts/aem.js';
-import { loadFragment } from '../fragment/fragment.js';
-import { getBlockContext } from '../../scripts/shared.js';
-import {
-  getLoginUrl,
-  getLogoutUrl,
-  getDefaultAuthLabel,
-  getSessionState,
-} from '../../scripts/shared/auth-api.js';
-
-const DESKTOP = window.matchMedia('(min-width: 900px)');
-const THEME_KEY = 'demo-theme';
-
-function getNavPath() {
-  const meta = getMetadata('nav');
-  return (meta ? new URL(meta, location).pathname : null) || '/nav';
-}
-
-function collapseAll(nav) {
-  nav.querySelectorAll('.nav-drop').forEach((li) => li.setAttribute('aria-expanded', 'false'));
-  nav.querySelector('.nav-language-menu')?.setAttribute('hidden', '');
-  nav.querySelector('.nav-language-toggle')?.setAttribute('aria-expanded', 'false');
-}
-
-function decorateMega(li) {
-  const link = li.querySelector(':scope > p > a');
-  const sub = li.querySelector(':scope > ul');
-  if (!link || !sub) return;
-
-  const isMega = link.hash === '#mega' || sub.querySelector('picture, img');
-  if (link.hash === '#mega') link.href = link.href.replace(/#mega$/i, '');
-
-  if (!isMega) return;
-
-  li.classList.add('nav-drop-mega');
-  const items = [...sub.children].filter((c) => c.tagName === 'LI');
-  const promo = items.find((c) => c.querySelector('picture, img'));
-  const rest = items.filter((c) => c !== promo);
-
-  let group = 0;
-  let row = 0;
-  rest.forEach((c) => {
-    const hasDirectLink = c.querySelector(':scope > a') || c.querySelector(':scope > p > a');
-    if (hasDirectLink) {
-      if (!group) group = 1;
-      c.classList.add('nav-mega-item');
-      c.style.setProperty('--mega-group', group);
-      row += 1;
-      c.style.setProperty('--mega-row', row);
-    } else {
-      group += 1;
-      row = 0;
-      c.classList.add('nav-mega-heading');
-      c.style.setProperty('--mega-group', group);
-    }
-  });
-
-  const cols = group || 1;
-  const totalCols = promo ? cols + 1 : cols;
-  if (promo) {
-    promo.classList.add('nav-mega-promo');
-    promo.style.setProperty('--mega-group', cols + 1);
-    sub.append(promo);
-  }
-  if (group) sub.classList.add('nav-mega-has-groups');
-
-  /* wrap content in centered inner container (full-width panel, centered grid) */
-  const inner = document.createElement('div');
-  inner.className = 'nav-mega-inner';
-  inner.style.setProperty('--mega-columns', String(totalCols));
-  while (sub.firstChild) inner.appendChild(sub.firstChild);
-  sub.appendChild(inner);
-
-  // Position dropdown: full viewport width, arrow under trigger
-  const sync = () => {
-    if (!li.isConnected) return;
-    const trigger = li.querySelector(':scope > p');
-    const menu = li.querySelector(':scope > ul');
-    if (!trigger || !menu) return;
-    const navBar = li.closest('.nav-wrapper');
-    if (navBar) {
-      const rect = navBar.getBoundingClientRect();
-      menu.style.setProperty('--mega-top', `${rect.bottom}px`);
-    }
-    const t = trigger.getBoundingClientRect();
-    const m = menu.getBoundingClientRect();
-    const x = t.left + t.width / 2 - m.left;
-    menu.style.setProperty('--mega-pointer-x', `${Math.round(x)}px`);
-  };
-  li.megaSync = sync;
-  sync();
-  window.addEventListener('resize', sync);
-}
-
-function setupDropdown(li) {
-  const submenu = li.querySelector(':scope > ul');
-  const heading = li.querySelector(':scope > p');
-  const parentLink = li.querySelector(':scope > p > a');
-  let toggleBtn = null;
-  let closeTimer = null;
-
-  const syncToggle = () => {
-    if (!toggleBtn) return;
-    const expanded = li.getAttribute('aria-expanded') === 'true';
-    toggleBtn.setAttribute('aria-expanded', String(expanded));
-    toggleBtn.setAttribute('aria-label', expanded ? 'Collapse submenu' : 'Expand submenu');
-  };
-
-  if (submenu && heading) {
-    toggleBtn = heading.querySelector('.nav-submenu-toggle');
-    if (!toggleBtn) {
-      toggleBtn = document.createElement('button');
-      toggleBtn.type = 'button';
-      toggleBtn.className = 'nav-submenu-toggle';
-      heading.append(toggleBtn);
-    }
-    syncToggle();
-    toggleBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (DESKTOP.matches) return;
-      const wasOpen = li.getAttribute('aria-expanded') === 'true';
-      collapseAll(li.closest('nav'));
-      li.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
-      syncToggle();
-    });
-  }
-
-  const open = () => {
-    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
-    li.megaSync?.();
-    collapseAll(li.closest('nav'));
-    li.setAttribute('aria-expanded', 'true');
-    syncToggle();
-  };
-  const close = () => {
-    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
-    li.setAttribute('aria-expanded', 'false');
-    syncToggle();
-  };
-
-  li.addEventListener('mouseenter', () => { if (DESKTOP.matches) open(); });
-  li.addEventListener('mouseleave', (e) => {
-    if (!DESKTOP.matches || li.contains(e.relatedTarget)) return;
-    closeTimer = setTimeout(close, 150);
-  });
-  li.addEventListener('focusin', () => { if (DESKTOP.matches) open(); });
-  li.addEventListener('focusout', (e) => {
-    if (DESKTOP.matches && !li.contains(e.relatedTarget)) close();
-  });
-
-  li.addEventListener('click', (e) => {
-    if (!DESKTOP.matches) {
-      const clickedSubmenuLink = submenu?.contains(e.target) && e.target.closest('a');
-      const clickedToggle = e.target.closest('.nav-submenu-toggle');
-      const clickedParentLink = parentLink && (e.target === parentLink || parentLink.contains(e.target));
-      if (clickedToggle) return;
-      if (clickedSubmenuLink) {
-        collapseAll(li.closest('nav'));
-        close();
-      } else if (clickedParentLink) {
-        collapseAll(li.closest('nav'));
-        close();
-      } else if (submenu) {
-        e.preventDefault();
-        const wasOpen = li.getAttribute('aria-expanded') === 'true';
-        collapseAll(li.closest('nav'));
-        li.setAttribute('aria-expanded', wasOpen ? 'false' : 'true');
-        syncToggle();
-      }
-    } else if (li.querySelector('ul')?.contains(e.target) && e.target.closest('a')) {
-      collapseAll(li.closest('nav'));
-      close();
-    }
-  });
-}
-
-function initTheme(tools) {
-  const btn = tools.querySelector('.icon-toggle')?.closest('p, button, a, div');
-  if (!btn) return;
-
-  const get = () => {
-    try {
-      const s = localStorage.getItem(THEME_KEY);
-      if (s === 'light' || s === 'dark') return s;
-    } catch (e) { /* ignore */ }
-    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-  const set = (s) => {
-    if (s !== 'light' && s !== 'dark') return;
-    try { localStorage.setItem(THEME_KEY, s); } catch (e) { /* ignore */ }
-    window.dispatchEvent(new CustomEvent('aem-theme-change', { detail: { theme: s } }));
-  };
-
-  btn.classList.add('nav-tool');
-  btn.setAttribute('role', 'button');
-  btn.setAttribute('tabindex', '0');
-  const updateLabel = () => btn.setAttribute('aria-label', `Switch to ${get() === 'dark' ? 'light' : 'dark'} mode`);
-  const toggle = () => {
-    set(get() === 'dark' ? 'light' : 'dark');
-    updateLabel();
-  };
-  btn.addEventListener('click', toggle);
-  btn.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { e.preventDefault(); toggle(); } });
-  set(get());
-  updateLabel();
-}
-
-function initSearch(tools) {
-  const link = tools.querySelector('a[href*="search"]');
-  if (!link) return;
-
-  const path = link.getAttribute('href') || '/search';
-  const q = new URLSearchParams(location.search).get('q') || '';
-  const icon = link.querySelector('.icon-search');
-
-  const form = document.createElement('form');
-  form.className = 'nav-search-form';
-  form.setAttribute('role', 'search');
-  form.action = path;
-  form.method = 'get';
-
-  const input = document.createElement('input');
-  input.type = 'search';
-  input.name = 'q';
-  input.placeholder = 'Search';
-  input.value = q;
-  input.setAttribute('aria-label', 'Search');
-  input.className = 'nav-search-input';
-  input.autocomplete = 'off';
-
-  const submit = document.createElement('button');
-  submit.type = 'submit';
-  submit.className = 'nav-tool nav-search-submit';
-  submit.setAttribute('aria-label', 'Search');
-  if (icon) submit.append(icon.cloneNode(true));
-
-  form.onsubmit = (e) => {
-    if (!input.value.trim()) {
-      e.preventDefault();
-      location.href = path;
-    }
-  };
-  form.append(input, submit);
-  const wrap = link.closest('p');
-  (wrap && wrap.children.length === 1 ? wrap : link).replaceWith(form);
-}
-
-function findLangMenu(tools, globe) {
-  let node = globe;
-  while (node && node !== tools) {
-    let cur = node;
-    while (cur?.nextElementSibling) {
-      cur = cur.nextElementSibling;
-      if (cur.tagName === 'UL') return cur;
-    }
-    node = node.parentElement;
-  }
-  return null;
-}
-
-function setCookie(name, value, days = 365) {
-  const expires = new Date(Date.now() + (days * 24 * 60 * 60 * 1000)).toUTCString();
-  document.cookie = `${encodeURIComponent(name)}=${value}; expires=${expires}; path=/`;
-}
-
-function deleteCookie(name) {
-  document.cookie = `${encodeURIComponent(name)}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-}
-
-function getCookie(name) {
-  const encoded = encodeURIComponent(name);
-  const cookie = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith(`${encoded}=`));
-  if (!cookie) return '';
-  return decodeURIComponent(cookie.split('=').slice(1).join('='));
-}
-
-function hasCookieStartingWith(prefix) {
-  return document.cookie
-    .split(';')
-    .map((entry) => decodeURIComponent(entry.split('=')[0] || '').trim())
-    .some((cookieName) => cookieName.startsWith(prefix));
-}
-
-function isLoggedIn() {
-  return hasCookieStartingWith('CF_Authorization');
-}
-
-async function resolveAuthState() {
-  try {
-    const session = await getSessionState();
-    return {
-      authenticated: Boolean(session?.authenticated),
-      email: session?.email || '',
-    };
-  } catch (e) {
-    return {
-      authenticated: isLoggedIn(),
-      email: '',
-    };
-  }
-}
-
-function setAuthUserInfo(link, email) {
-  link.querySelector('.nav-auth-info')?.remove();
-  link.removeAttribute('title');
-  link.removeAttribute('data-auth-email');
-
-  if (!email) return;
-
-  link.dataset.authEmail = email;
-  link.setAttribute('title', email);
-  const info = document.createElement('span');
-  info.className = 'nav-auth-info';
-  info.setAttribute('aria-hidden', 'true');
-  info.setAttribute('title', email);
-  info.textContent = 'i';
-  link.append(info);
-}
-
-async function initAuth(nav, tools) {
-  const loginLabel = getDefaultAuthLabel('login');
-  const logoutLabel = getDefaultAuthLabel('logout');
-
-  const loginCandidate = tools.querySelector('a[href*="login" i], a[data-auth-link]');
-  const shouldCreateLink = !loginCandidate;
-
-  const desktopLink = loginCandidate || document.createElement('a');
-  if (shouldCreateLink) {
-    desktopLink.href = getLoginUrl();
-    desktopLink.className = 'button nav-auth-link nav-auth-desktop';
-    tools.append(desktopLink);
-  }
-
-  desktopLink.dataset.authLink = 'true';
-  if (!desktopLink.classList.contains('button')) desktopLink.classList.add('button');
-  desktopLink.classList.add('nav-auth-link', 'nav-auth-desktop');
-
-  let mobileLink = nav.querySelector('.nav-auth-mobile-item a');
-  if (!mobileLink) {
-    const mobileList = nav.querySelector('.nav-sections .default-content-wrapper > ul');
-    if (mobileList) {
-      const li = document.createElement('li');
-      li.className = 'nav-auth-mobile-item';
-      const p = document.createElement('p');
-      mobileLink = document.createElement('a');
-      mobileLink.className = 'button nav-auth-link nav-auth-mobile';
-      mobileLink.dataset.authLink = 'true';
-      p.append(mobileLink);
-      li.append(p);
-      mobileList.append(li);
-    }
-  }
-  if (mobileLink && !mobileLink.classList.contains('button')) mobileLink.classList.add('button');
-
-  const applyAuthState = async () => {
-    const authState = await resolveAuthState();
-    const loggedIn = authState.authenticated;
-    const loginHref = getLoginUrl();
-    const logoutHref = getLogoutUrl();
-    const targetHref = loggedIn ? logoutHref : loginHref;
-    const label = loggedIn ? logoutLabel : loginLabel;
-
-    [desktopLink, mobileLink].filter(Boolean).forEach((link) => {
-      link.setAttribute('href', targetHref);
-      link.textContent = label;
-      link.setAttribute('aria-label', label);
-      setAuthUserInfo(link, loggedIn ? authState.email : '');
-    });
-  };
-
-  await applyAuthState();
-  return applyAuthState;
-}
-
-function ensureGoogleTranslateScript() {
-  if (window.__googleTranslateScriptLoaded) return Promise.resolve();
-  if (window.__googleTranslateScriptPromise) return window.__googleTranslateScriptPromise;
-
-  if (!document.getElementById('google_translate_element')) {
-    const holder = document.createElement('div');
-    holder.id = 'google_translate_element';
-    holder.style.display = 'none';
-    document.body.append(holder);
-  }
-
-  window.__googleTranslateScriptPromise = new Promise((resolve) => {
-    window.googleTranslateElementInit = () => {
-      if (window.google?.translate?.TranslateElement) {
-        new window.google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
-      }
-      window.__googleTranslateScriptLoaded = true;
-      resolve();
-    };
-
-    const existing = document.querySelector('script[src*="translate.google.com/translate_a/element.js"]');
-    if (existing) {
-      if (window.google?.translate?.TranslateElement) {
-        window.__googleTranslateScriptLoaded = true;
-        resolve();
-      }
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => resolve();
-    document.body.append(script);
-  });
-
-  return window.__googleTranslateScriptPromise;
-}
-
-async function switchLanguage(lang) {
-  if (lang === 'fr') {
-    setCookie('googtrans', '/en/fr');
-    window.location.reload();
-    return;
-  }
-
-  deleteCookie('googtrans');
-  window.location.reload();
-}
-
-function hydrateTranslateFromCookie() {
-  const value = getCookie('googtrans');
-  if (!value || !value.includes('/en/')) return;
-  ensureGoogleTranslateScript();
-}
-
-function decorateLanguageMenu(menu) {
-  if (!menu || menu.dataset.translated === 'true') return;
-  menu.dataset.translated = 'true';
-
-  const links = menu.querySelectorAll('a');
+/** Sign-in authored as an /auth/login link toggles login/logout from the Access session. */
+async function wireAuth(links) {
+  const {
+    getLoginUrl, getLogoutUrl, getDefaultAuthLabel, getSessionState,
+  } = await import('../../scripts/shared/auth-api.js');
+  const session = await getSessionState();
+  const signedIn = Boolean(session?.authenticated);
+  const label = getDefaultAuthLabel(signedIn ? 'logout' : 'login');
   links.forEach((link) => {
-    const text = link.textContent.trim().toLowerCase();
-    if (text.includes('french') || text.includes('français') || text.includes('fran')) {
-      link.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await switchLanguage('fr');
-      });
-      return;
-    }
-    if (text.includes('english') || text.includes('anglais')) {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchLanguage('en');
-      });
-    }
+    link.href = signedIn ? getLogoutUrl() : getLoginUrl();
+    link.title = signedIn && session.email ? `${label} (${session.email})` : label;
+    link.classList.toggle('is-signed-in', signedIn);
+    (link.querySelector('.header-signin-label') || link).textContent = label;
   });
 }
 
-function initLanguage(tools, eventRoot) {
-  const globe = tools.querySelector('.icon-globe')?.closest('p, button, a, div');
-  const menu = globe ? findLangMenu(tools, globe) : null;
-  if (!globe || !menu) return;
+const ICON_PATHS = {
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  chevron: '<path d="m6 9 6 6 6-6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h10"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.3-4 4.3-6 8-6s6.7 2 8 6"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.2 6.8h.01"/>',
+  linkedin: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 10.5V16M8 7.8h.01M11.5 16v-5.5M11.5 13c0-1.5 1-2.6 2.4-2.6s2.1 1 2.1 2.6V16"/>',
+  youtube: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="m10 9.2 5 2.8-5 2.8Z"/>',
+  link: '<path d="M7 17 17 7M8 7h9v9"/>',
+};
 
-  tools.classList.add('has-language');
-  globe.classList.add('nav-tool', 'nav-language-toggle');
-  globe.setAttribute('role', 'button');
-  globe.setAttribute('tabindex', '0');
-  globe.setAttribute('aria-haspopup', 'true');
-  globe.setAttribute('aria-expanded', 'false');
-  globe.setAttribute('aria-label', 'Select language');
-  menu.classList.add('nav-language-menu');
-  menu.hidden = true;
+export const LOGO_MARK = '<svg class="header-logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M11.5 23V9h10" stroke="var(--color-bg)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M11.5 16h7.5" stroke="var(--flame-500, #e8471c)" stroke-width="3.6" stroke-linecap="round"/></svg>';
 
-  /* wrap globe + menu in positioned container so dropdown aligns to globe */
-  const wrap = document.createElement('div');
-  wrap.className = 'nav-language-wrap';
-  globe.parentNode.insertBefore(wrap, globe);
-  wrap.append(globe, menu);
-
-  const toggle = () => {
-    const open = globe.getAttribute('aria-expanded') === 'true';
-    if (!open) collapseAll(tools.closest('nav'));
-    menu.hidden = open;
-    globe.setAttribute('aria-expanded', !open);
-  };
-
-  globe.addEventListener('click', (e) => { e.preventDefault(); toggle(); });
-  eventRoot.addEventListener('click', (e) => { if (!tools.contains(e.target)) { menu.hidden = true; globe.setAttribute('aria-expanded', 'false'); } });
-  eventRoot.addEventListener('keydown', (e) => { if (e.code === 'Escape') { menu.hidden = true; globe.setAttribute('aria-expanded', 'false'); } });
-  menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => { menu.hidden = true; globe.setAttribute('aria-expanded', 'false'); }));
-
-  decorateLanguageMenu(menu);
+/**
+ * Inline stroke icon (inherits currentColor).
+ * @param {string} name
+ * @param {string} [cls]
+ * @returns {string}
+ */
+export function icon(name, cls = '') {
+  return `<svg class="chrome-icon chrome-icon-${name} ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICON_PATHS[name] || ICON_PATHS.link}</svg>`;
 }
 
-function toggleMobile(nav, open, body) {
-  const isOpen = open === undefined ? nav.getAttribute('aria-expanded') !== 'true' : open;
-  body.style.overflowY = isOpen && !DESKTOP.matches ? 'hidden' : '';
-  nav.setAttribute('aria-expanded', isOpen);
-  nav.querySelector('.nav-hamburger button')?.setAttribute('aria-label', isOpen ? 'Close navigation' : 'Open navigation');
-  nav.querySelectorAll('.nav-drop').forEach((d) => d.setAttribute('tabindex', DESKTOP.matches ? '0' : '-1'));
-}
-
-function syncMobileNavHeight(nav) {
-  if (DESKTOP.matches) {
-    nav.style.removeProperty('--nav-open-height');
-    return;
+/**
+ * Authored link as a site-relative path (or the full URL for external links).
+ * @param {HTMLAnchorElement} a
+ * @returns {string}
+ */
+export function authoredHref(a) {
+  const raw = a.getAttribute('href') || '';
+  try {
+    const url = new URL(raw, window.location.href);
+    const sameSite = url.origin === window.location.origin
+      || /\.aem\.(page|live)$/.test(url.hostname);
+    if (!sameSite) return url.href;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch (e) {
+    return raw;
   }
-  nav.style.setProperty('--nav-open-height', `${window.innerHeight}px`);
 }
 
-const NAV_ITEMS = '.default-content-wrapper > ul > li';
-
-export default async function decorate(block) {
-  const { body, eventRoot } = getBlockContext(block);
-
-  // Load nav content (skip if aem-embed already provided content)
-  if (block.textContent === '') {
-    const fragment = await loadFragment(getNavPath());
-    if (!fragment) return;
-
-    block.textContent = '';
-    const nav = document.createElement('nav');
-    nav.id = 'nav';
-    nav.setAttribute('aria-label', 'Main');
-    nav.setAttribute('aria-expanded', 'false');
-
-    while (fragment.firstElementChild) nav.append(fragment.firstElementChild);
-    block.append(nav);
-  }
-
-  const nav = block.querySelector('nav');
-  if (!nav) return;
-  if (!nav.id) nav.id = 'nav';
-  if (!nav.getAttribute('aria-label')) nav.setAttribute('aria-label', 'Main');
-  if (!nav.getAttribute('aria-expanded')) nav.setAttribute('aria-expanded', 'false');
-
-  ['brand', 'sections', 'tools'].forEach((c, i) => nav.children[i]?.classList.add(`nav-${c}`));
-
-  const tools = nav.querySelector('.nav-tools');
-  if (tools && nav.children.length > 3) {
-    [...nav.children].slice(3).forEach((extra) => {
-      while (extra.firstElementChild) tools.append(extra.firstElementChild);
-      extra.remove();
-    });
-  }
-
-  nav.querySelector('.nav-brand .button')?.classList.remove('button');
-  nav.querySelector('.nav-brand .button-container')?.classList.remove('button-container');
-
-  const sections = nav.querySelector('.nav-sections');
-  sections?.querySelectorAll(NAV_ITEMS).forEach((li) => {
-    if (li.querySelector('ul')) {
-      li.classList.add('nav-drop');
-      li.setAttribute('aria-expanded', 'false');
-      li.setAttribute('aria-haspopup', 'true');
-      decorateMega(li);
-      setupDropdown(li);
-    }
-  });
-
-  const hamburger = document.createElement('div');
-  hamburger.className = 'nav-hamburger';
-  hamburger.innerHTML = '<button type="button" aria-controls="nav" aria-label="Open navigation"><span class="nav-hamburger-icon"></span></button>';
-  let refreshAuthState = null;
-  hamburger.onclick = async () => {
-    toggleMobile(nav, undefined, body);
-    if (nav.getAttribute('aria-expanded') === 'true') await refreshAuthState?.();
-  };
-
-  eventRoot.addEventListener('click', (e) => {
-    if (!DESKTOP.matches && nav.getAttribute('aria-expanded') === 'true' && !nav.contains(e.target)) {
-      toggleMobile(nav, false, body);
-    }
-  });
-  eventRoot.addEventListener('keydown', (e) => {
-    if (e.code !== 'Escape') return;
-    if (!DESKTOP.matches && nav.getAttribute('aria-expanded') === 'true') {
-      toggleMobile(nav, false, body);
-    } else if (DESKTOP.matches && nav.querySelector('.nav-drop[aria-expanded="true"]')) {
-      collapseAll(nav);
-    }
-  });
-  nav.prepend(hamburger);
-
+/**
+ * Fetch a chrome document (nav/footer) as raw sections, without decorating it.
+ * @param {string} name metadata key and default document name
+ * @returns {Promise<HTMLElement[]>}
+ */
+export async function fetchChrome(name) {
+  const meta = getMetadata(name);
+  const path = meta ? new URL(meta, window.location).pathname : `${getMarket().root}${name}`;
+  const resp = await fetch(`${path}.plain.html`);
+  if (!resp.ok) return [];
   const wrapper = document.createElement('div');
-  wrapper.className = 'nav-wrapper';
-  wrapper.append(nav);
+  wrapper.innerHTML = await resp.text();
+  return [...wrapper.querySelectorAll(':scope > div')];
+}
+
+/**
+ * Read an optional `Labels` table (two-column key/value) from a section.
+ * @param {Element} section
+ * @returns {Record<string,string>}
+ */
+export function readLabels(section) {
+  const table = section?.querySelector(':scope > div.labels');
+  if (!table) return {};
+  const labels = readBlockConfig(table);
+  table.remove();
+  return labels;
+}
+
+const marketRoot = (path) => (path.match(/^.*?\/[a-z]{2}\/[a-z]{2}\//) || [])[0] || '';
+
+/**
+ * Market switcher (details/summary disclosure).
+ * Switching keeps the equivalent page path in the target market when it exists.
+ * @param {HTMLUListElement} list authored list of market links
+ * @param {Record<string,string>} labels
+ * @param {string} variant extra class
+ * @returns {HTMLDetailsElement|null}
+ */
+export function buildMarketSwitcher(list, labels, variant = '') {
+  if (!list) return null;
+  const { root } = getMarket();
+  const path = window.location.pathname;
+  const markets = [...list.querySelectorAll('a')].map((a) => {
+    const href = authoredHref(a);
+    const mRoot = marketRoot(href);
+    const [lang, region] = mRoot.split('/').filter(Boolean).slice(-2);
+    return {
+      label: a.textContent.trim(),
+      href,
+      root: mRoot,
+      hreflang: lang ? `${lang}-${region.toUpperCase()}` : '',
+      region: region || '',
+    };
+  });
+  const current = markets.find((m) => m.root === root) || markets[0];
+  if (!current) return null;
+
+  const details = createTag('details', { class: `chrome-market ${variant}`.trim() });
+  const summary = createTag('summary', { 'aria-label': `${labels.market || 'Market & language'}: ${current.label}` });
+  summary.innerHTML = `${icon('globe')}<span class="chrome-market-code">${current.region.toUpperCase()}</span><span class="chrome-market-label">${current.label}</span>`;
+  const ul = createTag('ul');
+  markets.forEach((m) => {
+    const li = createTag('li');
+    if (m === current) {
+      li.append(
+        createTag('span', { lang: m.hreflang, 'aria-current': 'true' }, m.label),
+        createTag('span', { class: 'chrome-market-badge' }, labels.current || 'Current'),
+      );
+    } else {
+      const equivalent = m.root && path.startsWith(root) ? `${m.root}${path.slice(root.length)}` : m.href;
+      const a = createTag('a', { href: equivalent, hreflang: m.hreflang, lang: m.hreflang }, m.label);
+      a.addEventListener('click', async (e) => {
+        if (equivalent === m.href || e.metaKey || e.ctrlKey || e.shiftKey) return;
+        e.preventDefault();
+        let target = m.href;
+        try {
+          const resp = await fetch(equivalent, { method: 'HEAD' });
+          if (resp.ok) target = equivalent;
+        } catch (err) { /* fall back to market home */ }
+        window.location.href = target;
+      });
+      li.append(a);
+    }
+    ul.append(li);
+  });
+  details.append(summary, ul);
+
+  document.addEventListener('click', (e) => {
+    if (details.open && !details.contains(e.target)) details.open = false;
+  });
+  details.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && details.open) {
+      details.open = false;
+      summary.focus();
+    }
+  });
+  return details;
+}
+
+/** Text of an element excluding its links and nested lists, without leading separators. */
+function trailingText(li) {
+  const clone = li.cloneNode(true);
+  clone.querySelectorAll('a, ul, ol, strong:empty').forEach((n) => n.remove());
+  return clone.textContent.replace(/\s+/g, ' ').trim().replace(/^[—–\-:·|]\s*/, '');
+}
+
+const PROMO_ART = ['horizon', 'split', 'rings', 'aurora', 'dots'];
+
+function parseNav(section) {
+  const top = section?.querySelector('ul');
+  if (!top) return [];
+  return [...top.children].map((li, i) => {
+    const a = li.querySelector(':scope > a, :scope > p > a, :scope > strong > a');
+    const label = a ? a.textContent.trim() : li.firstChild?.textContent.trim();
+    const links = [];
+    let promo = null;
+    li.querySelectorAll(':scope > ul > li, :scope > ol > li').forEach((sub) => {
+      const link = sub.querySelector('a');
+      if (!link) return;
+      const item = {
+        label: link.textContent.trim(), href: authoredHref(link), desc: trailingText(sub),
+      };
+      if (link.closest('strong')) promo = item;
+      else links.push(item);
+    });
+    return {
+      id: `${i}-${(label || 'menu').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+      label,
+      href: a ? authoredHref(a) : '',
+      intro: trailingText(li),
+      links,
+      promo,
+      art: PROMO_ART[i % PROMO_ART.length],
+    };
+  });
+}
+
+function isActive(item) {
+  const path = window.location.pathname;
+  const { root } = getMarket();
+  const prefixes = [item.href, ...item.links.map((l) => l.href)]
+    .filter((p) => p && p.startsWith(root))
+    .map((p) => {
+      const seg = p.slice(root.length).split(/[/#?]/)[0];
+      return seg ? `${root}${seg}` : '';
+    })
+    .filter(Boolean);
+  return prefixes.some((p) => path === p || path.startsWith(`${p}/`));
+}
+
+function buildAnnounce(section) {
+  const p = section?.querySelector('p');
+  if (!p) return null;
+  const link = p.querySelector('a');
+  const bar = createTag('div', { class: 'header-announce' });
+  const content = p.cloneNode(true);
+  const cta = content.querySelector('a');
+  if (cta) {
+    const span = createTag('span', { class: 'header-announce-cta' }, cta.textContent);
+    span.insertAdjacentHTML('beforeend', ' <span aria-hidden="true">→</span>');
+    cta.replaceWith(span);
+  }
+  const target = link ? createTag('a', { href: authoredHref(link) }) : createTag('p');
+  target.append(...content.childNodes);
+  bar.append(target);
+  return bar;
+}
+
+function closeOnEscape(container, close, focusTarget) {
+  container.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    close();
+    focusTarget.focus();
+  });
+}
+
+/**
+ * loads and decorates the header
+ * @param {Element} block The header block element
+ */
+export default async function decorate(block) {
+  const sections = await fetchChrome('nav');
+  const [announceSec, brandSec, navSec, toolsSec] = sections.length >= 4
+    ? sections : [null, ...sections];
+  const labels = readLabels(toolsSec);
+  const items = parseNav(navSec);
+  const primaryLabel = labels.primary || 'Primary';
+
+  block.textContent = '';
+  const wrapper = createTag('div', { class: 'nav-wrapper' });
+
+  const announce = buildAnnounce(announceSec);
+  if (announce) wrapper.append(announce);
+
+  /* header bar */
+  const bar = createTag('div', { class: 'header-bar' });
+  const inner = createTag('div', { class: 'header-inner' });
+
+  const brandLink = brandSec?.querySelector('a');
+  const brand = createTag('a', { class: 'header-brand', href: brandLink ? authoredHref(brandLink) : getMarket().root });
+  if (labels.home) brand.setAttribute('aria-label', labels.home);
+  brand.innerHTML = LOGO_MARK;
+  brand.append(createTag('span', labels.home ? { 'aria-hidden': 'true' } : {}, brandLink?.textContent.trim() || 'Frescopa'));
+
+  /* desktop mega navigation */
+  const nav = createTag('nav', { class: 'header-nav', 'aria-label': primaryLabel });
+  const navList = createTag('ul', { class: 'header-nav-list' });
+  items.forEach((item) => {
+    const li = createTag('li');
+    const btn = createTag('button', {
+      class: 'header-nav-trigger', type: 'button', 'aria-expanded': 'false', 'aria-controls': `mega-${item.id}`,
+    });
+    btn.textContent = item.label;
+    btn.insertAdjacentHTML('beforeend', icon('chevron'));
+    if (isActive(item)) btn.setAttribute('aria-current', 'true');
+
+    const panel = createTag('div', { class: 'header-mega', id: `mega-${item.id}`, hidden: '' });
+    const panelInner = createTag('div', { class: 'header-mega-inner' });
+    const intro = createTag('div', { class: 'header-mega-intro' }, [
+      createTag('p', { class: 'header-mega-title' }, item.label),
+      item.intro ? createTag('p', {}, item.intro) : null,
+    ]);
+    if (item.href) {
+      const overview = createTag('a', { class: 'header-mega-overview', href: item.href }, `${labels.overview || 'Explore'} ${item.label}`);
+      overview.insertAdjacentHTML('beforeend', icon('arrow'));
+      intro.append(overview);
+    }
+    const links = createTag('ul', { class: 'header-mega-links' });
+    item.links.forEach((l) => {
+      const a = createTag('a', { href: l.href }, [createTag('strong', {}, l.label), l.desc ? createTag('span', {}, l.desc) : null]);
+      links.append(createTag('li', {}, a));
+    });
+    panelInner.append(intro, links);
+    if (item.promo) {
+      const promo = createTag('a', { class: 'header-mega-promo', href: item.promo.href }, [
+        createTag('div', { class: `header-art header-art-${item.art}`, 'aria-hidden': 'true' }),
+        createTag('div', { class: 'header-mega-promo-body' }, [
+          createTag('strong', {}, item.promo.label),
+          item.promo.desc ? createTag('span', {}, item.promo.desc) : null,
+        ]),
+      ]);
+      panelInner.append(promo);
+    }
+    panel.append(panelInner);
+    li.append(btn, panel);
+    navList.append(li);
+  });
+  nav.append(navList);
+
+  /* tools */
+  const actions = createTag('div', { class: 'header-actions' });
+  const market = buildMarketSwitcher(toolsSec?.querySelector('ul'), labels, 'header-market');
+  if (market) actions.append(market);
+
+  let cta = null;
+  let signIn = null;
+  const authLinks = [];
+  toolsSec?.querySelectorAll('a').forEach((a) => {
+    if (a.closest('ul')) return;
+    const label = a.textContent.trim();
+    if (a.closest('strong')) {
+      cta = createTag('a', { class: 'button primary header-cta', href: authoredHref(a) }, label);
+    } else if (a.querySelector('.icon-search') || /search/i.test(`${a.getAttribute('href')} ${label}`)) {
+      const search = createTag('a', { class: 'header-icon-btn header-search', href: authoredHref(a), 'aria-label': label });
+      search.innerHTML = icon('search');
+      actions.append(search);
+    } else {
+      signIn = { label, href: authoredHref(a) };
+    }
+  });
+
+  const themeBtn = createTag('button', { class: 'header-icon-btn header-theme', type: 'button' });
+  themeBtn.innerHTML = `${icon('moon')}${icon('sun')}`;
+  const syncTheme = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    themeBtn.setAttribute('aria-label', dark
+      ? (labels['theme-light'] || 'Switch to light theme')
+      : (labels['theme-dark'] || 'Switch to dark theme'));
+  };
+  themeBtn.addEventListener('click', () => {
+    const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    window.dispatchEvent(new CustomEvent('aem-theme-change', { detail: { theme } }));
+    syncTheme();
+  });
+  syncTheme();
+  actions.append(themeBtn);
+
+  if (signIn) {
+    const a = createTag('a', { class: 'header-signin', href: signIn.href });
+    authLinks.push(a);
+    a.innerHTML = icon('user');
+    a.append(createTag('span', { class: 'header-signin-label' }, signIn.label));
+    actions.append(a);
+  }
+  if (cta) actions.append(cta);
+
+  const menuBtn = createTag('button', {
+    class: 'header-icon-btn header-menu',
+    type: 'button',
+    'aria-expanded': 'false',
+    'aria-controls': 'header-drawer',
+    'aria-label': labels.menu || 'Menu',
+  });
+  menuBtn.innerHTML = `${icon('menu')}${icon('close')}`;
+  actions.append(menuBtn);
+
+  inner.append(brand, nav, actions);
+  bar.append(inner);
+  wrapper.append(bar);
+
+  /* mobile drawer */
+  const drawer = createTag('div', { class: 'header-drawer', id: 'header-drawer', hidden: '' });
+  const drawerNav = createTag('nav', { 'aria-label': primaryLabel });
+  items.forEach((item) => {
+    const details = createTag('details');
+    if (isActive(item)) details.open = true;
+    const summary = createTag('summary', {}, item.label);
+    summary.insertAdjacentHTML('beforeend', icon('chevron'));
+    const ul = createTag('ul');
+    if (item.href) ul.append(createTag('li', {}, createTag('a', { href: item.href }, `${labels.overview || 'Explore'} ${item.label}`)));
+    [...item.links, ...(item.promo ? [item.promo] : [])].forEach((l) => {
+      ul.append(createTag('li', {}, createTag('a', { href: l.href }, l.label)));
+    });
+    details.append(summary, ul);
+    drawerNav.append(details);
+  });
+  const drawerActions = createTag('div', { class: 'header-drawer-actions' });
+  if (cta) drawerActions.append(createTag('a', { class: 'button primary', href: cta.getAttribute('href') }, cta.textContent));
+  if (signIn) {
+    const a = createTag('a', { class: 'button secondary', href: signIn.href }, signIn.label);
+    authLinks.push(a);
+    drawerActions.append(a);
+  }
+  if (signIn && /\/auth\/login/i.test(signIn.href)) wireAuth(authLinks);
+  const drawerMarket = buildMarketSwitcher(toolsSec?.querySelector('ul'), labels, 'header-drawer-market');
+  drawer.append(drawerNav, drawerActions);
+  if (drawerMarket) drawer.append(drawerMarket);
+  wrapper.append(drawer);
+
   block.append(wrapper);
 
-  toggleMobile(nav, false, body);
-  syncMobileNavHeight(nav);
-  collapseAll(nav);
-  DESKTOP.addEventListener('change', () => toggleMobile(nav, false, body));
-  window.addEventListener('resize', () => {
-    syncMobileNavHeight(nav);
+  /* shadow under the bar once the page has scrolled */
+  const onScroll = () => wrapper.classList.toggle('scrolled', window.scrollY > 0);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* mega menu behaviour */
+  const triggers = [...navList.querySelectorAll('.header-nav-trigger')];
+  const panelOf = (btn) => block.querySelector(`#${btn.getAttribute('aria-controls')}`);
+  const closeAll = (except) => triggers.forEach((b) => {
+    if (b === except) return;
+    b.setAttribute('aria-expanded', 'false');
+    panelOf(b).hidden = true;
+  });
+  triggers.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      closeAll(btn);
+      btn.setAttribute('aria-expanded', String(open));
+      panelOf(btn).hidden = !open;
+    });
+    const li = btn.parentElement;
+    li.addEventListener('focusout', (e) => {
+      if (!li.contains(e.relatedTarget) && btn.getAttribute('aria-expanded') === 'true') {
+        btn.setAttribute('aria-expanded', 'false');
+        panelOf(btn).hidden = true;
+      }
+    });
+    closeOnEscape(li, () => closeAll(), btn);
+  });
+  document.addEventListener('click', (e) => {
+    if (!nav.contains(e.target)) closeAll();
   });
 
-  if (tools) {
-    initTheme(tools);
-    initSearch(tools);
-    refreshAuthState = await initAuth(nav, tools);
-    window.addEventListener('pageshow', () => { refreshAuthState?.(); });
-    if (eventRoot === document) {
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) refreshAuthState?.();
-      });
-    }
-    initLanguage(tools, eventRoot);
-    hydrateTranslateFromCookie();
-  }
-
-  nav.querySelectorAll('.nav-drop-mega').forEach((li) => li.megaSync?.());
+  /* drawer behaviour */
+  const setDrawer = (open) => {
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? (labels.close || 'Close menu') : (labels.menu || 'Menu'));
+    if (open) drawer.style.top = `${bar.getBoundingClientRect().bottom}px`;
+    drawer.hidden = !open;
+    document.body.classList.toggle('is-locked', open);
+    if (open) drawer.querySelector('summary, a')?.focus();
+  };
+  menuBtn.addEventListener('click', () => setDrawer(menuBtn.getAttribute('aria-expanded') !== 'true'));
+  closeOnEscape(drawer, () => setDrawer(false), menuBtn);
+  window.matchMedia('(width >= 1200px)').addEventListener('change', (e) => {
+    if (e.matches && !drawer.hidden) setDrawer(false);
+  });
 }

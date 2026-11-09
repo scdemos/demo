@@ -1,129 +1,100 @@
-/* Teaser block – Heritage Elite */
+/* Teaser: a one-line promo strip (label, message, link) */
 
-main .teaser {
-  background: light-dark(var(--color-parchment), var(--color-card-dark));
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
-  text-align: center;
-  font-family: var(--font-family-serif);
-  font-size: var(--body-font-size-m);
-  font-weight: 500;
-  color: light-dark(var(--color-ink), var(--color-parchment));
-  transition: transform 0.5s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    box-shadow 0.5s ease,
-    border-color 0.4s ease;
-}
-
-main .teaser:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lift-m);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
-}
-
-main .teaser > div {
+.teaser > div > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs) var(--gap-m);
   align-items: center;
-  gap: var(--space-s);
-  padding: var(--space-l) var(--content-padding-inline);
+  justify-content: center;
+  padding: var(--gap-s) var(--gap-m);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+  border-radius: var(--radius-l);
+  background: var(--color-accent-soft);
+  color: var(--color-text-strong);
+  font-size: var(--step-0);
+  text-align: center;
 }
 
-main .teaser > div > div a {
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+.teaser > div > div > * {
+  margin: 0;
+}
+
+.teaser strong {
+  display: inline-block;
+  margin-inline-end: 0.35em;
+  padding: 0.2em 0.7em;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.15em;
+}
+
+.teaser a:any-link:not(.button) {
+  color: var(--color-accent-text);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.teaser a:any-link:not(.button):hover {
   text-decoration: underline;
-  text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
-  text-decoration-color: var(--color-gold);
-  padding-inline-start: 0.5em;
-  transition: color 0.3s, text-decoration-color 0.3s;
-}
-
-main .teaser > div > div a:hover {
-  color: var(--color-gold);
-  text-decoration-color: var(--color-gold);
 }
 
 @media (width >= 900px) {
-  main .teaser > div {
-    padding: var(--space-xl) var(--space-2xl, 48px);
+  .teaser > div > div {
+    padding: var(--gap-s) var(--gap-l);
+    border-radius: var(--radius-pill);
   }
 }
 
-/* Login teaser variant: image backdrop + overlapping teaser card */
-main .section.login-teaser-image {
-    position: relative;
-    min-height: 18.75rem;
-    max-width: var(--grid-container-width);
-    margin: var(--main-block-space) auto;
-    padding: 0 var(--content-padding-inline);
-    overflow: hidden;
-    border-radius: var(--border-radius-heritage);
+/* Login teaser section: image backdrop with the teaser card on top */
+
+main > .section.login-teaser-image {
+  position: relative;
+  overflow: hidden;
+}
+
+main > .section.login-teaser-image > .default-content-wrapper {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  margin: 0;
+}
+
+main > .section.login-teaser-image > .default-content-wrapper :is(p, picture) {
+  height: 100%;
+  margin: 0;
+}
+
+main > .section.login-teaser-image > .default-content-wrapper picture img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+main > .section.login-teaser-image > .teaser-wrapper {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 18rem;
+  margin: 0 auto;
+}
+
+main > .section.login-teaser-image .teaser > div > div {
+  max-width: 40rem;
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+}
+
+@media (width >= 900px) {
+  main > .section.login-teaser-image > .teaser-wrapper {
+    min-height: 25rem;
   }
-  
-  main .section.login-teaser-image > .default-content-wrapper {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    max-width: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  main .section.login-teaser-image > .default-content-wrapper p {
-    margin: 0;
-    height: 100%;
-  }
-  
-  main .section.login-teaser-image > .default-content-wrapper picture {
-    display: block;
-    height: 100%;
-  }
-  
-  main .section.login-teaser-image > .default-content-wrapper picture img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-  }
-  
-  main .section.login-teaser-image > .teaser-wrapper {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 18.75rem;
-    padding: var(--space-l);
-  }
-  
-  main .section.login-teaser-image > .teaser-wrapper .teaser {
-    max-width: min(40rem, 100%);
-    margin: 0 auto;
-    box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
-  }
-  
-  main .section.login-teaser-image > .teaser-wrapper .teaser h4 {
-    margin-top: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.35rem;
-  }
-  
-  main .section.login-teaser-image > .teaser-wrapper .teaser .icon-lock {
-    width: 2rem;
-    height: 2rem;
-    margin: 0;
-    vertical-align: baseline;
-  }
-  
-  @media (width >= 900px) {
-    main .section.login-teaser-image,
-    main .section.login-teaser-image > .teaser-wrapper {
-      min-height: 25rem;
-    }
-  
-    main .section.login-teaser-image > .teaser-wrapper {
-      padding: var(--space-xl);
-    }
-  }
+}

@@ -104,7 +104,7 @@ export default function decorate(block) {
       wrapper.style.aspectRatio = 'auto';
       wrapper.style.height = `${fixedHeight}px`;
     }
-    wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" title="Play"></button></div>';
+    wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" aria-label="Play video"></button></div>';
     wrapper.prepend(placeholder);
     wrapper.addEventListener('click', () => {
       loadEmbed(block, link, true, fixedHeight);

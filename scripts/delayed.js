@@ -1,10 +1,11 @@
 // Delayed functionality – martech and the global social share dock
 import {
-  buildBlock, decorateBlock, loadBlock, loadScript,
+  buildBlock, decorateBlock, getMetadata, loadBlock, loadScript,
 } from './aem.js';
 import { createTag } from './shared.js';
 
 async function injectSocialShareBlock() {
+  if (getMetadata('social-share').trim().toLowerCase() === 'off') return;
   const main = document.querySelector('main');
   if (!main || main.querySelector('.social-share')) return;
 

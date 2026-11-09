@@ -1,0 +1,87 @@
+/* Table of contents: list of the page's h2s, sticky beside the content from 900px */
+.toc .toc-nav {
+  display: grid;
+  gap: var(--gap-s);
+  padding: var(--gap-m);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-sunken);
+}
+
+.toc .toc-title {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.toc .toc-list {
+  display: grid;
+  gap: var(--gap-3xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc .toc-list a {
+  display: block;
+  padding: 0.4em 0.75em;
+  border-left: 2px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  line-height: var(--leading-snug);
+  text-decoration: none;
+  transition: border-color var(--duration-1) var(--ease-out), color var(--duration-1) var(--ease-out);
+}
+
+.toc .toc-list a:hover,
+.toc .toc-list a[aria-current] {
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
+}
+
+.toc .toc-list a[aria-current] {
+  font-weight: var(--weight-semibold);
+}
+
+.toc .toc-list a:focus-visible {
+  border-radius: var(--radius-xs);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.toc .toc-meta {
+  display: grid;
+  gap: var(--gap-2xs);
+  margin: 0;
+  padding-top: var(--gap-s);
+  border-top: var(--border);
+  font-size: var(--step-n1);
+}
+
+.toc .toc-meta div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 var(--gap-2xs);
+}
+
+.toc .toc-meta dt {
+  color: var(--color-text-muted);
+}
+
+.toc .toc-meta dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
+}
+
+@media (width >= 900px) {
+  .toc .toc-nav {
+    position: sticky;
+    top: calc(var(--chrome-h) + var(--gap-l));
+    padding: 0;
+    background: none;
+  }
+}

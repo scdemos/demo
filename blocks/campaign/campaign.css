@@ -1,0 +1,142 @@
+/* Campaign: full-bleed featured band (background painted via border-image) */
+
+.campaign {
+  --campaign-bg: var(--color-surface-sunken);
+
+  position: relative;
+  padding-block: var(--gap-2xl);
+  background: var(--campaign-bg);
+  border-image: linear-gradient(var(--campaign-bg) 0 0) fill 0 / 0 / 0 100vmax;
+  color: var(--color-text);
+}
+
+.campaign .campaign-inner {
+  display: grid;
+  gap: var(--gap-xl);
+  align-items: center;
+}
+
+.campaign .campaign-media {
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.campaign .campaign-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 5 / 4;
+  object-fit: cover;
+  transition: transform var(--duration-3) var(--ease-out);
+}
+
+.campaign:hover .campaign-media img {
+  transform: scale(1.02);
+}
+
+.campaign .campaign-body {
+  min-width: 0;
+}
+
+.campaign .campaign-title {
+  max-width: 12em;
+  margin-bottom: var(--gap-s);
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+}
+
+.campaign .campaign-title em {
+  color: var(--color-highlight);
+  font-style: normal;
+}
+
+.campaign .lede {
+  margin-bottom: 0;
+}
+
+.campaign .campaign-body > p:not(.eyebrow, .lede, .button-container) {
+  color: var(--color-text-muted);
+}
+
+.campaign .campaign-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+  margin: var(--gap-l) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.campaign .campaign-meta li {
+  display: grid;
+  min-width: 6.5rem;
+  padding: var(--gap-xs) var(--gap-s);
+  border: var(--border-strong);
+  border-radius: var(--radius-m);
+}
+
+.campaign .campaign-meta strong {
+  color: var(--color-highlight);
+  font-size: var(--step-2);
+  font-weight: var(--weight-black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.campaign .campaign-meta span {
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.campaign .button-group {
+  margin-top: var(--gap-l);
+}
+
+@media (width >= 900px) {
+  .campaign {
+    padding-block: var(--gap-3xl);
+  }
+
+  .campaign .campaign-inner {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--gap-3xl);
+  }
+
+  .campaign.reverse .campaign-media {
+    order: 2;
+  }
+
+  .campaign.no-image .campaign-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ink: dark band with aurora glow, volt primary action */
+.campaign.ink {
+  --campaign-bg: var(--color-bg);
+
+  border-image:
+    radial-gradient(44rem 30rem at calc(50% + 26rem) 0%, color-mix(in srgb, var(--aurora-500) 26%, var(--color-bg)), var(--color-bg) 100%)
+    fill 0 / 0 / 0 100vmax;
+}
+
+.campaign.ink a.button.primary:any-link {
+  --btn-bg: var(--volt-400);
+  --btn-fg: var(--ink-1000);
+
+  box-shadow: 0 10px 30px -14px rgb(214 255 61 / 55%);
+}
+
+.campaign.ink a.button.primary:any-link:hover {
+  --btn-bg: color-mix(in srgb, var(--volt-400) 70%, white);
+}
+
+/* flame: solid flame band, white text */
+.campaign.flame {
+  --campaign-bg: var(--flame-600);
+}

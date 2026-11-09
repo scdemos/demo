@@ -22,12 +22,16 @@ import {
 import {
   initMartech, martechEager, martechLazy, martechDelayed,
 } from '../plugins/martech/src/index.js';
-import { getAllMetadata, getLocale } from './shared.js';
+import { getAllMetadata, getLocale, getMarket } from './shared.js';
 import { initPageSchemas } from './schema.js';
-import dynamicBlocks from '../blocks/dynamic/index.js';
 
 const IS_PREFLIGHT_HOST = window.location.hostname.endsWith('.preview.da.live');
 let preflightSource = null;
+
+async function dynamicBlocks(main) {
+  const { default: run } = await import('../blocks/dynamic/index.js');
+  await run(main);
+}
 
 const AUDIENCES = {
   mobile: () => window.innerWidth < 600,
@@ -49,7 +53,11 @@ function isExperimentationEnabled() {
 const THEME_STORAGE_KEY = 'demo-theme';
 
 function applyTheme(theme) {
-  let t = theme ?? (() => { try { return localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { return null; } })();
+  let t = theme;
+  try {
+    if (theme) localStorage.setItem(THEME_STORAGE_KEY, theme);
+    else t = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (e) { /* storage unavailable */ }
   if (t !== 'light' && t !== 'dark') {
     t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
@@ -170,13 +178,130 @@ async function inlineColorIcons(scope) {
   });
 }
 
+/**
+ * Default-content conventions for authors:
+ * - a short line directly above an h1/h2 becomes an eyebrow
+ * - consecutive button paragraphs are grouped into one row
+ * @param {Element} main
+ */
+function decorateDefaultContent(main) {
+  main.querySelectorAll('.default-content-wrapper > :is(h1, h2)').forEach((h) => {
+    const prev = h.previousElementSibling;
+    if (prev?.tagName === 'P' && !prev.classList.contains('button-container')
+      && !prev.querySelector('picture, a') && prev.textContent.trim().length <= 60) {
+      prev.classList.add('eyebrow');
+    }
+  });
+  main.querySelectorAll('.default-content-wrapper > p.button-container').forEach((p) => {
+    if (p.parentElement.classList.contains('button-group')) return;
+    const prev = p.previousElementSibling;
+    if (prev?.classList.contains('button-group')) {
+      prev.append(p);
+      return;
+    }
+    if (p.nextElementSibling?.classList.contains('button-container')) {
+      const group = document.createElement('div');
+      group.className = 'button-group';
+      p.before(group);
+      group.append(p);
+    }
+  });
+}
+
+/**
+ * Breadcrumbs generated from the path for pages below a market root
+ * (e.g. /en/us/offers/member-week). Opt out with metadata `breadcrumbs: off`.
+ * @param {Element} main
+ */
+function buildBreadcrumbs(main) {
+  if (getMetadata('breadcrumbs') === 'off' || document.querySelector('nav.breadcrumbs')) return;
+  const { root, segments } = getMarket();
+  if (!segments.length) return;
+  const nav = document.createElement('nav');
+  nav.className = 'breadcrumbs';
+  nav.setAttribute('aria-label', getMetadata('breadcrumbs-label') || 'Breadcrumb');
+  const ol = document.createElement('ol');
+  const crumb = (label, href) => {
+    const li = document.createElement('li');
+    if (href) {
+      const a = document.createElement('a');
+      a.href = href;
+      a.textContent = label;
+      li.append(a);
+    } else {
+      li.setAttribute('aria-current', 'page');
+      li.textContent = label;
+    }
+    ol.append(li);
+  };
+  const titleCase = (seg) => seg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  crumb(getMetadata('breadcrumbs-home') || 'Home', root);
+  const parent = getMetadata('breadcrumb-parent');
+  if (parent) {
+    const [label, href] = parent.split('|').map((v) => v.trim());
+    crumb(label, href);
+  } else {
+    segments.slice(0, -1).forEach((seg, i) => crumb(titleCase(seg), `${root}${segments.slice(0, i + 1).join('/')}`));
+  }
+  const h1 = main.querySelector('h1')?.textContent.trim();
+  crumb(getMetadata('breadcrumb-title') || h1 || titleCase(segments.at(-1)));
+  nav.append(ol);
+  main.before(nav);
+}
+
+/**
+ * Applies a Section Metadata table to its section (Style → classes, other keys → data
+ * attributes) and removes the table.
+ * @param {Element} section
+ * @param {Element} meta
+ */
+function applySectionMetadata(section, meta) {
+  const cfg = readBlockConfig(meta);
+  Object.keys(cfg).forEach((key) => {
+    if (key === 'style') {
+      String(cfg.style).split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+        .forEach((c) => section.classList.add(c));
+    } else {
+      section.dataset[toCamelCase(key)] = cfg[key];
+    }
+  });
+  const wrapper = meta.parentElement;
+  meta.remove();
+  if (wrapper && wrapper !== section && !wrapper.children.length) wrapper.remove();
+}
+
+/** @param {Element} main */
+function decorateSectionMetadata(main) {
+  main.querySelectorAll(':scope > div.section div.section-metadata').forEach((meta) => {
+    applySectionMetadata(meta.closest('.section'), meta);
+  });
+}
+
+/**
+ * Wraps bare content images in <picture>. Images that are not in the media bus
+ * (e.g. local content/ previews) are rendered without one, but blocks expect it.
+ * @param {Element} main
+ */
+function wrapBareImages(main) {
+  main.querySelectorAll('img').forEach((img) => {
+    if (img.closest('picture, .icon')) return;
+    const picture = document.createElement('picture');
+    img.replaceWith(picture);
+    picture.append(img);
+  });
+}
+
 export function decorateMain(main) {
+  wrapBareImages(main);
   decorateButtons(main);
   decorateIcons(main);
   inlineColorIcons(main);
   buildAutoBlocks(main);
   decorateSections(main);
+  decorateSectionMetadata(main);
   decorateBlocks(main);
+  decorateDefaultContent(main);
+  if (document.contains(main)) buildBreadcrumbs(main);
   if (IS_PREFLIGHT_HOST && document.contains(main)) preflightSource = main.cloneNode(true);
   if (document.contains(main)) initPageSchemas();
 }

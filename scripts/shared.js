@@ -33,6 +33,25 @@ export function getLocale(locales = LOCALES) {
 }
 
 /**
+ * Market from a `/{lang}/{region}/` path segment, with any prefix before it as `base`.
+ * @returns {{ lang: string, region: string, root: string, base: string, segments: string[] }}
+ */
+export function getMarket() {
+  const { pathname } = window.location;
+  const m = pathname.match(/^(.*?)\/([a-z]{2})\/([a-z]{2})(?:\/|$)/);
+  if (!m) {
+    return {
+      lang: 'en', region: 'us', root: '/en/us/', base: '', segments: pathname.split('/').filter(Boolean),
+    };
+  }
+  const [, base, lang, region] = m;
+  const root = `${base}/${lang}/${region}/`;
+  return {
+    lang, region, root, base, segments: pathname.slice(root.length).split('/').filter(Boolean),
+  };
+}
+
+/**
  * Page metadata `gated=true` — same signal as CDN worker HTML gating; author preview uses this too.
  * @returns {boolean}
  */
@@ -67,6 +86,24 @@ export function createTag(tag, attributes = {}, content = null) {
   }
 
   return el;
+}
+
+/**
+ * Wraps a container's direct button paragraphs (p.button-container) in .button-group rows,
+ * merging consecutive ones into the same row.
+ * @param {Element} container
+ */
+export function groupButtons(container) {
+  [...container.querySelectorAll(':scope > p.button-container')].forEach((p) => {
+    const prev = p.previousElementSibling;
+    if (prev?.classList.contains('button-group')) {
+      prev.append(p);
+      return;
+    }
+    const group = createTag('div', { class: 'button-group' });
+    p.before(group);
+    group.append(p);
+  });
 }
 
 /**
@@ -252,57 +289,6 @@ export function shuffle(arr) {
     [next[i], next[j]] = [next[j], next[i]];
   }
   return next;
-}
-
-// ---------------------------------------------------------------------------
-// Chart.js (delayed load for CWV; reuse across calculators)
-// ---------------------------------------------------------------------------
-
-const CHART_JS_CDN = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';
-let chartJsLoadPromise = null;
-
-/**
- * Load Chart.js from CDN in a deferred way (after idle) so it does not affect LCP/CWV.
- * @returns {Promise<typeof window.Chart>}
- */
-export function loadChartJs() {
-  if (typeof window.Chart !== 'undefined') return Promise.resolve(window.Chart);
-  if (chartJsLoadPromise) return chartJsLoadPromise;
-  chartJsLoadPromise = new Promise((resolve, reject) => {
-    const run = () => {
-      const script = document.createElement('script');
-      script.src = CHART_JS_CDN;
-      script.async = true;
-      script.onload = () => resolve(window.Chart);
-      script.onerror = () => reject(new Error('Chart.js failed to load'));
-      document.head.append(script);
-    };
-    if (typeof requestIdleCallback !== 'undefined') {
-      requestIdleCallback(run, { timeout: 2000 });
-    } else {
-      setTimeout(run, 1);
-    }
-  });
-  return chartJsLoadPromise;
-}
-
-/**
- * Create or replace a Chart.js instance on a canvas.
- * @param {HTMLCanvasElement} canvas
- * @param {Object} config - Chart.js config (type, data, options)
- * @returns {Object|undefined}
- */
-export function createChart(canvas, config) {
-  if (!canvas || !config) return undefined;
-  const ChartLib = window.Chart;
-  if (!ChartLib) return undefined;
-  if (canvas.chart) {
-    canvas.chart.destroy();
-    canvas.chart = null;
-  }
-  const chart = new ChartLib(canvas, config);
-  canvas.chart = chart;
-  return chart;
 }
 
 /**

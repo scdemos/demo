@@ -75,7 +75,7 @@ When facing trade-offs, follow this order: *Intuitive* (author-friendly) > *Simp
 ├── scripts/
 │   ├── aem.js            # Core AEM library for page decoration logic
 │   ├── scripts.js        # Page decoration entry point and global utilities
-│   ├── shared.js         # Shared utilities (createTag, query-index helpers, Chart.js loader)
+│   ├── shared.js         # Shared utilities (createTag, query-index helpers)
 │   └── delayed.js        # Delayed functionality (social share injection, ShareThis)
 ├── templates/
 │   └── article/          # Article page template

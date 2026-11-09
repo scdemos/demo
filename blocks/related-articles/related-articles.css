@@ -1,302 +1,237 @@
-/* Related articles block – default slider, mobile-first */
+/* stylelint-disable no-descending-specificity -- bento overrides the base card */
 
-main .related-articles {
-  width: 100%;
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
-  padding: var(--space-m) var(--content-padding-inline);
-}
+/* Default: horizontal snap rail on small screens, three-up grid from 900px */
 
-main .related-articles .related-articles-slider {
+.related-articles .related-articles-slider {
   position: relative;
 }
 
-/* List – horizontal scroll by default */
-main .related-articles .related-articles-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.related-articles .related-articles-list {
   display: flex;
+  gap: var(--grid-gap);
+  margin: 0;
+  padding: 0 0 var(--gap-xs);
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
-  gap: var(--space-l);
-  padding-bottom: var(--space-s);
-  scroll-padding-inline: var(--content-padding-inline);
+  scrollbar-width: none;
+  list-style: none;
 }
 
-/* Card */
-main .related-articles .related-articles-card {
-  flex: 0 0 min(86%, 360px);
-  scroll-snap-align: start;
+.related-articles .related-articles-card {
+  position: relative;
+  display: flex;
+  flex: 0 0 min(82%, 22rem);
+  min-width: 0;
   margin: 0;
-  border: 1px solid light-dark(var(--color-gray-200), var(--color-gray-700));
-  border-radius: var(--space-m);
-  overflow: clip;
-  background: light-dark(var(--color-light), var(--color-gray-900));
-  transition: transform 0.4s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    border-color 0.3s ease,
-    box-shadow 0.4s ease;
+  padding: var(--gap-xs);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  scroll-snap-align: start;
+  transition:
+    transform var(--duration-2) var(--ease-out),
+    box-shadow var(--duration-2) var(--ease-out),
+    border-color var(--duration-2) var(--ease-out);
 }
 
-/* Card link */
-main .related-articles .related-articles-card-link {
+.related-articles .related-articles-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-2);
+}
+
+.related-articles .related-articles-card:has(:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .related-articles .related-articles-card:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.related-articles .related-articles-card-link {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
   color: inherit;
   text-decoration: none;
+}
+
+.related-articles .related-articles-card-link:focus-visible {
+  outline: none;
+}
+
+.related-articles .related-articles-card-image {
+  overflow: hidden;
+  border-radius: var(--radius-m);
+  background: var(--color-surface-sunken);
+  line-height: 0;
+}
+
+.related-articles .related-articles-card-image img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  transition: transform var(--duration-3) var(--ease-out);
+}
+
+.related-articles .related-articles-card:hover .related-articles-card-image img {
+  transform: scale(1.04);
+}
+
+.related-articles .related-articles-card-content {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  height: 100%;
+  gap: var(--gap-xs);
+  padding: var(--gap-m) var(--gap-s) var(--gap-s);
 }
 
-main .related-articles .related-articles-card-link:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -2px;
-  border-radius: var(--space-m);
-}
-
-/* Card accent strip */
-main .related-articles .related-articles-card-strip {
-  block-size: var(--space-s);
-  background: var(--color-accent);
-}
-
-/* Card content */
-main .related-articles .related-articles-card-content {
-  padding: var(--space-m);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-s);
-  height: 100%;
-}
-
-/* Heading */
-main .related-articles .related-articles-card h3 {
+.related-articles .related-articles-card-content > * {
   margin: 0;
-  font-size: var(--heading-font-size-s);
+}
+
+.related-articles .related-articles-card-tag {
+  color: var(--color-accent-text);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.related-articles .related-articles-card h3 {
+  color: var(--color-text-strong);
+  font-size: var(--step-1);
   line-height: 1.2;
 }
 
-/* Description */
-main .related-articles .related-articles-card-description {
-  margin: 0;
+.related-articles .related-articles-card-description {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
   line-height: 1.55;
-  color: light-dark(var(--color-gray-700), var(--color-gray-300));
 }
 
-/* Date */
-main .related-articles .related-articles-card-date {
-  margin: auto 0 0;
-  font-size: var(--body-font-size-xs);
-  color: var(--color-gray-500);
+.related-articles .related-articles-card-date {
+  margin-top: auto;
+  padding-top: var(--gap-xs);
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
 }
 
-/* Hover & focus */
-main .related-articles .related-articles-card:hover,
-main .related-articles .related-articles-card:focus-within {
-  transform: translateY(-6px);
-  border-color: light-dark(var(--color-gold), rgb(197 160 89 / 40%));
-  box-shadow: 0 20px 40px light-dark(rgb(161 79 43 / 14%), rgb(197 160 89 / 14%));
+.related-articles .related-articles-empty {
+  margin: var(--gap-m) 0 0;
+  color: var(--color-text-muted);
 }
 
-/* Empty state */
-main .related-articles .related-articles-empty {
-  margin: var(--space-m) 0 0;
-}
-
-/* Slider controls */
-main .related-articles .related-articles-controls {
+.related-articles .related-articles-controls {
   display: flex;
-  justify-content: space-between;
-  position: absolute;
-  inset: 50% 0 auto;
-  transform: translateY(-50%);
-  pointer-events: none;
-  z-index: 2;
-  padding-inline: var(--space-xs);
+  justify-content: flex-end;
+  gap: var(--gap-2xs);
+  margin-top: var(--gap-s);
 }
 
-main .related-articles .related-articles-arrow {
-  border: 1px solid light-dark(rgb(255 255 255 / 55%), rgb(255 255 255 / 16%));
-  background: light-dark(rgb(255 255 255 / 72%), rgb(24 27 32 / 70%));
-  color: inherit;
-  inline-size: 44px;
-  block-size: 44px;
-  border-radius: 999px;
+.related-articles .related-articles-arrow {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
-  font-size: 22px;
-  line-height: 1;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 10px 24px rgb(0 0 0 / 14%);
-  pointer-events: auto;
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  color: var(--color-text-strong);
+  font-size: var(--step-1);
   cursor: pointer;
-  transition: opacity 0.25s, transform 0.25s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1)),
-    border-color 0.25s;
+  transition: background-color var(--duration-1) var(--ease-out);
 }
 
-main .related-articles .related-articles-arrow:disabled {
-  opacity: 0.35;
+.related-articles .related-articles-arrow:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+}
+
+.related-articles .related-articles-arrow:disabled {
+  opacity: 0.4;
   cursor: default;
 }
 
-main .related-articles .related-articles-arrow:hover:not(:disabled) {
-  border-color: var(--color-gold);
-  transform: scale(1.08);
-}
-
-main .related-articles .related-articles-arrow.is-hidden {
-  opacity: 0;
+.related-articles .related-articles-arrow.is-hidden {
   visibility: hidden;
-  pointer-events: none;
-  transform: scale(0.9);
-}
-
-@media (width >= 600px) {
-  main .related-articles .related-articles-card {
-    flex-basis: min(88%, 360px);
-  }
 }
 
 @media (width >= 900px) {
-  main .related-articles {
-    padding-inline: 0;
+  .related-articles .related-articles-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: visible;
   }
 
-  main .related-articles .related-articles-card {
-    flex-basis: min(32%, 380px);
+  .related-articles .related-articles-card:nth-child(n + 4) {
+    display: none;
   }
 
-  main .related-articles .related-articles-card-content {
-    padding: var(--space-l);
-  }
-
-  main .related-articles .related-articles-arrow {
-    inline-size: 52px;
-    block-size: 52px;
-    font-size: 24px;
+  .related-articles .related-articles-controls {
+    display: none;
   }
 }
 
-/* ==========================================================================
-   Bento variant – Heritage Elite grid layout
-   ========================================================================== */
+/* Bento: featured first card plus a grid */
 
-main .related-articles.bento .related-articles-list {
+.related-articles.bento .related-articles-list {
   display: grid;
-  grid-template-columns: 1fr;
-  overflow-x: visible;
-  overscroll-behavior-x: auto;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
   scroll-snap-type: none;
-  padding-bottom: 0;
 }
 
-main .related-articles.bento .related-articles-card {
+.related-articles.bento .related-articles-card {
   flex: none;
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
-  background: light-dark(var(--color-parchment), var(--color-card-dark));
-  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  padding: var(--gap-s);
 }
 
-main .related-articles.bento .related-articles-card-link:focus-visible {
-  outline-color: var(--color-gold);
-  border-radius: var(--border-radius-heritage);
+.related-articles.bento .related-articles-card-content {
+  padding: var(--gap-s);
 }
 
-main .related-articles.bento .related-articles-card-content {
-  padding: 30px;
+.related-articles.bento .related-articles-card-featured {
+  background: var(--color-accent-soft);
 }
 
-/* Keyword tag */
-main .related-articles.bento .related-articles-card-tag {
-  display: block;
-  font-family: var(--font-family-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: var(--color-gold);
-  margin: 0 0 var(--space-xs);
+.related-articles.bento .related-articles-card-featured h3 {
+  font-size: var(--step-3);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-tight);
 }
 
-/* Heading */
-main .related-articles.bento .related-articles-card h3 {
-  font-family: var(--font-family-serif);
-  font-weight: 500;
-  font-size: 1.4rem;
-  line-height: 1.15;
-  letter-spacing: -0.5px;
-  color: light-dark(var(--color-ink), var(--color-parchment));
-}
-
-/* Description */
-main .related-articles.bento .related-articles-card-description {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: light-dark(var(--color-ink), var(--color-muted));
-  opacity: 0.8;
-}
-
-/* Date */
-main .related-articles.bento .related-articles-card-date {
-  font-family: var(--font-family-mono);
-  color: light-dark(var(--color-gray-500), var(--color-gray-400));
-  letter-spacing: 1px;
-}
-
-/* Hover & focus */
-main .related-articles.bento .related-articles-card:hover,
-main .related-articles.bento .related-articles-card:focus-within {
-  transform: translateY(-8px);
-  border-color: var(--color-gold);
-  box-shadow: 0 30px 60px -12px rgb(161 79 43 / 15%);
-}
-
-/* Featured (first) card */
-main .related-articles.bento .related-articles-card-featured .related-articles-card-content {
-  padding: 35px;
-}
-
-main .related-articles.bento .related-articles-card-featured h3 {
-  font-size: 1.8rem;
-}
-
-/* Tablet: 2-column grid */
 @media (width >= 600px) {
-  main .related-articles.bento .related-articles-list {
-    grid-template-columns: repeat(2, 1fr);
+  .related-articles.bento .related-articles-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  main .related-articles.bento .related-articles-card-featured {
+  .related-articles.bento .related-articles-card-featured {
     grid-column: span 2;
   }
 }
 
-/* Desktop: 3-column grid */
 @media (width >= 900px) {
-  main .related-articles.bento .related-articles-card-content {
-    padding: 40px;
+  .related-articles.bento .related-articles-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  main .related-articles.bento .related-articles-card-featured .related-articles-card-content {
-    padding: 45px;
+  .related-articles.bento .related-articles-card:nth-child(n + 4) {
+    display: flex;
   }
 
-  main .related-articles.bento .related-articles-card-featured h3 {
-    font-size: 2.2rem;
+  .related-articles.bento .related-articles-card-featured {
+    grid-row: span 2;
+    grid-column: span 1;
   }
 
-  main .related-articles.bento .related-articles-card h3 {
-    font-size: 1.6rem;
-  }
-
-  main .related-articles.bento .related-articles-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Wide */
-@media (width >= 1200px) {
-  main .related-articles.bento .related-articles-card-featured h3 {
-    font-size: 2.4rem;
+  .related-articles.bento .related-articles-card-featured .related-articles-card-content {
+    justify-content: flex-end;
+    padding: var(--gap-l) var(--gap-m);
   }
 }

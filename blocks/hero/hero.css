@@ -1,296 +1,434 @@
-/* Hero block – Heritage Elite, mobile-first */
-
-.hero-container .hero-wrapper {
-  max-width: unset;
-  padding: 0;
-}
+/* ==========================================================================
+   Hero
+   default = page hero (sunken band) · home = flagship first viewport · ink = dark
+   Full-bleed background painted with border-image so it never causes overflow.
+   ========================================================================== */
 
 .hero {
+  --hero-bg: var(--color-surface-sunken);
+
   position: relative;
-  background-color: light-dark(var(--color-parchment), var(--color-obsidian));
+  padding-block: var(--gap-xl) var(--gap-2xl);
+  background: var(--hero-bg);
+  border-image: linear-gradient(var(--hero-bg) 0 0) fill 0 / 0 / 0 100vmax;
+  color: var(--color-text);
 }
 
-/* Image */
-.hero > div:first-child {
-  position: relative;
-  line-height: 0;
-}
-
-.hero .hero-img-light,
-.hero .hero-img-dark {
-  line-height: 0;
-}
-
-/* Gradient fade effect at the bottom of the hero image */
-.hero > div:first-child::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65%;
-  background: linear-gradient(to bottom, transparent 0%, light-dark(var(--color-parchment), var(--color-obsidian)) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-
-/* Dual-image hero: light shown by default, dark hidden */
-.hero .hero-img-dark {
-  display: none;
-}
-
-/* Dark theme: swap images (must match light-dark() triggers, not OS preference) */
-.dark-scheme .hero .hero-img-light,
-:root[data-theme='dark'] .hero .hero-img-light {
-  display: none;
-}
-
-.dark-scheme .hero .hero-img-dark,
-:root[data-theme='dark'] .hero .hero-img-dark {
-  display: block;
-}
-
-.hero picture img {
-  display: block;
-  width: 100%;
-  max-height: 580px;
-  object-fit: cover;
-  opacity: 0.55;
-}
-
-/* Text overlay */
-.hero > div:last-child {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  padding: 40px var(--content-padding-inline);
-  display: flex;
+.hero .hero-inner {
+  display: grid;
+  gap: var(--gap-xl);
   align-items: center;
 }
 
-.hero > div:last-child > div {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-m);
-  max-width: 600px;
+.hero .hero-content {
+  display: grid;
+  gap: var(--gap-m);
+  min-width: 0;
 }
 
-/* Hide the second image row when hero block decoration hasn't run (Target offer injection) */
-.hero > div:nth-child(2):not(.hero-img-dark, .hero-img-light, .hero-text) {
-  display: none;
+.hero .hero-heading > :last-child,
+.hero .hero-body > :last-child {
+  margin-bottom: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes hero-enter {
-    from {
-      opacity: 0;
-      transform: translateY(24px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .hero > div:last-child > div {
-    animation: hero-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .hero .hero-tagline {
-    animation: hero-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
-  }
-
-  .hero h1 {
-    animation: hero-enter 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
-  }
-
-  .hero p.button-container {
-    animation: hero-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
-  }
+.hero .eyebrow {
+  margin-bottom: var(--gap-s);
 }
 
-/* Tagline */
-.hero .hero-tagline {
-  font-family: var(--font-family-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-gold);
-  text-transform: uppercase;
-  letter-spacing: 5px;
+.hero .hero-title {
+  max-width: 16em;
+  margin: 0;
+  font-size: var(--step-5);
+}
+
+.hero .hero-title em {
+  color: var(--color-accent-text);
+  font-style: normal;
+}
+
+.hero .lede {
   margin: 0;
 }
 
-/* Heading */
-.hero h1 {
-  margin: 0;
-  font-family: var(--font-family-serif);
-  font-size: clamp(2rem, 8vw, 4.5rem);
-  font-weight: 500;
-  line-height: 1.05;
-  color: light-dark(var(--color-ink), var(--color-parchment));
+.hero .hero-note {
+  margin: var(--gap-s) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
 }
 
-.hero h1 em {
-  font-weight: 400;
-  font-style: italic;
-  background: linear-gradient(135deg, var(--color-rust) 0%, var(--color-gold) 100%);
-  background-clip: text;
-  color: transparent;
+.hero .hero-note strong {
+  color: var(--color-text-strong);
 }
 
-.dark-scheme .hero h1 em,
-:root[data-theme='dark'] .hero h1 em {
-  background: linear-gradient(135deg, var(--color-rust-bright) 0%, var(--color-gold) 100%);
-  background-clip: text;
-  color: transparent;
+.hero .button-group {
+  margin-top: var(--gap-l);
 }
 
-/* Body text — hidden on mobile */
-.hero p:not(.button-container, .hero-tagline) {
-  display: none;
-  max-width: 550px;
-  margin: 0;
-  font-family: var(--font-family-serif);
-  font-size: 1.15rem;
-  color: light-dark(var(--color-ink), var(--color-muted));
-  line-height: 1.7;
-  letter-spacing: 0.01em;
+/* artwork */
+.hero .hero-media {
+  position: relative;
+  min-width: 0;
 }
 
-.hero p.button-container {
-  margin-top: var(--space-s);
+.hero .hero-art {
+  overflow: hidden;
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
 }
 
-/* Icon */
-.hero .icon {
-  flex-shrink: 0;
-  width: 165px;
-  height: 45px;
-}
-
-.hero .icon img {
+.hero .hero-art img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
 }
 
-/* Dark-mode image: blend into obsidian bg with soft edges */
-.dark-scheme .hero .hero-img-dark picture img,
-:root[data-theme='dark'] .hero .hero-img-dark picture img {
-  opacity: 0.3;
-  mask-image: radial-gradient(ellipse 85% 70% at 50% 35%, black 25%, transparent 100%);
+/* light/dark artwork pair */
+.hero .hero-img-dark,
+html[data-theme='dark'] .hero .hero-img-light {
+  display: none;
 }
 
-/* Dark mode cinematic fade uses obsidian */
-.dark-scheme .hero > div:first-child::after,
-:root[data-theme='dark'] .hero > div:first-child::after {
-  background: linear-gradient(to bottom, transparent 0%, var(--color-obsidian) 100%);
-}
-
-/* Tablet: show body text */
-@media (width >= 600px) {
-  .hero p:not(.button-container, .hero-tagline) {
-    display: block;
-    font-size: 1.3rem;
-  }
-}
-
-/* Desktop */
-@media (width >= 900px) {
-  .hero > div:last-child {
-    padding: 100px 5vw;
-  }
-
-  .hero > div:last-child > div {
-    max-width: 1000px;
-    margin: 0 25%;
-  }
-
-  .hero h1 {
-    font-size: clamp(3.5rem, 5vw, 6rem);
-  }
-}
-
-@media (width >= 1200px) {
-  .hero > div:last-child {
-    padding: 100px 6vw;
-  }
-
-  .hero h1 {
-    font-size: clamp(4rem, 5.5vw, 6.5rem);
-  }
-}
-
-/* No-image fallback */
-.hero.no-image > div:last-child {
-  position: static;
-  padding: 80px var(--content-padding-inline);
-}
-
-.hero.no-image > div:last-child > div {
-  align-items: center;
-  text-align: center;
-  max-width: var(--grid-container-width);
-  margin: 0 auto;
-}
-
-.hero.no-image p:not(.button-container, .hero-tagline) {
+html[data-theme='dark'] .hero .hero-img-dark {
   display: block;
 }
 
 @media (width >= 900px) {
-  .hero.no-image > div:last-child {
-    min-height: 400px;
-    padding: 100px 5vw;
+  .hero .hero-inner {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: var(--gap-2xl);
+  }
+
+  .hero.no-image .hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* text-only page hero: title left, lede + actions right */
+  .hero.no-image .hero-content {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: var(--gap-2xl);
+    align-items: end;
+  }
+
+  .hero .hero-art img {
+    max-height: 26rem;
+  }
+}
+
+/* ---------- Floating highlight cards (over artwork) ---------- */
+.hero .hero-floats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero .hero-float {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  max-width: 17rem;
+  padding: var(--gap-xs) var(--gap-s) var(--gap-xs) var(--gap-xs);
+  border: 1px solid rgb(255 255 255 / 60%);
+  border-radius: var(--radius-m);
+  background: rgb(255 255 255 / 90%);
+  box-shadow: 0 18px 40px -18px rgb(7 6 13 / 50%);
+  color: var(--ink-950);
+  font-size: var(--step-n1);
+  line-height: 1.3;
+  backdrop-filter: blur(10px);
+  transition: transform var(--duration-2) var(--ease-out), box-shadow var(--duration-2) var(--ease-out);
+}
+
+.hero .hero-float:nth-child(1) {
+  top: 7%;
+  left: 2%;
+}
+
+.hero .hero-float:nth-child(2) {
+  right: 2%;
+  bottom: 14%;
+}
+
+.hero .hero-float:nth-child(n + 3) {
+  display: none;
+  bottom: 5%;
+  left: 7%;
+}
+
+.hero .hero-float a:any-link {
+  color: var(--ink-950);
+  font-weight: var(--weight-regular);
+  text-decoration: none;
+}
+
+.hero .hero-float a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.hero .hero-float a:focus-visible {
+  box-shadow: none;
+}
+
+.hero .hero-float:has(a:focus-visible) {
+  box-shadow: 0 0 0 3px var(--white), 0 0 0 6px var(--ink-950);
+}
+
+.hero .hero-float:has(a):hover {
+  box-shadow: 0 24px 48px -18px rgb(7 6 13 / 60%);
+  transform: translateY(-3px);
+}
+
+.hero .hero-float strong {
+  display: block;
+  color: var(--ink-1000);
+  font-weight: var(--weight-bold);
+}
+
+.hero .hero-float-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-s);
+  background: var(--flame-600);
+}
+
+.hero .hero-float:nth-child(even) .hero-float-badge {
+  background: var(--ink-950);
+}
+
+.hero .hero-float-badge::before {
+  content: '';
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--white);
+  mask: var(--icon) center / contain no-repeat;
+}
+
+.hero .hero-float:nth-child(even) .hero-float-badge::before {
+  background: var(--volt-400);
+}
+
+.hero .hero-float-badge img {
+  display: none;
+}
+
+@media (width >= 600px) {
+  .hero .hero-float:nth-child(n + 3) {
+    display: flex;
+  }
+
+  .hero .hero-float:nth-child(1) {
+    left: -4%;
+  }
+
+  .hero .hero-float:nth-child(2) {
+    right: -4%;
+  }
+}
+
+/* ---------- Proof chips ---------- */
+.hero .hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-s) var(--gap-l);
+  margin: var(--gap-l) 0 0;
+  padding: var(--gap-m) 0 0;
+  border-top: var(--border);
+  list-style: none;
+}
+
+.hero .hero-proof li {
+  display: grid;
+}
+
+.hero .hero-proof strong {
+  color: var(--color-text-strong);
+  font-size: var(--step-2);
+  font-weight: var(--weight-black);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-snug);
+  line-height: 1.15;
+}
+
+.hero .hero-proof-label {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+/* ==========================================================================
+   Home: flagship first viewport
+   ========================================================================== */
+.hero.home {
+  --hero-bg: var(--color-bg);
+  --hero-glow: color-mix(in srgb, var(--flame-500) 13%, var(--color-bg));
+
+  display: grid;
+  align-items: center;
+  min-height: clamp(34rem, calc(100svh - var(--chrome-h)), 60rem);
+  padding-block: var(--gap-l) var(--gap-xl);
+  border-image:
+    radial-gradient(42rem 30rem at calc(50% + 22rem) 45%, var(--hero-glow), var(--hero-bg) 100%)
+    fill 0 / 0 / 0 100vmax;
+}
+
+html[data-theme='dark'] .hero.home {
+  --hero-glow: color-mix(in srgb, var(--aurora-500) 22%, var(--color-bg));
+}
+
+.hero.home .hero-title {
+  max-width: 9.5em;
+  font-size: clamp(2.9rem, 1.2rem + 5.6vw, 7.25rem);
+  font-weight: var(--weight-black);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+.hero.home .hero-title em {
+  padding-right: 0.06em;
+  background: linear-gradient(120deg, var(--flame-600) 0%, var(--magenta-600) 52%, var(--aurora-600) 100%);
+  background-clip: text;
+  color: transparent;
+}
+
+html[data-theme='dark'] .hero.home .hero-title em {
+  background-image: var(--gradient-vivid);
+}
+
+.hero.home .eyebrow {
+  margin-bottom: var(--gap-m);
+}
+
+.hero.home .lede {
+  max-width: 30em;
+  font-size: var(--step-2);
+  font-weight: var(--weight-medium);
+  line-height: 1.45;
+}
+
+.hero.home .button-group a.button.primary:any-link,
+.hero.home .button-group a.button.secondary:any-link {
+  min-height: 3.5rem;
+  padding-inline: 1.9em;
+  font-size: var(--step-0);
+}
+
+.hero.home .hero-media {
+  width: min(100%, 34rem);
+  margin-inline: auto;
+}
+
+/* dotted texture peeking from behind the art */
+.hero.home .hero-media::before {
+  content: '';
+  position: absolute;
+  inset: -1.5rem -1.5rem auto auto;
+  width: 45%;
+  height: 45%;
+  background-image: radial-gradient(circle, var(--color-border-strong) 1.4px, transparent 1.8px);
+  background-size: 14px 14px;
+}
+
+.hero.home .hero-art {
+  position: relative;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 40px 80px -40px rgb(91 63 217 / 55%);
+}
+
+.hero.home .hero-art img {
+  aspect-ratio: 1;
+  max-height: none;
+}
+
+@media (width >= 900px) {
+  .hero.home .hero-inner {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+    gap: var(--gap-2xl);
+  }
+
+  .hero.home .hero-media {
+    width: min(100%, calc(100svh - var(--chrome-h) - 7rem), 40rem);
+    margin-inline: auto 0;
   }
 }
 
 @media (width >= 1200px) {
-  .hero.no-image > div:last-child {
-    padding: 120px 6vw;
+  .hero.home .hero-inner {
+    gap: var(--gap-3xl);
   }
 }
 
-/* Background color variants */
-.hero.rust {
-  background-color: var(--color-rust);
+@media (forced-colors: active) {
+  .hero.home .hero-title em {
+    background: none;
+    color: CanvasText;
+  }
 }
 
-.hero.rust h1,
-.hero.rust p:not(.button-container, .hero-tagline) {
-  color: var(--color-parchment);
-}
-
-/* Variant heros: reset gradient text and use solid color */
-:root .hero.rust h1 em {
-  background: none;
-  background-clip: unset;
-  color: var(--color-gold);
-}
-
-.hero.gold {
-  background-color: var(--color-gold);
-}
-
-.hero.gold h1,
-.hero.gold p:not(.button-container, .hero-tagline) {
-  color: var(--color-ink);
-}
-
+/* ==========================================================================
+   Ink (dark) variant — semantic tokens remap via .surface-ink
+   ========================================================================== */
 .hero.ink {
-  background-color: var(--color-ink);
+  --hero-bg: var(--color-bg);
+
+  border-image:
+    radial-gradient(40rem 26rem at calc(50% + 24rem) 0%, color-mix(in srgb, var(--aurora-500) 24%, var(--color-bg)), var(--color-bg) 100%)
+    fill 0 / 0 / 0 100vmax;
 }
 
-.hero.ink h1,
-.hero.ink p:not(.button-container, .hero-tagline) {
-  color: var(--color-parchment);
+/* ==========================================================================
+   Motion (transform-only so LCP text is painted immediately)
+   ========================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  .hero .hero-heading,
+  .hero .hero-body {
+    animation: hero-rise 0.7s var(--ease-out) backwards;
+  }
+
+  .hero .hero-body {
+    animation-delay: 0.08s;
+  }
+
+  .hero .hero-art {
+    animation: hero-settle 1.1s var(--ease-out) backwards;
+  }
+
+  .hero .hero-float {
+    animation: hero-float-in 0.7s var(--ease-out) 0.45s backwards;
+  }
+
+  .hero .hero-float:nth-child(2) {
+    animation-delay: 0.57s;
+  }
+
+  .hero .hero-float:nth-child(n + 3) {
+    animation-delay: 0.69s;
+  }
 }
 
-:root .hero.ink h1 em {
-  background: none;
-  background-clip: unset;
-  color: var(--color-rust);
+@keyframes hero-rise {
+  from {
+    transform: translateY(14px);
+  }
+}
+
+@keyframes hero-settle {
+  from {
+    transform: scale(0.97);
+  }
+}
+
+@keyframes hero-float-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }

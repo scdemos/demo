@@ -1,0 +1,61 @@
+.journey-steps .journey-steps-list {
+  display: grid;
+  gap: var(--gap-m);
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style: none;
+  counter-reset: step;
+}
+
+.journey-steps .journey-steps-item {
+  counter-increment: step;
+  position: relative;
+  display: grid;
+  gap: var(--gap-2xs);
+  padding-left: var(--gap-2xs);
+}
+
+.journey-steps .journey-steps-item::before {
+  content: counter(step) ".";
+  position: absolute;
+  left: -1.5rem;
+  font-weight: var(--weight-bold);
+}
+
+.journey-steps .journey-steps-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--gap-2xs);
+}
+
+.journey-steps .journey-steps-head :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  font-size: var(--step-0);
+}
+
+.journey-steps .button {
+  margin: 0;
+}
+
+.journey-steps :is(p, .journey-steps-say p) {
+  margin: 0;
+}
+
+.journey-steps .journey-steps-path,
+.journey-steps .journey-steps-caps {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.journey-steps .journey-steps-path {
+  justify-self: start;
+}
+
+.journey-steps .journey-steps-caution {
+  padding: var(--gap-2xs) var(--gap-xs);
+  border-left: 3px solid var(--color-warning);
+  background: var(--color-warning-soft);
+  font-size: var(--step-n1);
+}

@@ -1,6 +1,6 @@
 import { readBlockConfig } from '../../scripts/aem.js';
 
-const RESERVED = ['view', 'keywords', 'excluded-keywords', 'searchbar'];
+const RESERVED = ['view', 'keywords', 'excluded-keywords', 'searchbar', 'source'];
 const VIEWS = ['cards', 'list'];
 const SEARCHBAR = ['enabled', 'disabled'];
 

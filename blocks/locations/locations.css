@@ -1,0 +1,476 @@
+.locations {
+  min-height: 40rem;
+}
+
+.locations[aria-busy='true'] {
+  border-radius: var(--radius-l);
+  background: var(--color-surface-sunken);
+}
+
+.locations .locations-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--gap-s);
+  padding-bottom: var(--gap-m);
+  border-bottom: var(--border);
+}
+
+.locations .locations-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-2xs);
+}
+
+.locations .locations-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.45em 1.1em;
+  border: var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-strong);
+  font: inherit;
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-1) var(--ease-out),
+    border-color var(--duration-1) var(--ease-out),
+    color var(--duration-1) var(--ease-out);
+}
+
+.locations .locations-chip:hover {
+  border-color: var(--color-text-strong);
+}
+
+.locations .locations-chip[aria-pressed='true'] {
+  border-color: var(--color-text-strong);
+  background: var(--color-text-strong);
+  color: var(--color-bg);
+}
+
+.locations .locations-fields {
+  display: grid;
+  flex: 1 1 100%;
+  gap: var(--gap-s);
+}
+
+.locations .locations-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-3xs);
+}
+
+.locations .locations-field label {
+  color: var(--color-text-strong);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+}
+
+.locations .locations-field :is(input, select) {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7em 1em;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-s);
+  background-color: var(--color-surface);
+  color: var(--color-text-strong);
+  font: inherit;
+  transition: border-color var(--duration-1) var(--ease-out);
+}
+
+.locations .locations-field select {
+  appearance: none;
+  padding-right: 2.5em;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentcolor 50%),
+    linear-gradient(135deg, currentcolor 50%, transparent 50%);
+  background-position: calc(100% - 1.3em) 55%, calc(100% - 1em) 55%;
+  background-size: 0.3em 0.3em;
+  background-repeat: no-repeat;
+}
+
+.locations .locations-field :is(input, select):hover {
+  border-color: var(--color-text-muted);
+}
+
+.locations .locations-field :is(input, select):focus-visible {
+  border-color: var(--color-focus);
+}
+
+.locations .locations-status {
+  margin: var(--gap-s) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.locations .locations-layout {
+  display: grid;
+  gap: var(--grid-gap);
+  margin-top: var(--gap-m);
+}
+
+/* static map art: grid paper, soft land mass, no external tiles */
+.locations .locations-map {
+  position: relative;
+  overflow: hidden;
+  min-height: 22rem;
+  border-radius: var(--radius-l);
+  background-color: var(--color-surface-sunken);
+  background-image:
+    radial-gradient(55% 60% at 45% 55%, color-mix(in srgb, var(--color-accent-soft) 70%, transparent), transparent 70%),
+    radial-gradient(30% 40% at 85% 30%, color-mix(in srgb, var(--color-secondary-soft) 80%, transparent), transparent 70%),
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: auto, auto, 48px 48px, 48px 48px;
+}
+
+.locations .locations-pin {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 3px solid var(--color-surface);
+  border-radius: 50% 50% 50% 0;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font: inherit;
+  font-size: var(--step-n2);
+  font-weight: var(--weight-black);
+  box-shadow: var(--shadow-2);
+  cursor: pointer;
+  transform: translate(-50%, -100%) rotate(-45deg);
+  transition: background-color var(--duration-1) var(--ease-out);
+}
+
+.locations .locations-pin span {
+  transform: rotate(45deg);
+}
+
+.locations .locations-pin:hover {
+  background: var(--color-accent-fill-hover);
+}
+
+.locations .locations-pin[aria-pressed='true'] {
+  z-index: 2;
+  background: var(--color-text-strong);
+  color: var(--color-bg);
+}
+
+.locations .locations-pin[hidden] {
+  display: none;
+}
+
+.locations .locations-aside {
+  display: grid;
+  align-content: start;
+  gap: var(--gap-s);
+  padding: var(--gap-xl);
+  border: var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+.locations .locations-aside > * {
+  margin: 0;
+}
+
+.locations .locations-aside :is(h2, h3) {
+  font-size: var(--step-2);
+}
+
+.locations .locations-list {
+  display: grid;
+  gap: var(--grid-gap);
+  margin: var(--gap-xl) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.locations .locations-item {
+  scroll-margin-top: calc(var(--chrome-h, 5rem) + var(--gap-m));
+}
+
+.locations .locations-item[hidden] {
+  display: none;
+}
+
+.locations .locations-card {
+  display: grid;
+  gap: var(--gap-2xs);
+  height: 100%;
+  padding: var(--gap-m);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+}
+
+.locations .locations-card > * {
+  margin: 0;
+}
+
+.locations .locations-card h3 {
+  font-size: var(--step-1);
+}
+
+.locations .locations-card address {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  font-style: normal;
+}
+
+.locations .locations-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-top: var(--gap-2xs);
+  color: var(--color-success);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-bold);
+}
+
+.locations .locations-open::before {
+  content: '';
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.locations .locations-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  padding: 0;
+  list-style: none;
+}
+
+.locations .locations-tags li {
+  padding: 0.2em 0.7em;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-semibold);
+}
+
+.locations .locations-cta {
+  margin-top: var(--gap-2xs);
+}
+
+.locations .locations-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+}
+
+.locations .locations-book::after {
+  content: '→';
+  color: var(--color-accent-text);
+  transition: transform var(--duration-2) var(--ease-out);
+}
+
+.locations .locations-book:hover {
+  color: var(--color-accent-text);
+}
+
+.locations .locations-book:hover::after {
+  transform: translateX(4px);
+}
+
+.locations .locations-empty {
+  margin-top: var(--gap-m);
+  padding: var(--gap-2xl);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-l);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.locations .locations-empty[hidden] {
+  display: none;
+}
+
+/* card art (ported compositions) */
+.locations .locations-art {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-m);
+  background: var(--art-ink);
+  isolation: isolate;
+}
+
+.locations .locations-art::before,
+.locations .locations-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.locations .locations-num {
+  position: absolute;
+  top: var(--gap-2xs);
+  left: var(--gap-2xs);
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: rgb(14 12 26 / 72%);
+  color: var(--stone-50);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-black);
+}
+
+.locations .art-rings {
+  background:
+    radial-gradient(70% 70% at 100% 0%, color-mix(in srgb, var(--art-aurora) 35%, transparent), transparent 70%),
+    var(--art-ink);
+}
+
+.locations .art-rings::before {
+  background: var(--art-flame);
+  mask-image:
+    repeating-radial-gradient(circle at 0 100%, transparent 0 26px, #000 26px 30px),
+    radial-gradient(circle at 0 100%, #000 0 72%, transparent 72.5%);
+  mask-composite: intersect;
+}
+
+.locations .art-rings::after {
+  background: radial-gradient(circle at 78% 26%, var(--art-volt) 0 6%, transparent 6.4%);
+}
+
+.locations .art-bands {
+  background: repeating-linear-gradient(90deg, var(--art-paper) 0 18%, var(--art-stone) 18% 24%);
+}
+
+.locations .art-bands::before {
+  background: linear-gradient(90deg, transparent 60%, var(--art-flame) 60% 78%, transparent 78%);
+  mask-image: linear-gradient(0deg, #000 0 72%, transparent 72%);
+}
+
+.locations .art-bands::after {
+  background: radial-gradient(circle at 30% 30%, var(--art-ink) 0 12%, transparent 12.4%);
+}
+
+.locations .art-horizon {
+  background: linear-gradient(180deg, var(--flame-100) 0%, var(--art-paper) 60%);
+}
+
+.locations .art-horizon::before {
+  background:
+    radial-gradient(120% 60% at 20% 100%, var(--art-ink) 0 50%, transparent 50.4%),
+    radial-gradient(circle at 72% 44%, var(--art-flame) 0 13%, transparent 13.4%);
+}
+
+.locations .art-horizon::after {
+  background: radial-gradient(90% 40% at 95% 100%, var(--flame-700) 0 50%, transparent 50.4%);
+}
+
+.locations .art-sun {
+  background: var(--gradient-vivid);
+}
+
+.locations .art-sun::before {
+  background:
+    radial-gradient(circle at 70% 92%, var(--stone-50) 0 34%, transparent 34.3%),
+    radial-gradient(circle at 22% 24%, rgb(255 255 255 / 30%) 0 7%, transparent 7.3%);
+}
+
+.locations .art-bloom {
+  background: var(--art-paper);
+}
+
+.locations .art-bloom::before {
+  background:
+    radial-gradient(circle at 0 0, var(--art-flame) 0 48%, transparent 48.4%),
+    radial-gradient(circle at 100% 100%, var(--art-ink) 0 48%, transparent 48.4%);
+}
+
+.locations .art-bloom::after {
+  background: radial-gradient(circle at 100% 0, var(--art-aurora) 0 30%, transparent 30.4%);
+}
+
+.locations .art-aurora::before {
+  background:
+    radial-gradient(60% 70% at 30% 110%, color-mix(in srgb, var(--art-aurora) 90%, transparent), transparent 70%),
+    radial-gradient(40% 50% at 85% 0%, color-mix(in srgb, var(--art-flame) 70%, transparent), transparent 70%);
+}
+
+.locations .art-aurora::after {
+  background: radial-gradient(circle at 62% 46%, var(--art-volt) 0 3.5%, transparent 3.8%);
+}
+
+.locations .art-dots {
+  background-color: var(--art-ink);
+  background-image: radial-gradient(circle, rgb(255 255 255 / 22%) 1.2px, transparent 1.6px);
+  background-size: 16px 16px;
+}
+
+.locations .art-dots::before {
+  inset: 22% 18% 22% 44%;
+  border-radius: var(--radius-m);
+  background: var(--art-flame);
+}
+
+.locations .art-dots::after {
+  inset: 46% 48% 14% 14%;
+  border-radius: 50%;
+  background: var(--stone-50);
+}
+
+.locations .art-split {
+  background: linear-gradient(135deg, var(--art-paper) 0 50%, var(--art-ink) 50%);
+}
+
+.locations .art-split::before {
+  background: radial-gradient(circle at 50% 50%, var(--art-flame) 0 22%, transparent 22.4%);
+}
+
+.locations .art-split::after {
+  background: radial-gradient(circle at 50% 50%, transparent 0 30%, var(--art-flame) 30% 30.8%, transparent 31.2%);
+}
+
+@media (width >= 600px) {
+  .locations .locations-fields {
+    flex: 0 1 auto;
+    grid-template-columns: minmax(12rem, 1fr) minmax(14rem, 1.4fr);
+  }
+
+  .locations .locations-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 900px) {
+  .locations .locations-layout:has(.locations-aside) {
+    grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+  }
+
+  .locations .locations-map {
+    min-height: 26rem;
+  }
+
+  .locations .locations-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locations .locations-chip,
+  .locations .locations-pin,
+  .locations .locations-book::after,
+  .locations .locations-field :is(input, select) {
+    transition: none;
+  }
+}

@@ -2,7 +2,7 @@ import { readBlockConfig } from '../../scripts/aem.js';
 import { didYouMean } from '../../scripts/preflight/utils.js';
 
 const MODES = ['dynamic', 'links'];
-const KEYS = ['mode', 'keywords', 'excluded-keywords'];
+const KEYS = ['mode', 'keywords', 'excluded-keywords', 'source'];
 
 export default function validate(source) {
   const config = readBlockConfig(source);

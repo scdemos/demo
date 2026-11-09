@@ -109,7 +109,73 @@ function decorateBento(block) {
 }
 
 /**
+ * Decorate "cards tiers" variant: one row per plan with an optional badge line
+ * above the heading (marks the featured plan), a bold price, text, list and button.
+ */
+function decorateTiers(block) {
+  const ul = createTag('ul');
+
+  [...block.children].forEach((row) => {
+    const body = row.firstElementChild || row;
+    body.className = 'cards-card-body';
+    const li = createTag('li', {}, createTag('article', {}, body));
+
+    const heading = body.querySelector('h2, h3, h4');
+    const badge = heading?.previousElementSibling;
+    if (badge?.tagName === 'P' && !badge.querySelector('a')) {
+      badge.classList.add('cards-card-badge');
+      li.classList.add('cards-card-featured', 'surface-ink');
+    }
+    const price = heading?.nextElementSibling;
+    if (price?.tagName === 'P' && price.firstElementChild?.tagName === 'STRONG') {
+      price.classList.add('cards-card-price');
+    }
+
+    ul.append(li);
+  });
+
+  block.replaceChildren(ul);
+}
+
+const isSvg = (src) => /\.svg(\?|$)/i.test(new URL(src, window.location.href).pathname);
+
+/**
+ * Enhance a decorated default card: plain links with one stretched primary link,
+ * eyebrow line before the heading, and icon badge (rendered as a CSS mask).
+ */
+function enhanceCard(li) {
+  const body = li.querySelector('.cards-card-body');
+  if (!body) return;
+
+  body.querySelectorAll('.button-container').forEach((p) => p.classList.remove('button-container'));
+  body.querySelectorAll('a.button').forEach((a) => a.classList.remove('button', 'primary', 'secondary'));
+  const primary = body.querySelector(':is(h2, h3, h4) a[href]') || li.querySelector('a[href]');
+  if (primary) {
+    primary.classList.add('cards-card-primary');
+    li.classList.add('cards-card-linked');
+  }
+
+  const icon = body.querySelector('.icon');
+  if (icon) {
+    const holder = icon.closest('p') || icon;
+    const badge = createTag('span', { class: 'cards-card-icon', 'aria-hidden': 'true' });
+    const img = icon.querySelector('img');
+    if (img) badge.style.setProperty('--icon', `url("${img.getAttribute('src')}")`);
+    body.prepend(badge);
+    if (holder !== icon && !holder.textContent.trim()) holder.remove();
+    else icon.remove();
+  }
+
+  const heading = body.querySelector('h2, h3, h4');
+  const prev = heading?.previousElementSibling;
+  if (prev?.tagName === 'P' && !prev.querySelector('a, picture') && prev.textContent.trim().length <= 40) {
+    prev.classList.add('cards-card-eyebrow');
+  }
+}
+
+/**
  * Decorate regular cards (authored rows with image + body).
+ * Variants: tiles, stories, features, compact, cover.
  */
 function decorateDefault(block) {
   const ul = createTag('ul');
@@ -150,6 +216,9 @@ function decorateDefault(block) {
       linkEl.classList.remove('button');
     }
 
+    enhanceCard(li);
+    if (!li.querySelector('.cards-card-image')) li.classList.add('cards-card-text-only');
+
     const article = createTag('article');
     while (li.firstChild) article.append(li.firstChild);
     li.append(article);
@@ -157,11 +226,18 @@ function decorateDefault(block) {
     ul.append(li);
   });
 
-  ul.querySelectorAll('picture > img').forEach((img) => {
+  if (block.classList.contains('stories')) ul.firstElementChild?.classList.add('cards-card-lead');
+
+  ul.querySelectorAll('picture > img').forEach((img, idx) => {
     const picture = img.closest('picture');
-    if (picture) {
-      picture.replaceWith(createOptimizedPicture(img.src, img.alt || '', false, [{ width: '750' }]));
+    if (!picture) return;
+    if (isSvg(img.src)) {
+      img.loading = 'lazy';
+      return;
     }
+    const wide = (block.classList.contains('stories') && idx === 0) || block.classList.contains('cover');
+    const width = wide ? '1200' : '750';
+    picture.replaceWith(createOptimizedPicture(img.src, img.alt || '', false, [{ width }]));
   });
 
   block.replaceChildren(ul);
@@ -170,6 +246,8 @@ function decorateDefault(block) {
 export default async function decorate(block) {
   if (block.classList.contains('links')) {
     await decorateLinks(block);
+  } else if (block.classList.contains('tiers')) {
+    decorateTiers(block);
   } else if (block.classList.contains('bento')) {
     decorateBento(block);
   } else {

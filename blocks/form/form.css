@@ -1,273 +1,244 @@
-/* Contact-style form layout (inspired by contact-us pattern) */
-main .form-container {
-  max-width: min(var(--grid-container-width), 860px);
-  width: 100%;
-  margin: 0 auto;
-  padding: var(--space-l) var(--content-padding-inline);
-  box-sizing: border-box;
-}
-
-main .form-container .form-wrapper {
-  margin-top: var(--space-m);
-}
-
-.form form,
-main .form form {
+.form form {
   display: grid;
-  gap: var(--space-s);
-  border: var(--border-heritage);
-  border-radius: var(--border-radius-heritage);
-  padding: var(--space-l);
-  background: light-dark(var(--color-parchment), var(--color-card-dark));
-  color: inherit;
+  gap: var(--gap-m);
   min-width: 0;
   max-width: 100%;
+  padding: var(--gap-l);
+  border: var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
-.form [aria-hidden='true'] {
+@media (width >= 600px) {
+  .form form {
+    padding: var(--gap-xl);
+  }
+}
+
+.form .form-field[hidden] {
   display: none;
 }
 
-.form input,
-.form textarea,
-.form select,
-.form button {
-  box-sizing: border-box;
-  display: block;
-  max-width: 100%;
-  font: inherit;
-}
-
-.form input,
-.form textarea,
-.form select {
-  scroll-margin: 1em;
-  width: 100%;
-  min-width: 0;
-  border: 1px solid light-dark(rgb(26 26 26 / 20%), rgb(245 242 237 / 20%));
-  border-radius: 8px;
-  padding: 12px 14px;
-  background: light-dark(var(--color-light), rgb(6 13 13 / 60%));
-  color: inherit;
-  font-size: var(--body-font-size-s);
-  transition: border-color 0.25s, box-shadow 0.25s;
-}
-
-.form textarea {
-  resize: vertical;
-}
-
 .form fieldset {
-  appearance: none;
+  min-width: 0;
   margin: 0;
-  border: 0;
   padding: 0;
-  background-color: transparent;
-}
-
-.form input:hover,
-.form textarea:hover,
-.form select:hover {
-  border-color: light-dark(var(--color-rust), var(--color-rust-bright));
-}
-
-.form input:focus,
-.form textarea:focus,
-.form select:focus {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 2px;
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 4px rgb(197 160 89 / 12%);
-}
-
-.form input:disabled,
-.form textarea:disabled,
-.form select:disabled,
-.form input[readonly],
-.form textarea[readonly],
-.form select[readonly] {
-  opacity: 0.6;
-  background: transparent;
-  color: inherit;
-}
-
-.form input[type='checkbox'],
-.form input[type='radio'] {
-  width: unset;
+  border: 0;
 }
 
 .form .form-field {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2xs);
   min-width: 0;
 }
 
 .form .form-field > label:first-child,
 .form .form-field > legend {
-  font-size: var(--body-font-size-s);
-  font-weight: 600;
+  padding: 0;
+  color: var(--color-text-strong);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
 }
 
 .form label[data-required]::after,
 .form legend[data-required]::after {
-  content: '*';
-  margin-left: 0.25ch;
-  color: inherit;
+  content: ' *';
+  color: var(--color-accent-text);
 }
 
-.form .form-field + .form-field {
-  margin-top: 0;
+.form input:not([type='checkbox'], [type='radio']),
+.form textarea,
+.form select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0.7em 1em;
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-s);
+  background-color: var(--color-surface);
+  color: var(--color-text-strong);
+  font: inherit;
+  scroll-margin: var(--gap-xl);
+  transition: border-color var(--duration-1) var(--ease-out);
 }
 
-.form .form-field.checkbox-field label,
-.form .form-field.radio-field label {
-  position: relative;
-  padding-left: calc(1em + 1ch);
-  font-size: var(--body-font-size-s);
-  line-height: 44px;
+.form select {
+  appearance: none;
+  padding-right: 2.5em;
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentcolor 50%),
+    linear-gradient(135deg, currentcolor 50%, transparent 50%);
+  background-position: calc(100% - 1.3em) 55%, calc(100% - 1em) 55%;
+  background-size: 0.3em 0.3em;
+  background-repeat: no-repeat;
+}
+
+.form textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.form input:hover,
+.form textarea:hover,
+.form select:hover {
+  border-color: var(--color-text-muted);
+}
+
+.form input:focus-visible,
+.form textarea:focus-visible,
+.form select:focus-visible {
+  border-color: var(--color-focus);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.form input:disabled,
+.form textarea:disabled,
+.form select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form [aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+/* checkbox and radio */
+.form .checkbox-field,
+.form .radio-field {
+  gap: var(--gap-xs);
+}
+
+.form .form-field.checkbox-field > label,
+.form .form-field.radio-field > label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-xs);
+  color: var(--color-text);
+  font-size: var(--step-n1);
   cursor: pointer;
 }
 
-.form .form-field.checkbox-field label input,
-.form .form-field.radio-field label input,
-.form .form-field.toggle-field label input {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  margin: 0;
-  width: 1em;
-  height: 1em;
+.form .checkbox-field input,
+.form .radio-field input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.15em 0 0;
+  accent-color: var(--color-accent);
   cursor: pointer;
 }
 
-@media (width >= 600px) {
-  .form form,
-  main .form form {
-    padding: var(--space-xl);
-  }
-
-
-  .form .form-field.checkbox-field,
-  .form .form-field.radio-field {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25ch 1em;
-  }
+.form .checkbox-field label > span,
+.form .radio-field label > span {
+  display: none;
 }
 
-/* Toggle field */
+.form .checkbox-field input[aria-invalid='true'],
+.form .radio-field input[aria-invalid='true'] {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
+}
+
+/* toggle */
 .form .form-field.toggle-field label {
   position: relative;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 1ch;
+  gap: var(--gap-xs);
   min-height: 44px;
-}
-
-.form .form-field.toggle-field label input {
-  width: 2em;
-  opacity: 0;
-  border-radius: 50%;
-}
-
-.form .form-field.toggle-field label span {
-  position: relative;
-  width: calc(2em + 2px);
-  height: calc(1em + 2px);
-  border-radius: 1em;
-  border: 1px solid currentcolor;
-  background: currentcolor;
-  opacity: 0.4;
-  transition: opacity 0.2s;
+  font-size: var(--step-n1);
   cursor: pointer;
 }
 
-.form .form-field.toggle-field label span::after {
+.form .toggle-field label input {
+  position: absolute;
+  inset: 50% auto auto 0;
+  width: 2.5rem;
+  height: 1.5rem;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.form .toggle-field label span {
+  position: relative;
+  width: 2.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
+  transition: background-color var(--duration-1) var(--ease-out);
+}
+
+.form .toggle-field label span::after {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  width: 1em;
-  height: 1em;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
   border-radius: 50%;
-  background: inherit;
-  transition: left 0.2s;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+  transition: transform var(--duration-1) var(--ease-out);
 }
 
-.form .form-field.toggle-field label input:checked + span {
-  opacity: 1;
+.form .toggle-field input:checked + span {
+  background: var(--color-accent-fill);
 }
 
-.form .form-field.toggle-field label input:checked + span::after {
-  left: calc(100% - 1em);
+.form .toggle-field input:checked + span::after {
+  transform: translateX(1rem);
+}
+
+.form .toggle-field input:focus-visible + span {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .form .field-help-text {
-  margin-top: 0.2em;
-  color: inherit;
-  opacity: 0.8;
-  font-size: var(--body-font-size-xs);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
 }
 
-.form .form-status {
-  margin: var(--space-s) 0 0;
-  font-size: var(--body-font-size-s);
-  color: inherit;
-  opacity: 0.9;
-}
-
-/* Buttons – primary submit, secondary reset */
+/* buttons and status */
 .form .button-wrapper {
-  margin-top: var(--space-s);
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-s);
+  gap: var(--gap-xs);
+  margin-top: var(--gap-xs);
 }
 
-.form .button-wrapper button {
-  width: auto;
-  min-width: fit-content;
-}
-
-.form .button-wrapper button.button {
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.form .button-wrapper button.button:not(.secondary) {
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
-  background: light-dark(var(--color-rust), var(--color-rust-bright));
-  color: var(--color-parchment);
-}
-
-.form .button-wrapper button.button:disabled,
-.form .button-wrapper button.button:hover:disabled {
+.form .button-wrapper button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.form .button-wrapper button.button:not(.secondary):hover {
-  background: var(--color-gold);
-  border-color: var(--color-gold);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px light-dark(rgb(161 79 43 / 25%), rgb(197 160 89 / 25%));
+.form .form-status {
+  margin: 0;
+  padding: var(--gap-m);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
 }
 
-.form .button-wrapper button.button.secondary {
-  border: 1px solid light-dark(var(--color-rust), var(--color-rust-bright));
-  background: transparent;
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+.form .form-status:empty {
+  display: none;
 }
 
-.form .button-wrapper button.button.secondary:hover {
-  border-color: var(--color-gold);
-  color: var(--color-gold);
-  transform: translateY(-2px);
+.form .form-status[data-state='success'] {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.form .form-status[data-state='error'] {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
 }

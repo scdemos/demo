@@ -1,0 +1,20 @@
+body.journey main .section > div {
+  max-width: var(--container-prose, 52rem);
+}
+
+body.journey main h1 {
+  margin-top: var(--gap-xs);
+  font-size: var(--step-4);
+}
+
+body.journey main h2 {
+  margin-top: var(--gap-xl);
+  padding-top: var(--gap-m);
+  border-top: var(--border);
+  font-size: var(--step-2);
+}
+
+body.journey main ul {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
