@@ -43,6 +43,13 @@ Announce the derived values in **one line**, then continue without waiting.
 - `references/demo-manifest.json`: the blocks, variants, section styles, brand slots and
   features the base provides. **Read it before mapping anything.**
 - `scripts/preflight.mjs`: checks the customer site, the destination repo, Code Sync and DA.
+- `scripts/capture.mjs` + `scripts/compare.mjs`: fidelity gate. They capture the original
+  and the demo (screenshots plus a structural inventory per section) and produce
+  `fidelity.html` with PASS/FAIL per page.
+- `scripts/extract-outline.js`: in-page outline extractor for the original pages (no
+  content dropped).
+- `references/signoff-checklist.md`: the mandatory checklist before handoff. The SC
+  maintains this list.
 
 ## Pipeline
 
@@ -350,6 +357,34 @@ Commit and push. Code Sync deploys it to aem.page.
   Expect Performance 100. SEO is low only because of noindex (intentional). Contrast
   failures on `.hlx-preview-overlay` are preview-only and can be ignored. Best Practices
   is lowered by the base martech cookies.
+
+### 9b. Block library and authoring kit
+Create or update `docs/library` in the customer DA site, using `scdemos/demo/docs/library` as
+the reference:
+- `blocks.json` sheet `data` with columns `name`, `path`, `focal-point`. Add one library page
+  per block under `docs/library/blocks/<block>.html` that shows **every variant** used on
+  the site, with customer content and a `library-metadata` table (name, description).
+- `blocks.json` sheet `options` with section-metadata `style` values (every section style
+  the site uses) and `background` swatches in the customer palette.
+- `icons.json` (key, icon URL), `templates.json` (key, value = template doc URL),
+  `tagging.json` / `tagging-taxonomy.json` (customer taxonomy).
+- Register the library in the DA site config, then open DA and confirm the Library panel
+  lists blocks, icons, templates and tags.
+
+### 9c. Sign-off checklist (gate before handoff)
+Work through **`references/signoff-checklist.md`** item by item: chrome, every page,
+theming (including dark-OS readability), block library, demo features, engineering
+quality. Run the fidelity tooling:
+```bash
+node .skills/customer-demo/scripts/capture.mjs --base <original origin+path> --pages "/,/x,..." --out fid/orig --headed
+node .skills/customer-demo/scripts/capture.mjs --base https://main--<slug>--scdemos.aem.page --pages "/,/x,..." --out fid/demo --scheme dark
+node .skills/customer-demo/scripts/compare.mjs --original fid/orig --demo fid/demo --out fid/fidelity.html
+```
+`compare.mjs` exits non-zero until every page passes: side rail, header items, footer links,
+section count, headings, forms and inputs, buttons, media, color scheme, readability,
+health. Loop back to phase 5 for each FAIL. A closest-possible alternative is the **last
+resort** and must be listed in the report with its reason. Copy the completed checklist
+into the report.
 
 ### 10. Handoff (the only long message to the SC)
 
