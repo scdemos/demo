@@ -18,15 +18,16 @@ Turn this base site into a customer-branded demo from a single URL.
 - Copilot: `/customer-demo https://www.customer.com/`
 - Claude Code: `/customer-demo https://www.customer.com/`
 
-That's the only input. The agent then:
-1. derives the repo and DA site from the URL (e.g. `scdemos/<customer>`) and creates the GitHub repo
-2. seeds the code and content from this base. Code Sync and the Config Service connect the repo to DA automatically, and if Code Sync isn't installed for the repo, the agent opens [the install page](https://github.com/apps/aem-code-sync/installations/new) and waits
-3. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
-4. maps the customer pages onto the existing blocks and variants
-5. imports the content into DA
-6. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
-7. QA-checks against the original site
-8. hands back the preview, DA and repo links
+That's the only input, plus one click. The agent then:
+1. derives `<slug>` from the URL and creates `github.com/scdemos/<slug>`, seeded with this base's code. Every demo stays in the `scdemos` space for tracking.
+2. opens [the AEM Code Sync install page](https://github.com/apps/aem-code-sync/installations/new). **Your one click:** choose scdemos → Only select repositories → add `<slug>` → Install/Save. The Config Service then connects the repo to DA, with no `fstab.yaml`.
+3. creates `da.live/#/scdemos/<slug>` through the DA MCP and copies the base content into it
+4. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
+5. maps the customer pages onto the existing blocks and variants
+6. imports the content into DA
+7. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
+8. QA-checks against the original site
+9. hands back the preview, DA and repo links
 
 **Where things live:**
 - Orchestrator skill: [`.skills/customer-demo/SKILL.md`](.skills/customer-demo/SKILL.md)

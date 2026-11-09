@@ -7,8 +7,9 @@ description: Turn the scdemos/demo base site into a fully baked, customer-brande
 
 You turn **one customer URL** into a working, customer-relevant demo site built on the
 `scdemos/demo` base. The solution consultant (SC) should have to do **one thing**: run
-`/customer-demo <url>`. Everything after that is your job: repo, DA, Code Sync, brand,
-content, features and QA. Do not stop to ask questions that you can answer yourself.
+`/customer-demo <url>`, plus one click to install AEM Code Sync on the new repo.
+Everything else is your job: repo, DA, brand, content, features and QA. Do not stop to ask
+questions that you can answer yourself.
 
 The base already ships the block library, section styles, experimentation/audiences/campaigns,
 martech, dark mode, sidekick plugins, CloneIt, the demo walkthrough, and preflight checks.
@@ -17,14 +18,18 @@ martech, dark mode, sidekick plugins, CloneIt, the demo walkthrough, and preflig
 ## Inputs: the URL is the only one
 
 The SC provides **only the customer URL**. Derive everything else yourself and do **not**
-ask, unless the SC passed an override in the prompt (e.g. `repo=…`, `da=…`, `org=…`):
+ask, unless the SC passed a `slug=` override in the prompt.
+
+**Everything lives in the `scdemos` space**, next to the base (`scdemos/demo`). This keeps
+every customer demo in one place for tracking, observability and accounting. Never create
+a demo in a personal account or in another org.
 
 | Value | How to derive it | Example (manulifeim.com/institutional/tw/en) |
 |---|---|---|
-| `slug` | Registrable domain without TLD or `www`, lowercase `[a-z0-9]`, max 20 chars. Add a short path hint when the URL is a sub-site. If the repo already exists, append `2`, `3`, … | `manulifeim` |
-| GitHub owner | The `org=` override, otherwise **`scdemos`**. Use the SC's own login (`get_me`) only if they can't create repos in `scdemos`. | `scdemos` |
-| Repo | `<owner>/<slug>` | `scdemos/manulifeim` |
-| DA `org/site` | `<owner>/<slug>`. The DA org matches the GitHub owner, so aem.page and DA line up. | `scdemos/manulifeim` |
+| `slug` | Registrable domain without TLD or `www`, lowercase `[a-z0-9]`, max 20 chars. Add a short path hint when the URL is a sub-site. If `scdemos/<slug>` already exists in GitHub **or** DA, append `2`, `3`, … | `manulifeim` |
+| GitHub repo | Always `scdemos/<slug>` | `github.com/scdemos/manulifeim` |
+| DA site | Always `scdemos/<slug>`, the same name as the repo, so the Config Service maps code → content automatically | `da.live/#/scdemos/manulifeim` |
+| Preview | `https://main--<slug>--scdemos.aem.page/` | |
 | Page scope | Home + top nav pages, one per template, **max 8** | |
 | Locale | From the URL path | `en` |
 | Customer name | From `og:site_name`, otherwise the `<title>` brand, otherwise the domain | `Manulife Investment Management` |
@@ -52,69 +57,90 @@ Do these checks silently, and only report failures:
   `git ls-remote https://github.com/scdemos/demo`.
 - **EMA MCP**: optional. It is only used as a scraping fallback.
 
-### 1. Provision the destination (fully automatic)
+### 1. Provision in scdemos (repo → Code Sync → DA → content)
 
-1. **Create the repo** with GitHub MCP `create_repository`:
-   - name `<slug>`, organization `<owner>` (omit it for a personal account), `private: false`
-     (Code Sync needs at least read access), `autoInit: false`
-   - description: `<Customer> demo built from scdemos/demo`
-   - If the name is taken, try the next suffix. Do not reuse an existing non-empty repo
-     unless the SC passed `repo=`.
-2. **Seed the code**. Run these from a temp dir. Never run them in the SC's working copy:
-   ```bash
-   git clone --depth 1 https://github.com/scdemos/demo.git <tmp>/<slug>
-   cd <tmp>/<slug> && rm -rf .git && git init -b main
-   ```
-   Then make these changes before the first commit:
-   - **Do not add `fstab.yaml`.** The base uses the Config Service. Once AEM Code Sync is
-     installed on the repo, the site config is created automatically, with content
-     pointing to `https://content.da.live/<daOrg>/<daSite>/`. Because the DA org/site
-     equals `<owner>/<slug>`, nothing has to be configured by hand.
-   - Set `"project"` in `tools/sidekick/config.json` to `"<Customer> Demo"`.
-   - In `README.md`, replace the Environments URLs with
-     `main--<slug>--<owner>.aem.page/.live` and `da.live/#/<daOrg>/<daSite>`.
+Do these steps in this order. Step 1c is the **only planned SC action** in the whole run.
 
-   Commit with `chore: seed from scdemos/demo`, then
-   `git remote add origin https://github.com/<owner>/<slug>.git && git push -u origin main`.
-3. **Code Sync**: the GitHub API cannot install GitHub Apps, so run this detect-and-poll loop:
+#### 1a. Create the GitHub repo
+- Call GitHub MCP `create_repository` with:
+  - `organization: "scdemos"`, `name: "<slug>"`
+  - `description: "<Customer> demo built from scdemos/demo (source: <url>)"`
+  - `private: false`, `autoInit: false`
+- If the call fails with 403, the SC lacks repo-create rights in `scdemos`. That is a ⛔
+  blocker: tell them to ask an `scdemos` owner for access.
+
+#### 1b. Seed the code
+Run this from a temp dir, never in the SC's working copy:
+```bash
+git clone --depth 1 https://github.com/scdemos/demo.git <tmp>/<slug>
+cd <tmp>/<slug> && rm -rf .git && git init -b main
+```
+Before the first commit:
+- **Do not add `fstab.yaml`.** Once Code Sync is installed, the Config Service creates the
+  site config and maps it to `https://content.da.live/scdemos/<slug>/` automatically.
+- Set `"project"` in `tools/sidekick/config.json` to `"<Customer> Demo"`.
+- In `README.md`, set the Environments section to `main--<slug>--scdemos.aem.page/.live`
+  and `da.live/#/scdemos/<slug>`.
+
+Then commit and push:
+```bash
+git add -A && git commit -m "chore: seed from scdemos/demo"
+git remote add origin https://github.com/scdemos/<slug>.git && git push -u origin main
+```
+
+#### 1c. Code Sync: the one SC action
+The app can't be installed through an API, and `scdemos` installs it per repository, so
+this always needs the SC:
+1. Open **https://github.com/apps/aem-code-sync/installations/new** for the SC with
+   `openBrowserPage`. If that tool isn't available, print the link.
+2. Tell the SC, in one short message:
+   > Install AEM Code Sync on the new repo: choose **scdemos** → **Only select repositories**
+   > → add **`<slug>`** → **Install** (or **Save** if scdemos already has the app). I'll
+   > keep going and pick it up automatically.
+3. Start the background poll. Don't block on it; use async mode:
    ```bash
-   node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo <owner>/<slug> --da <daOrg>/<daSite> --wait 600
+   node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo scdemos/<slug> --da scdemos/<slug> --wait 900
    ```
-   - If the org already has AEM Code Sync on **All repositories**, the check passes within
-     seconds and the SC sees nothing. The Config Service creates the site → DA mapping
-     automatically.
-   - If it doesn't pass, the script prints `installUrl`. Open it for the SC with
-     `openBrowserPage`, or print it if that tool isn't available:
-     **https://github.com/apps/aem-code-sync/installations/new**. Tell them in one line:
-     "Select `<owner>` → add `<slug>` → Install." The script keeps polling for up to 10 min.
-     **Continue with phases 2–5 while it polls.** Code is only needed on aem.page from
-     phase 6 onward.
-   - Once Code Sync passes, also trigger one code sync by pushing an empty commit, if
-     `aem.page/scripts/aem.js` still returns 404.
-4. **Access**: the demo uses customer assets, so it must not be indexed. The base
-   `robots.txt` / `.aem.page` are already non-indexed. Note in the handoff that the
-   preview URL is unlisted. If the SC wants authentication, link
-   https://www.aem.live/docs/authentication-setup-site.
+4. **Keep working on 1d, 2, 3, 4 and 5 while it polls.** Only phase 6 (build/verify on
+   aem.page) needs Code Sync.
+5. When the poll reports `code-sync ✅`, run `git commit --allow-empty -m "chore: trigger code sync" && git push`
+   if `aem.page/scripts/aem.js` is still 404.
+6. If the poll times out, re-show the link once and wait. This is a ⛔ blocker for phase 6.
+
+#### 1d. Create the DA site folder
+Use the DA MCP. Create the folder by writing its first document:
+- `da_create_source(org: "scdemos", repo: "<slug>", path: "index.html", content: <minimal page with an h1 of "<Customer> Demo">)`
+- Confirm with `da_list_sources(org: "scdemos", repo: "<slug>")`. The folder is then
+  visible at `https://da.live/#/scdemos/<slug>`.
+- If DA returns 401/403, that is a ⛔ blocker: the SC needs write access to the `scdemos`
+  DA org.
+
+#### Access note
+The demo uses customer assets. `.aem.page` is not indexed, so in the handoff call the
+preview URL unlisted, not protected. If the SC wants authentication, link
+https://www.aem.live/docs/authentication-setup-site.
 
 ### 2. Seed DA content from the base
 
-- Copy `scdemos/demo` → `<daOrg>/<daSite>`. List the files recursively with
-  `da_list_sources`, then call `da_copy_content` for each file.
+- Copy `scdemos/demo` → `scdemos/<slug>`. List the files recursively with
+  `da_list_sources`, then call `da_copy_content` for each file. Overwrite the
+  placeholder `index.html` from step 1d.
   - Skip `drafts/`, `demo-docs/` and locale folders.
   - Include `nav`, `footer`, `metadata`, `placeholders`, the experiment/campaign pages and
     the sample indexes. Later phases overwrite them; until then they keep every base
     feature working.
-- Run `da_preview_content` on `/`, `/nav` and `/footer` so the site renders right away.
+- Once Code Sync is ✅ (the site config exists), run `da_preview_content` on `/`, `/nav`
+  and `/footer` so the site renders. Until then, queue the preview.
 
-### 0→2 failure policy
+### Failure policy (phases 0–2)
 
-The only things that justify talking to the SC before the handoff:
-- `create_repository` is forbidden in every candidate owner.
-- DA returns 401/403 for `<daOrg>`.
-- Code Sync is still missing after the 10-minute poll.
+Talk to the SC before the handoff only for:
+- the Code Sync install (always, step 1c)
+- `create_repository` returning 403 in `scdemos`
+- DA returning 401/403 for `scdemos/<slug>`
+- the Code Sync poll timing out
 
-In each of these cases, send **one** message with the exact link or action needed, then
-resume as soon as it's fixed.
+Each time, send **one** message with the exact link or action, then resume automatically.
 
 ### 3. Discover
 
@@ -206,7 +232,7 @@ Customize every feature so it uses the customer's own content:
 ### 9. QA loop (maximum 3 passes per page)
 
 For each page:
-- Take Playwright screenshots of the original and of `https://main--<repo>--<owner>.aem.page/<path>`,
+- Take Playwright screenshots of the original and of `https://main--<slug>--scdemos.aem.page/<path>`,
   at 1440 and 390 px.
 - List the top 5 visual differences (spacing, type scale, colors, section order, missing
   content). Fix them through tokens or variants first, then content.
@@ -222,8 +248,8 @@ Report, in this order:
 - The page list, each with a ✅ or ⚠️ fidelity note.
 - The features baked in, and where to show them.
 - Substitutions made: fonts, mocked data, skipped interactions.
-- Manual follow-ups, which should be few: Code Sync install (only if the poll timed
-  out), site access, and any brand sign-off.
+- Manual follow-ups, which should be few: site access, any brand sign-off, and Code Sync
+  only if it is still pending.
 - The demo walkthrough link.
 
 ## Guardrails

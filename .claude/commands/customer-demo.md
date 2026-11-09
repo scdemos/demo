@@ -8,6 +8,6 @@ Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to create a cus
 Customer URL: $ARGUMENTS
 
 Follow the skill end-to-end:
-- Derive the destination repo and DA site from the URL. Do not ask for them.
+- Derive scdemos/<slug> (GitHub repo + DA site) from the URL. Do not ask for them.
 - Run the pipeline from preflight to handoff without further questions.
-- Pause only if AEM Code Sync is still not installed after polling.
+- Open the AEM Code Sync install page for the new scdemos repo (the one SC click), then keep going while it polls.
