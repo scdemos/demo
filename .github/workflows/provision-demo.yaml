@@ -80,29 +80,7 @@ jobs:
           slug: ${{ steps.req.outputs.slug }}
           source: ${{ steps.req.outputs.source }}
 
-      - name: Checkout base
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ vars.DEMO_BASE_REF || 'main' }}
-          fetch-depth: 1
-          path: base
-
-      - name: Seed code
-        working-directory: base
-        env:
-          SLUG: ${{ steps.req.outputs.slug }}
-          OWNER: ${{ github.repository_owner }}
-          TOKEN: ${{ secrets.DEMO_PROVISION_TOKEN }}
-        run: |
-          rm -rf .git .github/workflows/provision-demo.yaml .github/ISSUE_TEMPLATE/new-demo.yml
-          git init -q -b main
-          git config user.name "scdemos-provisioner"
-          git config user.email "scdemos-provisioner@users.noreply.github.com"
-          git add -A
-          git commit -q -m "chore: seed from ${GITHUB_REPOSITORY}@${{ vars.DEMO_BASE_REF || 'main' }}"
-          git push -q "https://x-access-token:${TOKEN}@github.com/${OWNER}/${SLUG}.git" main
-
-      - name: Add to AEM Code Sync + grant requester access
+      - name: Add to AEM Code Sync (before seeding, so the first push syncs everything) + grant access
         id: finish
         uses: actions/github-script@v7
         with:
@@ -132,6 +110,28 @@ jobs:
         env:
           slug: ${{ steps.req.outputs.slug }}
           requester: ${{ steps.req.outputs.requester }}
+
+      - name: Checkout base
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ vars.DEMO_BASE_REF || 'main' }}
+          fetch-depth: 1
+          path: base
+
+      - name: Seed code
+        working-directory: base
+        env:
+          SLUG: ${{ steps.req.outputs.slug }}
+          OWNER: ${{ github.repository_owner }}
+          TOKEN: ${{ secrets.DEMO_PROVISION_TOKEN }}
+        run: |
+          rm -rf .git .github/workflows/provision-demo.yaml .github/ISSUE_TEMPLATE/new-demo.yml
+          git init -q -b main
+          git config user.name "scdemos-provisioner"
+          git config user.email "scdemos-provisioner@users.noreply.github.com"
+          git add -A
+          git commit -q -m "chore: seed from ${GITHUB_REPOSITORY}@${{ vars.DEMO_BASE_REF || 'main' }}"
+          git push -q "https://x-access-token:${TOKEN}@github.com/${OWNER}/${SLUG}.git" main
 
       - name: Report
         if: always() && steps.req.outputs.slug

@@ -77,7 +77,8 @@ Each request is a GitHub issue, so the issue list is the audit log for every dem
   - title: `new-demo: <slug>`
   - body: `<customer url>` on the first line, then `Customer: <Customer name>`
   - labels: `["demo-request"]`
-- Do **1d, 2, 3 and 4** while you wait. None of them need the repo.
+- Do **1d, 2 and 3** while you wait. None of them need the repo. Phase 4 (brand) starts in
+  the local clone from 1c.
 
 #### 1b. Wait for provisioning
 - Every ~20 s, read the issue comments with `issue_read` (method `get_comments`). Stop after 10 min.
@@ -96,22 +97,46 @@ Each request is a GitHub issue, so the issue list is the audit log for every dem
   node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo scdemos/<slug> --da scdemos/<slug> --wait 900
   ```
 
-#### 1c. Personalize the code
-After provisioning, the SC has `maintain` access. Clone into a temp dir, never into the
-SC's working copy:
+#### 1c. Clone locally and start the dev server (the SC watches here)
+As soon as the repo exists, clone it **next to the SC's workspace** so they can see and
+test the work. Never use a hidden temp dir.
 ```bash
-git clone https://github.com/scdemos/<slug>.git <tmp>/<slug>
+git clone https://github.com/scdemos/<slug>.git <workspace-parent>/<slug>
+cd <workspace-parent>/<slug> && npx -y @adobe/aem-cli up --no-open --forward-browser-logs   # async, keep it running
 ```
-In the clone:
-- **Do not add `fstab.yaml`.** Code Sync and the Config Service map the repo to
-  `https://content.da.live/scdemos/<slug>/` automatically.
-- Set `"project"` in `tools/sidekick/config.json` to `"<Customer> Demo"`.
-- In `README.md`, set the Environments section to `main--<slug>--scdemos.aem.page/.live`
-  and `da.live/#/scdemos/<slug>`.
+- Tell the SC in one line: "Watch it build at http://localhost:3000. Code is
+  `<workspace-parent>/<slug>`."
+- `aem up` serves **local code** with content proxied from
+  `main--<slug>--scdemos.aem.page`. Every code change in phases 4–6 shows up live at
+  localhost before it is pushed.
+- Personalize:
+  - **Do not add `fstab.yaml`.** Code Sync creates the site config automatically, with
+    content at `https://content.da.live/scdemos/<slug>/`. Verified: the config appears
+    within seconds of the install.
+  - Set `"project"` in `tools/sidekick/config.json`.
+  - Set the README Environments section to the `<slug>` URLs.
+- Commit and push with the SC's git. If no git credentials are available, use GitHub MCP
+  `push_files`.
 
-Commit with `chore: personalize for <Customer>`, then push. If no local git credentials are
-available, use GitHub MCP `push_files` instead. This and every later code change go to the
-customer repo.
+#### 1c-bis. Make sure the whole code bus is synced
+Code Sync only syncs files changed by pushes **after** the install. A repo created from
+the template **before** the install has an unsynced initial commit: aem.page then serves
+your later CSS edits, but `scripts/*.js` and `blocks/*` return 404 (`x-error: [static:
+content] S3: Not Found`). Check:
+```bash
+curl -s -o /dev/null -w "%{http_code}" "https://main--<slug>--scdemos.aem.page/scripts/aem.js?cb=1"
+```
+If it returns 404, trigger a full code sync: `POST https://admin.hlx.page/code/scdemos/<slug>/main/*`.
+This needs an authenticated admin/develop role. Run it from a browser that is signed in
+at `https://admin.hlx.page/login/scdemos/<slug>/main`, or through the provisioning
+workflow's token. Provisioning through the issue workflow avoids this, because the bot
+adds the repo to Code Sync **before** pushing.
+
+#### Site roles
+The Code Sync installer becomes the only `admin` on the new site config. Add the SC's
+Adobe email and `*@adobe.com` to `author`/`publish`, through the provisioning workflow or
+the admin config API. Otherwise DA preview works, but publish and admin actions may be
+denied.
 
 #### 1d. Create the DA site folder
 Use the DA MCP. Create the folder by writing its first document:
