@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "da": {
+      "type": "http",
+      "url": "https://mcp.adobeaemcloud.com/adobe/mcp/da"
+    },
+    "adobe-aem-ema": {
+      "type": "http",
+      "url": "https://mcp.adobeaemcloud.com/adobe/mcp/ema"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/"
+    }
+  }
+}

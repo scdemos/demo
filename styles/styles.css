@@ -44,6 +44,13 @@
   /* color scheme */
   color-scheme: light dark;
 
+  /*
+   * BRAND TOKENS:start
+   * Blocks reference these 8 palette tokens directly. To re-theme for a customer,
+   * re-assign the values only; never rename them. Also update the fonts, radius,
+   * --border-heritage and --shadow-glow-* rgb values further down in this :root.
+   */
+
   /* heritage palette */
   --color-rust: #a14f2b;
   --color-gold: #c5a059;
@@ -55,6 +62,8 @@
   --color-card-dark: #162121;
   --color-rust-bright: #d16a3e;
   --color-muted: #8b9a9a;
+
+  /* BRAND TOKENS:end */
 
   /* color tokens – grays and palette */
   --color-gray-100: #f1f1f1;

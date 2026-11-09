@@ -1,0 +1,94 @@
+{
+  "$comment": "Catalog of what scdemos/demo already provides. The customer-demo skill maps customer components onto these before writing any new code. Keep in sync when blocks/variants/section styles change.",
+  "base": {
+    "repo": "https://github.com/scdemos/demo",
+    "da": "https://da.live/#/scdemos/demo",
+    "preview": "https://main--demo--scdemos.aem.page/"
+  },
+  "brandSlots": {
+    "$comment": "Blocks reference these palette tokens directly (~250 refs). Re-theming = re-assigning these values inside the BRAND TOKENS block at the top of styles/styles.css. Do not rename them.",
+    "file": "styles/styles.css",
+    "colors": {
+      "--color-rust": "primary brand color (buttons, rust sections, links on hover)",
+      "--color-rust-bright": "primary, lighter/hover variant",
+      "--color-gold": "accent / highlight (eyebrows, underlines, gold hero)",
+      "--color-parchment": "light page background + light text on dark",
+      "--color-ink": "body text on light",
+      "--color-obsidian": "darkest background (dark scheme, ink sections)",
+      "--color-card-dark": "card / surface on dark",
+      "--color-muted": "secondary / muted text"
+    },
+    "semantic": ["--color-brand", "--color-accent", "--color-text", "--color-link", "--color-link-hover", "--background-color", "--color-shaded"],
+    "typography": {
+      "--font-family": "body font stack (declared in styles/fonts.css, file in /fonts)",
+      "--font-family-serif": "heading font stack (via --heading-font-family)",
+      "--heading-font-size-*": "xxl..xxs scale (mobile; desktop overrides in @media (width >= 900px))",
+      "--body-font-size-*": "xxxl..xs scale"
+    },
+    "shape": {
+      "--border-radius-heritage": "global card/button radius",
+      "--border-heritage": "decorative border",
+      "--nav-height": "header height"
+    },
+    "hardcodedHex": ["blocks/header/header.css", "blocks/footer/footer.css", "blocks/quiz/quiz.css"]
+  },
+  "sectionStyles": {
+    "$comment": "Applied with a Section Metadata block, key 'style'.",
+    "rust": "solid primary background, light text",
+    "ink": "dark background",
+    "gradient": "brand gradient background",
+    "light": "light/shaded background",
+    "warm": "warm tinted background",
+    "highlight": "accent-highlighted band",
+    "divider": "top divider rule",
+    "center": "centered content",
+    "light-scheme": "force light color-scheme",
+    "dark-scheme": "force dark color-scheme"
+  },
+  "blocks": {
+    "hero": { "variants": ["gold", "ink", "rust", "no-image"], "use": "page-top banner, headline + CTA, optional light/dark image pair" },
+    "cards": { "variants": ["bento"], "use": "grid of image + text cards; bento = asymmetric mosaic" },
+    "columns": { "variants": [], "use": "side-by-side text/media (split layouts, feature rows)" },
+    "teaser": { "variants": [], "use": "single promo: image + heading + copy + CTA" },
+    "tabs": { "variants": [], "use": "tabbed content panels" },
+    "faq": { "variants": [], "use": "accordion Q&A" },
+    "table": { "variants": ["bordered", "striped", "no-header"], "use": "data tables (fund facts, performance, fees)" },
+    "related-articles": { "variants": ["bento"], "use": "auto list of articles/insights from query-index" },
+    "product-grid": { "variants": [], "use": "grid driven by a JSON index (products, funds, strategies)" },
+    "journey-map": { "variants": [], "use": "numbered steps / process" },
+    "quiz": { "variants": [], "use": "interactive questionnaire (risk profiler, product finder)" },
+    "compound-interest-calculator": { "variants": [], "use": "financial calculator" },
+    "networth-calculator": { "variants": [], "use": "financial calculator" },
+    "savings-rate-calculator": { "variants": [], "use": "financial calculator" },
+    "form": { "variants": [], "use": "spreadsheet-driven form" },
+    "n8n-form": { "variants": [], "use": "form posting to an n8n webhook (contact / subscribe)" },
+    "embed": { "variants": ["embed-twitter"], "use": "video / social embeds" },
+    "modal": { "variants": [], "use": "fragment opened in a dialog" },
+    "fragment": { "variants": [], "use": "reusable content include" },
+    "search": { "variants": [], "use": "site search over query-index" },
+    "social-share": { "variants": [], "use": "share links on articles" },
+    "auth-toggle": { "variants": [], "use": "logged-in / logged-out content switch" },
+    "header": { "variants": [], "use": "global nav from /nav document" },
+    "footer": { "variants": [], "use": "global footer from /footer document" }
+  },
+  "templates": {
+    "article": "insight / article pages (metadata: Template = article)",
+    "events": "event listing"
+  },
+  "features": {
+    "experimentation": "plugins/experimentation: experiments, audiences, campaigns + sidekick overlay",
+    "martech": "plugins/martech: Adobe Web SDK (alloy), Target offers incl. section-level decision scopes",
+    "darkMode": "light-dark() tokens + data-theme toggle",
+    "sidekick": "tools/sidekick/config.json (project name, plugins)",
+    "cloneit": "tools/cloneit: repoless clone of a DA template site",
+    "demoWalkthrough": "tools/demo: guided demo script overlay",
+    "preflight": "templates/*/*.preflight.js and blocks/*/*.preflight.js custom checks",
+    "queryIndex": "query.yaml (site config) feeding related-articles, search, product-grid"
+  },
+  "mappingRules": [
+    "Prefer: existing block > new variant (CSS-only class) > new section style > new block.",
+    "New variants go in the existing block CSS as .blockname.variant; never fork a block.",
+    "A new block is only allowed when no block + variant can express the content model; record it in this manifest.",
+    "Every color/font/radius change goes through brand slots first; block CSS should only need structural changes."
+  ]
+}
