@@ -1,6 +1,6 @@
 ---
 name: customer-demo
-description: Turn the scdemos/demo base site into a fully baked, customer-branded AEM Edge Delivery demo from a single customer URL. Seeds a destination GitHub repo + DA folder from the base, extracts the customer's brand, maps their pages onto the base block library, imports content into DA, previews, and QA-checks against the original. Use when a solution consultant says "create a demo for <customer url>", "customer demo", "make a demo site like <url>", or runs /customer-demo.
+description: Turn the scdemos/demo base site into a fully baked, customer-branded AEM Edge Delivery demo from just a customer URL or domain. Creates scdemos/<slug> in GitHub + DA, applies the brand, maps pages onto the base block library, imports content, bakes in demo features and QA-checks against the original. Use whenever someone says "demo <domain>", "demo for <customer>", "create a demo for <url>", "customer demo", "make a demo like <url>", or runs /customer-demo. A bare domain such as "manulifeim.com/institutional/tw/en" is enough.
 ---
 
 # Customer Demo Factory
@@ -17,7 +17,9 @@ martech, dark mode, sidekick plugins, CloneIt, the demo walkthrough, and preflig
 
 ## Inputs: the URL is the only one
 
-The SC provides **only the customer URL**. Derive everything else yourself and do **not**
+The SC provides **only the customer URL**, in any form: `https://www.x.com/a/b`,
+`www.x.com/a/b`, `x.com/a/b`, or the bare domain `x.com`. Normalize it to `https://` and
+follow redirects. Ignore extra words such as "demo", "for", "please" or "create". Derive everything else yourself and do **not**
 ask, unless the SC passed a `slug=` override in the prompt.
 
 **Everything lives in the `scdemos` space**, next to the base (`scdemos/demo`). This keeps

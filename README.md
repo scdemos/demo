@@ -14,9 +14,12 @@ Turn this base site into a customer-branded demo from a single URL.
 - Install **GitHub Copilot** in VS Code or **Claude Code**.
 - Open this repo. The MCP servers (DA, EMA, GitHub) are preconfigured in `.vscode/mcp.json` and `.mcp.json`; sign in when prompted.
 
-**Run it:**
-- Copilot: `/customer-demo https://www.customer.com/`
-- Claude Code: `/customer-demo https://www.customer.com/`
+**Run it.** Type any of these in Copilot or Claude Code chat:
+```
+demo manulifeim.com/institutional/tw/en
+/customer-demo manulifeim.com
+create a demo for https://www.manulifeim.com/institutional/tw/en
+```
 
 That's the only input, plus one click. The agent then:
 1. derives `<slug>` from the URL and creates `github.com/scdemos/<slug>`, seeded with this base's code. Every demo stays in the `scdemos` space for tracking.

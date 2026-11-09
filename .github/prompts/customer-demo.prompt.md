@@ -1,13 +1,8 @@
 ---
 mode: agent
-description: Build a fully baked, customer-branded AEM Edge Delivery demo from the scdemos/demo base using one customer URL.
+description: Build a customer-branded demo from the scdemos/demo base. Just give the customer site, e.g. manulifeim.com/institutional/tw/en
 ---
 
-Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to create a customer demo site.
+Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to create a customer demo for: ${input:site:customer site, e.g. manulifeim.com}
 
-Customer URL: ${input:customerUrl:https://www.customer.com/}
-
-Follow the skill end-to-end:
-- Derive scdemos/<slug> (GitHub repo + DA site) from the URL. Do not ask for them.
-- Run the pipeline from preflight to handoff without further questions.
-- Open the AEM Code Sync install page for the new scdemos repo (the one SC click), then keep going while it polls.
+Run the skill end-to-end without asking anything else. Derive scdemos/<slug> (GitHub repo and DA site) from the site. Open the AEM Code Sync install page for the new repo, then keep going while it polls.
