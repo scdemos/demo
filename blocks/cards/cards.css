@@ -1,4 +1,5 @@
 /* stylelint-disable no-descending-specificity -- variants (bento, text, list) never co-occur on one block */
+
 /* Default cards */
 
 .cards > ul {
