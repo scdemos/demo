@@ -5,6 +5,118 @@
 - **Result:** https://main--manulifeim--scdemos.aem.page/ (live: `.aem.live`), DA https://da.live/#/scdemos/manulifeim, repo https://github.com/scdemos/manulifeim
 - **Wall-clock:** about 55 minutes from "go" to a published, branded 11-page site, including human interruptions. The agent's active time was about 35 minutes.
 
+## Round 3 (final): fidelity gate, theming, block library, sign-off
+
+**SC feedback:**
+- Contact Us didn't match the original.
+- The OS dark mode turned the site dark and unreadable.
+- About Us and Sustainability "tabs" were broken.
+- The capability and Viewpoints pages were missing content.
+- The block library, templates, icons and tagging weren't set up.
+- The skill needed a sign-off checklist.
+
+### Constructs added (all generic and opt-in, ported to base `custdemo` 54afabf)
+| Original pattern | Construct (level) | Pages |
+|---|---|---|
+| White title band with an icon above the H1 | `page-title` section style (2) | Contact Us, Viewpoints |
+| Full-bleed navy/green/purple/blue band with a right-edge photo | `band` + `band-green/purple/blue` section styles (2) | About Us, Sustainability, all capability pages |
+| White panel or stats pulled up into the band | `overlap` section style (2) | same |
+| Contact cards with large headings | `cards panel cols-2 emphasis` (3) | Contact Us |
+| 4-up anchor strip under the hero | `cards panel cols-4` (3) | capability pages |
+| Image + text feature tiles, dark campaign callouts | `cards promo` / `promo ink` (3) | About Us, Viewpoints, Equity |
+| Memberships/partner logo wall | `cards logos` (3) | Sustainability |
+| Browse by author/category/tag, All Tags | `tags` section style (2) | Viewpoints |
+| Help-request and "Partner with us" forms in a white card | `form panel` (3); options are pipe-delimited, with a trailing `\|` to keep commas; `required: TRUE` | Contact Us, Private Markets |
+| Region selector and log-in user icon in the top bar | rail header CSS (6) | global |
+| Light-only customer site | `color-scheme: light` page/site metadata (8) | global |
+
+### Fidelity results (`compare.mjs`, demo captured under a **dark** OS preference)
+**9/9 pages pass** on every check: rail, header, footer, sections, headings, forms/inputs, buttons, media, color scheme, readability (no text below 3:1 against what is painted under it) and health.
+
+| Page | Sections (orig → demo) | Images | Forms/inputs | Theme | Notes |
+|---|---|---|---|---|---|
+| Home | 12 → 8 | 7 → 20 | – | light | carousel, viewpoints, news, social |
+| About Us | 17 → 10 | 18 → 30 | – | light | tabs replaced by bands, overlap panels and promo tiles |
+| Sustainability | 18 → 12 | 13 → 20 | – | light | logo wall, bands |
+| Viewpoints | 9 → 8 | 8 → 14 | – | light | full original structure now (featured outlook, Browse by, latest list with grid/list toggle, asset allocation views, All Tags) |
+| Contact Us | 3 → 4 | 1 → 0 | 4 → 4 | light | same fields, options and required markers |
+| Fixed Income | 19 → 13 | 24 → 22 | – | light | full original content (timeline, footprint map, process diagram, related viewpoints) |
+| Equity | 17 → 14 | 15 → 18 | – | light | |
+| Private Markets | 17 → 12 | 12 → 26 | 6 → 6 | light | "Partner with us" form added |
+| Multi-asset | 18 → 13 | 21 → 14 | 0 → 9 | light | calculator kept as the demo feature |
+
+Section counts are lower by design: the original nests AEM Sites grids, while the demo uses flat EDS sections.
+
+**Lighthouse (aem.live, mobile):**
+
+| Page | Performance | Accessibility | Best Practices |
+|---|---|---|---|
+| Fixed Income | 100 | 100 | 79 |
+| Viewpoints | 90 | 100 | 79 |
+
+Best Practices is held down by base martech cookies. Viewpoints LCP is the featured paragraph in the third section, because the first section is only the page title; it's acceptable at 90.
+
+### Gotchas found in round 3 (all now in SKILL.md, the checklist or the scripts)
+1. **Section-driven blocks misused.** The base `tabs` block is driven by section metadata (`Tab Id`/`Tab title`), but it was authored as a row table, so it rendered broken. When the original shows tiles, use `cards panel`; for timelines use `table striped`. *(manifest mappingRules)*
+2. **OS dark mode hijacks the demo.** The base follows `prefers-color-scheme`, and the customer site has no dark mode. Fixed with `color-scheme` metadata (`light | dark | auto`). The fidelity capture runs under a dark OS. *(checklist §3)*
+3. **The readability check missed overlap text.** It walked DOM ancestors, but `overlap` sections are pulled into the band with a negative margin, so their DOM parents are white while the pixels behind them are navy. Stats labels were invisible. The check now uses `elementsFromPoint`, verified by a negative test against the old CSS.
+4. **`scroll-behavior: smooth` breaks hit-testing.** `scrollIntoView` animates, so `elementsFromPoint` read the wrong spot. Fixed with `behavior: 'instant'`.
+5. **Full-page screenshots showed blank sections.** Scroll-reveal sections only render after slow scrolling. Fixed in the screenshot helper; the gate and consent are pre-seeded in `localStorage`.
+6. **Stale CSS on the CDN.** `aem.live` served old CSS for minutes after a push. Capture from `localhost:3000` after CSS changes.
+7. **Form options split on commas.** A consent sentence became three checkboxes. Options are now pipe-aware, and a trailing `|` keeps a single option intact.
+8. **Fidelity heuristics were too strict.** Hidden search/recaptcha inputs and Marketo buttons counted against the demo. Originals split one heading across spans or wrap body copy inside headings. Now the check counts visible, user-facing controls only and matches headings by substring and prefix.
+9. **Pages were thin.** Round 2 rebuilt the look of the capability and Viewpoints pages but left out most of their content. Rewritten from the original outlines (`extract-outline.js`) with 35 more images. The rule is now **content parity before polish**, enforced by the headings check.
+10. **Forms outside Contact Us.** The original Private Markets page has its own form. Added to the checklist.
+11. **DA tooling.** `da_copy_content` doesn't work across sites, and `da_preview_content` fails for sheets. Use the Admin API from a signed-in tab. The DA site config (`admin.da.live/config`) has to be POSTed as FormData `config=<json>`.
+
+### Sign-off checklist (`references/signoff-checklist.md`)
+**1. Chrome**
+- ✅ Rail header with icons, search, region selector, register/log in. Checked at 1440 and 390 px.
+- ✅ Nav items and order match the original.
+- ✅ Legal footer.
+- ✅ Disclaimer gate and consent banner (wired to Web SDK consent).
+- ✅ Logo and favicon.
+
+**2. Pages**
+- ✅ `compare.mjs` passes 9/9 pages.
+- ✅ Layouts checked visually at 1440 px, plus 390 px spot checks.
+- ✅ Content complete.
+- ✅ Forms and interactions work.
+- ✅ No broken images or errors.
+- ✅ Band/overlap readability.
+- ✅ Partner form present.
+
+**3. Theming**
+- ✅ `color-scheme: light`, verified under a dark OS.
+- ⚠️ No theme toggle; the original has no dark mode.
+- ✅ No heritage colors left.
+- ⚠️ Source Sans 3 substitutes for the licensed Manulife JH Sans.
+
+**4. Library**
+- ✅ `docs/library` with blocks, every variant, section styles (`tags` included), metadata, templates, icons and the tagging taxonomy.
+- ✅ DA site config registered (API-verified).
+- ⚠️ The Library panel couldn't be opened in the agent's embedded browser. **SC: open DA → Library once to confirm.**
+
+**5. Features**
+- ✅ Experiment and campaign.
+- ✅ USD calculator.
+- ✅ Walkthrough deck.
+- ✅ Sidekick.
+
+**6. Engineering**
+- ✅ Lint clean, scoped lint disables with reasons.
+- ✅ Constructs ported to the base; the base look is unchanged (home, contact and products layout/colors identical; the home height varies ±30 px between runs from dynamic embeds).
+- ✅ Lighthouse ≥ 90.
+- ✅ Every page previewed and published.
+
+**7. Report** ✅ (this section)
+
+**Closest-possible alternatives (last resort, reported):**
+- Licensed font → Source Sans 3.
+- The original's "Explore the strategies" finder renders empty, so only its heading and a contact link were reproduced.
+- Viewpoint articles link to the listing or Contact Us; article pages weren't migrated (out of scope).
+- Author and tag pills are static (no filtering).
+
 ## 0. Round 2: fidelity pass (after SC review)
 The first handoff stopped at "good enough". The SC flagged a missing hero carousel,
 mismatched cards, missing viewpoint/news content, no consent, the wrong footer, no legal
@@ -114,6 +226,17 @@ Gotchas found in round 2:
 - Next base candidates seen on FS sites: `tabs vertical`, mega-menu intro panel,
   region/language selector, fund-facts `table data`, an article template with an author
   card.
+- (Round 3) Done: `capture.mjs` + `compare.mjs` side-by-side gate with painted-background
+  readability. Still open: a per-section **pixel-diff score**, so layout drift (not just
+  content) fails the gate automatically.
+- (Round 3) Generate `docs/library` automatically from the blocks and variants the pages
+  actually use (scan the DA pages for block class lists), so the library can't drift.
+- (Round 3) Pages whose first section is only a title push LCP to a lazy section. Either
+  load the first two sections eagerly when the first has no block or image, or author the
+  title inside the first content section.
+- (Round 3) Migrate the article pages behind "Read more" links (currently pointing to
+  listings) using an `article` template with an author card.
+- (Round 3) Make tag/author pills filter the viewpoints list (query index + `cards list`).
 
 ### P1: fidelity and speed
 6. **Tokenize the remaining rgb literals** in base CSS (`--color-brand-rgb`, `--color-accent-rgb`), so the reskin is values-only.
