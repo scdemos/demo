@@ -7,25 +7,29 @@ description: Turn the scdemos/demo base site into a fully baked, customer-brande
 
 You turn **one customer URL** into a working, customer-relevant demo site built on the
 `scdemos/demo` base. The solution consultant (SC) should have to do **one thing**: run
-`/customer-demo <url>` and answer **one form**. Everything after that is your job. Do not
-stop to ask questions that you can answer yourself.
+`/customer-demo <url>`. Everything after that is your job: repo, DA, Code Sync, brand,
+content, features and QA. Do not stop to ask questions that you can answer yourself.
 
 The base already ships the block library, section styles, experimentation/audiences/campaigns,
 martech, dark mode, sidekick plugins, CloneIt, the demo walkthrough, and preflight checks.
 **You reskin and refill it.** You do not rebuild it.
 
-## Inputs
+## Inputs: the URL is the only one
 
-| Input | Source | Required |
+The SC provides **only the customer URL**. Derive everything else yourself and do **not**
+ask, unless the SC passed an override in the prompt (e.g. `repo=…`, `da=…`, `org=…`):
+
+| Value | How to derive it | Example (manulifeim.com/institutional/tw/en) |
 |---|---|---|
-| Customer URL | The command argument | yes |
-| Destination GitHub repo URL | Single `ask_user` form | yes |
-| Destination DA `org/site` | Same form. Default: `<repo owner>/<repo name>` | yes |
-| Page scope | Same form. Default: **home + top nav pages (max 8)** | no |
-| Locale | Inferred from the URL path (e.g. `/tw/en` → `en`) | no |
+| `slug` | Registrable domain without TLD or `www`, lowercase `[a-z0-9]`, max 20 chars. Add a short path hint when the URL is a sub-site. If the repo already exists, append `2`, `3`, … | `manulifeim` |
+| GitHub owner | The `org=` override, otherwise **`scdemos`**. Use the SC's own login (`get_me`) only if they can't create repos in `scdemos`. | `scdemos` |
+| Repo | `<owner>/<slug>` | `scdemos/manulifeim` |
+| DA `org/site` | `<owner>/<slug>`. The DA org matches the GitHub owner, so aem.page and DA line up. | `scdemos/manulifeim` |
+| Page scope | Home + top nav pages, one per template, **max 8** | |
+| Locale | From the URL path | `en` |
+| Customer name | From `og:site_name`, otherwise the `<title>` brand, otherwise the domain | `Manulife Investment Management` |
 
-Ask for **all** inputs in **one** `ask_user` call, with defaults pre-filled. Never ask again
-unless preflight reports a blocker.
+Announce the derived values in **one line**, then continue without waiting.
 
 ## Reference files
 
@@ -40,46 +44,77 @@ Track each phase as a todo. Run the phases in order. Keep going until the handof
 ### 0. Environment check
 
 Do these checks silently, and only report failures:
-- The DA MCP responds: `da_list_sources` on `scdemos/demo`. If it fails, tell the SC to sign
-  in to DA and run the `da-auth` skill.
-- GitHub is authenticated: run `gh auth status`, or use the GitHub MCP, or check that
-  `git ls-remote` works against the destination.
-- The EMA MCP is available. It is optional and only needed as a fallback.
-- The SC needs **one of** GitHub Copilot (VS Code) or Claude Code. If neither has the MCP
-  servers configured, point to `.vscode/mcp.json` or `.mcp.json` in the repo root.
+- **DA MCP**: run `da_list_sources(org: "scdemos", repo: "demo")`. If it fails, have the SC
+  sign in to da.live, then use the `da-auth` skill.
+- **GitHub MCP**: run `get_me`. If it fails, have the SC sign in to GitHub in Copilot or
+  Claude (`.vscode/mcp.json` / `.mcp.json` already declare the server).
+- **git**: there must be a local `git` that can push to github.com. Check with
+  `git ls-remote https://github.com/scdemos/demo`.
+- **EMA MCP**: optional. It is only used as a scraping fallback.
 
-### 1. Preflight
+### 1. Provision the destination (fully automatic)
 
-```bash
-node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo <repo> --da <org/site>
-```
+1. **Create the repo** with GitHub MCP `create_repository`:
+   - name `<slug>`, organization `<owner>` (omit it for a personal account), `private: false`
+     (Code Sync needs at least read access), `autoInit: false`
+   - description: `<Customer> demo built from scdemos/demo`
+   - If the name is taken, try the next suffix. Do not reuse an existing non-empty repo
+     unless the SC passed `repo=`.
+2. **Seed the code**. Run these from a temp dir. Never run them in the SC's working copy:
+   ```bash
+   git clone --depth 1 https://github.com/scdemos/demo.git <tmp>/<slug>
+   cd <tmp>/<slug> && rm -rf .git && git init -b main
+   ```
+   Then make these changes before the first commit:
+   - **Do not add `fstab.yaml`.** The base uses the Config Service. Once AEM Code Sync is
+     installed on the repo, the site config is created automatically, with content
+     pointing to `https://content.da.live/<daOrg>/<daSite>/`. Because the DA org/site
+     equals `<owner>/<slug>`, nothing has to be configured by hand.
+   - Set `"project"` in `tools/sidekick/config.json` to `"<Customer> Demo"`.
+   - In `README.md`, replace the Environments URLs with
+     `main--<slug>--<owner>.aem.page/.live` and `da.live/#/<daOrg>/<daSite>`.
 
-Read the JSON summary at the end of the output.
-- `repo` ⛔ not found: tell the SC to create an **empty** repo at the URL they gave you and
-  wait. This is the only allowed pause besides Code Sync.
-- `code-sync` ⏳ or ⛔: go on to seed the code (step 2), then tell the SC:
-  "Install AEM Code Sync on `<owner>/<repo>`: https://github.com/apps/aem-code-sync". Re-run
-  preflight until `code-sync` shows ✅. You can do brand and discovery (steps 3–4) while you wait.
-- `source` ⚠️ (bot protected): use browser-based scraping (`playwright-cli` /
-  `scrape-webpage` in headed mode). If that is also blocked, use EMA
-  `submit_auto_migration` for the content capture only.
+   Commit with `chore: seed from scdemos/demo`, then
+   `git remote add origin https://github.com/<owner>/<slug>.git && git push -u origin main`.
+3. **Code Sync**: the GitHub API cannot install GitHub Apps, so run this detect-and-poll loop:
+   ```bash
+   node .skills/customer-demo/scripts/preflight.mjs --source <url> --repo <owner>/<slug> --da <daOrg>/<daSite> --wait 600
+   ```
+   - If the org already has AEM Code Sync on **All repositories**, the check passes within
+     seconds and the SC sees nothing. The Config Service creates the site → DA mapping
+     automatically.
+   - If it doesn't pass, the script prints `installUrl`. Open it for the SC with
+     `openBrowserPage`, or print it if that tool isn't available:
+     **https://github.com/apps/aem-code-sync/installations/new**. Tell them in one line:
+     "Select `<owner>` → add `<slug>` → Install." The script keeps polling for up to 10 min.
+     **Continue with phases 2–5 while it polls.** Code is only needed on aem.page from
+     phase 6 onward.
+   - Once Code Sync passes, also trigger one code sync by pushing an empty commit, if
+     `aem.page/scripts/aem.js` still returns 404.
+4. **Access**: the demo uses customer assets, so it must not be indexed. The base
+   `robots.txt` / `.aem.page` are already non-indexed. Note in the handoff that the
+   preview URL is unlisted. If the SC wants authentication, link
+   https://www.aem.live/docs/authentication-setup-site.
 
-### 2. Seed code and content from the base
+### 2. Seed DA content from the base
 
-1. Clone `https://github.com/scdemos/demo` (branch `main`) into a temp working dir. Set the
-   remote to the destination repo and push `main`. If the destination is not empty, push
-   to a branch `custdemo` and open a PR instead.
-2. Copy the base DA content `scdemos/demo` → `<org>/<site>`:
-   - Use `da_list_sources` recursively, then `da_copy_content` per file.
-   - Skip `drafts/`, `demo-docs/` and locale folders.
-   - Copy `nav`, `footer`, `metadata` and the `placeholders` sheets. You will overwrite them later.
-3. Site config: `fstab.yaml` and `head.html` already come with the code. Point the
-   content source to `https://content.da.live/<org>/<site>/`. For repoless/org config,
-   follow the CloneIt approach (`tools/cloneit/README.md`, steps 4–5).
-4. Update `tools/sidekick/config.json` → `"project": "<Customer> Demo"`.
-5. **Access**: the demo uses the customer's own assets, so it must not be public. Tell the
-   SC how to set `access.admin` / `requireAuth` on the site config if their org allows it.
-   Otherwise, note in the handoff that the preview URL is unlisted but not protected.
+- Copy `scdemos/demo` → `<daOrg>/<daSite>`. List the files recursively with
+  `da_list_sources`, then call `da_copy_content` for each file.
+  - Skip `drafts/`, `demo-docs/` and locale folders.
+  - Include `nav`, `footer`, `metadata`, `placeholders`, the experiment/campaign pages and
+    the sample indexes. Later phases overwrite them; until then they keep every base
+    feature working.
+- Run `da_preview_content` on `/`, `/nav` and `/footer` so the site renders right away.
+
+### 0→2 failure policy
+
+The only things that justify talking to the SC before the handoff:
+- `create_repository` is forbidden in every candidate owner.
+- DA returns 401/403 for `<daOrg>`.
+- Code Sync is still missing after the 10-minute poll.
+
+In each of these cases, send **one** message with the exact link or action needed, then
+resume as soon as it's fixed.
 
 ### 3. Discover
 
@@ -187,8 +222,8 @@ Report, in this order:
 - The page list, each with a ✅ or ⚠️ fidelity note.
 - The features baked in, and where to show them.
 - Substitutions made: fonts, mocked data, skipped interactions.
-- Manual follow-ups, which should be few: Code Sync (if still pending), site access, and
-  any brand sign-off.
+- Manual follow-ups, which should be few: Code Sync install (only if the poll timed
+  out), site access, and any brand sign-off.
 - The demo walkthrough link.
 
 ## Guardrails

@@ -7,16 +7,20 @@
  *     --source https://www.customer.com/path \
  *     --repo https://github.com/<owner>/<repo> \
  *     --da <org>/<site> \
- *     [--branch main]
+ *     [--branch main] [--wait <seconds>]
+ *
+ * --wait polls until AEM Code Sync serves code on aem.page (or the timeout passes).
  *
  * Optional env: GITHUB_TOKEN (falls back to `gh auth token`), DA_TOKEN (IMS token for admin.da.live).
  * Prints a checklist and a JSON summary; exits 1 when a blocker is found.
  */
 import { execSync } from 'node:child_process';
+import process from 'node:process';
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 const BASE_PREVIEW = 'https://main--demo--scdemos.aem.page';
-const CODE_SYNC_APP = 'https://github.com/apps/aem-code-sync';
+const CODE_SYNC_INSTALL = 'https://github.com/apps/aem-code-sync/installations/new';
+const sleep = (ms) => new Promise((r) => { setTimeout(r, ms); });
 
 function parseArgs(argv) {
   const args = {};
@@ -73,7 +77,7 @@ async function checkBase() {
   add('base', r.ok ? 'ok' : 'warn', `Base site scdemos/demo ${r.ok ? 'reachable' : `returned ${r.status}`}`);
 }
 
-async function checkRepo(repoArg, branch) {
+async function checkRepo(repoArg, branch, waitSeconds) {
   const repo = parseRepo(repoArg);
   if (!repo) { add('repo', 'blocker', 'Missing or invalid --repo (expected https://github.com/<owner>/<repo>)'); return null; }
   const token = githubToken();
@@ -91,11 +95,20 @@ async function checkRepo(repoArg, branch) {
     canPush === false ? 'Ask the repo owner for write access.' : undefined);
   if (!empty) add('repo-content', 'warn', 'Destination repo is not empty. Seeding will create a branch + PR instead of pushing to main.');
 
-  // Code Sync: once the app is installed and code is pushed, aem.page serves code.
-  const code = await get(`https://${branch}--${repo.repo}--${repo.owner}.aem.page/scripts/aem.js`);
+  // Code Sync: once the app is installed, the Config Service creates the site and aem.page serves code.
+  const codeUrl = `https://${branch}--${repo.repo}--${repo.owner}.aem.page/scripts/aem.js`;
+  let code = await get(codeUrl);
+  const deadline = Date.now() + (Number(waitSeconds) || 0) * 1000;
+  if (!code.ok && Date.now() < deadline) {
+    console.log(`⏳ Waiting for AEM Code Sync on ${repo.owner}/${repo.repo}. Install: ${CODE_SYNC_INSTALL}`);
+    while (!code.ok && Date.now() < deadline) {
+      await sleep(15000);
+      code = await get(codeUrl);
+    }
+  }
   if (code.ok) add('code-sync', 'ok', 'AEM Code Sync active (aem.page serves code)');
-  else if (empty) add('code-sync', 'pending', 'Cannot verify Code Sync until code is pushed', `Install the AEM Code Sync app on ${repo.owner}/${repo.repo}: ${CODE_SYNC_APP}`);
-  else add('code-sync', 'blocker', `aem.page returned ${code.status} for code; AEM Code Sync app is probably not installed`, `Install ${CODE_SYNC_APP} on ${repo.owner}/${repo.repo}, then re-run preflight.`);
+  else if (empty) add('code-sync', 'pending', 'Cannot verify Code Sync until code is pushed', `Install AEM Code Sync on ${repo.owner}/${repo.repo}: ${CODE_SYNC_INSTALL}`);
+  else add('code-sync', 'blocker', `aem.page returned ${code.status} for code; AEM Code Sync app is probably not installed`, `Open ${CODE_SYNC_INSTALL} → select ${repo.owner} → add ${repo.repo} → Install, then re-run.`);
   return repo;
 }
 
@@ -119,7 +132,7 @@ const args = parseArgs(process.argv.slice(2));
 const branch = args.branch || 'main';
 await checkSource(args.source);
 await checkBase();
-const repo = await checkRepo(args.repo, branch);
+const repo = await checkRepo(args.repo, branch, args.wait);
 const da = await checkDa(args.da);
 
 const icon = {
@@ -130,7 +143,10 @@ results.forEach((r) => {
   if (r.fix) console.log(`   ↳ ${r.fix}`);
 });
 const summary = {
-  repo, da, branch, source: args.source || null, blockers: results.filter((r) => r.status === 'blocker').length, results,
+  installUrl: CODE_SYNC_INSTALL,
+  repo,
+  da,
+  branch, source: args.source || null, blockers: results.filter((r) => r.status === 'blocker').length, results,
 };
 if (repo) {
   summary.previewUrl = `https://${branch}--${repo.repo}--${repo.owner}.aem.page/`;
