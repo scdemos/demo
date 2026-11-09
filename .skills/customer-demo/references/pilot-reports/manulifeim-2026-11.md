@@ -5,6 +5,36 @@
 - **Result:** https://main--manulifeim--scdemos.aem.page/ (live: `.aem.live`), DA https://da.live/#/scdemos/manulifeim, repo https://github.com/scdemos/manulifeim
 - **Wall-clock:** about 55 minutes from "go" to a published, branded 11-page site, including human interruptions. The agent's active time was about 35 minutes.
 
+## 0. Round 2: fidelity pass (after SC review)
+The first handoff stopped at "good enough". The SC flagged a missing hero carousel,
+mismatched cards, missing viewpoint/news content, no consent, the wrong footer, no legal
+band, and a top nav where the original uses a side rail. **Root cause:** the skill
+defaulted to squeezing patterns into existing blocks and had no fidelity gate. Fixed by
+adding the construct-decision framework (levels 0–8) and a fidelity gate to SKILL.md,
+then rebuilding:
+
+| Original pattern | Round 1 | Round 2 construct (level) |
+|---|---|---|
+| Hero carousel (4 slides, arrows, progress dots) | static `hero banner` | **new `carousel` block (5)**, `autoplay` variant |
+| Left icon rail + top utility bar | top nav | **`nav-layout: rail` header layout via metadata (6)** + rail icons |
+| Bordered white capability grid | floating tiles | **`cards panel` variant (3)** |
+| Viewpoints with author headshots + grid/list toggle | plain list | **`cards list` bylines (3) + `switchable` JS variant (4)** |
+| 2×2 news panel with dates | 4 tiles | `cards panel cols-2` (3) |
+| "Latest news ... All news" header rows | stacked | **`head-row` section style (2)** |
+| Disclaimer (Taiwan) modal + OneTrust cookie banner | missing | **site notices feature (8)**: `site-gate` + `consent`, wired to Web SDK consent |
+| Logo/link row + legal copy + legal links footer | generic footer | **`footer-layout: legal` (6)** |
+| LinkedIn "Stay connected" card | CTA text | `social` section style (2) + icon |
+| No accent bar under headings | base bar shown | `--h2-accent-display` token |
+
+Gotchas found in round 2:
+- Bot-protected originals 403 in headless Chromium; `headless: false` plus a real UA works
+  (wait for `load`, not `networkidle`).
+- Base sections use `margin: inherit`, so offsetting `main` with margin doubled the rail
+  offset. Use padding.
+- Whole-file ports from the customer repo to the base carry the brand rgb remaps. Restore
+  them, or port by patch.
+- The experimentation preview pill overlaps bottom-fixed banners (preview hosts only).
+
 ## 1. Outcome
 
 | Area | Delivered |
@@ -76,6 +106,14 @@
 3. **Commit `icons/` to the base** (logo, search, globe, toggle, social).
 4. **Publish the skill standalone** (`scdemos/customer-demo-skill`), installable with `npx skills add`, the Claude plugin marketplace, or by copying into `~/.copilot/skills`. It should fetch the base and manifest from GitHub at runtime so it works from any folder.
 5. **Admin API auth without a browser:** let the workflow bot (or a CloneIt-style worker) run the full code sync, bulk preview and publish, so the SC never signs in to admin.hlx.page.
+
+### P0.5: fidelity (added after round 2)
+- Run the **fidelity gate** before every handoff. Never hand off a known structural miss.
+- Automate the side-by-side: a headed capture of the original plus a headless capture of
+  the demo, sliced per section, with a pixel-diff score per section.
+- Next base candidates seen on FS sites: `tabs vertical`, mega-menu intro panel,
+  region/language selector, fund-facts `table data`, an article template with an author
+  card.
 
 ### P1: fidelity and speed
 6. **Tokenize the remaining rgb literals** in base CSS (`--color-brand-rgb`, `--color-accent-rgb`), so the reskin is values-only.

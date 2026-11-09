@@ -47,7 +47,8 @@
       "--nav-text-transform": "nav label casing (base default uppercase)",
       "--nav-letter-spacing": "nav label tracking (base default 1.5px)",
       "--footer-logo-filter": "e.g. brightness(0) invert(1) when a dark raster logo sits on the dark footer",
-      "--border-radius-card": "cards + columns image radius (base default 12px)"
+      "--border-radius-card": "cards + columns image radius (base default 12px)",
+      "--h2-accent-display": "none to hide the brand bar under h2 (base default block)"
     },
     "rgbLiterals": "~87 rgb(161 79 43 / x%), rgb(197 160 89 / x%), rgb(209 106 62 / x%), rgb(245 242 237 / x%), rgb(6 13 13 / x%), rgb(22 33 33 / x%) tints in blocks/styles: remap mechanically to the new brand rgb values."
   },
@@ -62,7 +63,9 @@
     "divider": "top divider rule",
     "center": "centered content",
     "light-scheme": "force light color-scheme",
-    "dark-scheme": "force dark color-scheme"
+    "dark-scheme": "force dark color-scheme",
+    "head-row": "heading left, lone link paragraph right (e.g. \"Latest news\" ... \"All news\")",
+    "social": "links rendered as raised cards with trailing icon (Stay connected)"
   },
   "blocks": {
     "hero": {
@@ -77,12 +80,15 @@
     },
     "cards": {
       "variants": [
+        "panel",
+        "panel cols-2",
         "text",
         "list",
+        "list switchable",
         "stats",
         "bento"
       ],
-      "use": "text = text-only tiles with arrow links (capabilities, news); list = rows with date/title/byline + thumbnail right (insights); stats = big figures + label (AUM, headcount); default = image + body grid; bento = mosaic"
+      "use": "panel = one raised white panel with hairline-separated cells (capabilities, ESG, news; works with/without images); list = rows with date/title/author bylines (paragraph with headshot picture) + thumbnail; switchable adds a grid/list toggle (JS); stats = big figures; text = simple tiles; default = image grid"
     },
     "columns": {
       "variants": [],
@@ -179,6 +185,14 @@
     "footer": {
       "variants": [],
       "use": "global footer from /footer document"
+    },
+    "carousel": {
+      "level": 5,
+      "variants": [
+        "autoplay"
+      ],
+      "use": "rotating hero/promo slides with prev/next arrows, dots (progress pill when autoplay), keyboard + reduced-motion support. Each row = image cell | content cell.",
+      "baseCandidate": true
     }
   },
   "templates": {
@@ -193,7 +207,11 @@
     "cloneit": "tools/cloneit: repoless clone of a DA template site",
     "demoWalkthrough": "tools/demo: guided demo script overlay",
     "preflight": "templates/*/*.preflight.js and blocks/*/*.preflight.js custom checks",
-    "queryIndex": "query.yaml (site config) feeding related-articles, search, product-grid"
+    "queryIndex": "query.yaml (site config) feeding related-articles, search, product-grid",
+    "siteNotices": {
+      "level": 8,
+      "use": "metadata site-gate: /fragments/<disclaimer> (modal with #agree/#cancel links; site-gate-exit for cancel) and consent: /fragments/<consent> (banner with #accept/#reject/#settings, optional category list). Choices persist in localStorage and drive Web SDK consent via martech updateUserConsent."
+    }
   },
   "mappingRules": [
     "Fidelity first: never force a customer pattern into a block if it changes the look; never drop content.",
@@ -207,5 +225,19 @@
     "locale": "Intl locale for calculators (en-US…)",
     "Experiment / Experiment Variants": "page-level A/B: variants are full pages, relative paths OK",
     "Campaign-<name>": "value must be the served URL of the campaign page: a DA doc named index is served at the FOLDER url (/campaigns/x/), not /campaigns/x/index"
+  },
+  "chrome": {
+    "header nav-layout: rail": {
+      "level": 6,
+      "use": "fixed left icon rail for primary sections (icons via :rail-*: in nav), square brand mark (:rail-mark:), wide top search, secondary CTA buttons; collapses to hamburger below 900px"
+    },
+    "footer footer-layout: legal": {
+      "level": 6,
+      "use": "logo + link row, copyright/legal paragraphs, stacked legal links (corporate/FS footers)"
+    },
+    "login-label / logout-label": {
+      "level": 0,
+      "use": "metadata overrides for auth link text"
+    }
   }
 }
