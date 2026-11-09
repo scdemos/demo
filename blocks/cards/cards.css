@@ -377,3 +377,40 @@
     order: 2;
   }
 }
+
+/* Stats variant: large figures with a short label (AUM, headcount, years) */
+.cards.stats > ul > li {
+  border: 0;
+  border-top: 3px solid var(--color-rust);
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.stats > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.stats .cards-card-body {
+  padding: var(--space-l) 0 0;
+}
+
+.cards.stats .cards-card-body :is(h2, h3) {
+  margin: 0;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 300;
+  color: var(--color-rust);
+}
+
+.cards.stats .cards-card-body p {
+  margin-top: var(--space-xs);
+  font-size: var(--body-font-size-m);
+  color: var(--color-ink);
+}
+
+@media (width >= 900px) {
+  .cards.stats > ul {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2xl);
+  }
+}

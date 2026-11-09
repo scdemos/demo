@@ -1,5 +1,5 @@
  
-import { createTag, loadChartJs, createChart } from '../../scripts/shared.js';
+import { createTag, loadChartJs, createChart, getCurrency } from '../../scripts/shared.js';
 
 const DEFAULTS = {
   initialInvestment: 10000,
@@ -26,17 +26,17 @@ function toNumber(value, fallback = 0) {
 }
 
 function money(value) {
-  return new Intl.NumberFormat('en-CA', {
+  return new Intl.NumberFormat(getCurrency().locale, {
     style: 'currency',
-    currency: 'CAD',
+    currency: getCurrency().code,
     maximumFractionDigits: 0,
   }).format(value || 0);
 }
 
 function moneyDecimals(value, decimals = 2) {
-  return new Intl.NumberFormat('en-CA', {
+  return new Intl.NumberFormat(getCurrency().locale, {
     style: 'currency',
-    currency: 'CAD',
+    currency: getCurrency().code,
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value ?? 0);
@@ -337,7 +337,7 @@ export default function decorate(block) {
     value: DEFAULTS.initialInvestment,
     min: 0,
     step: 500,
-    suffix: 'CAD',
+    suffix: getCurrency().code,
     tooltip: 'Amount you start with today.',
   });
   add({
@@ -346,7 +346,7 @@ export default function decorate(block) {
     value: DEFAULTS.regularContribution,
     min: 0,
     step: 50,
-    suffix: 'CAD',
+    suffix: getCurrency().code,
     tooltip: 'Amount you add at the selected frequency.',
   });
   const contribSelect = buildSelect(
