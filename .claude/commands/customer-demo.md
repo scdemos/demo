@@ -8,6 +8,6 @@ Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to create a cus
 Customer URL: $ARGUMENTS
 
 Follow the skill end-to-end:
-- Ask for the destination GitHub repo and DA org/site in a single question.
+- Derive the destination repo and DA site from the URL. Do not ask for them.
 - Run the pipeline from preflight to handoff without further questions.
-- Pause only for the documented blockers: an empty repo has to be created, and the AEM Code Sync app has to be installed.
+- Pause only if AEM Code Sync is still not installed after polling.

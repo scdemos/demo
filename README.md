@@ -13,20 +13,20 @@ Turn this base site into a customer-branded demo from a single URL.
 **One-time setup:**
 - Install **GitHub Copilot** in VS Code or **Claude Code**.
 - Open this repo. The MCP servers (DA, EMA, GitHub) are preconfigured in `.vscode/mcp.json` and `.mcp.json`; sign in when prompted.
-- Create an **empty** GitHub repo for the customer and install the [AEM Code Sync app](https://github.com/apps/aem-code-sync) on it.
 
 **Run it:**
 - Copilot: `/customer-demo https://www.customer.com/`
 - Claude Code: `/customer-demo https://www.customer.com/`
 
-Answer the single form with the destination repo and DA `org/site`. The agent then:
-1. seeds the code and content from this base
-2. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
-3. maps the customer pages onto the existing blocks and variants
-4. imports the content into DA
-5. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
-6. QA-checks against the original site
-7. hands back the preview, DA and repo links
+That's the only input. The agent then:
+1. derives the repo and DA site from the URL (e.g. `scdemos/<customer>`) and creates the GitHub repo
+2. seeds the code and content from this base. Code Sync and the Config Service connect the repo to DA automatically, and if Code Sync isn't installed for the repo, the agent opens [the install page](https://github.com/apps/aem-code-sync/installations/new) and waits
+3. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
+4. maps the customer pages onto the existing blocks and variants
+5. imports the content into DA
+6. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
+7. QA-checks against the original site
+8. hands back the preview, DA and repo links
 
 **Where things live:**
 - Orchestrator skill: [`.skills/customer-demo/SKILL.md`](.skills/customer-demo/SKILL.md)
