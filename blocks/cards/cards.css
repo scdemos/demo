@@ -359,10 +359,17 @@
 }
 
 @media (width >= 600px) {
-  .cards.list > ul > li > article {
+  .cards.list > ul > li > article,
+  .cards.list .cards-card-link {
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
+  }
+
+  .cards.list .cards-card-link {
+    display: flex;
+    gap: var(--space-xl);
+    width: 100%;
   }
 
   .cards.list .cards-card-image {

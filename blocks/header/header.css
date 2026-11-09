@@ -235,8 +235,8 @@ header nav .nav-sections ul {
   padding: 0;
   margin: 0;
   font-size: var(--nav-primary-size);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  text-transform: var(--nav-text-transform, uppercase);
+  letter-spacing: var(--nav-letter-spacing, 1.5px);
 }
 
 @media (width <= 899px) {
@@ -517,8 +517,8 @@ header nav .nav-sections button.button {
   padding: 0;
   min-width: 0;
   font-weight: var(--nav-primary-weight);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  text-transform: var(--nav-text-transform, uppercase);
+  letter-spacing: var(--nav-letter-spacing, 1.5px);
 }
 
 header nav .nav-sections a.button:any-link:hover,
