@@ -112,6 +112,7 @@ footer .footer .icon.icon-logo :is(svg, img) {
   width: auto;
   height: 100%;
   object-fit: contain;
+  filter: var(--footer-logo-filter, none);
 }
 
 @media (width >= 600px) {
