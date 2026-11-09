@@ -611,3 +611,175 @@
     order: 0;
   }
 }
+
+/* Emphasis modifier: bold sans titles (contact directories, key facts) */
+.cards.panel.emphasis .cards-card-body :is(h2, h3) {
+  font-size: var(--heading-font-size-l);
+  font-weight: 700;
+}
+
+.cards.panel.emphasis .cards-card-body p:first-of-type strong {
+  font-weight: 700;
+}
+
+/* contact details: lone links stay plain text links, not auto-buttons */
+.cards.panel.emphasis .cards-card-body a.button:any-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-ink);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.cards.panel.emphasis .cards-card-body a.button:any-link::before {
+  content: none;
+}
+
+.cards.panel.emphasis .cards-card-body p.button-container {
+  margin: 0.8em 0 0;
+  padding: 0;
+}
+
+/* Panel modifier cols-4: four columns at desktop (affiliations, short facts) */
+@media (width >= 900px) {
+  .cards.panel.cols-4 > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Promo variant: solid-color tiles, text left / image right (featured strategies, reports).
+   Tile colors cycle through --promo-1..2; modifier `ink` uses the dark brand color. */
+.cards.promo {
+  --promo-1: var(--color-rust);
+  --promo-2: #0000c1;
+}
+
+.cards.promo > ul {
+  gap: var(--space-xl);
+}
+
+.cards.promo > ul > li {
+  flex-direction: row;
+  min-height: 200px;
+  border: 0;
+  border-radius: 0;
+  background: var(--promo-bg, var(--promo-1));
+  box-shadow: none;
+  color: var(--color-light);
+}
+
+.cards.promo > ul > li:nth-child(2n) {
+  --promo-bg: var(--promo-2);
+}
+
+.cards.promo.ink > ul > li {
+  --promo-bg: var(--color-ink);
+}
+
+.cards.promo > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.promo .cards-card-image {
+  order: 2;
+  flex: 0 0 35%;
+}
+
+.cards.promo .cards-card-image picture,
+.cards.promo .cards-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cards.promo .cards-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+
+.cards.promo .cards-card-body :is(h2, h3, p, a) {
+  color: var(--color-light);
+}
+
+.cards.promo .cards-card-body :is(h2, h3) {
+  margin: 0 0 var(--space-m);
+  font-size: var(--heading-font-size-l);
+  font-weight: 300;
+}
+
+.cards.promo .cards-card-body a:any-link {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (width >= 900px) {
+  .cards.promo > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cards.promo.ink > ul,
+  .cards.promo.wide > ul {
+    grid-template-columns: 1fr;
+  }
+
+  .cards.promo .cards-card-body {
+    padding: var(--space-2xl);
+  }
+}
+
+/* Logos variant: borderless logo wall (memberships, affiliations, partners) */
+.cards.logos > ul {
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.cards.logos > ul > li {
+  align-items: center;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.logos > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.logos .cards-card-image img {
+  width: auto;
+  height: 80px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+@media (width >= 900px) {
+  .cards.logos > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* promo: image on the right even when the card is wrapped in a link or article */
+.cards.promo > ul > li > article,
+.cards.promo .cards-card-link {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.cards.promo.ink .cards-card-image,
+.cards.promo.wide .cards-card-image {
+  flex-basis: 34%;
+  max-height: 260px;
+}
+
+/* logos: no tile chrome, transparent logo boxes */
+.cards.logos .cards-card-image {
+  background: transparent;
+}

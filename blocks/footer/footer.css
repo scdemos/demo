@@ -1,6 +1,7 @@
 /* stylelint-disable no-descending-specificity -- footer layouts intentionally cascade over the default footer */
 
 footer {
+  box-sizing: border-box;
   width: 100%;
   background-color: light-dark(var(--color-rust), #080d0d);
   color: var(--color-parchment);
@@ -224,4 +225,12 @@ footer .footer.footer-layout-legal .section:nth-child(3) ul a:any-link {
 
 footer .footer.footer-layout-legal .section:nth-child(3) ul a:hover {
   transform: none;
+}
+
+footer .footer.footer-layout-legal a.button:any-link {
+  display: inline-block;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
 }

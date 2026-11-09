@@ -51,7 +51,10 @@ const THEME_STORAGE_KEY = 'demo-theme';
 function applyTheme(theme) {
   let t = theme ?? (() => { try { return localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { return null; } })();
   if (t !== 'light' && t !== 'dark') {
-    t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // site default from metadata `color-scheme` (light | dark | auto); auto follows the OS
+    const preferred = (document.querySelector('meta[name="color-scheme"]')?.content || 'auto').toLowerCase();
+    if (preferred === 'light' || preferred === 'dark') t = preferred;
+    else t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
   document.documentElement.dataset.theme = t;
   document.body.classList.remove('light-scheme', 'dark-scheme');
