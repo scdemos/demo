@@ -111,10 +111,14 @@ for (const p of pages) {
       headings: [...e.querySelectorAll('h1, h2, h3, h4')].filter((h) => h.offsetParent).map((h) => `${h.tagName}: ${h.textContent.replace(/\s+/g, ' ').trim().slice(0, 90)}`),
       textChars: e.innerText.replace(/\s+/g, ' ').trim().length,
       links: e.querySelectorAll('a[href]').length,
-      buttons: e.querySelectorAll('button, a.button, [role=button]').length,
+      // CTAs only: controls inside forms are covered by the forms/inputs check (Marketo etc. inflate them)
+      buttons: [...e.querySelectorAll('button, a.button, [role=button], input[type=submit]')].filter((b) => b.offsetParent && !b.closest('form')).length,
       images: [...e.querySelectorAll('img, picture, svg')].filter((i) => i.getBoundingClientRect().width > 40).length,
-      forms: e.querySelectorAll('form').length,
-      inputs: [...e.querySelectorAll('input, select, textarea')].filter((i) => i.type !== 'hidden').map((i) => `${i.tagName.toLowerCase()}:${i.type || ''}:${(i.labels?.[0]?.textContent || i.placeholder || i.name || '').trim().slice(0, 40)}`),
+      forms: [...e.querySelectorAll('form')].filter((f) => f.offsetParent && f.querySelector('input:not([type=hidden]):not([type=search]), select, textarea')).length,
+      // visible, user-facing fields only (no hidden/search/captcha plumbing)
+      inputs: [...e.querySelectorAll('input, select, textarea')]
+        .filter((i) => i.offsetParent && !['hidden', 'search', 'submit', 'button'].includes(i.type) && !/recaptcha|captcha|honeypot|search/i.test(`${i.name} ${i.id} ${i.className}`))
+        .map((i) => `${i.tagName.toLowerCase()}:${i.type || ''}:${(i.labels?.[0]?.textContent || i.placeholder || i.name || '').trim().slice(0, 40)}`),
       columns: columns(e),
     });
     const header = document.querySelector('header');
@@ -134,14 +138,37 @@ for (const p of pages) {
       });
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     };
-    const lowContrast = [...document.querySelectorAll('main h1, main h2, main h3, main p, main a, main label, footer p, header a')]
+    // The background is read from what is actually painted under the text (elementsFromPoint), not
+    // from DOM ancestors: negative-margin overlaps, absolute layers and bands otherwise fool the check.
+    // Text over an image is skipped (needs a visual check).
+    const opaque = (c) => c && c !== 'transparent' && !/rgba\([^)]*,\s*0(\.[0-4]\d*)?\)$/.test(c);
+    const paintedBg = (e) => {
+      // sites often set `scroll-behavior: smooth`; the hit test needs the scroll to land synchronously
+      e.scrollIntoView({ block: 'center', behavior: 'instant' });
+      const r = e.getBoundingClientRect();
+      const hits = document.elementsFromPoint(r.left + Math.min(8, r.width / 2), r.top + r.height / 2);
+      // only what is painted beneath the text: start at the element (or its nearest hit ancestor)
+      const start = hits.findIndex((n) => n === e || n.contains(e));
+      if (start < 0) return bg(e); // covered (e.g. by a sticky bar) — fall back to DOM ancestors
+      for (const n of hits.slice(start)) {
+        if (/^(IMG|PICTURE|VIDEO|CANVAS|svg)$/.test(n.tagName)) return null;
+        if (getComputedStyle(n).backgroundImage !== 'none' && n !== e) return null;
+        const c = getComputedStyle(n).backgroundColor;
+        if (opaque(c)) return c;
+      }
+      return bg(e);
+    };
+    const lowContrast = [...document.querySelectorAll('main h1, main h2, main h3, main h4, main p, main li, main a, main label, footer p, header a')]
       .filter((e) => e.offsetParent && [...e.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()))
       .map((e) => {
+        const under = paintedBg(e);
+        if (!under) return null;
         const a = lum(getComputedStyle(e).color);
-        const b = lum(bg(e));
+        const b = lum(under);
         return { t: e.innerText.trim().slice(0, 40), ratio: Math.round(((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)) * 10) / 10 };
       })
-      .filter((x) => x.ratio < 3);
+      .filter((x) => x && x.ratio < 3);
+    window.scrollTo(0, 0);
     return {
       theme: document.documentElement.dataset.theme || null,
       declaredScheme: document.querySelector('meta[name="color-scheme"]')?.content || null,

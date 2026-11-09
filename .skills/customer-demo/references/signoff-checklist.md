@@ -29,6 +29,8 @@ one has to be listed in the report with its reason.
 - [ ] No broken images, no console errors, no network 404s (`capture.mjs` health check).
 - [ ] Every internal link points to an existing page or anchor.
 - [ ] Mobile (390 px) is usable: no overlap, no horizontal scroll, and the nav collapses correctly.
+- [ ] Text on colored bands, overlaps and images is readable (the `compare.mjs` readability check passes, plus a visual check of every band/overlap section).
+- [ ] Forms embedded in content pages (e.g. "Partner with us") exist wherever the original has them, not only on Contact Us.
 
 ## 3. Design system and theming
 - [ ] Brand tokens are set: colors, fonts (with a licensed-font substitute documented), radius, nav casing, h2 accent.

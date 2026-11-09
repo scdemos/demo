@@ -386,6 +386,24 @@ health. Loop back to phase 5 for each FAIL. A closest-possible alternative is th
 resort** and must be listed in the report with its reason. Copy the completed checklist
 into the report.
 
+Fidelity tooling gotchas (learned in the pilot):
+- A green `compare.mjs` is necessary, not sufficient. Always **look** at the full-page and
+  per-section screenshots too: content parity does not prove layout parity.
+- The readability check measures text against what is **painted** under it
+  (`elementsFromPoint`), so negative-margin overlaps, bands and fixed rails are judged
+  correctly. When you change the check, run a negative test: restore the broken CSS
+  locally and confirm the check fails.
+- Full-page screenshots of sites with scroll-reveal (`will-reveal`) or lazy sections must
+  scroll the whole page slowly first, or sections appear blank. Pre-seed the gate and consent
+  `localStorage` keys (`site-gate`, `site-consent`) to keep modals out of the shots.
+- Capture the demo from `localhost:3000` (`aem up`) after CSS changes. The `aem.live` CDN can
+  serve stale CSS for a few minutes after a push.
+- Originals often split one visual heading into several elements or wrap body copy inside a
+  heading. The headings check matches on substrings and prefixes; read the remaining misses
+  by eye before treating them as missing content.
+- Original-only widgets that render empty (a strategy finder showing only its title)
+  still need their heading or anchor on the demo; note them as ⚠️ in the report.
+
 ### 10. Handoff (the only long message to the SC)
 
 Report, in this order:

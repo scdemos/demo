@@ -65,7 +65,11 @@
     "light-scheme": "force light color-scheme",
     "dark-scheme": "force dark color-scheme",
     "head-row": "heading left, lone link paragraph right (e.g. \"Latest news\" ... \"All news\")",
-    "social": "links rendered as raised cards with trailing icon (Stay connected)"
+    "social": "links rendered as raised cards with trailing icon (Stay connected)",
+    "page-title": "white title band: optional icon paragraph above the H1 (simple landing pages like Contact Us, Viewpoints)",
+    "band": "full-bleed color band (default ink) with light text; a lone image paragraph fills the right edge; modifiers band-green | band-purple | band-blue",
+    "overlap": "follows a band: pulls its panel/stats/form up into the band (desktop); text before the panel and cards stats turn light",
+    "tags": "lists render as pill clouds (browse by tag/category/author, all tags)"
   },
   "blocks": {
     "hero": {
@@ -86,9 +90,14 @@
         "list",
         "list switchable",
         "stats",
-        "bento"
+        "bento",
+        "panel cols-4",
+        "panel emphasis",
+        "promo",
+        "promo ink",
+        "logos"
       ],
-      "use": "panel = one raised white panel with hairline-separated cells (capabilities, ESG, news; works with/without images); list = rows with date/title/author bylines (paragraph with headshot picture) + thumbnail; switchable adds a grid/list toggle (JS); stats = big figures; text = simple tiles; default = image grid"
+      "use": "panel = one raised white panel with hairline-separated cells (capabilities, ESG, news; works with/without images); list = rows with date/title/author bylines (paragraph with headshot picture) + thumbnail; switchable adds a grid/list toggle (JS); stats = big figures; text = simple tiles; default = image grid; panel cols-4 = 4-up tiles (anchor nav strips); emphasis = larger headings in panel cells (contact cards); promo = image + text feature tile, ink = dark promo (campaign/outlook callouts); logos = partner/memberships logo wall"
     },
     "columns": {
       "variants": [],
@@ -145,8 +154,10 @@
       "use": "financial calculator; currency/locale from metadata"
     },
     "form": {
-      "variants": [],
-      "use": "spreadsheet-driven form: row 1 = link to /forms/<name>.json (field,type,label,options,required,...), row 2 = submit URL (https://demo.bbird.live/contact-us/ allows any origin)"
+      "variants": [
+        "panel"
+      ],
+      "use": "spreadsheet-driven form: row 1 = link to /forms/<name>.json (field,type,label,options,required,...), row 2 = submit URL (https://demo.bbird.live/contact-us/ allows any origin); panel = white raised form card. Sheet options are pipe-delimited (Asia|EMEA); end a single comma-containing option with | ; required accepts TRUE/true"
     },
     "n8n-form": {
       "variants": [],
@@ -217,14 +228,17 @@
     "Fidelity first: never force a customer pattern into a block if it changes the look; never drop content.",
     "Pick the lowest level that reproduces the pattern faithfully: 0 default content, 1 existing block, 2 section style, 3 CSS-only variant, 4 variant with JS, 5 new block, 6 header/footer chrome variant via site metadata, 7 template, 8 global feature/plugin.",
     "New block when the content model, interaction or over ~40% of the CSS differs; otherwise a variant.",
-    "Name everything generically; record level, content model and baseCandidate in this manifest."
+    "Name everything generically; record level, content model and baseCandidate in this manifest.",
+    "Section-driven blocks (tabs = Tab Id/Tab title section metadata; faq = /faq-index.json; journey-map = gated checklist) must not be authored as row tables. When the original shows tiles, use cards panel; timelines use table striped.",
+    "Text on colored bands/overlaps must be verified against what is painted under it, not its DOM parent (capture.mjs readability check)."
   ],
   "pageMetadata": {
     "social-share": "off hides the floating share dock (delayed.js)",
     "currency": "ISO code for calculators (USD, TWD, CAD…)",
     "locale": "Intl locale for calculators (en-US…)",
     "Experiment / Experiment Variants": "page-level A/B: variants are full pages, relative paths OK",
-    "Campaign-<name>": "value must be the served URL of the campaign page: a DA doc named index is served at the FOLDER url (/campaigns/x/), not /campaigns/x/index"
+    "Campaign-<name>": "value must be the served URL of the campaign page: a DA doc named index is served at the FOLDER url (/campaigns/x/), not /campaigns/x/index",
+    "color-scheme": "light | dark | auto (default). Set light/dark site-wide in metadata.json when the customer has no dark mode, so the OS preference cannot flip the demo"
   },
   "chrome": {
     "header nav-layout: rail": {
