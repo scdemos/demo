@@ -112,7 +112,7 @@ a:any-link {
 /* H2 accent — thin brand-gradient bar beneath h2 in plain content sections */
 :is(main, article.article-body) > .section:not(.hero-container, .gradient, .ink, .rust) h2::after {
   content: '';
-  display: block;
+  display: var(--h2-accent-display, block);
   width: 2.5rem;
   height: 2px;
   margin-top: 0.35em;
@@ -293,3 +293,67 @@ header .nav-wrapper.scrolled {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   Section layout styles (section-metadata `style`)
+   ========================================================================== */
+
+/* section-metadata style=center: centered default content */
+:is(main, article.article-body) > .section.center > .default-content-wrapper {
+  text-align: center;
+}
+
+/* section-metadata style=social: links shown as raised cards with a trailing icon */
+:is(main, article.article-body) > .section.social > .default-content-wrapper > p:has(> a) {
+  display: inline-flex;
+  margin-inline-end: var(--space-m);
+}
+
+:is(main, article.article-body) > .section.social a:any-link {
+  border: 0;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-l) var(--space-xl);
+  background: var(--color-light);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  color: var(--color-ink);
+  font-size: var(--body-font-size-s);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* section-metadata style=head-row: first heading on the left, a lone link paragraph on the right */
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: var(--space-xl);
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > * {
+  grid-column: 1 / -1;
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > :is(h1, h2):first-child {
+  grid-column: 1;
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > p:nth-child(2):has(> a:only-child) {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > p:nth-child(2) > a.button:any-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-ink);
+  font-size: var(--body-font-size-m);
+  text-transform: none;
+  letter-spacing: normal;
+}
+

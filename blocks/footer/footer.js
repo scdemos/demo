@@ -18,9 +18,13 @@ export default async function decorate(block) {
     block.append(footer);
   }
 
-  // merge social icons into copyright row
+  // Optional layout from site/page metadata, e.g. `footer-layout: legal`
+  const layout = getMetadata('footer-layout').toLowerCase();
+  if (layout) block.classList.add(`footer-layout-${layout}`);
+
+  // merge social icons into copyright row (default layout only)
   const sections = block.querySelectorAll('.section');
-  if (sections.length >= 4) {
+  if (!layout && sections.length >= 4) {
     const copyrightSection = sections[2];
     const socialSection = sections[3];
     const socialUl = socialSection.querySelector('ul');

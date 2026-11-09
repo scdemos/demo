@@ -327,8 +327,8 @@ function setAuthUserInfo(link, email) {
 }
 
 async function initAuth(nav, tools) {
-  const loginLabel = getDefaultAuthLabel('login');
-  const logoutLabel = getDefaultAuthLabel('logout');
+  const loginLabel = getMetadata('login-label') || getDefaultAuthLabel('login');
+  const logoutLabel = getMetadata('logout-label') || getDefaultAuthLabel('logout');
 
   const loginCandidate = tools.querySelector('a[href*="login" i], a[data-auth-link]');
   const shouldCreateLink = !loginCandidate;
@@ -540,6 +540,13 @@ export default async function decorate(block) {
   if (!nav.getAttribute('aria-expanded')) nav.setAttribute('aria-expanded', 'false');
 
   ['brand', 'sections', 'tools'].forEach((c, i) => nav.children[i]?.classList.add(`nav-${c}`));
+
+  // Optional layout from site/page metadata, e.g. `nav-layout: rail` (fixed left icon rail)
+  const layout = getMetadata('nav-layout').toLowerCase();
+  if (layout) {
+    block.classList.add(`nav-layout-${layout}`);
+    body?.classList.add(`nav-layout-${layout}`);
+  }
 
   const tools = nav.querySelector('.nav-tools');
   if (tools && nav.children.length > 3) {

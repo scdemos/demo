@@ -1,3 +1,5 @@
+/* stylelint-disable no-descending-specificity -- footer layouts intentionally cascade over the default footer */
+
 footer {
   width: 100%;
   background-color: light-dark(var(--color-rust), #080d0d);
@@ -119,4 +121,107 @@ footer .footer .icon.icon-logo :is(svg, img) {
   footer .footer > div {
     padding: 48px var(--content-padding-inline);
   }
+}
+
+/* ==========================================================================
+   Layout: legal (metadata `footer-layout: legal`)
+   Section 1: logo + link list (row). Section 2: copyright + legal copy.
+   Section 3: legal link list (stacked).
+   ========================================================================== */
+footer .footer.footer-layout-legal {
+  background-color: var(--color-ink);
+  color: var(--color-light);
+  font-size: var(--body-font-size-xs);
+}
+
+footer .footer.footer-layout-legal > div {
+  max-width: none;
+  padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+  text-align: left;
+}
+
+footer .footer.footer-layout-legal a:any-link {
+  color: var(--color-light);
+  text-decoration: underline;
+}
+
+footer .footer.footer-layout-legal a:any-link:hover {
+  color: var(--color-rust-bright);
+}
+
+footer .footer.footer-layout-legal .section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: inherit;
+}
+
+footer .footer.footer-layout-legal .section:first-child .default-content-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-l);
+  padding-bottom: var(--space-xl);
+  border-bottom: 1px solid rgb(255 255 255 / 20%);
+}
+
+footer .footer.footer-layout-legal .section:first-child .icon {
+  width: 216px;
+  height: 40px;
+}
+
+footer .footer.footer-layout-legal .section:first-child .icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+
+footer .footer.footer-layout-legal .section ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+footer .footer.footer-layout-legal .section:first-child ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xl);
+}
+
+footer .footer.footer-layout-legal .section:first-child ul a:any-link {
+  font-size: var(--body-font-size-s);
+}
+
+footer .footer.footer-layout-legal .section:nth-child(2) p {
+  margin: var(--space-xl) 0 0;
+  font-family: inherit;
+  font-size: var(--body-font-size-xs);
+  line-height: 1.6;
+  opacity: 1;
+}
+
+footer .footer.footer-layout-legal .section:nth-child(3) {
+  margin-top: var(--space-xl);
+}
+
+footer .footer.footer-layout-legal .section:nth-child(3) .default-content-wrapper,
+footer .footer.footer-layout-legal .section:nth-child(3) ul {
+  display: block;
+}
+
+footer .footer.footer-layout-legal .section:nth-child(3) li {
+  margin: 0 0 var(--space-s);
+}
+
+footer .footer.footer-layout-legal .section:nth-child(3) ul a:any-link {
+  font-size: var(--body-font-size-s);
+  font-weight: 700;
+  text-decoration: underline;
+  opacity: 1;
+}
+
+footer .footer.footer-layout-legal .section:nth-child(3) ul a:hover {
+  transform: none;
 }

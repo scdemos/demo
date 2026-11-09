@@ -413,6 +413,11 @@ async function loadLazy(doc) {
   loadFooter(footerEl);
   if (!IS_EDITOR) await martechLazy();
 
+  if (!IS_EDITOR && (getMetadata('site-gate') || getMetadata('consent'))) {
+    loadCSS(`${window.hlx.codeBasePath}/styles/notices.css`);
+    import('./notices.js').then(({ default: loadSiteNotices }) => loadSiteNotices());
+  }
+
   /* Scroll reveal: sections below the viewport animate in as they enter */
   if (main && 'IntersectionObserver' in window) {
     const vH = window.innerHeight;

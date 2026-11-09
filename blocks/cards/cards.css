@@ -318,7 +318,7 @@
 
 .cards.list > ul > li {
   border: 0;
-  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(250 250 250 / 15%));
+  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 15%));
   background: transparent;
   box-shadow: none;
 }
@@ -412,5 +412,202 @@
   .cards.stats > ul {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-2xl);
+  }
+}
+
+/* Panel variant: one raised white panel, cells separated by hairlines (capabilities, ESG, news).
+   Modifier `cols-2` for two columns. Works with or without images. */
+.cards.panel > ul {
+  gap: 0;
+  overflow: hidden;
+  background: var(--color-light);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+}
+
+.cards.panel > ul > li {
+  margin: 0 -1px -1px 0;
+  border: 0;
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.panel > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-gray-100);
+}
+
+.cards.panel .cards-card-image {
+  padding: var(--space-l) var(--space-l) 0;
+}
+
+.cards.panel .cards-card-image img {
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+
+.cards.panel .cards-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl) var(--space-l);
+}
+
+.cards.panel .cards-card-body :is(h2, h3) {
+  margin: 0 0 var(--space-m);
+  font-size: var(--heading-font-size-l);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+.cards.panel .cards-card-body p {
+  font-size: var(--body-font-size-m);
+  line-height: 1.6;
+  color: var(--color-ink);
+}
+
+.cards.panel .cards-card-body p:first-child:not(:has(a)) {
+  margin: 0 0 var(--space-m);
+  font-size: var(--body-font-size-xs);
+}
+
+.cards.panel .cards-card-body p:last-child:has(> a:only-child) {
+  margin-top: auto;
+  padding-top: var(--space-l);
+}
+
+/* "Learn more" links with a circled chevron (panel + text variants) */
+:is(.cards.panel, .cards.text) .cards-card-body p:last-child > a:only-child,
+.section.head-row .default-content-wrapper > p:has(> a:only-child) > a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+:is(.cards.panel, .cards.text) .cards-card-body p:last-child > a:only-child::before,
+.section.head-row .default-content-wrapper > p:has(> a:only-child) > a::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid currentcolor;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 45%, currentcolor 45% 60%, transparent 60%) 5px 3px / 4px 4px no-repeat,
+    linear-gradient(-45deg, transparent 45%, currentcolor 45% 60%, transparent 60%) 5px 7px / 4px 4px no-repeat;
+}
+
+:is(.cards.panel, .cards.text) .cards-card-body p:last-child > a:only-child:hover,
+.section.head-row .default-content-wrapper > p:has(> a:only-child) > a:hover {
+  color: var(--color-rust);
+}
+
+@media (width >= 600px) {
+  .cards.panel > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= 900px) {
+  .cards.panel > ul {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cards.panel.cols-2 > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cards.panel:not(:has(img)) .cards-card-body {
+    padding: var(--space-2xl) var(--space-2xl) var(--space-3xl);
+  }
+}
+
+/* List variant: author bylines (paragraphs with a headshot image) */
+.cards.list .cards-card-body p:has(picture) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  margin: var(--space-s) 0 0;
+  font-size: var(--body-font-size-xs);
+  line-height: 1.5;
+}
+
+.cards.list .cards-card-body p picture {
+  flex: 0 0 40px;
+}
+
+.cards.list .cards-card-body p picture img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Switchable list: toolbar with grid/list toggle (added by JS) */
+.cards.switchable .cards-view-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-bottom: var(--space-m);
+}
+
+.cards.switchable .cards-view-toggle button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.cards.switchable .cards-view-toggle button[aria-pressed='true'] {
+  background: var(--color-gray-100);
+}
+
+.cards.switchable .cards-view-toggle button::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  background:
+    linear-gradient(currentcolor, currentcolor) 0 0 / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 100% 0 / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 100% / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 100% 100% / 7px 7px no-repeat;
+}
+
+.cards.switchable .cards-view-toggle button[data-view='list']::before {
+  height: 14px;
+  background:
+    linear-gradient(currentcolor, currentcolor) 0 0 / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 50% / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 100% / 100% 2px no-repeat;
+}
+
+@media (width >= 900px) {
+  .cards.list.view-grid > ul {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .cards.list.view-grid > ul > li > article,
+  .cards.list.view-grid .cards-card-link {
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+  }
+
+  .cards.list.view-grid .cards-card-image {
+    flex-basis: auto;
+    order: 0;
   }
 }

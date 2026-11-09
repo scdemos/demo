@@ -167,6 +167,26 @@ function decorateDefault(block) {
   block.replaceChildren(ul);
 }
 
+/**
+ * Grid/list view toggle for `cards list switchable`.
+ * @param {Element} block
+ */
+function addViewToggle(block) {
+  const bar = createTag('div', { class: 'cards-view-toggle', role: 'group', 'aria-label': 'View' });
+  const views = [['grid', 'Grid view'], ['list', 'List view']];
+  const set = (view) => {
+    block.classList.toggle('view-grid', view === 'grid');
+    bar.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  };
+  views.forEach(([view, label]) => {
+    const btn = createTag('button', { type: 'button', 'data-view': view, 'aria-label': label });
+    btn.addEventListener('click', () => set(view));
+    bar.append(btn);
+  });
+  block.prepend(bar);
+  set('list');
+}
+
 export default async function decorate(block) {
   if (block.classList.contains('links')) {
     await decorateLinks(block);
@@ -175,4 +195,5 @@ export default async function decorate(block) {
   } else {
     decorateDefault(block);
   }
+  if (block.classList.contains('switchable')) addViewToggle(block);
 }
