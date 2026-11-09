@@ -196,10 +196,10 @@
     "queryIndex": "query.yaml (site config) feeding related-articles, search, product-grid"
   },
   "mappingRules": [
-    "Prefer: existing block > new variant (CSS-only class) > new section style > new block.",
-    "New variants go in the existing block CSS as .blockname.variant; never fork a block.",
-    "A new block is only allowed when no block + variant can express the content model; record it in this manifest.",
-    "Every color/font/radius change goes through brand slots first; block CSS should only need structural changes."
+    "Fidelity first: never force a customer pattern into a block if it changes the look; never drop content.",
+    "Pick the lowest level that reproduces the pattern faithfully: 0 default content, 1 existing block, 2 section style, 3 CSS-only variant, 4 variant with JS, 5 new block, 6 header/footer chrome variant via site metadata, 7 template, 8 global feature/plugin.",
+    "New block when the content model, interaction or over ~40% of the CSS differs; otherwise a variant.",
+    "Name everything generically; record level, content model and baseCandidate in this manifest."
   ],
   "pageMetadata": {
     "social-share": "off hides the floating share dock (delayed.js)",

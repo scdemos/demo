@@ -247,19 +247,44 @@ Then:
 
 Commit the change as `feat: apply <customer> brand tokens`.
 
-### 5. Map (manifest first)
+### 5. Map: decide the right construct for every customer pattern
 
-For each picked page, run `identify-page-structure` on the scraped output. Then map each
-section by following `mappingRules`, in this order:
-1. an existing block, using an existing variant
-2. a **new CSS-only variant** on an existing block
-3. a new section style
-4. a new block. Use this only as a last resort, and use `content-driven-development` / `building-blocks`.
+**Fidelity first.** Never squeeze a customer pattern into an existing block if the result
+looks different from the original. Reuse is the means; matching the customer is the goal.
+**Never drop content either**: if the original shows 8 news items, a grid/list toggle, a
+carousel with 4 slides or a legal band, the demo shows them too.
 
-Write the mapping as a table in the session SQL: `page, section, customer_pattern, block,
-variant, action`. Reuse finance blocks wherever they fit: `table` for fund facts,
-`product-grid` for fund lists, `quiz` for risk profiling, the calculators, `tabs`, `faq`,
-`related-articles` for insights.
+For each section of each page, run `identify-page-structure` on the scrape. Then pick the
+**lowest level that reproduces the pattern faithfully**:
+
+| Level | Construct | Use when | Examples |
+|---|---|---|---|
+| 0 | **Default content** | Plain headings, text, lists, buttons, images. No repeating structure. | Intro paragraphs, disclosures, "Stay connected" CTA |
+| 1 | **Existing block, as is** | The content model **and** the look match, apart from brand tokens. | `tabs`, `table`, `form`, calculators |
+| 2 | **Section style** (`section-metadata` style) | The difference is the section's background, width, spacing or alignment, whatever is inside. | `light`, `ink`, `center`, a new `bordered` band |
+| 3 | **CSS-only block variant** | Same authoring table, different visual treatment or layout. | `cards text` / `list` / `stats`, `hero banner` |
+| 4 | **Block variant with JS** | Same authoring table, but extra behavior gated on the variant class. Keep existing authoring backward compatible. | `cards list` + grid/list toggle, `tabs vertical` |
+| 5 | **New block** | Different content model **or** behavior that would distort an existing block. Rule of thumb: over ~40% new CSS, a different row/column contract, or a new interaction model. | `carousel` (slides + prev/next + dots + autoplay), `consent`, `quote-slider`, `fund-finder` |
+| 6 | **Global chrome variant** | Header, footer or page-frame layout differs: side-rail nav, utility bar, multi-column footer, legal band. Add a **variant of header/footer toggled by site metadata** (e.g. `nav-layout: rail`, `footer-layout: legal`); never fork the header. | Manulife left nav rail, footer legal band |
+| 7 | **Template** | A whole page type has its own structure: article, fund detail, event. | `templates/<name>/` + `Template` metadata |
+| 8 | **Global feature / plugin** | Cross-cutting behavior configured by metadata, loaded lazily or delayed. | Consent manager, analytics, chat |
+
+Decision rules:
+- Look for **variants of variants**: if two customer sections differ only in density or
+  columns, use one variant plus a modifier class (`cards text two-up`), not two variants.
+- **Name constructs generically** (`carousel`, `cards list`, `nav-layout: rail`), never
+  after the customer, so the base can absorb them.
+- New blocks follow `content-driven-development`. Write the authoring table first, then
+  `building-blocks`. Default to no runtime dependencies, mobile-first, accessible
+  (keyboard, ARIA, reduced motion).
+- Every new construct goes into `references/demo-manifest.json` with its level, content
+  model and use. Mark it `baseCandidate: true` if it's generic.
+- When in doubt between levels 3 and 5, prototype the variant. If the CSS fights the
+  base block (heavy `!important`, reordering DOM in CSS), switch to a new block.
+
+Record the decision for every section in session SQL (`page, section, customer_pattern,
+level, construct, rationale, status`). The QA loop (phase 9) compares section by section
+against this table.
 
 ### 6. Build
 
@@ -306,12 +331,20 @@ Commit and push. Code Sync deploys it to aem.page.
   experiment, campaign, engagement. Open it with
   `/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`.
 
-### 9. QA loop (maximum 3 passes per page)
+### 9. QA loop (maximum 3 passes per page; fidelity gate)
 - Headless screenshots at 1440 and 390 px of every page. Check: blocks decorated, no
   broken images, no console 404s. A 404 often means a block expects an index (`faq` →
   `/faq-index.json`).
-- Compare with the original screenshot, fix the top deltas through tokens or variants,
-  and re-shoot.
+- Capture the original at 1440 px. Headless Chromium gets a 403 from bot-protected sites;
+  use `headless: false` plus a real Chrome user agent, and click away cookie and disclaimer
+  modals.
+- **Fidelity gate**, section by section against the phase-5 table:
+  - same layout (columns, alignment, carousel, rail)
+  - same content count
+  - same chrome: header layout, footer columns, legal band, consent banner
+  - same interactions: slider controls, toggles, accordions
+  Any miss sends that section back to phase 5 at a higher level. Don't hand off with a
+  known structural miss; list only true limitations (licensed fonts, live data).
 - Lighthouse: the keyless PSI API quota is often exhausted. Run
   `npx lighthouse@12 <aem.page url>` with `CHROME_PATH` set to the Playwright Chromium.
   Expect Performance 100. SEO is low only because of noindex (intentional). Contrast
