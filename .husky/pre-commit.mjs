@@ -40,3 +40,12 @@ if (cssFiles.length > 0) {
   const output = await run(`npx stylelint ${fileList}`);
   if (output) console.log(output);
 }
+
+// customer-demo skill: docs must stay in sync with the skill and its scripts
+if (modifiedFiles.some((f) => f.startsWith('.skills/customer-demo/'))) {
+  await new Promise((resolve, reject) => exec('node .skills/customer-demo/scripts/docs-check.mjs', (error, stdout) => {
+    if (stdout) console.log(stdout);
+    if (error) reject(new Error('customer-demo docs out of sync (see above)'));
+    else resolve();
+  }));
+}

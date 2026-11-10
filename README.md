@@ -16,23 +16,25 @@ Turn this base site into a customer-branded demo from a single URL.
 
 **Run it.** Type any of these in Copilot or Claude Code chat:
 ```
-demo manulifeim.com/institutional/tw/en
-/customer-demo manulifeim.com
-create a demo for https://www.manulifeim.com/institutional/tw/en
+demo acme.com/institutional/us/en
+/customer-demo acme.com
+create a demo for https://www.acme.com/institutional/us/en
 ```
 
 That's the only input. No org-admin rights are needed. The agent then:
 1. derives `<slug>` from the URL and opens a `new-demo: <slug>` issue on this repo. The [provisioning workflow](.github/workflows/provision-demo.yaml) creates `github.com/scdemos/<slug>`, seeds it with this base's code, adds it to AEM Code Sync and gives you `maintain` access. Every demo stays in `scdemos`, and the issues form the audit log.
 2. relies on Code Sync and the Config Service to connect the repo to DA, with no `fstab.yaml`
-3. creates `da.live/#/scdemos/<slug>` through the DA MCP and copies the base content into it
+3. creates `da.live/#/scdemos/<slug>` through the DA MCP, writes the content fresh, and recreates the base's per-site state (site config, query index, search, DA config sheets, library)
 4. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
 5. maps the customer pages onto the existing blocks and variants
 6. imports the content into DA
 7. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
-8. QA-checks against the original site
+8. QA-checks against the original site (`doctor.mjs`, `lint-content.mjs`, `compare.mjs`) and runs a final sweep
 9. hands back the preview, DA and repo links
 
 **One-time admin setup** for zero-touch provisioning: an `scdemos` org owner adds the repo secret `DEMO_PROVISION_TOKEN` to `scdemos/demo`. It must be a classic PAT from an org-owner or bot account, with the `repo` and `admin:org` scopes. Optionally, set the variable `DEMO_BASE_REF` to seed from a branch other than `main`.
+
+**SC guide:** [`.skills/customer-demo/SC-QUICKSTART.md`](.skills/customer-demo/SC-QUICKSTART.md), a one-pager on running a demo build well.
 
 **Where things live:**
 - Orchestrator skill: [`.skills/customer-demo/SKILL.md`](.skills/customer-demo/SKILL.md)
