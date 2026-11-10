@@ -8,31 +8,32 @@ Demo Project - Cloud Adoption
 
 ## Create a customer demo (one command)
 
-Turn this base site into a customer-branded demo from a single URL.
+Turn this base site into a customer-branded demo from a single URL, in two moves.
 
-**One-time setup:**
-- Install **GitHub Copilot** in VS Code or **Claude Code**.
-- Open this repo. The MCP servers (DA, EMA, GitHub) are preconfigured in `.vscode/mcp.json` and `.mcp.json`; sign in when prompted.
+**1. Create the site in CloneIt** (`https://da.live/app/scdemos/demo/tools/cloneit/cloneit`, signed in to
+da.live; no GitHub or admin rights needed). Enter the customer site URL (the site name is suggested from it, editable) and
+your GitHub username. Every demo gets its own repo and DA folder: CloneIt's worker creates `github.com/scdemos/<slug>`
+from this repo, adds it to AEM Code Sync, makes you its admin, copies the demo content, all DA config sheets, the
+site config (you as admin) and the query index, publishes everything, logs the demo in
+`da.live/#/scdemos/demo-registry`, and shows the next prompt. Nothing is taken from the customer's website yet.
 
-**Run it.** Type any of these in Copilot or Claude Code chat:
+**2. Optional: make it look like the customer.** Install **GitHub Copilot** in VS Code or **Claude Code**,
+open the new repo (CloneIt's **Open in VS Code**), sign in to the preconfigured MCP servers (`.vscode/mcp.json`,
+`.mcp.json`), and paste the prompt CloneIt shows (the customer site is already filled in):
 ```
-demo acme.com/institutional/us/en
-/customer-demo acme.com
-create a demo for https://www.acme.com/institutional/us/en
+/customer-demo https://www.acme.com/institutional/us/en
 ```
+The agent then:
+1. attaches to `scdemos/<slug>`, clones it next to your workspace and starts `aem up` (watch on localhost:3000)
+2. replaces the demo content with the customer's (rendered in a real browser, nothing dropped)
+3. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`) and maps every pattern onto blocks, variants and section styles, adding generic ones when needed
+4. bakes in experimentation, audiences, campaigns, forms, search and a demo walkthrough
+5. QA-checks against the original site (`doctor.mjs`, `lint-content.mjs`, `compare.mjs`), runs a final sweep, and hands back the links
 
-That's the only input. No org-admin rights are needed. The agent then:
-1. derives `<slug>` from the URL and opens a `new-demo: <slug>` issue on this repo. The [provisioning workflow](.github/workflows/provision-demo.yaml) creates `github.com/scdemos/<slug>`, seeds it with this base's code, adds it to AEM Code Sync and gives you `maintain` access. Every demo stays in `scdemos`, and the issues form the audit log.
-2. relies on Code Sync and the Config Service to connect the repo to DA, with no `fstab.yaml`
-3. creates `da.live/#/scdemos/<slug>` through the DA MCP, writes the content fresh, and recreates the base's per-site state (site config, query index, search, DA config sheets, library)
-4. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`)
-5. maps the customer pages onto the existing blocks and variants
-6. imports the content into DA
-7. bakes in experimentation, audiences, campaigns, forms and a demo walkthrough
-8. QA-checks against the original site (`doctor.mjs`, `lint-content.mjs`, `compare.mjs`) and runs a final sweep
-9. hands back the preview, DA and repo links
-
-**One-time admin setup** for zero-touch provisioning: an `scdemos` org owner adds the repo secret `DEMO_PROVISION_TOKEN` to `scdemos/demo`. It must be a classic PAT from an org-owner or bot account, with the `repo` and `admin:org` scopes. Optionally, set the variable `DEMO_BASE_REF` to seed from a branch other than `main`.
+**One-time admin setup:** set the CloneIt worker secrets (`ADOBE_CLIENT_ID`, `ADOBE_CLIENT_SECRET`, and
+`GITHUB_PROVISION_TOKEN`, required to create demos: a classic PAT of an `scdemos` org owner or bot with the `repo` and
+`read:org` scopes, plus `admin:org` only when `SC_TEAM` is set) and optionally `SC_TEAM` in `workers/cloneit_token/wrangler.toml`. See [`tools/cloneit/README.md`](tools/cloneit/README.md).
+The issue-based [provisioning workflow](.github/workflows/provision-demo.yaml) remains as a fallback (`DEMO_PROVISION_TOKEN`).
 
 **SC guide:** [`.skills/customer-demo/SC-QUICKSTART.md`](.skills/customer-demo/SC-QUICKSTART.md), a one-pager on running a demo build well.
 
