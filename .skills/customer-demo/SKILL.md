@@ -1,6 +1,6 @@
 ---
 name: customer-demo
-description: Turn the scdemos/demo base site into a fully baked, customer-branded AEM Edge Delivery demo from just a customer URL or domain. Creates scdemos/<slug> in GitHub + DA, applies the brand, maps pages onto the base block library, imports content, bakes in demo features and QA-checks against the original. Use whenever someone says "demo <domain>", "demo for <customer>", "create a demo for <url>", "customer demo", "make a demo like <url>", or runs /customer-demo. A bare domain such as "manulifeim.com/institutional/tw/en" is enough.
+description: Turn the scdemos/demo base site into a fully baked, customer-branded AEM Edge Delivery demo from just a customer URL or domain. Creates scdemos/<slug> in GitHub + DA, applies the brand, maps pages onto the base block library, imports content, bakes in demo features and QA-checks against the original. Use whenever someone says "demo <domain>", "demo for <customer>", "create a demo for <url>", "customer demo", "make a demo like <url>", or runs /customer-demo. A bare domain or deep link (e.g. "acme.com" or "acme.com/institutional/us/en") is enough. Works for any customer site.
 ---
 
 # Customer Demo Factory
@@ -26,17 +26,46 @@ ask, unless the SC passed a `slug=` override in the prompt.
 every customer demo in one place for tracking, observability and accounting. Never create
 a demo in a personal account or in another org.
 
-| Value | How to derive it | Example (manulifeim.com/institutional/tw/en) |
+| Value | How to derive it | Example (acme-invest.com/institutional/us/en) |
 |---|---|---|
-| `slug` | Registrable domain without TLD or `www`, lowercase `[a-z0-9]`, max 20 chars. Add a short path hint when the URL is a sub-site. If `scdemos/<slug>` already exists in GitHub **or** DA, append `2`, `3`, … | `manulifeim` |
-| GitHub repo | Always `scdemos/<slug>` | `github.com/scdemos/manulifeim` |
-| DA site | Always `scdemos/<slug>`, the same name as the repo, so the Config Service maps code → content automatically | `da.live/#/scdemos/manulifeim` |
+| `slug` | Registrable domain without TLD or `www`, lowercase `[a-z0-9]`, max 20 chars. Add a short path hint when the URL is a sub-site. If `scdemos/<slug>` already exists in GitHub **or** DA, append `2`, `3`, … | `acmeinvest` |
+| GitHub repo | Always `scdemos/<slug>` | `github.com/scdemos/acmeinvest` |
+| DA site | Always `scdemos/<slug>`, the same name as the repo, so the Config Service maps code → content automatically | `da.live/#/scdemos/acmeinvest` |
 | Preview | `https://main--<slug>--scdemos.aem.page/` | |
 | Page scope | Home + top nav pages, one per template, **max 8** | |
 | Locale | From the URL path | `en` |
-| Customer name | From `og:site_name`, otherwise the `<title>` brand, otherwise the domain | `Manulife Investment Management` |
+| Customer name | From `og:site_name`, otherwise the `<title>` brand, otherwise the domain | `Acme Investments` |
 
-Announce the derived values in **one line**, then continue without waiting.
+Announce the derived values in **one line**, together with the **commit approval** (P8):
+"I'll create and commit to `scdemos/<slug>` (customer repo only). Base changes will be
+proposed separately." Treat the SC's go-ahead (or the original prompt, if it already says
+"go"/"autopilot") as approval for commits to the **customer repo only**. Then continue without
+waiting.
+
+**SC identity.** Roles and publish approvers need the SC's Adobe email. Read it from
+`GET https://admin.hlx.page/profile` (signed in; `profile.email`), falling back to
+`git config user.email` when it ends in `@adobe.com`. Never guess it; if neither works, ask
+once.
+
+## Operating principles (read first, apply in every phase)
+
+These rules generalize every gotcha found so far. The phase rules below are applications of
+them. When a phase rule doesn't cover a situation, apply the principle. Each principle has
+automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.mjs`
+(content models). Their failures print the principle ID.
+
+| # | Principle | What it means in practice |
+|---|---|---|
+| **P1** | **Verify outcomes, not artifacts.** | A feature is done only after you've used it as a visitor would: typed a search, submitted every form (dry-run), opened the experiment/campaign URL, clicked every nav, footer and in-page link, and changed calculator inputs. "The block renders" is not "the feature works". |
+| **P2** | **The template copies code, not state.** | A repo made from the template has none of the base's per-site state: site config (`query.yaml`, `headers`, `robots`, `sidekick`, `public`, `features`), roles, the query index, the DA config/library, untracked icons, workers and secrets. Walk `references/base-state-inventory.md`: copy, recreate or explicitly skip every row. |
+| **P3** | **Read the contract before reuse.** | Before using a block, worker, endpoint or plugin, read its content model and inputs (manifest, block JS, worker README). Never assume something is "generic". If it doesn't fit, choose another construct or make it generic at the source. Never force content into the wrong model. |
+| **P4** | **Content parity before polish.** | Migrate every section of every page in scope (headings, copy, lists, stats, images, CTAs, forms, embedded widgets) before styling. Compare against the original's outline (`extract-outline.js`). A missing section is a FAIL, not a polish item. |
+| **P5** | **Judge what renders, where it renders, under hostile conditions.** | Measure the painted result in a real browser: dark OS preference, 390 px and 1440 px, local code (`aem up`, no CDN cache), after lazy/reveal loading, with smooth scroll. Never infer looks from DOM ancestry or source. |
+| **P6** | **Decide every base assumption.** | The base is opinionated (theme, currency/locale, casing, radius, gradients, accent bar, social dock, color literals, control styles). Walk `references/base-assumptions.md` and set each one to the customer's value, or confirm it. Nothing is inherited by accident. |
+| **P7** | **Generic, opt-in, ported back.** | New constructs are variants, section styles or metadata switches with generic names. They're recorded in the manifest, ported to the base, and leave the base's default look unchanged (verified). Customer specifics live in content and tokens, never in code. |
+| **P8** | **Zero side effects on shared systems.** | Automated checks use dry-run/test modes (`x-dry-run: 1` on the forms endpoint). Never post to live channels, inboxes or analytics. Commits go to the customer repo under the one-time approval; anything touching the base (`scdemos/demo`) needs its own explicit approval and goes in as a PR. |
+| **P9** | **Encapsulate workarounds; verify the verifier.** | A tool quirk becomes a script or helper (see the scripts), not a paragraph to remember. Every new check gets a negative test: break the thing on purpose and confirm the check fails. |
+| **P10** | **Every gotcha gets a prevention.** | In the retro (phase 11), map each new gotcha to a principle and a prevention: a base fix, a `doctor`/`lint-content` check, or a rule. "Documented only" counts as not prevented yet. |
 
 ## Reference files
 
@@ -50,23 +79,55 @@ Announce the derived values in **one line**, then continue without waiting.
   content dropped).
 - `references/signoff-checklist.md`: the mandatory checklist before handoff. The SC
   maintains this list.
+- `references/base-state-inventory.md` (P2): per-site state the base relies on, how to copy it and how to verify it.
+- `references/base-assumptions.md` (P6): base defaults that need a customer decision.
+- `scripts/doctor.mjs`: site health checks (P1, P2, P6, P8). Run it after phase 1, after phase 8 and in the final sweep.
+- `scripts/lint-content.mjs`: DA content-model linter (P3). Run it before every bulk preview.
+- `scripts/da-config.mjs`: migrates every DA config sheet from the base, rewritten for the customer (P2).
+- `scripts/setup-check.mjs`: machine/harness check; `--fix` installs Playwright + matching Chromium outside the repo (phase 0).
+- `scripts/scrape.mjs`: renders the original pages in a real browser; outline, brand, rendered images (phases 3/3b).
+- `scripts/admin.mjs`: AEM Admin API without a browser: preview, publish, unindex, code sync, status, config.
+- `scripts/docs-check.mjs`: keeps `SC-QUICKSTART.md` and the docs in sync with the skill (pre-commit).
+- `SC-QUICKSTART.md`: the SC-facing one-pager. **Any change to SC-facing behavior (prompts,
+  approvals, setup, outputs, troubleshooting) updates it in the same change**; `docs-check.mjs`
+  blocks the commit until it's reviewed and stamped.
 
 ## Pipeline
 
 Track each phase as a todo. Run the phases in order. Keep going until the handoff, unless you hit a ⛔ blocker.
 
 ### 0. Environment check
-
-Do these checks silently, and only report failures:
+Run **`node .skills/customer-demo/scripts/setup-check.mjs --fix`** first. It checks Node, git,
+GitHub reachability, `playwright-core` plus the **matching** Chromium build, the AEM CLI and
+Lighthouse, and installs the browser tooling into `~/.cache/customer-demo` (never into
+`package.json`). Then check silently, and report only failures:
 - **DA MCP**: run `da_list_sources(org: "scdemos", repo: "demo")`. If it fails, have the SC
   sign in to da.live, then use the `da-auth` skill.
-- **GitHub MCP**: run `get_me`. If it fails, have the SC sign in to GitHub in Copilot or
-  Claude (`.vscode/mcp.json` / `.mcp.json` already declare the server).
-- **git**: there must be a local `git` that can push to github.com. Check with
-  `git ls-remote https://github.com/scdemos/demo`.
+- **GitHub MCP**: run `get_me`. If it fails, have the SC sign in to GitHub in their harness
+  (`.vscode/mcp.json` / `.mcp.json` already declare the server).
 - **EMA MCP**: optional. It is only used as a scraping fallback.
 
-### 1. Provision in scdemos (repo → Code Sync → DA → content)
+#### Harness capabilities (P9: scripts first, harness tools as a convenience)
+Every step that needs a browser or an authenticated API has a **script path** that works in any
+harness (Copilot, Claude Code, plain CLI). Use the harness's built-in browser only when it's
+there and convenient.
+
+| Capability | Script path (any harness) | Auth | Browser-only fallback |
+|---|---|---|---|
+| Scrape original: brand, outline, images | `scrape.mjs --headed` | none | integrated browser + `extract-outline.js` |
+| Screenshots / fidelity | `capture.mjs` + `compare.mjs` | none | n/a |
+| Preview / publish / unindex / code sync / site config | `admin.mjs` | `AEM_ADMIN_TOKEN` (`auth_token` cookie of admin.hlx.page) | `fetch()` from a signed-in admin.hlx.page tab (cookies are sent) |
+| DA documents and media | DA MCP (`da_*`) | MCP sign-in | `fetch()` to admin.da.live with the tab's IMS token |
+| DA site config sheets | `da-config.mjs` | `DA_TOKEN` (IMS token) | paste `mergeDaConfig` into a signed-in da.live tab |
+| Site health / content lint | `doctor.mjs`, `lint-content.mjs` | optional `--admin-token` | n/a |
+| Local preview for the SC | `aem up` (detached) | none | n/a |
+
+Some embedded browsers can't read HttpOnly cookies. In that case use the in-tab `fetch()`
+fallback rather than trying to extract the token. Never print or store tokens.
+Session/todo tracking: use the harness's task list if it has one; otherwise keep a short
+checklist in the run report.
+
+### 1. Provision in scdemos (repo → Code Sync → DA → content) · P2
 
 SCs are **not** org admins, so the agent never creates the repo directly. Provisioning
 goes through the self-service workflow in `scdemos/demo`
@@ -153,6 +214,15 @@ Use the DA MCP. Create the folder by writing its first document:
 - If DA returns 401/403, that is a ⛔ blocker: the SC needs write access to the `scdemos`
   DA org.
 
+#### 1d-2. Recreate the per-site state the template doesn't carry (P2)
+Creating a repo from the template copies **code only**. Walk
+**`references/base-state-inventory.md`** row by row (site config, roles, query index, search
+page, robots, sidekick, public, features, DA config and library, icons) and copy, recreate or
+explicitly skip each one. Copied values must be **rewritten** where they point at the base
+(hosts, `/scdemos/demo` path prefixes, other programs' DAM paths). Never copy `cdn`,
+`apiKeys` or extra `access` entries. Then run `node .skills/customer-demo/scripts/doctor.mjs
+--site <slug> --only state`. The index fills only on publish, so S4 and S5 pass after phase 7.
+
 #### 1e. Fallback when the workflow is unavailable
 - Try GitHub MCP `create_repository` with `organization: "scdemos"`, name `<slug>`,
   `private: false`, `autoInit: false`. This works only for org admins.
@@ -190,34 +260,39 @@ Talk to the SC before the handoff only when:
 
 Each time, send **one** message with the exact link or action, then resume automatically.
 
-### 3. Discover
+### 3. Discover · P4 P9
+Enterprise sites often block bots (the first pilot's site returned 403 to `curl` and to DA's
+server-side fetch), and many render client-side. **Always render in a real browser**, never
+parse raw HTML:
+```bash
+node .skills/customer-demo/scripts/scrape.mjs --base <original origin+path> \
+  --pages "/,/about,/products,…" --out scrape --headed
+```
+It renders each page, dismisses gates and cookie banners, slow-scrolls (lazy/reveal content),
+and writes per page an `outline.json` (sections with headings, copy, lists, **tables, forms
+with fields/options/required, embeds, background images, and `unknown` widgets** that keep
+their text, so nothing is silently dropped) and a screenshot. It also writes `brand.json`
+(colors by frequency, fonts, radius, logo, favicon, site name) and the images that were
+actually rendered (`assets/` + `assets.json`).
+- Choose the page scope from the nav plus the SC's URL: home plus at most 8 pages, one per template.
+- Every `form` item in an outline is a form to migrate (Forms rule, phase 8). Every `unknown`
+  item needs a construct decision in phase 5.
+- Without `--headed`, headless Chromium may get a 403 or an empty page; use `--headed` for
+  bot-protected sites. If both fail, fall back to EMA.
 
-Enterprise sites block bots (manulifeim.com returns 403 to `curl` and to DA's server-side fetch).
-**Always use a real browser** (the integrated browser / Playwright page):
-1. **Brand**: run one `page.evaluate` that returns computed styles for body, h1–h3, p, a,
-   the primary button and the header, the top 18 colors by frequency, `document.fonts`, the
-   nav links, the logo and favicon URLs, and hero/section image URLs.
-2. **Pages**: in the same page context, `fetch()` each top-nav page's HTML, parse it with
-   `DOMParser`, and extract an outline (h1–h3, p, li, img src/alt). AEM-Sites customers
-   serve full SSR HTML, so one call covers 8 pages.
-3. **Screenshots**: the integrated browser has a **fixed panel viewport** (about 840 px);
-   `setViewportSize` is ignored. For 1440/390 px QA, use headless Chromium through
-   `playwright-core` (Chromium is already in `~/Library/Caches/ms-playwright`). Scroll the
-   whole page first so `will-reveal` sections render.
-4. Record the pages in session SQL (`url, template, status`). Dismiss cookie and
-   disclaimer modals before taking screenshots.
-
-### 3b. Assets pipeline (bot-protected CDNs)
-1. In the customer page context: `fetch(img)` → `createImageBitmap` → `OffscreenCanvas`
-   resize (≤1600 px, JPEG q≈0.8) → base64. Batch about 10 images per call.
-2. Decode to files, push them to a **temporary branch** `assets` of the (public) customer
-   repo, and call `da_upload_media(sourceUrl: raw.githubusercontent.com/scdemos/<slug>/assets/<file>)`.
-   Use `sourceUrl`, not `base64Data`, to keep tool payloads small.
+### 3b. Assets pipeline · P9
+1. `scrape.mjs` already saved the rendered images, captured from the browser's own network
+   responses: no CORS, no re-fetch, works on bot-protected CDNs. Resize large ones (≤1600 px).
+2. Push them to a **temporary branch** `assets` of the (public) customer repo, and call
+   `da_upload_media(sourceUrl: raw.githubusercontent.com/scdemos/<slug>/assets/<file>)`
+   (DA can't fetch from customer CDNs). Use `sourceUrl`, not `base64Data`, to keep tool
+   payloads small. Use the `alt` values from `assets.json`.
 3. Delete the branch: `git push origin --delete assets`.
 4. Logos are often SVGs with hidden embedded rasters. Prefer the site's header PNG wrapped
    in an `<svg><image href="data:…">` as `icons/logo.svg`.
 
-### 4. Brand (reskin, no rebuild)
+### 4. Brand (reskin, no rebuild) · P6
+Walk **`references/base-assumptions.md`** and decide every row; the steps below cover the brand rows.
 
 Edit **only** the `BRAND TOKENS` block, the font tokens, `--border-radius-heritage`,
 `--border-heritage` and `--shadow-glow-*` in `styles/styles.css`. Map the customer's colors
@@ -246,7 +321,7 @@ Then:
   layer; stylelint `no-duplicate-selectors` will fail.
 - Remove decorative base effects the customer doesn't use: body gradient blobs, button
   shine, hover lift.
-- Proprietary font: pick an open match. Source Sans 3 matched Manulife JH Sans. Download
+- Proprietary font: pick an open match. For example, Source Sans 3 is a close open match for many humanist corporate sans faces. Download
   the latin woff2 from Google Fonts CSS2 with a Chrome user agent, and add a
   `size-adjust` fallback face.
 - Serif-italic emphasis (`h1 em`, `h2 em`) is a common corporate pattern. The base ships
@@ -254,7 +329,7 @@ Then:
 
 Commit the change as `feat: apply <customer> brand tokens`.
 
-### 5. Map: decide the right construct for every customer pattern
+### 5. Map: decide the right construct for every customer pattern · P3 P7
 
 **Fidelity first.** Never squeeze a customer pattern into an existing block if the result
 looks different from the original. Reuse is the means; matching the customer is the goal.
@@ -267,12 +342,12 @@ For each section of each page, run `identify-page-structure` on the scrape. Then
 | Level | Construct | Use when | Examples |
 |---|---|---|---|
 | 0 | **Default content** | Plain headings, text, lists, buttons, images. No repeating structure. | Intro paragraphs, disclosures, "Stay connected" CTA |
-| 1 | **Existing block, as is** | The content model **and** the look match, apart from brand tokens. | `tabs`, `table`, `form`, calculators |
+| 1 | **Existing block, as is** | The content model **and** the look match, apart from brand tokens. Read the block's content model first: `tabs` is **section-driven** (`Tab Id` / `Tab title` section metadata, not a table), `faq` reads `/faq-index.json`. | `table`, `form`, calculators, section-driven `tabs` |
 | 2 | **Section style** (`section-metadata` style) | The difference is the section's background, width, spacing or alignment, whatever is inside. | `light`, `ink`, `center`, a new `bordered` band |
 | 3 | **CSS-only block variant** | Same authoring table, different visual treatment or layout. | `cards text` / `list` / `stats`, `hero banner` |
-| 4 | **Block variant with JS** | Same authoring table, but extra behavior gated on the variant class. Keep existing authoring backward compatible. | `cards list` + grid/list toggle, `tabs vertical` |
+| 4 | **Block variant with JS** | Same authoring table, but extra behavior gated on the variant class. Keep existing authoring backward compatible. | `cards list` + grid/list toggle, section-driven `tabs` with a `vertical` |
 | 5 | **New block** | Different content model **or** behavior that would distort an existing block. Rule of thumb: over ~40% new CSS, a different row/column contract, or a new interaction model. | `carousel` (slides + prev/next + dots + autoplay), `consent`, `quote-slider`, `fund-finder` |
-| 6 | **Global chrome variant** | Header, footer or page-frame layout differs: side-rail nav, utility bar, multi-column footer, legal band. Add a **variant of header/footer toggled by site metadata** (e.g. `nav-layout: rail`, `footer-layout: legal`); never fork the header. | Manulife left nav rail, footer legal band |
+| 6 | **Global chrome variant** | Header, footer or page-frame layout differs: side-rail nav, utility bar, multi-column footer, legal band. Add a **variant of header/footer toggled by site metadata** (e.g. `nav-layout: rail`, `footer-layout: legal`); never fork the header. | Left icon nav rail, footer legal band (financial-services sites) |
 | 7 | **Template** | A whole page type has its own structure: article, fund detail, event. | `templates/<name>/` + `Template` metadata |
 | 8 | **Global feature / plugin** | Cross-cutting behavior configured by metadata, loaded lazily or delayed. | Consent manager, analytics, chat |
 
@@ -293,7 +368,7 @@ Record the decision for every section in session SQL (`page, section, customer_p
 level, construct, rationale, status`). The QA loop (phase 9) compares section by section
 against this table.
 
-### 6. Build
+### 6. Build · P7
 
 Implement every new variant, section style and block in the working repo:
 - `npm run lint` must pass.
@@ -303,7 +378,25 @@ Implement every new variant, section style and block in the working repo:
 
 Commit and push. Code Sync deploys it to aem.page.
 
-### 7. Content
+### 6b. Port generic work back to the base · P7 P8
+Generic constructs (variants, section styles, chrome layouts, block fixes, new checks) belong
+in the base so the next demo starts with them. Do this **after** the demo is signed off, and
+**only with the SC's OK** (it touches `scdemos/demo`):
+1. `git -C <base clone> fetch && git -C <base clone> worktree add ../demo-port -b <branch> origin/main`
+   (branch ≤ 8 lowercase alphanumerics, e.g. `cardlogo`). Never edit the base `main` or its main worktree.
+2. Port **by patch, not by file copy**: `git -C <customer repo> diff <seed commit>..HEAD -- blocks/<x> styles/…`
+   → apply to the worktree, then **restore base brand values** in every hunk (the customer's
+   rgb tints, fonts and radius must not leak; grep the patch for the customer's hex/rgb values).
+3. Record each construct in `references/demo-manifest.json` (level, content model, `baseCandidate: true`).
+4. **Base regression gate:** with the base on `aem up --port 3001`, capture the base home and
+   2 inner pages before (from `main`) and after (from the worktree) with `capture.mjs`, then run
+   `compare.mjs --original before --demo after`. It must pass: the base's default look is unchanged.
+5. `npm run lint` in the worktree. Then offer a PR (`feat: <construct>`) through the GitHub MCP or
+   `gh pr create`; the SC decides on merging.
+
+### 7. Content · P4
+At the end of this phase, republish every content page so that the query index fills (inventory S4).
+Keep the first section substantive. EDS loads only the first section eagerly, so a section holding just a title pushes LCP into a lazy section (−10 Performance in the pilot). Put the `page-title` heading together with the lead copy or image, or start with a hero.
 - Write each page with `da_create_source`, using real customer copy from discovery and
   images from `https://content.da.live/scdemos/<slug>/media/<file>`.
 - Every page gets a metadata table: Title, Description, and `Social-share: off` on
@@ -320,7 +413,7 @@ Commit and push. Code Sync deploys it to aem.page.
 - Links: point every CTA at a page you actually create, or at an anchor (`/about-us#news`).
   No 404s.
 
-### 8. Bake in demo features
+### 8. Bake in demo features · P1 P3 P8
 - **Experiment** (home): `Experiment: home-hero`, `Experiment Variants: /experiments/home-hero/challenger-1`.
   The variant is a full page; use another real customer hero (carousel slides are
   perfect). Verify with `?experiment=home-hero/challenger-1`.
@@ -330,15 +423,26 @@ Commit and push. Code Sync deploys it to aem.page.
   URLs; they are in the base now.)
 - **Interactive**: a calculator block on a solutions page. Set `currency`/`locale` in
   the metadata sheet.
-- **Form**: `forms/contact-us.json` plus a `form` block on contact-us. Point submit at
-  `https://demo.bbird.live/contact-us/`, which allows any origin. Create
-  `/contact-us-thanks`.
+- **Forms (P3, P8), best effort:** recreate the original's forms as closely as is practical
+  (sheet `/forms/<name>.json` + `form` block; fields, options and required markers from the
+  original; a confirmation page if there is one). The **one hard rule**: row 2 of every form
+  block is the shared endpoint **`https://demo.bbird.live/contact-us/`**. It accepts any
+  field names. Never point a form elsewhere and never create per-customer endpoints. Check
+  with `doctor.mjs --only forms` (dry-run only). **Never send a real submission**: the
+  endpoint posts to a live Slack channel.
+- **Site search**: the rail/top-bar search box submits to `/search?q=`. Create a `/search`
+  page with a `search` block (`view: list`, `excluded-keywords: noindex`, `searchbar:
+  enabled`; add facet rows only if pages carry matching `keywords` metadata). Give it
+  page metadata `Robots: noindex` and `Keywords: noindex`. It needs the `query-index.json`
+  from 1d-2. Verify by typing a customer term (e.g. a capability name) in the header box:
+  the results page lists the right pages, and no nav, footer, fragment or form paths
+  appear.
 - **Walkthrough**: commit `tools/demo/<slug>-walkthrough.json` (see
   `demo-walkthrough.schema.json`) with 5–7 slides: site, authoring, performance,
   experiment, campaign, engagement. Open it with
   `/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`.
 
-### 9. QA loop (maximum 3 passes per page; fidelity gate)
+### 9. QA loop (maximum 3 passes per page; fidelity gate) · P4 P5 P9
 - Headless screenshots at 1440 and 390 px of every page. Check: blocks decorated, no
   broken images, no console 404s. A 404 often means a block expects an index (`faq` →
   `/faq-index.json`).
@@ -358,7 +462,8 @@ Commit and push. Code Sync deploys it to aem.page.
   failures on `.hlx-preview-overlay` are preview-only and can be ignored. Best Practices
   is lowered by the base martech cookies.
 
-### 9b. Block library and authoring kit
+### 9b. Block library and authoring kit · P2
+First migrate the **whole DA site config** (inventory S12): `DA_TOKEN=<IMS token> node .skills/customer-demo/scripts/da-config.mjs --slug <slug> --sc-email <SC @adobe.com> --dry-run`, then again without `--dry-run`. It refuses to write if any base reference remains and verifies the sheets after writing. (Browser-only harness: paste `mergeDaConfig` into a signed-in da.live tab and POST FormData `config=<json>`.) Then:
 Create or update `docs/library` in the customer DA site, using `scdemos/demo/docs/library` as
 the reference:
 - `blocks.json` sheet `data` with columns `name`, `path`, `focal-point`. Add one library page
@@ -404,6 +509,33 @@ Fidelity tooling gotchas (learned in the pilot):
 - Original-only widgets that render empty (a strategy finder showing only its title)
   still need their heading or anchor on the demo; note them as ⚠️ in the report.
 
+### 10a. Final sweep (every demo, right before handoff)
+A fresh pass that re-applies every principle to the finished site, as if someone else built it.
+Fix what you find, then re-run until clean.
+1. **Automated:**
+   ```bash
+   node .skills/customer-demo/scripts/lint-content.mjs --site <slug> --scope "/,/a,/b" --strict   # P3 content models
+   node .skills/customer-demo/scripts/doctor.mjs --site <slug> --scope "/,/a,/b" --strict --admin-token <auth_token>   # P1 P2 P6 P8
+   node .skills/customer-demo/scripts/da-config.mjs --check <saved merged config>   # optional: no base refs
+   node .skills/customer-demo/scripts/capture.mjs ... --scheme dark && node .skills/customer-demo/scripts/compare.mjs ...   # P4 P5
+   ```
+   All must exit 0, or every remaining FAIL is listed as ⚠️ in the report with its reason.
+   `compare.mjs` is strict by default (no missing header/footer items, CTAs ≥ 80%, images ≥ 90%,
+   copy ≥ 80%, all headings). A check may pass only through `--waivers waivers.json`
+   (`{ "<page>|*": { "<check>": "reason" } }`), which is the closest-possible-alternative escape hatch:
+   waivers are printed in the output and copied into the report. `--strict` turns SKIPs (e.g. no admin token) into FAILs, so unverified state can't pass. `--scope` is the demo's page list.
+2. **State (P2):** walk `base-state-inventory.md`; every row is copied, recreated or skipped with a reason.
+3. **Assumptions (P6):** walk `base-assumptions.md`; every row has a customer decision.
+   Look in particular at controls that only appear in flows: the search results page,
+   form buttons and selects, the empty and error states of forms, and modals.
+4. **Outcomes (P1):** in a real browser, use every feature: search with two customer terms,
+   every form (dry-run), the experiment and campaign URLs, the calculator, the theme toggle (if
+   any), the gate and consent buttons, and the carousel controls.
+5. **Looks (P5):** every page at 1440 and 390 px under a dark OS. Look at every section
+   screenshot, not just the PASS line.
+6. **Lighthouse:** home + two inner pages. Performance ≥ 90 and Accessibility ≥ 95, or explain why not.
+7. Fill in the sign-off checklist, with evidence for each item.
+
 ### 10. Handoff (the only long message to the SC)
 
 Report, in this order:
@@ -415,10 +547,21 @@ Report, in this order:
   only if it is still pending.
 - The demo walkthrough link.
 
+### 11. Retro (every run, after handoff) (P10)
+Append to the run's report (`references/pilot-reports/<slug>-<yyyy-mm>.md`; this folder is git-ignored, so the report is the operator's working notes and is never committed) a
+**gotcha table**: `# | symptom | root cause | principle | prevention | status`. Prevention is
+one of: **base fix** (code in `scdemos/demo`), **doctor:<check>**, **lint:<rule>**,
+**gate** (compare/capture), or **rule** (SKILL.md text). Any gotcha whose only prevention is
+"rule" is listed under "not yet prevented" and proposed as a script check or base fix. Gotchas
+found by the SC rather than the agent are flagged: they show where the checks are blind.
+Because reports stay local, **the retro is only done when its lessons land in shared files**: a principle or rule in SKILL.md, a check in `doctor.mjs` / `lint-content.mjs`, or a base fix, plus `SC-QUICKSTART.md` when it changes what an SC sees or does. Propose those changes to the SC (and commit only with their OK).
+
 ## Guardrails
 
+- **Commit approval (P8):** customer work is committed to the customer repo (`scdemos/<slug>`, `main`) under the one-time approval given at the start. Anything for the base (`scdemos/demo`: generic variants, manifest, skill fixes) is prepared on a short feature branch and offered as a **pull request only after asking**; never commit or push to the base `main` directly.
+- **No side effects on shared systems (P8):** automated form submits use `x-dry-run: 1`; never post to Slack, email or analytics on purpose.
 - Never edit `scripts/aem.js`, `head.html` or `package-lock.json`. Never commit secrets.
-- Branch names are at most 8 lowercase alphanumeric characters, e.g. `custdemo`.
+- Branch names are at most 8 lowercase alphanumeric characters, e.g. `cardlogo`.
 - Use conventional commits (`feat:`, `fix:`, `chore:`).
 - Never fork a base block into a customer-specific copy. Use a variant instead.
 - Keep customer assets out of the base `scdemos/demo` repo. They go only to the

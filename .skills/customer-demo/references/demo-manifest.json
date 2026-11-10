@@ -66,10 +66,13 @@
     "dark-scheme": "force dark color-scheme",
     "head-row": "heading left, lone link paragraph right (e.g. \"Latest news\" ... \"All news\")",
     "social": "links rendered as raised cards with trailing icon (Stay connected)",
-    "page-title": "white title band: optional icon paragraph above the H1 (simple landing pages like Contact Us, Viewpoints)",
+    "page-title": "white title band: optional icon paragraph above the H1 (simple landing pages: contact, search, insights hub)",
     "band": "full-bleed color band (default ink) with light text; a lone image paragraph fills the right edge; modifiers band-green | band-purple | band-blue",
     "overlap": "follows a band: pulls its panel/stats/form up into the band (desktop); text before the panel and cards stats turn light",
-    "tags": "lists render as pill clouds (browse by tag/category/author, all tags)"
+    "tags": "lists render as pill clouds (browse by tag/category/author, all tags)",
+    "band-green": "band modifier: green background",
+    "band-purple": "band modifier: purple background",
+    "band-blue": "band modifier: blue background"
   },
   "blocks": {
     "hero": {
@@ -253,5 +256,14 @@
       "level": 0,
       "use": "metadata overrides for auth link text"
     }
+  },
+  "baseContentMarkers": {
+    "$comment": "Strings that only exist in the base demo content. Any of them on a customer page means base content leaked (P6). lint-content.mjs fails on them.",
+    "markers": [
+      "diyFIRE",
+      "Guided Path to Financial Independence",
+      "Lorem ipsum",
+      "Demo Site"
+    ]
   }
 }
