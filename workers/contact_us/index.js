@@ -145,7 +145,9 @@ export default {
     if (!honeypot) {
       const page = request.headers.get('referer') || request.headers.get('origin') || 'unknown page';
       const form = meta._form || meta._subject || 'Contact form';
-      let text = `📩 *${slackEscape(form)}* submission\n_${slackEscape(page)}_\n${fields
+      // explicit <url> link: Slack's auto-linker would swallow surrounding markup (e.g. a trailing `_`)
+      const from = /^https?:\/\//.test(page) ? `<${page.replace(/[<>|]/g, '')}>` : slackEscape(page);
+      let text = `📩 *${slackEscape(form)}* submission\nFrom: ${from}\n${fields
         .map(([k, v]) => `*${slackEscape(label(k))}:* ${slackEscape(v)}`)
         .join('\n')}`;
       if (text.length > MAX_SLACK_TEXT) text = `${text.slice(0, MAX_SLACK_TEXT)}\n… (truncated)`;
