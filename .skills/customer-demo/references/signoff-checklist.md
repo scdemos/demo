@@ -31,6 +31,7 @@ one has to be listed in the report with its reason.
 - [ ] Mobile (390 px) is usable: no overlap, no horizontal scroll, and the nav collapses correctly.
 - [ ] Text on colored bands, overlaps and images is readable (the `compare.mjs` readability check passes, plus a visual check of every band/overlap section).
 - [ ] Forms embedded in content pages (e.g. "Partner with us") exist wherever the original has them, not only on Contact Us.
+- [ ] **Every form is submitted end to end** in a real browser, scoped to the content form (not the header search), **always in dry-run mode**: add the `x-dry-run: 1` request header (e.g. Playwright `route` → `continue({ headers })`). The POST returns 200 with `"dryRun":true`, and the thank-you page or message appears. **Never post a real submission: the worker feeds an active Slack channel.**
 
 ## 3. Design system and theming
 - [ ] Brand tokens are set: colors, fonts (with a licensed-font substitute documented), radius, nav casing, h2 accent.

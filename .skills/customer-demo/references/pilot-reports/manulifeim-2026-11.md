@@ -69,6 +69,8 @@ Best Practices is held down by base martech cookies. Viewpoints LCP is the featu
 10. **Forms outside Contact Us.** The original Private Markets page has its own form. Added to the checklist.
 11. **DA tooling.** `da_copy_content` doesn't work across sites, and `da_preview_content` fails for sheets. Use the Admin API from a signed-in tab. The DA site config (`admin.da.live/config`) has to be POSTed as FormData `config=<json>`.
 
+12. **The "generic" contact worker wasn't generic.** `demo.bbird.live/contact-us` required `name` and `message`, so the Manulife forms (email/region/issue; first/last name/message) got `400 Missing fields`. Found by the SC, not the agent: the gate only checked that forms rendered. The worker now accepts any fields in JSON, urlencoded, multipart or text/plain. It also handles honeypot, captcha and same-site redirects, and still returns success when Slack is down. Deployed, with 26 unit cases and an end-to-end browser submit of both forms. The checklist now requires submitting every form.
+
 ### Sign-off checklist (`references/signoff-checklist.md`)
 **1. Chrome**
 - ✅ Rail header with icons, search, region selector, register/log in. Checked at 1440 and 390 px.
@@ -81,7 +83,7 @@ Best Practices is held down by base martech cookies. Viewpoints LCP is the featu
 - ✅ `compare.mjs` passes 9/9 pages.
 - ✅ Layouts checked visually at 1440 px, plus 390 px spot checks.
 - ✅ Content complete.
-- ✅ Forms and interactions work.
+- ✅ Forms and interactions work. Both forms were submitted end to end after the worker fix.
 - ✅ No broken images or errors.
 - ✅ Band/overlap readability.
 - ✅ Partner form present.
