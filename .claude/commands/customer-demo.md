@@ -1,8 +1,8 @@
 ---
-description: Build a customer-branded demo from the scdemos/demo base. Just give the customer site, any URL or domain, e.g. acme.com or acme.com/institutional/us/en
-argument-hint: <customer site>
+description: Make this CloneIt demo look like the customer. Give the customer's website, e.g. https://www.acme.com/institutional/us/en
+argument-hint: <customer website URL>
 ---
 
-Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to create a customer demo for: $ARGUMENTS
+Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to make the CloneIt demo look like the customer: $ARGUMENTS
 
-Run the skill end-to-end. Ask the SC only for: the AEM Code Sync install, the one-time approval to commit to the customer repo `scdemos/<slug>`, and any change to the base `scdemos/demo` (offered as a PR). Derive scdemos/<slug> (GitHub repo and DA site) from the site. Provision the repo through the new-demo issue workflow, then keep going while it runs.
+Run the skill end-to-end on the demo whose repo this is (`git remote get-url origin` → `scdemos/<slug>`; `slug=` in the prompt overrides it). If `scdemos/<slug>` doesn't exist yet, send the SC to CloneIt (Customer demo, own repo) once and wait; don't provision it yourself. Ask the SC only for the one-time approval to commit to `scdemos/<slug>` and for any change to the base `scdemos/demo` (offered as a PR).

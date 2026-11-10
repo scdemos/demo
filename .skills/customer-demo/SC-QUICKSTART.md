@@ -1,8 +1,8 @@
 # Customer demo in one prompt: SC quick start
 
-Turn **one customer URL** into a branded, working AEM Edge Delivery demo built on `scdemos/demo`.
-The agent does the build. You give it the input, answer two prompts (Code Sync install, OK to
-commit to your demo repo), and do the final look-through.
+Turn **one customer URL** into a branded, working AEM Edge Delivery demo built on `scdemos/demo`,
+in two moves: **create the site in CloneIt** (about 2 minutes, no GitHub or admin rights needed),
+then **paste one prompt** into your AI tool. You approve commits once and do the final look-through.
 
 ## Before your first demo (once, about 10 minutes)
 | You need | How |
@@ -11,19 +11,28 @@ commit to your demo repo), and do the final look-through.
 | MCP servers signed in | DA, GitHub, EMA (optional) are preconfigured in `.vscode/mcp.json` / `.mcp.json`. Accept the sign-in prompts. |
 | Access | Write access to the **`scdemos`** DA org; an Adobe login for `admin.hlx.page` and `da.live` in the same browser the agent drives. |
 | Tools | Run **`node .skills/customer-demo/scripts/setup-check.mjs --fix`** once. It checks Node, git, the AEM CLI and Lighthouse, and installs Playwright plus the matching Chromium outside the repo. |
-| Org setup (admins, once) | The `DEMO_PROVISION_TOKEN` secret on `scdemos/demo`, so repos are created for you. |
+| GitHub | Be a member of the scdemos GitHub org. CloneIt asks your GitHub username once and makes you admin of each demo repo you create. |
+| Org setup (admins, once) | The CloneIt worker's `GITHUB_PROVISION_TOKEN` secret (required to create demos). |
 
-## Run it (one input)
-```
-/customer-demo acme.com/institutional/us/en
-```
-(or `demo acme.com`). Use the **exact section** of the customer site you want: a deep link
-scopes the demo to that sub-site. Optional: `slug=acmeinvest` to choose the name.
+## Run it
+1. **Create the demo:** open **CloneIt** in DA (`https://da.live/app/scdemos/demo/tools/cloneit/cloneit`,
+   signed in), enter the **customer site** URL (the site name is suggested from it, editable), your GitHub username
+   (first time only) and click **Create demo**. CloneIt creates your own repo `scdemos/<slug>` (you're admin)
+   and DA folder, adds the repo to AEM Code Sync, copies the demo content and config, and publishes
+   everything. You can demo the base site right away.
+2. **Optional: make it look like the customer.** CloneIt shows the prompt with your customer site filled
+   in. Click **Copy prompt**, **Open in VS Code** (or clone the repo in Claude Code) and paste it:
+   ```
+   /customer-demo https://www.acme.com/institutional/us/en
+   ```
+   Enter the **exact section** of the customer site in CloneIt (or edit the URL in the prompt): a deep link
+   scopes the demo to that sub-site.
 
 ## What happens, and when you're needed
 | Phase | Agent does | You do |
 |---|---|---|
-| Provision | Opens a `new-demo: <slug>` issue → repo `scdemos/<slug>`; creates the DA site; copies site config, roles, query index, search page and **all DA config sheets** from the base | **Install AEM Code Sync** on the new repo when the link opens (one click) |
+| Create (CloneIt) | Repo `scdemos/<slug>` + AEM Code Sync, DA site, demo content, **all DA config sheets**, site config (you as admin), query index; previews and publishes everything | Pick the option and click once |
+| Attach | Checks the site, clones the repo next to your workspace, starts `aem up`, replaces the demo content with the customer's | Nothing |
 | Discover + brand | Renders every page in a real browser (`scrape.mjs`; works for client-rendered and bot-protected sites, and a browser window may open briefly), captures brand, images, forms and every section, then maps each pattern to a block, variant or section style | Nothing. Watch on `http://localhost:3000` |
 | Build | Reskins the tokens, adds generic variants when needed, writes the content into DA, uploads images | Nothing |
 | Features | Experiment, campaign, calculator (customer currency), forms → shared endpoint, site search, walkthrough deck, block library | Nothing |
@@ -43,7 +52,7 @@ scopes the demo to that sub-site. Optional: `slug=acmeinvest` to choose the name
 5. Rehearse with the walkthrough deck (`/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`).
 
 ## Do / don't
-- **Do** let it run end to end; answer only the Code Sync and commit-approval prompts. Point out misses in plain words ("hero should be a carousel", "footer needs the legal band").
+- **Do** let it run end to end; answer only the commit-approval prompt. Point out misses in plain words ("hero should be a carousel", "footer needs the legal band").
   The agent picks the right fix (variant vs new block) and adds it generically.
 - **Do** scope tightly: home plus about 8 key pages beats 30 shallow ones.
 - **Don't** submit demo forms for real. They post to a shared live Slack channel; agents test in dry-run.
@@ -57,11 +66,13 @@ scopes the demo to that sub-site. Optional: `slug=acmeinvest` to choose the name
 | Search, forms or links broken | "Run doctor.mjs and fix all FAILs" |
 | Dark or odd colors on your laptop | "Check color-scheme and the base assumptions" |
 | Library panel empty | "Re-run the DA config migration (da-config.mjs) and the library phase" |
-| Repo not created | Check the `new-demo` issue. The provisioning token may be missing (admin task) |
+| CloneIt says "sign in" or "isn't enabled yet" | Sign in to da.live with your Adobe account and open CloneIt from DA. "Not enabled" = the admin hasn't set the provisioning token yet |
+| CloneIt: repo created but not in Code Sync | Ask an scdemos admin to add the repo to AEM Code Sync, then run CloneIt again with the same name |
+| CloneIt: "isn't a member of scdemos" | Check the GitHub username spelling, or ask an scdemos admin to add you to the org |
 | Agent can't run browsers or scripts | `node .skills/customer-demo/scripts/setup-check.mjs --fix` |
 | Publish / config calls fail with 401 | Sign in at `https://admin.hlx.page/login` and `da.live` in the browser the agent uses |
 
 **Feedback loop:** each run ends with a retro. When you hit something new, say so. The fix goes
 into the skill, a script check or the base, so the next SC doesn't hit it.
 
-<!-- docs-check: synced-with=46821782a886128a -->
+<!-- docs-check: synced-with=4cbc4334f90897e2 -->
