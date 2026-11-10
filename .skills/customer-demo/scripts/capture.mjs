@@ -16,18 +16,14 @@
  *                                  background color, layout columns)
  *
  * Use --headed for bot-protected originals (Akamai etc. return 403 to headless Chromium).
- * Requires playwright-core and a Chromium (`npx playwright install chromium` once).
+ * Requires playwright-core and a Chromium: `node setup-check.mjs --fix` once.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 
-let chromium;
-try {
-  ({ chromium } = await import('playwright-core'));
-} catch {
-  console.error('playwright-core missing: run `npm i --no-save playwright-core` in this folder (or globally).');
-  process.exit(2);
-}
+import { loadChromium } from './lib/pw.mjs';
+
+const chromium = await loadChromium();
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((acc, a, i, all) => {
   if (a.startsWith('--')) acc.push([a.slice(2), all[i + 1]?.startsWith('--') || all[i + 1] === undefined ? 'true' : all[i + 1]]);
@@ -176,7 +172,7 @@ for (const p of pages) {
       lowContrast: lowContrast.slice(0, 10),
       title: document.title,
       height: document.body.scrollHeight,
-      header: header && { box: box(header), items: [...header.querySelectorAll('a, button, input')].filter((x) => x.offsetParent).map((x) => (x.innerText || x.placeholder || x.getAttribute('aria-label') || '').trim()).filter(Boolean).slice(0, 30) },
+      header: header && { box: box(header), items: [...header.querySelectorAll('a, button, input, [role=button]')].filter((x) => x.offsetParent).map((x) => (x.innerText || x.placeholder || x.getAttribute('aria-label') || '').trim()).filter(Boolean).slice(0, 30) },
       rail: rail && { box: box(rail), items: rail.innerText.split('\n').map((t) => t.trim()).filter(Boolean).slice(0, 20) },
       footer: footer && { ...inventory(footer), links: [...footer.querySelectorAll('a')].map((a) => a.textContent.trim()).filter(Boolean) },
       sections: sections.map(inventory),
