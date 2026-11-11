@@ -53,8 +53,8 @@ The demo is the customer's site rebuilt on the base: **same pages, same look, sa
 rules, each with the gate that fails when it's broken. Don't hand off with a failing gate. The
 fidelity checks can only be waived **by the SC** (`waivers.json` reason starting with `SC:`, e.g.
 `"SC: licensed font, Source Sans 3 accepted"`); `compare.mjs` ignores any other waiver on them.
-Environmental checks (`health` noise from third-party scripts, Lighthouse on preview) may carry
-the agent's own written reason.
+Environmental checks (`health` noise from third-party scripts) may carry the agent's own written
+reason. The Lighthouse gate (100 on mobile and desktop) is waivable only by the SC.
 
 | # | Rule | Enforced by |
 |---|---|---|
@@ -89,6 +89,7 @@ automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.m
 - `references/demo-manifest.json`: the blocks, variants, section styles, brand slots and
   features the base provides. **Read it before mapping anything.**
 - `scripts/preflight.mjs`: checks the customer site, the destination repo, Code Sync and DA.
+- `scripts/lighthouse.mjs`: **last gate before sign-off** (phase 10b). Lighthouse on the published site, mobile + desktop, every scoped page: Performance, Accessibility and Best Practices must be 100 (SEO reported, not gated); writes the scores and a fix list.
 - `scripts/parity.mjs`: **definition of done** (phase 10a). Drives capture + compare for every scoped page at 1440/390 + dark, on localhost, and writes the parity matrix and fix list.
 - `scripts/capture.mjs` + `scripts/compare.mjs`: fidelity gate. They capture the original
   and the demo (screenshots plus a structural inventory per section) and produce
@@ -550,11 +551,8 @@ with an `SC:` waiver, or drop the page).
   - same interactions: slider controls, toggles, accordions
   Any miss sends that section back to phase 5 at a higher level. Don't hand off with a
   known structural miss; list only true limitations (licensed fonts, live data).
-- Lighthouse: the keyless PSI API quota is often exhausted. Run
-  `npx lighthouse@12 <aem.page url>` with `CHROME_PATH` set to the Playwright Chromium.
-  Expect Performance 100. SEO is low only because of noindex (intentional). Contrast
-  failures on `.hlx-preview-overlay` are preview-only and can be ignored. Best Practices
-  is lowered by the base martech cookies.
+- Lighthouse: keep an eye on it while building (`lighthouse.mjs --pages "/x" --runs 1`); the hard
+  gate is phase 10b. SEO is low only because of noindex (intentional).
 
 ### 9b. Block library and authoring kit · P2
 First migrate the **whole DA site config** (inventory S12): `DA_TOKEN=<IMS token> node .skills/customer-demo/scripts/da-config.mjs --slug <slug> --sc-email <SC @adobe.com> --dry-run`, then again without `--dry-run`. It refuses to write if any base reference remains and verifies the sheets after writing. (Browser-only harness: paste `mergeDaConfig` into a signed-in da.live tab and POST FormData `config=<json>`.) Then:
@@ -610,7 +608,7 @@ Fidelity tooling gotchas (learned in the pilot):
   still need their heading or anchor on the demo; note them as ⚠️ in the report.
 
 ### 10a. Final parity loop: revisit every page, fix, re-test on localhost (definition of done)
-**The migration is complete only when `parity.mjs` exits 0.** Never tell the SC it's done, finished
+**The migration is complete only when `parity.mjs` exits 0, and then `lighthouse.mjs` (10b) too.** Never tell the SC it's done, finished
 or ready before that, whatever the earlier phases reported. This is a fresh pass over the finished
 site, as if someone else built it and you're the reviewer:
 
@@ -637,7 +635,7 @@ Before the last round, do the by-eye pass below (step 0) and write `fid/review.j
 (`site-tab.js` `bulk` `publish`), and rerun `parity.mjs` against the published site once
 (`--demo https://main--<slug>--scdemos.aem.live`) to prove what the SC will show matches too.
 
-**Last step, only after both parity runs pass: clean up.** Delete the base demo backup so the DA
+Then run the Lighthouse gate (10b). **Last step, only after both parity runs and 10b pass: clean up.** Delete the base demo backup so the DA
 site holds only the customer demo: `site-tab.js` `{ op: 'purgeBackup', site: '<slug>', confirm:
 'parity-complete', dryRun: true }`, then without `dryRun`. It deletes only `/drafts/demo-backup`
 (files, then folders) and refuses without the confirmation. Record `backup.purged: true` in the run
@@ -689,12 +687,41 @@ handoff.
    campaign URLs only if the SC asked for them).
 5. **Looks (P5):** every page at 1440 and 390 px under a dark OS. Look at every section
    screenshot, not just the PASS line.
-6. **Lighthouse:** home + two inner pages. Performance ≥ 90 and Accessibility ≥ 95, or explain why not.
+6. **Lighthouse:** the 10b gate (every page, mobile + desktop, 100 except SEO).
 7. Fill in the sign-off checklist, with evidence for each item.
 
+### 10b. Lighthouse gate: 100 on mobile and desktop (last pass before sign-off)
+After parity passes and the pages are published, score **every scoped page** on the published site:
+```bash
+node .skills/customer-demo/scripts/lighthouse.mjs          # site + scope from .customer-demo/run.json
+# → fid/lighthouse.md: scores per page × mobile/desktop + FIX LIST (audit, and the elements/URLs causing it)
+```
+**Performance, Accessibility and Best Practices must be 100 on both mobile and desktop** (median of
+3 runs; SEO is reported only, the demo is noindex on purpose). Loop: fix → publish → rerun with
+`--pages "<failing pages>"` → after code or layout changes, rerun `parity.mjs --pages` for those pages
+too (a speed fix must not break fidelity). Typical fixes:
+- **LCP / speed index:** the first section carries the hero image or lead copy (never a title-only
+  section); the LCP image is the first image in the first section, sized ≤ 2000 px, no lazy CSS
+  background; fonts have a metric-matched fallback (`size-adjust`).
+- **CLS:** fixed height for the header/rail, images with dimensions, fonts with fallback metrics,
+  no content injected above the fold after load (banners overlay, they don't push).
+- **TBT:** third-party scripts (martech, chat, embeds) load in `delayed.js` or after consent, never
+  in the eager or lazy phase; heavy blocks load their libraries on interaction.
+- **Accessibility:** contrast from the brand tokens (fix the token, not the instance); icon-only
+  links and buttons get an `aria-label` (from the icon name or the original's label); heading
+  order; form labels; alt text from the original.
+- **Best Practices:** no third-party cookies before consent (Web SDK / Target only after the
+  consent banner's accept, or in `delayed.js` with consent defaults), no console errors or
+  DevTools issues, images at the right aspect ratio and resolution.
+Problems that come from the **base** (they show on `main--demo--scdemos.aem.live` too) are fixed in the
+demo repo and **ported back** (6b) so every future demo starts at 100. After 3 rounds a page still
+below 100 stays in the report with its scores and failing audits, and the SC decides.
+The migration is done (and the backup may be purged) only when `parity.mjs` and `lighthouse.mjs`
+both exit 0.
+
 ### 10. Handoff (the only long message to the SC)
-Only after `parity.mjs` exits 0 (or every remaining ❌ has the SC's decision recorded). Include
-`fid/parity.md`.
+Only after `parity.mjs` and `lighthouse.mjs` exit 0 (or every remaining ❌ has the SC's decision
+recorded). Include `fid/parity.md` and the Lighthouse table from `fid/lighthouse.md`.
 
 Generate it from `.customer-demo/run.json` (scope vs done, retries, waivers, failures). Report, in this order:
 - Preview, live, DA edit and repo URLs.

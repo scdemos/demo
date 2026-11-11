@@ -87,7 +87,7 @@ rail, carousels, layout, provenance, section count, review) can only be waived *
 ## 6. Engineering quality
 - [ ] `npm run lint` is clean in the customer repo. No `!important` hacks; any lint disables have a written reason. [P7]
 - [ ] New constructs are generic and opt-in (metadata or variant), and ported to the base without changing its default look. Verified by a base home page screenshot. [P7]
-- [ ] Lighthouse on the home page and one inner page: Performance ≥ 90 (target 100), Accessibility ≥ 95. Any shortfall is explained.
+- [ ] **`lighthouse.mjs` exits 0:** every scoped page on the published site scores **100** for Performance, Accessibility and Best Practices on **mobile and desktop** (median of 3 runs; SEO reported, not gated). Base-caused issues are ported back to `scdemos/demo`. [P5 P7] `lighthouse`
 - [ ] Every page is previewed and published. `aem.live` returns 200 for every page. [P1] `doctor:pages`
 - [ ] The base demo pages were unpublished and backed up to `/drafts/demo-backup` (DA) during the migration; nothing of the base demo is live, indexed or linked. [P2 P6] `lint:base-leftover` `doctor:index`
 - [ ] After parity passed (localhost and published), the backup was deleted (`site-tab.js` `purgeBackup`): the DA site holds only the customer demo. Kept only if a page is still waiting for the SC's decision. [P2]
