@@ -1,7 +1,7 @@
 // Offline tests (no network): node workers/cloneit_token/index.test.mjs
 import { Buffer } from 'node:buffer';
 import process from 'node:process';
-import worker, { verifyUser, provisionStandalone, isAllowedProxyPath } from './index.js';
+import worker, { verifyUser, provisionStandalone, isAllowedProxyPath, originMatches } from './index.js';
 let pass = 0; let fail = 0;
 const ok = (name, cond, extra = '') => { (cond ? pass++ : fail++); console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${cond ? '' : ` ${extra}`}`); };
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -78,4 +78,11 @@ for (const bad of ['Acme', 'a--b', 'demo', '']) {
   try { await provisionStandalone({ site: bad, githubUser: 'sc-user', email: 'a@adobe.com' }, { ORG: 'scdemos' }, fakeGh().gh, nowait); ok(`bad name "${bad}" rejected`, false); } catch (e) { ok(`bad name "${bad}" rejected`, e.status === 400); }
 }
 try { await provisionStandalone({ site: 'acme', email: 'a@adobe.com' }, { ORG: 'scdemos' }, fakeGh().gh, nowait); ok('github user required', false); } catch (e) { ok('github user required', e.message === 'github_user_required'); }
+{ const env = { ALLOWED_ORIGINS: 'https://main--demo--scdemos.aem.live,https://*--demo--scdemos.preview.da.live' };
+  ok('origin exact', originMatches('https://main--demo--scdemos.aem.live', env));
+  ok('origin branch wildcard', originMatches('https://custdemo--demo--scdemos.preview.da.live', env));
+  ok('origin wildcard no dots', !originMatches('https://evil.com.x--demo--scdemos.preview.da.live', env));
+  ok('origin wildcard other host', !originMatches('https://custdemo--demo--scdemos.preview.da.live.evil.com', env));
+  ok('origin wildcard other repo', !originMatches('https://custdemo--other--scdemos.preview.da.live', env));
+  ok('origin empty', !originMatches('', env)); }
 console.log(`\n${pass} pass, ${fail} fail`); process.exit(fail ? 1 : 0);

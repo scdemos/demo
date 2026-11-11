@@ -28,9 +28,22 @@ function getAllowedOrigins(env) {
   return (env.ALLOWED_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
 }
 
+/**
+ * Exact match, or a `*` wildcard for one branch label: `https://*--demo--scdemos.aem.page` allows
+ * `https://custdemo--demo--scdemos.aem.page` (branch previews), never extra subdomains or other hosts.
+ */
+export function originMatches(origin, env) {
+  if (!origin) return false;
+  return getAllowedOrigins(env).some((allowed) => {
+    if (!allowed.includes('*')) return allowed === origin;
+    const re = new RegExp(`^${allowed.split('*').map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?')}$`);
+    return re.test(origin);
+  });
+}
+
 function getCorsHeaders(request, env) {
   const origin = request.headers.get('Origin') || '';
-  const match = getAllowedOrigins(env).includes(origin) ? origin : '';
+  const match = originMatches(origin, env) ? origin : '';
   return {
     'Access-Control-Allow-Origin': match,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -41,7 +54,7 @@ function getCorsHeaders(request, env) {
 }
 
 function isOriginAllowed(request, env) {
-  return getAllowedOrigins(env).includes(request.headers.get('Origin') || '');
+  return originMatches(request.headers.get('Origin') || '', env);
 }
 
 function jsonResponse(cors, body, status = 200) {
