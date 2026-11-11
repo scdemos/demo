@@ -89,7 +89,8 @@ rail, carousels, layout, provenance, section count, review) can only be waived *
 - [ ] New constructs are generic and opt-in (metadata or variant), and ported to the base without changing its default look. Verified by a base home page screenshot. [P7]
 - [ ] Lighthouse on the home page and one inner page: Performance ≥ 90 (target 100), Accessibility ≥ 95. Any shortfall is explained.
 - [ ] Every page is previewed and published. `aem.live` returns 200 for every page. [P1] `doctor:pages`
-- [ ] The base demo pages are unpublished and backed up to `/drafts/demo-backup` (DA); nothing of the base demo is live, indexed or linked. [P2 P6] `lint:base-leftover` `doctor:index`
+- [ ] The base demo pages were unpublished and backed up to `/drafts/demo-backup` (DA) during the migration; nothing of the base demo is live, indexed or linked. [P2 P6] `lint:base-leftover` `doctor:index`
+- [ ] After parity passed (localhost and published), the backup was deleted (`site-tab.js` `purgeBackup`): the DA site holds only the customer demo. Kept only if a page is still waiting for the SC's decision. [P2]
 
 ## 7. Guardrails
 - [ ] No commit was made without the SC's OK, and only to the allowed branch. [P8]

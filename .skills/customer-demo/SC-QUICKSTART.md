@@ -46,7 +46,7 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 | Sign in (start) | Checks tools and MCP servers, opens **da.live in the integrated browser** | **Sign in once** in that tab (and to any MCP server it lists). That one sign-in covers DA, preview and publish for the whole run; no tokens to copy |
 | Attach | Checks the site and starts `aem up` (**http://localhost:3000**). The base demo stays live until content starts | Nothing |
 | Discover + design | Renders every page of the customer site in a real browser and analyzes the design: full nav with dropdowns / mega menus / sub-navs, header layout, type, buttons, cards, widths, every section's layout and carousels. Writes a design brief and maps every line to a block, variant or section style; anything that doesn't map becomes a **new** construct (added to the block library) | Nothing. Watch on `http://localhost:3000` |
-| Build | Reskins the tokens and builds the header, footer and sections like the original. Then moves the base demo pages to DA **`drafts/demo-backup`** (unpublished, still there to look at), writes repeated sections once as fragments, and writes the **original pages with their real content** into DA | Nothing |
+| Build | Reskins the tokens and builds the header, footer and sections like the original. Then moves the base demo pages to DA **`drafts/demo-backup`** (unpublished; deleted once the migration passes, so DA stays clean), writes repeated sections once as fragments, and writes the **original pages with their real content** into DA | Nothing |
 | Features | The customer's cookie banner and disclaimer gate (if they have them), login with their wording (the flow stays on demo.bbird.live), gated content when they have a client/member area, templates for articles and events, calculator (customer currency), forms → shared endpoint, site search, walkthrough deck, block library. **No experiments or campaigns by default**: add them in DA when your story needs one | Nothing |
 | QA + final parity loop | Checks each page against the original, side by side on localhost: same pages, same words (invented copy fails), same header, same section layout and carousels, same look. Then `lint-content` → `doctor --strict` → strict `compare --final` (1440/390, dark OS) → Lighthouse → sign-off checklist, and loops back to fix what differs (up to 3 passes per page). The final step, `parity.mjs`, revisits **every page** against the original on localhost at desktop and phone size, fixes and re-tests until all pages pass; the agent only calls the migration done when it passes (and once more on the published site). A page that still differs is listed with its failing checks, and only **you** can waive a fidelity gap | Review the handoff; decide on any listed gap |
 | Commits | Commits to `scdemos/<slug>` under the OK you gave at the start. New generic variants are proposed for the base as a **PR from a separate branch**, checked to leave the base look unchanged | Say **yes once** at the start; approve or decline the base PR |
@@ -76,7 +76,7 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 |---|---|
 | Page looks unlike the original | "Run parity.mjs for /page and close every item on the fix list" (header, layout, carousel, copy and behavior differences are all checks) |
 | Made-up text on a page | "Replace invented copy with the original's (provenance check)" |
-| Want the original demo pages back | They're in DA under `drafts/demo-backup` (unpublished) |
+| Want the original demo pages back | During the run they're in DA under `drafts/demo-backup`; after a successful migration that copy is deleted. The base demo always stays at `da.live/#/scdemos/demo` |
 | Want an experiment or campaign | "Add an experiment on the home hero with a challenger from <page>" |
 | Run got interrupted | Paste the same prompt again: it resumes from `.customer-demo/run.json` and skips finished work |
 | Search, forms or links broken | "Run doctor.mjs and fix all FAILs" |
@@ -91,4 +91,4 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 **Feedback loop:** each run ends with a retro. When you hit something new, say so. The fix goes
 into the skill, a script check or the base, so the next SC doesn't hit it.
 
-<!-- docs-check: synced-with=87b5d3e28143bf8a -->
+<!-- docs-check: synced-with=6d1b69bfe91c8476 -->

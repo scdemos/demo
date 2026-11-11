@@ -26,7 +26,7 @@ browser), **Claude Code**, Cursor, Gemini CLI or the ChatGPT desktop app / Codex
 ```
 The agent then:
 1. asks you to sign in to da.live **once** in its browser tab (covers DA, preview and publish), starts `aem up` (watch on localhost:3000)
-2. moves the base demo pages to DA `drafts/demo-backup` (unpublished) and rebuilds the customer's real pages with their real content (rendered in a real browser, nothing dropped, nothing made up)
+2. moves the base demo pages to DA `drafts/demo-backup` (unpublished; deleted once the migration passes) and rebuilds the customer's real pages with their real content (rendered in a real browser, nothing dropped, nothing made up)
 3. analyzes the design (nav with dropdowns/mega menus, header, type, buttons, cards, section layouts, carousels), applies the brand (`BRAND TOKENS` in `styles/styles.css`) and maps every pattern onto blocks, variants and section styles, adding new ones (and their block library entries) when nothing fits
 4. bakes in forms, search, the block library and a demo walkthrough (experiments and campaigns only when you ask)
 5. checks every page against the original (`compare.mjs`: header layout, section layout, carousels, invented copy; `doctor.mjs`, `lint-content.mjs`), runs a final sweep that loops until it matches, and hands back the links

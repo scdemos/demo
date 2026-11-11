@@ -118,7 +118,7 @@ Track each phase as a todo. Run the phases in order. Keep going until the handof
 
 **Run state (resume, never redo).** Keep `.customer-demo/run.json` in the demo repo (git-ignored)
 and update it after every step: `{ site, customerUrl, scope: [{ original, demo, template, status }],
-phases: { "<id>": "pending|running|done|failed" }, backup: { done, failed }, waivers, notes }`.
+phases: { "<id>": "pending|running|done|failed" }, backup: { done, failed, purged }, waivers, notes }`.
 On start, if it exists, **resume**: skip `done` phases and pages, re-verify anything `running`
 (status calls, not blind retries), and never re-run the backup if `backup.done`. Report progress to
 the SC in one line per phase ("3/9 · discovered 11 pages, design brief written"). The handoff
@@ -468,8 +468,9 @@ of the way, **unpublished, not deleted**, so the SC can still open it in DA:
    `redirects.json` to the customer's needs (empty by default).
 4. Headless path: list with the DA MCP, `admin.mjs unpublish --site <slug> <paths…>`, then
    `da_move_content` each item to `drafts/demo-backup/<path>`.
-5. Tell the SC in the handoff: "The original demo pages are in DA under `drafts/demo-backup`
-   (unpublished)."
+5. The backup is temporary: it's there while you migrate (to compare or roll back), and it's
+   **deleted at the end of a successful migration** (10a, last step). The base demo itself always
+   stays in `scdemos/demo`.
 
 Then write the customer's pages. `lint-content.mjs` fails on base leftovers.
 `da_copy_content` **cannot copy between sites** (it returns `{}`); write new documents with
@@ -635,10 +636,17 @@ Before the last round, do the by-eye pass below (step 0) and write `fid/review.j
 `--review fid/review.json`. When parity is complete: commit, push, publish the changed pages
 (`site-tab.js` `bulk` `publish`), and rerun `parity.mjs` against the published site once
 (`--demo https://main--<slug>--scdemos.aem.live`) to prove what the SC will show matches too.
+
+**Last step, only after both parity runs pass: clean up.** Delete the base demo backup so the DA
+site holds only the customer demo: `site-tab.js` `{ op: 'purgeBackup', site: '<slug>', confirm:
+'parity-complete', dryRun: true }`, then without `dryRun`. It deletes only `/drafts/demo-backup`
+(files, then folders) and refuses without the confirmation. Record `backup.purged: true` in the run
+state. If parity didn't pass (the SC is deciding on ❌ pages), keep the backup and say so in the
+handoff.
 0. **Fidelity re-check (F1–F5), page by page, in the integrated browser** (original tab next to
    `http://localhost:3000`, 1440 then 390 px):
    - F1: the page list is the scoped list of real customer pages; no base page is live
-     (`site-tab.js` `status` on two base paths → 404) and `/drafts/demo-backup` holds the backup.
+     (`site-tab.js` `status` on two base paths → 404).
    - F2: read every section: is each heading, paragraph, stat, CTA and image the original's? Replace
      any filler with the original's copy (`scrape/<page>/outline.json`).
    - F3: header and footer against the design brief, line by line, including every dropdown / mega
@@ -694,7 +702,8 @@ Generate it from `.customer-demo/run.json` (scope vs done, retries, waivers, fai
   base features), each cell ✅ / ⚠️ with a one-line note.
 - The features baked in, and where to show them; how to add an experiment or campaign if the
   story needs one (not set by default).
-- Where the original demo pages went: DA `drafts/demo-backup` (unpublished).
+- That the base demo backup was deleted after parity passed (the base demo stays in `scdemos/demo`),
+  or why it was kept.
 - Consent / disclaimer, login wording, gated pages and templates in use, and how to show them.
 - The new constructs (blocks, variants, section styles) and where they are in the block library.
 - Substitutions made: fonts, mocked data, skipped interactions.

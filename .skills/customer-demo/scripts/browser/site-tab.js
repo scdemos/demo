@@ -20,6 +20,9 @@
  *   { op: 'backup', site, keep?: [...], dryRun: true } → base demo pages → /drafts/demo-backup, unpublished
  *        → { ok, unpublished, failed: [...] }. Nothing moves unless every unpublish succeeded; re-running
  *          is safe (already-moved items are gone from the plan).
+ *   { op: 'purgeBackup', site, confirm: 'parity-complete', dryRun? }
+ *        → deletes /drafts/demo-backup (only that subtree) once the migration passed parity; the base
+ *          demo pages stay available in scdemos/demo itself. → { ok, deleted, failed }
  */
 // eslint-disable-next-line no-unused-expressions
 async ({
@@ -161,6 +164,24 @@ async ({
       if (put.status >= 300) failed.push(`copy ${c}: write ${put.status}`);
     }
     return { ok: !failed.length, unpublished: paths.length, failed: [...unpublished.failed, ...failed], moved };
+  }
+  if (op === 'purgeBackup') {
+    // final cleanup, only after a successful migration (parity.mjs exit 0), only inside the backup folder
+    if (a.confirm !== 'parity-complete') return { error: "refusing: pass confirm: 'parity-complete' after parity.mjs exits 0" };
+    const root = '/drafts/demo-backup';
+    let items;
+    try { items = await list(root, true); } catch (e) { return /404/.test(e.message) ? { ok: true, deleted: 0, failed: [], note: 'no backup folder' } : { error: e.message }; }
+    // files first, then folders deepest-first, so every DELETE targets an empty folder
+    const order = [...items.filter((x) => !x.folder), ...items.filter((x) => x.folder).sort((x, y) => y.path.length - x.path.length), { path: root, folder: true }];
+    if (order.some((x) => !(x.path === root || x.path.startsWith(`${root}/`)) || !safe(x.path))) return { error: 'refusing: path outside the backup folder' };
+    if (a.dryRun) return { delete: order.length, sample: order.slice(0, 5).map((x) => x.path) };
+    const failed = [];
+    for (const x of order) {
+      // eslint-disable-next-line no-await-in-loop
+      const r = await call(`${DA}/source/${org}/${site}${x.path}`, { method: 'DELETE' });
+      if (r.status >= 300 && r.status !== 404) failed.push(`${x.path} ${r.status}`);
+    }
+    return { ok: !failed.length, deleted: order.length - failed.length, failed };
   }
   return { error: `unknown op ${op}` };
 };
