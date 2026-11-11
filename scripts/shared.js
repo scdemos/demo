@@ -359,3 +359,14 @@ export function getBlockContext(block) {
     isEmbed,
   };
 }
+
+/**
+ * Currency settings for calculators, from page/site metadata (`currency`, `locale`).
+ * @returns {{ code: string, locale: string }}
+ */
+export function getCurrency() {
+  return {
+    code: (getMetadata('currency') || 'CAD').toUpperCase(),
+    locale: getMetadata('locale') || 'en-CA',
+  };
+}

@@ -1,0 +1,8 @@
+# ChatGPT desktop app, Codex CLI and the Codex IDE extension share this file (project scope: the
+# project must be trusted in Codex). Sign in once per server: `codex mcp login da` and
+# `codex mcp login adobe-aem-ema` (OAuth with your Adobe account).
+[mcp_servers.da]
+url = "https://mcp.adobeaemcloud.com/adobe/mcp/da"
+
+[mcp_servers.adobe-aem-ema]
+url = "https://mcp.adobeaemcloud.com/adobe/mcp/ema"

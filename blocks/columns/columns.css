@@ -6,7 +6,7 @@
 
 .columns img {
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card, 12px);
 }
 
 .columns > div > div {

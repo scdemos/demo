@@ -1,5 +1,5 @@
  
-import { createTag } from '../../scripts/shared.js';
+import { createTag, getCurrency } from '../../scripts/shared.js';
 
 const DEFAULTS = {
   grossIncome: 90000,
@@ -164,9 +164,9 @@ function toNumber(value, fallback = 0) {
 }
 
 function money(value) {
-  return new Intl.NumberFormat('en-CA', {
+  return new Intl.NumberFormat(getCurrency().locale, {
     style: 'currency',
-    currency: 'CAD',
+    currency: getCurrency().code,
     maximumFractionDigits: 0,
   }).format(value || 0);
 }
@@ -351,16 +351,16 @@ export default function decorate(block) {
   };
 
   add({
-    id: 'src-gross-income', label: 'Gross annual income', value: DEFAULTS.grossIncome, min: 0, step: 1000, suffix: 'CAD',
+    id: 'src-gross-income', label: 'Gross annual income', value: DEFAULTS.grossIncome, min: 0, step: 1000, suffix: getCurrency().code,
   });
 
   addToggle('src-override-after-tax', 'Override after-tax income estimate', false);
   add({
-    id: 'src-after-tax-income', label: 'After-tax income', value: DEFAULTS.afterTaxIncome, min: 0, step: 1000, suffix: 'CAD',
+    id: 'src-after-tax-income', label: 'After-tax income', value: DEFAULTS.afterTaxIncome, min: 0, step: 1000, suffix: getCurrency().code,
   });
 
   add({
-    id: 'src-monthly-expenses', label: 'Monthly expenses', value: DEFAULTS.monthlyExpenses, min: 0, step: 50, suffix: 'CAD',
+    id: 'src-monthly-expenses', label: 'Monthly expenses', value: DEFAULTS.monthlyExpenses, min: 0, step: 50, suffix: getCurrency().code,
   });
   add({
     id: 'src-monthly-savings',
@@ -368,11 +368,11 @@ export default function decorate(block) {
     value: DEFAULTS.monthlySavings,
     min: 0,
     step: 50,
-    suffix: 'CAD',
+    suffix: getCurrency().code,
     tooltip: 'Savings rate = total savings / after-tax income.',
   });
   add({
-    id: 'src-employer-contributions', label: 'Others', value: DEFAULTS.employerContributions, min: 0, step: 50, suffix: 'CAD',
+    id: 'src-employer-contributions', label: 'Others', value: DEFAULTS.employerContributions, min: 0, step: 50, suffix: getCurrency().code,
   });
 
   const provinceRow = createTag('label', { class: 'savings-rate-calculator-row', for: 'src-province' });
@@ -402,7 +402,7 @@ export default function decorate(block) {
   essentials.append(provinceRow);
   inputRefs['src-province'] = provinceSelect;
   add({
-    id: 'src-current-assets', label: 'Current investable assets', value: DEFAULTS.currentAssets, min: 0, step: 1000, suffix: 'CAD',
+    id: 'src-current-assets', label: 'Current investable assets', value: DEFAULTS.currentAssets, min: 0, step: 1000, suffix: getCurrency().code,
   });
 
   const progressWrap = createTag('div', { class: 'savings-rate-calculator-progress' }, [

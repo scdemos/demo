@@ -1,5 +1,7 @@
 /* Contact-style form layout (inspired by contact-us pattern) */
-main .form-container {
+
+/* `main > .section` raises specificity over the generic `.section { margin: inherit }` rule */
+main > .section.form-container {
   max-width: min(var(--grid-container-width), 860px);
   width: 100%;
   margin: 0 auto;
@@ -270,4 +272,89 @@ main .form form {
   border-color: var(--color-gold);
   color: var(--color-gold);
   transform: translateY(-2px);
+}
+
+/* Panel variant: raised white card, compact labels, red required marker, end-aligned submit */
+.form.panel {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-xl) var(--space-2xl);
+  background: var(--color-light);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+}
+
+.form.panel form {
+  display: grid;
+  gap: var(--space-l);
+}
+
+.form.panel .form-field > label:first-child,
+.form.panel .form-field > legend {
+  order: -1;
+  font-size: var(--body-font-size-xs);
+  font-weight: 400;
+}
+
+.form.panel label[data-required]::after,
+.form.panel legend[data-required]::after {
+  content: none;
+}
+
+.form.panel label[data-required]::before,
+.form.panel legend[data-required]::before {
+  content: '* ';
+  color: var(--color-red-500);
+}
+
+.form.panel .form-field input:not([type="checkbox"], [type="radio"]),
+.form.panel .form-field textarea,
+.form.panel .form-field select {
+  border: 1px solid var(--color-gray-200);
+  border-radius: 0;
+  padding: 14px 16px;
+  font-size: var(--body-font-size-m);
+}
+
+.form.panel .form-field select {
+  appearance: none;
+  border-color: var(--color-gray-500);
+  background: var(--color-light) no-repeat right 16px center / 14px 8px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 8'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23282b3e' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+
+.form.panel .form-field textarea:not([rows="1"]) {
+  min-height: 220px;
+}
+
+.form.panel .button-wrapper {
+  justify-content: flex-end;
+}
+
+.form.panel .button-wrapper button.button:not(:disabled) {
+  min-width: 150px;
+  border-radius: 0;
+}
+
+main .section.form-container:has(.form.panel) > .default-content-wrapper {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.form.panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+main .section.form-container:has(.form.panel) .form-wrapper {
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.form.panel form,
+main .form.panel form {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
 }

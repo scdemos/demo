@@ -1,3 +1,5 @@
+/* stylelint-disable no-descending-specificity -- variants (bento, text, list) never co-occur on one block */
+
 /* Default cards */
 
 .cards > ul {
@@ -16,7 +18,7 @@
   background: light-dark(var(--color-light), var(--color-card-dark));
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: var(--border-radius-card, 12px);
   overflow: hidden;
   box-shadow: 0 2px 8px light-dark(rgb(0 0 0 / 5%), rgb(0 0 0 / 40%)),
               0 1px 2px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
@@ -253,4 +255,531 @@
   .cards.bento .cards-card-featured .cards-card-image {
     max-height: 300px;
   }
+}
+
+/* Text variant: text-only tiles with arrow links (capabilities, news) */
+.cards.text > ul > li {
+  box-shadow: 0 1px 3px light-dark(rgb(40 43 62 / 8%), rgb(0 0 0 / 30%));
+}
+
+.cards.text .cards-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl);
+}
+
+.cards.text .cards-card-body :is(h2, h3) {
+  font-size: var(--heading-font-size-m);
+  font-weight: 300;
+}
+
+.cards.text .cards-card-body p:last-child {
+  margin-top: auto;
+  padding-top: var(--space-m);
+}
+
+.cards.text .cards-card-body a:any-link,
+.cards.list .cards-card-body p:last-child a:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.cards.text .cards-card-body a:any-link::before {
+  content: '→';
+  display: inline-grid;
+  place-items: center;
+  width: 1.25em;
+  height: 1.25em;
+  border: 1.5px solid currentcolor;
+  border-radius: 50%;
+  font-size: 0.75em;
+  color: var(--color-rust);
+}
+
+.cards.text .cards-card-body a:any-link:hover {
+  color: var(--color-rust);
+}
+
+@media (width >= 900px) {
+  .cards.text > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* List variant: rows with date, title, byline and a thumbnail on the right (viewpoints) */
+.cards.list > ul {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.cards.list > ul > li {
+  border: 0;
+  border-bottom: 1px solid light-dark(var(--color-gray-200), rgb(245 242 237 / 15%));
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.list > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.list > ul > li > article {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--space-m);
+  padding: var(--space-xl) 0;
+}
+
+.cards.list .cards-card-body {
+  padding: 0;
+}
+
+.cards.list .cards-card-body :is(h2, h3) {
+  font-size: var(--heading-font-size-m);
+  font-weight: 300;
+}
+
+.cards.list .cards-card-body :is(h2, h3) a:any-link {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.cards.list .cards-card-body :is(h2, h3) a:any-link:hover {
+  color: var(--color-rust);
+}
+
+.cards.list .cards-card-body p:first-child {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--body-font-size-xs);
+}
+
+@media (width >= 600px) {
+  .cards.list > ul > li > article,
+  .cards.list .cards-card-link {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .cards.list .cards-card-link {
+    display: flex;
+    gap: var(--space-xl);
+    width: 100%;
+  }
+
+  .cards.list .cards-card-image {
+    flex: 0 0 200px;
+    order: 2;
+  }
+}
+
+/* Stats variant: large figures with a short label (AUM, headcount, years) */
+.cards.stats > ul > li {
+  border: 0;
+  border-top: 3px solid var(--color-rust);
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.stats > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.stats .cards-card-body {
+  padding: var(--space-l) 0 0;
+}
+
+.cards.stats .cards-card-body :is(h2, h3) {
+  margin: 0;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 300;
+  color: var(--color-rust);
+}
+
+.cards.stats .cards-card-body p {
+  margin-top: var(--space-xs);
+  font-size: var(--body-font-size-m);
+  color: var(--color-ink);
+}
+
+@media (width >= 900px) {
+  .cards.stats > ul {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2xl);
+  }
+}
+
+/* Panel variant: one raised white panel, cells separated by hairlines (capabilities, ESG, news).
+   Modifier `cols-2` for two columns. Works with or without images. */
+.cards.panel > ul {
+  gap: 0;
+  overflow: hidden;
+  background: var(--color-light);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+}
+
+.cards.panel > ul > li {
+  margin: 0 -1px -1px 0;
+  border: 0;
+  border-right: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.panel > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-gray-100);
+}
+
+.cards.panel .cards-card-image {
+  padding: var(--space-l) var(--space-l) 0;
+}
+
+.cards.panel .cards-card-image img {
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+
+.cards.panel .cards-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl) var(--space-l);
+}
+
+.cards.panel .cards-card-body :is(h2, h3) {
+  margin: 0 0 var(--space-m);
+  font-size: var(--heading-font-size-l);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+.cards.panel .cards-card-body p {
+  font-size: var(--body-font-size-m);
+  line-height: 1.6;
+  color: var(--color-ink);
+}
+
+.cards.panel .cards-card-body p:first-child:not(:has(a)) {
+  margin: 0 0 var(--space-m);
+  font-size: var(--body-font-size-xs);
+}
+
+.cards.panel .cards-card-body p:last-child:has(> a:only-child) {
+  margin-top: auto;
+  padding-top: var(--space-l);
+}
+
+/* "Learn more" links with a circled chevron (panel + text variants) */
+:is(.cards.panel, .cards.text) .cards-card-body p:last-child > a:only-child,
+.section.head-row .default-content-wrapper > p:has(> a:only-child) > a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+:is(.cards.panel, .cards.text) .cards-card-body p:last-child > a:only-child::before,
+.section.head-row .default-content-wrapper > p:has(> a:only-child) > a::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid currentcolor;
+  border-radius: 50%;
+  background:
+    linear-gradient(45deg, transparent 45%, currentcolor 45% 60%, transparent 60%) 5px 3px / 4px 4px no-repeat,
+    linear-gradient(-45deg, transparent 45%, currentcolor 45% 60%, transparent 60%) 5px 7px / 4px 4px no-repeat;
+}
+
+:is(.cards.panel, .cards.text) .cards-card-body p:last-child > a:only-child:hover,
+.section.head-row .default-content-wrapper > p:has(> a:only-child) > a:hover {
+  color: var(--color-rust);
+}
+
+@media (width >= 600px) {
+  .cards.panel > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= 900px) {
+  .cards.panel > ul {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .cards.panel.cols-2 > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cards.panel:not(:has(img)) .cards-card-body {
+    padding: var(--space-2xl) var(--space-2xl) var(--space-3xl);
+  }
+}
+
+/* List variant: author bylines (paragraphs with a headshot image) */
+.cards.list .cards-card-body p:has(picture) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+  margin: var(--space-s) 0 0;
+  font-size: var(--body-font-size-xs);
+  line-height: 1.5;
+}
+
+.cards.list .cards-card-body p picture {
+  flex: 0 0 40px;
+}
+
+.cards.list .cards-card-body p picture img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Switchable list: toolbar with grid/list toggle (added by JS) */
+.cards.switchable .cards-view-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-bottom: var(--space-m);
+}
+
+.cards.switchable .cards-view-toggle button {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.cards.switchable .cards-view-toggle button[aria-pressed='true'] {
+  background: var(--color-gray-100);
+}
+
+.cards.switchable .cards-view-toggle button::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  background:
+    linear-gradient(currentcolor, currentcolor) 0 0 / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 100% 0 / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 100% / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 100% 100% / 7px 7px no-repeat;
+}
+
+.cards.switchable .cards-view-toggle button[data-view='list']::before {
+  height: 14px;
+  background:
+    linear-gradient(currentcolor, currentcolor) 0 0 / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 50% / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 100% / 100% 2px no-repeat;
+}
+
+@media (width >= 900px) {
+  .cards.list.view-grid > ul {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+
+  .cards.list.view-grid > ul > li > article,
+  .cards.list.view-grid .cards-card-link {
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+  }
+
+  .cards.list.view-grid .cards-card-image {
+    flex-basis: auto;
+    order: 0;
+  }
+}
+
+/* Emphasis modifier: bold sans titles (contact directories, key facts) */
+.cards.panel.emphasis .cards-card-body :is(h2, h3) {
+  font-size: var(--heading-font-size-l);
+  font-weight: 700;
+}
+
+.cards.panel.emphasis .cards-card-body p:first-of-type strong {
+  font-weight: 700;
+}
+
+/* contact details: lone links stay plain text links, not auto-buttons */
+.cards.panel.emphasis .cards-card-body a.button:any-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-ink);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.cards.panel.emphasis .cards-card-body a.button:any-link::before {
+  content: none;
+}
+
+.cards.panel.emphasis .cards-card-body p.button-container {
+  margin: 0.8em 0 0;
+  padding: 0;
+}
+
+/* Panel modifier cols-4: four columns at desktop (affiliations, short facts) */
+@media (width >= 900px) {
+  .cards.panel.cols-4 > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Promo variant: solid-color tiles, text left / image right (featured strategies, reports).
+   Tile colors cycle through --promo-1..2; modifier `ink` uses the dark brand color. */
+.cards.promo {
+  --promo-1: var(--color-rust);
+  --promo-2: #0000c1;
+}
+
+.cards.promo > ul {
+  gap: var(--space-xl);
+}
+
+.cards.promo > ul > li {
+  flex-direction: row;
+  min-height: 200px;
+  border: 0;
+  border-radius: 0;
+  background: var(--promo-bg, var(--promo-1));
+  box-shadow: none;
+  color: var(--color-light);
+}
+
+.cards.promo > ul > li:nth-child(2n) {
+  --promo-bg: var(--promo-2);
+}
+
+.cards.promo.ink > ul > li {
+  --promo-bg: var(--color-ink);
+}
+
+.cards.promo > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.promo .cards-card-image {
+  order: 2;
+  flex: 0 0 35%;
+}
+
+.cards.promo .cards-card-image picture,
+.cards.promo .cards-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cards.promo .cards-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-xl);
+}
+
+.cards.promo .cards-card-body :is(h2, h3, p, a) {
+  color: var(--color-light);
+}
+
+.cards.promo .cards-card-body :is(h2, h3) {
+  margin: 0 0 var(--space-m);
+  font-size: var(--heading-font-size-l);
+  font-weight: 300;
+}
+
+.cards.promo .cards-card-body a:any-link {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (width >= 900px) {
+  .cards.promo > ul {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cards.promo.ink > ul,
+  .cards.promo.wide > ul {
+    grid-template-columns: 1fr;
+  }
+
+  .cards.promo .cards-card-body {
+    padding: var(--space-2xl);
+  }
+}
+
+/* Logos variant: borderless logo wall (memberships, affiliations, partners) */
+.cards.logos > ul {
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.cards.logos > ul > li {
+  align-items: center;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.cards.logos > ul > li:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.cards.logos .cards-card-image img {
+  width: auto;
+  height: 80px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+@media (width >= 900px) {
+  .cards.logos > ul {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* promo: image on the right even when the card is wrapped in a link or article */
+.cards.promo > ul > li > article,
+.cards.promo .cards-card-link {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.cards.promo.ink .cards-card-image,
+.cards.promo.wide .cards-card-image {
+  flex-basis: 34%;
+  max-height: 260px;
+}
+
+/* logos: no tile chrome, transparent logo boxes */
+.cards.logos .cards-card-image {
+  background: transparent;
 }

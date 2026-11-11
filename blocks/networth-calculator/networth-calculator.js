@@ -1,5 +1,5 @@
  
-import { createTag } from '../../scripts/shared.js';
+import { createTag, getCurrency } from '../../scripts/shared.js';
 
 const DEFAULTS = {
   afterTaxMonthlyIncome: 6500,
@@ -32,9 +32,9 @@ function toNumber(value, fallback = 0) {
 }
 
 function money(value) {
-  return new Intl.NumberFormat('en-CA', {
+  return new Intl.NumberFormat(getCurrency().locale, {
     style: 'currency',
-    currency: 'CAD',
+    currency: getCurrency().code,
     maximumFractionDigits: 0,
   }).format(value || 0);
 }
@@ -44,7 +44,7 @@ function percent(value, digits = 1) {
 }
 
 function buildInput({
-  id, label, value, step = 1000, suffix = 'CAD', tooltip, min = 0,
+  id, label, value, step = 1000, suffix = getCurrency().code, tooltip, min = 0,
 }) {
   const row = createTag('label', { class: 'networth-calculator-row', for: id });
   const labelEl = createTag('span', { class: 'networth-calculator-label' }, label);

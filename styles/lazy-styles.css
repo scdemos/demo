@@ -112,7 +112,7 @@ a:any-link {
 /* H2 accent — thin brand-gradient bar beneath h2 in plain content sections */
 :is(main, article.article-body) > .section:not(.hero-container, .gradient, .ink, .rust) h2::after {
   content: '';
-  display: block;
+  display: var(--h2-accent-display, block);
   width: 2.5rem;
   height: 2px;
   margin-top: 0.35em;
@@ -293,3 +293,251 @@ header .nav-wrapper.scrolled {
     transition: none;
   }
 }
+
+/* ==========================================================================
+   Section layout styles (section-metadata `style`)
+   ========================================================================== */
+
+/* stylelint-disable no-descending-specificity -- each style targets a different section class */
+
+/* section-metadata style=center: centered default content */
+:is(main, article.article-body) > .section.center > .default-content-wrapper {
+  text-align: center;
+}
+
+/* section-metadata style=band (+ band-green | band-purple | band-blue): full-bleed colored band,
+   optional icon above the heading, a lone image paragraph fills the right edge.
+   Follow it with a section styled `overlap` to pull a card panel up into the band. */
+main > .section.band {
+  position: relative;
+  margin: var(--space-2xl) 0 0;
+  padding: var(--space-3xl) 0;
+  overflow: hidden;
+  background: var(--band-bg, var(--color-ink));
+  color: var(--color-light);
+}
+
+main > .section.band.band-green { --band-bg: #046138; }
+main > .section.band.band-purple { --band-bg: #533573; }
+main > .section.band.band-blue { --band-bg: #0000c1; }
+
+main > .section.band :is(h1, h2, h3, p, li, a:any-link) {
+  color: var(--color-light);
+}
+
+/* blocks inside a band (e.g. cards stats) set their own dark text; force them light here */
+main > .section.band .block :is(h2, h3, h4, p, li) {
+  color: var(--color-light);
+}
+
+main > .section.band .cards.stats .cards-card-body :is(h2, h3) {
+  color: #5fdc8f;
+}
+
+main > .section.band .icon img {
+  filter: brightness(0) invert(1);
+}
+
+main > .section.band .icon {
+  width: 40px;
+  height: 40px;
+}
+
+main > .section.band > .default-content-wrapper > p:has(> picture:only-child) {
+  margin: var(--space-xl) calc(-1 * var(--content-padding-inline)) 0;
+}
+
+main > .section.band > .default-content-wrapper > p:has(> picture:only-child) img {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+}
+
+/* lone links inside a band render as arrow links, not filled buttons */
+main > .section.band a.button:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-light);
+  font-weight: 700;
+}
+
+main > .section.band a.button:any-link::before {
+  content: '→';
+  display: inline-grid;
+  place-items: center;
+  width: 1.4em;
+  height: 1.4em;
+  border: 1.5px solid currentcolor;
+  border-radius: 50%;
+  font-size: 0.75em;
+}
+
+main > .section.overlap {
+  position: relative;
+  z-index: 1;
+  padding-top: 0;
+}
+
+@media (width >= 900px) {
+  main > .section.band {
+    padding: var(--space-4xl) 0;
+  }
+
+  main > .section.band:has(+ .section.overlap) {
+    padding-bottom: 220px;
+  }
+
+  main > .section.band > .default-content-wrapper > :not(p:has(> picture:only-child)) {
+    max-width: 58%;
+  }
+
+  main > .section.band:not(:has(picture)) > .default-content-wrapper > * {
+    max-width: 72%;
+  }
+
+  /* keep blocks clear of the right-edge image */
+  main > .section.band:has(> .default-content-wrapper > p > picture:only-child) > div:not(.default-content-wrapper) > .block {
+    max-width: 62%;
+  }
+
+  /* overlap text that sits on the band before the pulled-up panel */
+  main > .section.overlap > .default-content-wrapper:first-child :is(h2, h3, h4, p),
+  main > .section.overlap .cards.stats .cards-card-body p {
+    color: var(--color-light);
+  }
+
+  main > .section.overlap .cards.stats .cards-card-body :is(h2, h3) {
+    color: #5fdc8f;
+    font-size: clamp(2rem, 3vw, 2.75rem);
+    white-space: nowrap;
+  }
+
+  main > .section.band:has(> .default-content-wrapper > p > picture:only-child) + .section.overlap .cards.stats {
+    max-width: 62%;
+  }
+
+  main > .section.band > .default-content-wrapper > p:has(> picture:only-child) {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 30%;
+    margin: 0;
+  }
+
+  main > .section.band > .default-content-wrapper > p:has(> picture:only-child) :is(picture, img) {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+
+  main > .section.overlap {
+    margin-top: -190px;
+  }
+}
+
+/* section-metadata style=tags: lists render as pill clouds (browse by tag, all tags) */
+main > .section.tags ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  margin: var(--space-m) 0 var(--space-xl);
+  padding: 0;
+  list-style: none;
+}
+
+main > .section.tags li {
+  padding: 6px 14px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 999px;
+  background: var(--color-light);
+  font-size: var(--body-font-size-s);
+}
+
+/* section-metadata style=page-title: white title band with an optional icon above the H1 */
+:is(main, article.article-body) > .section.page-title {
+  margin: 0;
+  padding: var(--space-2xl) 0 var(--space-xl);
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--color-light);
+}
+
+:is(main, article.article-body) > .section.page-title h1 {
+  margin: var(--space-s) 0 0;
+  font-size: var(--heading-font-size-xl);
+  font-weight: 300;
+}
+
+:is(main, article.article-body) > .section.page-title > .default-content-wrapper > p:first-child:has(> .icon:only-child) {
+  margin: 0;
+}
+
+:is(main, article.article-body) > .section.page-title .icon {
+  width: 40px;
+  height: 40px;
+}
+
+:is(main, article.article-body) > .section.page-title .icon img {
+  width: 100%;
+  height: 100%;
+}
+
+/* section-metadata style=social: links shown as raised cards with a trailing icon */
+:is(main, article.article-body) > .section.social > .default-content-wrapper > p:has(> a) {
+  display: inline-flex;
+  margin-inline-end: var(--space-m);
+}
+
+:is(main, article.article-body) > .section.social a:any-link {
+  border: 0;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-l) var(--space-xl);
+  background: var(--color-light);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  color: var(--color-ink);
+  font-size: var(--body-font-size-s);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* section-metadata style=head-row: first heading on the left, a lone link paragraph on the right */
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: var(--space-xl);
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > * {
+  grid-column: 1 / -1;
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > :is(h1, h2):first-child {
+  grid-column: 1;
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > p:nth-child(2):has(> a:only-child) {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+}
+
+:is(main, article.article-body) > .section.head-row > .default-content-wrapper:first-child > p:nth-child(2) > a.button:any-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--color-ink);
+  font-size: var(--body-font-size-m);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* stylelint-enable no-descending-specificity */

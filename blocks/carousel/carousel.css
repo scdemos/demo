@@ -1,0 +1,202 @@
+/* Carousel: full-bleed slides with overlay text, prev/next and dot controls */
+.carousel-container .carousel-wrapper {
+  max-width: unset;
+  padding: 0;
+}
+
+.carousel {
+  position: relative;
+  background-color: var(--color-obsidian);
+  color: var(--color-light);
+  overflow: hidden;
+}
+
+.carousel .carousel-slides {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carousel .carousel-slide {
+  grid-area: 1 / 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 520px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+}
+
+.carousel .carousel-slide.active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+}
+
+.carousel .carousel-slide-media {
+  position: absolute;
+  inset: 0;
+}
+
+.carousel .carousel-slide-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(0 0 0 / 70%) 0%, rgb(0 0 0 / 35%) 45%, rgb(0 0 0 / 0%) 75%);
+}
+
+.carousel .carousel-slide-media picture,
+.carousel .carousel-slide-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel .carousel-slide-content {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 600px;
+  padding: var(--space-3xl) var(--content-padding-inline) 120px;
+}
+
+.carousel .carousel-slide-content :is(h1, h2) {
+  margin: 0 0 var(--space-l);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 300;
+  line-height: 1.25;
+  color: var(--color-light);
+  outline: none;
+}
+
+.carousel .carousel-slide-content :is(h1, h2) em {
+  font-family: var(--font-family-serif);
+  font-style: italic;
+}
+
+.carousel .carousel-slide-content p {
+  margin: 0 0 var(--space-l);
+  font-size: var(--body-font-size-m);
+  line-height: 1.75;
+  color: var(--color-light);
+}
+
+/* Controls: dark round arrows around a pill of dots */
+.carousel .carousel-controls {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-2xl);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  transform: translateX(-50%);
+}
+
+.carousel .carousel-prev,
+.carousel .carousel-next {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 85%);
+  color: var(--color-light);
+  cursor: pointer;
+}
+
+.carousel .carousel-prev::before,
+.carousel .carousel-next::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border: solid currentcolor;
+  border-width: 0 0 2px 2px;
+  transform: translateX(2px) rotate(45deg);
+}
+
+.carousel .carousel-next::before {
+  transform: translateX(-2px) rotate(-135deg);
+}
+
+.carousel .carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 85%);
+  list-style: none;
+}
+
+.carousel .carousel-dots li {
+  display: flex;
+}
+
+.carousel .carousel-dot {
+  position: relative;
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 55%);
+  cursor: pointer;
+  overflow: hidden;
+  transition: width 0.3s ease;
+}
+
+.carousel .carousel-dot.active {
+  width: 24px;
+  background: rgb(255 255 255 / 40%);
+}
+
+.carousel .carousel-dot.active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-light);
+}
+
+.carousel.autoplay:not(.paused) .carousel-dot.active::after {
+  transform-origin: left;
+  animation: carousel-progress var(--carousel-interval, 7s) linear;
+}
+
+.carousel :is(.carousel-prev, .carousel-next, .carousel-dot):focus-visible {
+  outline: 2px solid var(--color-light);
+  outline-offset: 2px;
+}
+
+@keyframes carousel-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel .carousel-slide,
+  .carousel .carousel-dot {
+    transition: none;
+  }
+}
+
+@media (width >= 900px) {
+  .carousel .carousel-slide {
+    min-height: 600px;
+  }
+
+  .carousel .carousel-slide-content {
+    max-width: 680px;
+    padding: var(--space-4xl) var(--space-3xl) 140px;
+  }
+}

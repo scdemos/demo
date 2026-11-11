@@ -1,0 +1,282 @@
+{
+  "$comment": "Catalog of what scdemos/demo already provides. The customer-demo skill maps customer components onto these before writing any new code. Keep in sync when blocks/variants/section styles change.",
+  "base": {
+    "repo": "https://github.com/scdemos/demo",
+    "da": "https://da.live/#/scdemos/demo",
+    "preview": "https://main--demo--scdemos.aem.page/"
+  },
+  "brandSlots": {
+    "$comment": "Blocks reference these palette tokens directly (~250 refs). Re-theming = re-assigning these values inside the BRAND TOKENS block at the top of styles/styles.css. Do not rename them.",
+    "file": "styles/styles.css",
+    "colors": {
+      "--color-rust": "primary brand color (buttons, rust sections, links on hover)",
+      "--color-rust-bright": "primary, lighter/hover variant",
+      "--color-gold": "accent / highlight (eyebrows, underlines, gold hero)",
+      "--color-parchment": "light page background + light text on dark",
+      "--color-ink": "body text on light",
+      "--color-obsidian": "darkest background (dark scheme, ink sections)",
+      "--color-card-dark": "card / surface on dark",
+      "--color-muted": "secondary / muted text"
+    },
+    "semantic": [
+      "--color-brand",
+      "--color-accent",
+      "--color-text",
+      "--color-link",
+      "--color-link-hover",
+      "--background-color",
+      "--color-shaded"
+    ],
+    "typography": {
+      "--font-family": "body font stack (declared in styles/fonts.css, file in /fonts)",
+      "--font-family-serif": "heading font stack (via --heading-font-family)",
+      "--heading-font-size-*": "xxl..xxs scale (mobile; desktop overrides in @media (width >= 900px))",
+      "--body-font-size-*": "xxxl..xs scale"
+    },
+    "shape": {
+      "--border-radius-heritage": "global card/button radius",
+      "--border-heritage": "decorative border",
+      "--nav-height": "header height"
+    },
+    "hardcodedHex": [
+      "blocks/header/header.css",
+      "blocks/footer/footer.css",
+      "blocks/quiz/quiz.css"
+    ],
+    "extraTokens": {
+      "--nav-text-transform": "nav label casing (base default uppercase)",
+      "--nav-letter-spacing": "nav label tracking (base default 1.5px)",
+      "--footer-logo-filter": "e.g. brightness(0) invert(1) when a dark raster logo sits on the dark footer",
+      "--border-radius-card": "cards + columns image radius (base default 12px)",
+      "--h2-accent-display": "none to hide the brand bar under h2 (base default block)"
+    },
+    "rgbLiterals": "~87 rgb(161 79 43 / x%), rgb(197 160 89 / x%), rgb(209 106 62 / x%), rgb(245 242 237 / x%), rgb(6 13 13 / x%), rgb(22 33 33 / x%) tints in blocks/styles: remap mechanically to the new brand rgb values."
+  },
+  "sectionStyles": {
+    "$comment": "Applied with a Section Metadata block, key 'style'.",
+    "rust": "solid primary background, light text",
+    "ink": "dark background",
+    "gradient": "brand gradient background",
+    "light": "light/shaded background",
+    "warm": "warm tinted background",
+    "highlight": "accent-highlighted band",
+    "divider": "top divider rule",
+    "center": "centered content",
+    "light-scheme": "force light color-scheme",
+    "dark-scheme": "force dark color-scheme",
+    "head-row": "heading left, lone link paragraph right (e.g. \"Latest news\" ... \"All news\")",
+    "social": "links rendered as raised cards with trailing icon (Stay connected)",
+    "page-title": "white title band: optional icon paragraph above the H1 (simple landing pages: contact, search, insights hub)",
+    "band": "full-bleed color band (default ink) with light text; a lone image paragraph fills the right edge; modifiers band-green | band-purple | band-blue",
+    "overlap": "follows a band: pulls its panel/stats/form up into the band (desktop); text before the panel and cards stats turn light",
+    "tags": "lists render as pill clouds (browse by tag/category/author, all tags)",
+    "band-green": "band modifier: green background",
+    "band-purple": "band modifier: purple background",
+    "band-blue": "band modifier: blue background"
+  },
+  "blocks": {
+    "hero": {
+      "variants": [
+        "banner",
+        "gold",
+        "ink",
+        "rust",
+        "no-image"
+      ],
+      "use": "page-top banner. banner = full-bleed photo, dark scrim, white sans text (corporate/FS sites); default = faded heritage hero"
+    },
+    "cards": {
+      "variants": [
+        "panel",
+        "panel cols-2",
+        "text",
+        "list",
+        "list switchable",
+        "stats",
+        "bento",
+        "panel cols-4",
+        "panel emphasis",
+        "promo",
+        "promo ink",
+        "logos"
+      ],
+      "use": "panel = one raised white panel with hairline-separated cells (capabilities, ESG, news; works with/without images); list = rows with date/title/author bylines (paragraph with headshot picture) + thumbnail; switchable adds a grid/list toggle (JS); stats = big figures; text = simple tiles; default = image grid; panel cols-4 = 4-up tiles (anchor nav strips); emphasis = larger headings in panel cells (contact cards); promo = image + text feature tile, ink = dark promo (campaign/outlook callouts); logos = partner/memberships logo wall"
+    },
+    "columns": {
+      "variants": [],
+      "use": "side-by-side text/media (split layouts, feature rows)"
+    },
+    "teaser": {
+      "variants": [],
+      "use": "single promo: image + heading + copy + CTA"
+    },
+    "tabs": {
+      "variants": [],
+      "use": "tabbed content panels"
+    },
+    "faq": {
+      "variants": [],
+      "use": "INDEX-DRIVEN: rows are category names, Q&A come from /faq-index.json. For authored Q&A use tabs instead."
+    },
+    "table": {
+      "variants": [
+        "bordered",
+        "striped",
+        "no-header"
+      ],
+      "use": "data tables (fund facts, performance, fees)"
+    },
+    "related-articles": {
+      "variants": [
+        "bento"
+      ],
+      "use": "auto list of articles/insights from query-index"
+    },
+    "product-grid": {
+      "variants": [],
+      "use": "grid driven by a JSON index (products, funds, strategies)"
+    },
+    "journey-map": {
+      "variants": [],
+      "use": "GATED step-by-step checklist (\"complete each checkpoint to unlock\"). Not a timeline: use table striped (Year | Milestone) for history."
+    },
+    "quiz": {
+      "variants": [],
+      "use": "interactive questionnaire (risk profiler, product finder)"
+    },
+    "compound-interest-calculator": {
+      "variants": [],
+      "use": "financial calculator; currency/locale from metadata (currency, locale)"
+    },
+    "networth-calculator": {
+      "variants": [],
+      "use": "financial calculator; currency/locale from metadata"
+    },
+    "savings-rate-calculator": {
+      "variants": [],
+      "use": "financial calculator; currency/locale from metadata"
+    },
+    "form": {
+      "variants": [
+        "panel"
+      ],
+      "use": "spreadsheet-driven form: row 1 = link to /forms/<name>.json (field,type,label,options,required,...), row 2 = submit URL (https://demo.bbird.live/contact-us/ allows any origin); panel = white raised form card. Sheet options are pipe-delimited (Asia|EMEA); end a single comma-containing option with | ; required accepts TRUE/true"
+    },
+    "n8n-form": {
+      "variants": [],
+      "use": "form posting to an n8n webhook (contact / subscribe)"
+    },
+    "embed": {
+      "variants": [
+        "embed-twitter"
+      ],
+      "use": "video / social embeds"
+    },
+    "modal": {
+      "variants": [],
+      "use": "fragment opened in a dialog"
+    },
+    "fragment": {
+      "variants": [],
+      "use": "reusable content include"
+    },
+    "search": {
+      "variants": [],
+      "use": "site search over query-index"
+    },
+    "social-share": {
+      "variants": [],
+      "use": "share links on articles"
+    },
+    "auth-toggle": {
+      "variants": [],
+      "use": "logged-in / logged-out content switch"
+    },
+    "header": {
+      "variants": [],
+      "use": "global nav from /nav document"
+    },
+    "footer": {
+      "variants": [],
+      "use": "global footer from /footer document"
+    },
+    "carousel": {
+      "level": 5,
+      "variants": [
+        "autoplay"
+      ],
+      "use": "rotating hero/promo slides with prev/next arrows, dots (progress pill when autoplay), keyboard + reduced-motion support. Each row = image cell | content cell.",
+      "baseCandidate": true
+    }
+  },
+  "templates": {
+    "article": "insight / article pages (metadata: Template = article)",
+    "events": "event listing"
+  },
+  "features": {
+    "experimentation": "plugins/experimentation: experiments, audiences, campaigns + sidekick overlay",
+    "martech": "plugins/martech: Adobe Web SDK (alloy), Target offers incl. section-level decision scopes",
+    "darkMode": "light-dark() tokens + data-theme toggle",
+    "sidekick": "tools/sidekick/config.json (project name, plugins)",
+    "cloneit": "tools/cloneit: repoless clone of a DA template site",
+    "demoWalkthrough": "tools/demo: guided demo script overlay",
+    "preflight": "templates/*/*.preflight.js and blocks/*/*.preflight.js custom checks",
+    "queryIndex": "query.yaml (site config) feeding related-articles, search, product-grid",
+    "siteNotices": {
+      "level": 8,
+      "use": "metadata site-gate: /fragments/<disclaimer> (modal with #agree/#cancel links; site-gate-exit for cancel) and consent: /fragments/<consent> (banner with #accept/#reject/#settings, optional category list). Choices persist in localStorage and drive Web SDK consent via martech updateUserConsent."
+    },
+    "login": {
+      "level": 0,
+      "use": "header builds the login/logout link to demo.bbird.live (base auth flow, keep it there); customer wording via metadata login-label / logout-label"
+    },
+    "gatedContent": {
+      "level": 0,
+      "use": "page metadata Gated: true + section metadata View: logged-in | logged-out (teaser vs member content); author toggle on aem.page/localhost, enforced by the CDN worker + Cloudflare Access on the gated production host"
+    },
+    "templates": {
+      "level": 7,
+      "use": "Template: article (insights/news, breadcrumb, date) and Template: events (listing); add a new template for a page type that appears on 2+ pages"
+    }
+  },
+  "mappingRules": [
+    "Fidelity first: never force a customer pattern into a block if it changes the look; never drop content.",
+    "Pick the lowest level that reproduces the pattern faithfully: 0 default content, 1 existing block, 2 section style, 3 CSS-only variant, 4 variant with JS, 5 new block, 6 header/footer chrome variant via site metadata, 7 template, 8 global feature/plugin.",
+    "New block when the content model, interaction or over ~40% of the CSS differs; otherwise a variant.",
+    "Name everything generically; record level, content model and baseCandidate in this manifest.",
+    "Section-driven blocks (tabs = Tab Id/Tab title section metadata; faq = /faq-index.json; journey-map = gated checklist) must not be authored as row tables. When the original shows tiles, use cards panel; timelines use table striped.",
+    "Text on colored bands/overlaps must be verified against what is painted under it, not its DOM parent (capture.mjs readability check).",
+    "Content repeated on 2+ pages (CTA band, sign-up, disclaimer, contact strip) is one /fragments/<generic-name> doc, placed with a fragment block on each page (lint:repeat-inline)."
+  ],
+  "pageMetadata": {
+    "social-share": "off hides the floating share dock (delayed.js)",
+    "currency": "ISO code for calculators (USD, TWD, CAD…)",
+    "locale": "Intl locale for calculators (en-US…)",
+    "Experiment / Experiment Variants": "page-level A/B: variants are full pages, relative paths OK",
+    "Campaign-<name>": "value must be the served URL of the campaign page: a DA doc named index is served at the FOLDER url (/campaigns/x/), not /campaigns/x/index",
+    "color-scheme": "light | dark | auto (default). Set light/dark site-wide in metadata.json when the customer has no dark mode, so the OS preference cannot flip the demo"
+  },
+  "chrome": {
+    "header nav-layout: rail": {
+      "level": 6,
+      "use": "fixed left icon rail for primary sections (icons via :rail-*: in nav), square brand mark (:rail-mark:), wide top search, secondary CTA buttons; collapses to hamburger below 900px"
+    },
+    "footer footer-layout: legal": {
+      "level": 6,
+      "use": "logo + link row, copyright/legal paragraphs, stacked legal links (corporate/FS footers)"
+    },
+    "login-label / logout-label": {
+      "level": 0,
+      "use": "metadata overrides for auth link text"
+    }
+  },
+  "baseContentMarkers": {
+    "$comment": "Strings that only exist in the base demo content. Any of them on a customer page means base content leaked (P6). lint-content.mjs fails on them.",
+    "markers": [
+      "diyFIRE",
+      "Guided Path to Financial Independence",
+      "Lorem ipsum",
+      "Demo Site"
+    ]
+  }
+}
