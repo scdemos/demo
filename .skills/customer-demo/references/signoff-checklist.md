@@ -20,6 +20,7 @@ rail, carousels, layout, provenance, section count, review) can only be waived *
 > is a candidate for one (P10).
 
 ## 0. Automated gates (all must exit 0, or every FAIL is listed as ⚠️ with a reason)
+- [ ] **`parity.mjs` exits 0** (definition of done): every scoped page, original vs `localhost:3000`, at 1440/390 + dark OS, interactions exercised; `fid/parity.md` shows all ✅ (or an SC decision per ❌). Then once more against the published `aem.live` site. [P1 P4 P5] `parity`
 - [ ] `lint-content.mjs --site <slug>` passes: block content models, nav and form sheets. [P3] `lint:*`
 - [ ] `doctor.mjs --site <slug>` passes: state, index and search, forms (dry-run), links, metadata decisions, library. [P1 P2 P6 P8] `doctor:*`
 - [ ] `compare.mjs --final --review review.json` passes on every page in scope, both sites captured with `--interact` at 1440 **and** 390 px (demo from `localhost:3000`, also with `--scheme dark`): header layout, carousels, layout, provenance, **functionality** (menus, mobile menu, carousel, tabs, accordion) and the by-eye review included. [P1 P4 P5] `compare`

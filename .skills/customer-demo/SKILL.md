@@ -89,6 +89,7 @@ automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.m
 - `references/demo-manifest.json`: the blocks, variants, section styles, brand slots and
   features the base provides. **Read it before mapping anything.**
 - `scripts/preflight.mjs`: checks the customer site, the destination repo, Code Sync and DA.
+- `scripts/parity.mjs`: **definition of done** (phase 10a). Drives capture + compare for every scoped page at 1440/390 + dark, on localhost, and writes the parity matrix and fix list.
 - `scripts/capture.mjs` + `scripts/compare.mjs`: fidelity gate. They capture the original
   and the demo (screenshots plus a structural inventory per section) and produce
   `fidelity.html` with PASS/FAIL per page.
@@ -607,10 +608,33 @@ Fidelity tooling gotchas (learned in the pilot):
 - Original-only widgets that render empty (a strategy finder showing only its title)
   still need their heading or anchor on the demo; note them as ⚠️ in the report.
 
-### 10a. Final sweep: deep re-check and course-correct (every demo, right before handoff)
-A fresh pass that re-applies the fidelity contract and every principle to the finished site, as if
-someone else built it and you're the reviewer. Fix what you find, then re-run until clean (at most 3
-loops; anything left is a ⚠️ with its reason in the report).
+### 10a. Final parity loop: revisit every page, fix, re-test on localhost (definition of done)
+**The migration is complete only when `parity.mjs` exits 0.** Never tell the SC it's done, finished
+or ready before that, whatever the earlier phases reported. This is a fresh pass over the finished
+site, as if someone else built it and you're the reviewer:
+
+```bash
+aem up                                                    # in the demo repo; parity checks localhost serves THIS demo
+node .skills/customer-demo/scripts/parity.mjs             # scope + customer URL from .customer-demo/run.json
+# → fid/parity.md: matrix (page × design, content, look & feel, functionality) + FIX LIST
+```
+It captures every scoped page of the original (once) and of `http://localhost:3000` (every round) at
+1440 and 390 px, uses both like a visitor (`--interact`), adds a dark-OS pass, and runs the strict
+`compare.mjs --final` gate. Then loop, **page by page**:
+1. Open the page's fix list, and the original and `http://localhost:3000/<page>` side by side in the
+   integrated browser.
+2. Fix every item at its root: content in DA (copy, images, fragments, metadata), code in the demo
+   repo (blocks, variants, section styles, header/footer, tokens). New patterns go back to phase 5
+   (construct + manifest + library), not into a waiver.
+3. Preview the changed DA docs (`site-tab.js` `bulk` `preview`); code changes show on localhost at once.
+4. Re-run only what failed: `parity.mjs --pages "<failed pages>"`. Original captures are reused.
+5. Stop a page after **3 rounds**: it stays ❌ in the matrix and the SC decides (fix scope, an
+   `SC:` waiver, or drop it). Nothing else may turn a ❌ into ✅.
+
+Before the last round, do the by-eye pass below (step 0) and write `fid/review.json`; pass it with
+`--review fid/review.json`. When parity is complete: commit, push, publish the changed pages
+(`site-tab.js` `bulk` `publish`), and rerun `parity.mjs` against the published site once
+(`--demo https://main--<slug>--scdemos.aem.live`) to prove what the SC will show matches too.
 0. **Fidelity re-check (F1–F5), page by page, in the integrated browser** (original tab next to
    `http://localhost:3000`, 1440 then 390 px):
    - F1: the page list is the scoped list of real customer pages; no base page is live
@@ -635,14 +659,12 @@ loops; anything left is a ⚠️ with its reason in the report).
    templates, fragments, search index)`. Any ❌ loops back; the handoff shows the matrix.
    Then write `fid/review.json` (template: `fid/review.template.json`): per page `verdict`
    (`match` / `mismatch` / `waived`) and a `note` naming what you compared and what still differs.
-1. **Automated:**
+1. **Automated (alongside parity):**
    ```bash
    node .skills/customer-demo/scripts/lint-content.mjs --site <slug> --scope "/,/a,/b" --strict   # P3 content models
    node .skills/customer-demo/scripts/doctor.mjs --site <slug> --scope "/,/a,/b" --strict   # P1 P2 P6 P8 (state checks: DA_TOKEN, or --site-config saved from the da.live tab)
    node .skills/customer-demo/scripts/da-config.mjs --check <saved merged config>   # optional: no base refs
-   node .skills/customer-demo/scripts/capture.mjs --base <original> ... --headed --interact        # also --width 390
-   node .skills/customer-demo/scripts/capture.mjs --base http://localhost:3000 ... --scheme dark --interact   # also --width 390
-   node .skills/customer-demo/scripts/compare.mjs ... --final --review fid/review.json   # P4 P5, F1–F5 + functionality
+   node .skills/customer-demo/scripts/parity.mjs --review fid/review.json   # P4 P5, F1–F5 + functionality (wraps capture + compare)
    ```
    All must exit 0, or every remaining FAIL is listed as ⚠️ in the report with its reason.
    `compare.mjs` is strict by default (no missing header/footer items, CTAs ≥ 80%, images ≥ 90%,
@@ -663,6 +685,8 @@ loops; anything left is a ⚠️ with its reason in the report).
 7. Fill in the sign-off checklist, with evidence for each item.
 
 ### 10. Handoff (the only long message to the SC)
+Only after `parity.mjs` exits 0 (or every remaining ❌ has the SC's decision recorded). Include
+`fid/parity.md`.
 
 Generate it from `.customer-demo/run.json` (scope vs done, retries, waivers, failures). Report, in this order:
 - Preview, live, DA edit and repo URLs.

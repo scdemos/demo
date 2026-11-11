@@ -3,7 +3,7 @@
  * customer-demo: fidelity report.
  *
  *   node compare.mjs --original <captureDir> --demo <captureDir> --out fidelity.html [--map "/a=/b,..."] [--waivers waivers.json]
- *                    [--final --review review.json] [--allow "phrase,phrase"] [--scope "/,/about"]
+ *                    [--final --review review.json] [--allow "phrase,phrase"] [--scope "/,/about"] [--json results.json]
  *   node compare.mjs --self-test     # negative tests: each check FAILs on a broken demo, PASSes on a faithful one
  *
  * Reads page.json from both captures (see capture.mjs), aligns pages by slug (or --map), and writes
@@ -258,6 +258,7 @@ ${results.map((r) => `<h2>${esc(r.slug)} ${r.checks.every((c) => c.ok) ? '<span 
 ${r.o ? `<table><tr><th>#</th><th>original section</th><th>demo section</th></tr>${Array.from({ length: Math.max(r.o.sections.length, r.d.sections.length) }, (_, i) => `<tr><td>${i}</td>${row(r.o.sections[i])}${row(r.d.sections[i])}</tr>`).join('')}</table>
 <div class="shots"><div><b>original</b><img loading="lazy" src="${esc(rel(path.join(origDir, r.slug, 'full.png')))}"></div><div><b>demo</b><img loading="lazy" src="${esc(rel(path.join(demoDir, r.demoSlug, 'full.png')))}"></div></div>` : ''}`).join('')}`;
 fs.writeFileSync(outFile, html);
+if (args.json) fs.writeFileSync(args.json, JSON.stringify(results.map((r) => ({ slug: r.slug, demoSlug: r.demoSlug, checks: r.checks.map(({ name, ok, detail, waived }) => ({ name, ok, detail, waived })) })), null, 2));
 // by-eye review template: one verdict per page after looking at both screenshots and every section
 const tpl = path.join(path.dirname(path.resolve(outFile)), 'review.template.json');
 fs.writeFileSync(tpl, JSON.stringify(Object.fromEntries(results.map((r) => [r.slug, review[r.slug] || { verdict: 'match | mismatch | waived', note: 'what you compared and what differs (header, each section, footer, 1440 + 390)' }])), null, 2));
