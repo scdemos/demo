@@ -1,7 +1,10 @@
 // Offline tests (no network): node workers/cloneit_token/index.test.mjs
 import { Buffer } from 'node:buffer';
+import { readFileSync } from 'node:fs';
 import process from 'node:process';
-import worker, { verifyUser, provisionStandalone, isAllowedProxyPath, originMatches } from './index.js';
+import worker, {
+  verifyUser, provisionStandalone, isAllowedProxyPath, isAllowedCopyDestination, originMatches,
+} from './index.js';
 let pass = 0; let fail = 0;
 const ok = (name, cond, extra = '') => { (cond ? pass++ : fail++); console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${cond ? '' : ` ${extra}`}`); };
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -38,6 +41,52 @@ ok('legacy allowlist excludes bulk', !isAllowedProxyPath('helix', '/preview/scde
 ok('deny org config', !isAllowedProxyPath('helix', '/config/scdemos.json', 'scdemos'));
 ok('deny other org', !isAllowedProxyPath('helix', '/preview/other/acme/main/*', 'scdemos'));
 ok('deny traversal', !isAllowedProxyPath('da', '/source/scdemos/../x', 'scdemos'));
+// fetch() turns these into `..` / `/` after the check, so they must be rejected as written
+ok('deny encoded traversal', !isAllowedProxyPath('helix', '/config/scdemos/sites/%2e%2e/%2e%2e/%2e%2e/config/other/sites/x.json', 'scdemos'));
+ok('deny encoded traversal (upper case)', !isAllowedProxyPath('da', '/source/scdemos/%2E%2E/other/x.html', 'scdemos'));
+ok('deny backslash traversal', !isAllowedProxyPath('da', '/source/scdemos/a\\..\\..\\other/x.html', 'scdemos'));
+ok('allow nested content path', isAllowedProxyPath('da', '/copy/scdemos/demo/products/books.html', 'scdemos'));
+ok('allow hidden asset path', isAllowedProxyPath('da', '/copy/scdemos/demo/.index/media_1.png', 'scdemos'));
+ok('allow job details', isAllowedProxyPath('helix', '/job/scdemos/acme/main/preview/job-123/details', 'scdemos'));
+
+// copy destination (DA writes there)
+ok('copy dest inside org', isAllowedCopyDestination('/scdemos/acme/products/books.html', 'scdemos'));
+ok('copy dest other org', !isAllowedCopyDestination('/other/acme/index.html', 'scdemos'));
+ok('copy dest org prefix only', !isAllowedCopyDestination('/scdemos-evil/acme/index.html', 'scdemos'));
+ok('copy dest traversal', !isAllowedCopyDestination('/scdemos/acme/../../other/x.html', 'scdemos'));
+ok('copy dest encoded traversal', !isAllowedCopyDestination('/scdemos/%2e%2e/other/x.html', 'scdemos'));
+ok('copy dest missing', !isAllowedCopyDestination(undefined, 'scdemos'));
+
+// router, strict mode with a signed-in user: the proxy checks path and copy destination before any upstream call
+{
+  const upstream = [];
+  globalThis.fetch = async (u) => {
+    const url = String(u);
+    if (url.includes('/ims/validate_token/')) return new Response(JSON.stringify({ valid: true }));
+    if (url.includes('/ims/profile/')) return new Response(JSON.stringify({ email: 'sc@adobe.com' }));
+    if (url.includes('/ims/token/')) return new Response(JSON.stringify({ access_token: 'tech', expires_in: 3600 }));
+    upstream.push(url);
+    return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  const user = tok('darkalley', 9);
+  const proxy = (body) => worker.fetch(new Request('https://w.test/cloneprocess', {
+    method: 'POST', headers: { Origin: 'https://x.test', Authorization: `Bearer ${user}` }, body: JSON.stringify(body),
+  }), strict);
+  ok('strict: whoami with user', (await worker.fetch(req(user), strict)).status === 200);
+  const copy = (destination) => ({ kind: 'da', path: '/copy/scdemos/demo/index.html', method: 'POST', form: { destination } });
+  ok('strict: copy into new site', (await proxy(copy('/scdemos/acme/index.html'))).status === 200
+    && upstream.at(-1) === 'https://admin.da.live/copy/scdemos/demo/index.html');
+  const before = upstream.length;
+  ok('strict: copy to other org denied', (await proxy(copy('/other/acme/index.html'))).status === 400);
+  ok('strict: copy without destination denied', (await proxy({ kind: 'da', path: '/copy/scdemos/demo/index.html', method: 'POST' })).status === 400);
+  ok('strict: encoded traversal denied', (await proxy({ kind: 'helix', path: '/config/scdemos/sites/%2e%2e/%2e%2e/%2e%2e/config/other/sites/x.json' })).status === 400);
+  ok('strict: denied calls never reach upstream', upstream.length === before);
+  ok('strict: site config read allowed', (await proxy({ kind: 'helix', path: '/config/scdemos/sites/demo.json' })).status === 200);
+  globalThis.fetch = realFetch;
+}
+
+// the deployed config must keep the token-less legacy lane closed
+ok('wrangler.toml: LEGACY_COMPAT is "false"', /^LEGACY_COMPAT\s*=\s*"false"/m.test(readFileSync(new URL('./wrangler.toml', import.meta.url), 'utf8')));
 
 // provisionStandalone with a fake GitHub
 function fakeGh({ member = true, exists = false, readyAfter = 1, installs = [{ id: 77, app_slug: 'aem-code-sync', account: { login: 'scdemos' } }], addStatus = 204, topics = ['customer-demo'] } = {}) {
