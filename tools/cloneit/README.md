@@ -86,14 +86,13 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 | CloneIt worker | `POST …/whoami` | Verifies the signed-in user; tells the UI whether demo creation is enabled |
 | CloneIt worker | `POST …/standalone` | Own repo: create `scdemos/<site>` from `TEMPLATE_REPO`, add it to the AEM Code Sync installation (auto-discovered), make the requester's GitHub user admin, grant `SC_TEAM` push (if set) |
 | CloneIt worker | `POST …/` | Readiness ping (the technical account's token never leaves the worker) |
-| CloneIt worker | `POST …/cloneprocess` | **Helix + DA Admin** clone calls — worker adds the technical account's token and forwards to allowlisted paths only (`/config/{org}/sites/…` and `/code|preview|live|job|status/{org}/{site}/…` on Helix; `/list|config|copy|source/{org}/…` on DA). The browser never stores an API token for those requests. |
+| CloneIt worker | `POST …/cloneprocess` | **Helix + DA Admin** clone calls — worker adds the technical account's token and forwards to allowlisted paths only (`/config/{org}/sites/…` and `/code|preview|live|job|status/{org}/{site}/…` on Helix; `/list|config|copy|source/{org}/…` on DA). Paths with `..`, `%` or `\` are rejected, and a DA copy's `destination` must stay in `/{org}/…`. The browser never stores an API token for those requests. |
 
 ## Authentication
 
-- **Backward compatible:** while `LEGACY_COMPAT` is `"true"` (default), requests without an `Authorization`
-  header behave like the previous worker (`POST /` returns the technical token, `/cloneprocess` uses the old
-  allowlist), so the currently deployed CloneIt page keeps working. Set it to `"false"` once every page
-  sends a token: the old behavior gives anyone who fakes an allowed `Origin` an admin token.
+- **Legacy lane closed:** `LEGACY_COMPAT` is `"false"` in `wrangler.toml`, so every request needs the caller's
+  IMS token. Setting it to `"true"` brings back the previous worker's token-less behavior (`POST /` returns the
+  technical token to anyone who fakes an allowed `Origin`); don't.
 - **Who may call (new routes and new paths):** the caller's own Adobe IMS access token (the DA session,
   read with `DA_SDK` and sent as `Authorization: Bearer …`). The worker validates it with IMS, accepts
   only `IMS_CLIENT_IDS` (DA = `darkalley`) and `ALLOWED_EMAIL_DOMAINS` (`adobe.com`). The `Origin`
