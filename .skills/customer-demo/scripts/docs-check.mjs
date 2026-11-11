@@ -24,7 +24,8 @@ const ROOT = path.resolve(SKILL_DIR, '../..');
 const read = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '');
 const QS = path.join(SKILL_DIR, 'SC-QUICKSTART.md');
 
-const scripts = fs.readdirSync(path.join(SKILL_DIR, 'scripts')).filter((f) => /\.(mjs|js)$/.test(f)).sort();
+// scripts/ plus the in-page helpers in scripts/browser/ (site-tab.js, design.js, inventory.js)
+const scripts = ['', 'browser'].flatMap((d) => fs.readdirSync(path.join(SKILL_DIR, 'scripts', d)).filter((f) => /\.(mjs|js)$/.test(f))).sort();
 const docs = {
   'SKILL.md': read(path.join(SKILL_DIR, 'SKILL.md')),
   'SC-QUICKSTART.md': read(QS),
@@ -42,6 +43,20 @@ Object.entries(docs).forEach(([name, text]) => {
   });
 });
 scripts.forEach((s) => { if (!docs['SKILL.md'].includes(s)) problems.push(`scripts/${s} isn't documented in SKILL.md`); });
+
+// 3. MCP configs for every harness declare the same DA and EMA servers (names + URLs)
+const MCP = {
+  'da': 'https://mcp.adobeaemcloud.com/adobe/mcp/da',
+  'adobe-aem-ema': 'https://mcp.adobeaemcloud.com/adobe/mcp/ema',
+};
+['.mcp.json', '.vscode/mcp.json', '.cursor/mcp.json', '.gemini/settings.json', '.codex/config.toml'].forEach((f) => {
+  const body = read(path.join(ROOT, f));
+  if (!body) { problems.push(`${f} is missing (MCP config for one harness)`); return; }
+  Object.entries(MCP).forEach(([name, url]) => {
+    const declared = f.endsWith('.toml') ? body.includes(`[mcp_servers.${name}]`) : body.includes(`"${name}"`);
+    if (!declared || !body.includes(url)) problems.push(`${f} doesn't declare MCP server "${name}" → ${url}`);
+  });
+});
 
 const usage = (f) => (read(path.join(SKILL_DIR, 'scripts', f)).match(/\/\*[\s\S]*?\*\//) || [''])[0];
 const fingerprint = crypto.createHash('sha256')

@@ -11,7 +11,7 @@
  */
 import {
   MANIFEST, Report, parseArgs, origins, get, getJson, sheetRows, blocksIn, sectionStyles,
-  hrefs, internalPath, discoverPages, plainPages, text,
+  hrefs, internalPath, discoverPages, plainPages, text, childDivs,
 } from './lib/site.mjs';
 
 const knownVariants = Object.fromEntries(Object.entries(MANIFEST.blocks).map(([name, b]) => [
@@ -84,6 +84,22 @@ export function lintMeta(page, metas) {
     .map(([k, v]) => ['FAIL', 'lint:campaign-index', 'P1', `${page}: ${k} = ${v}; a DA doc named index is served at the folder URL (use ${v.replace(/index\/?$/, '')})`, 'campaign 404']);
 }
 
+/**
+ * Repeated content (P7): the same section written inline on 2+ pages must be one fragment under
+ * /fragments/ (fragment block on each page), so an author edits it once. Short sections are ignored.
+ */
+export function lintRepeats(plainByPage) {
+  const seen = new Map();
+  Object.entries(plainByPage).forEach(([page, html]) => childDivs(html).forEach((sec) => {
+    const key = text(sec.replace(/<div class="section-metadata">[\s\S]*$/, '')).toLowerCase();
+    if (key.length < 80) return;
+    if (!seen.has(key)) seen.set(key, new Set());
+    seen.get(key).add(page);
+  }));
+  return [...seen.entries()].filter(([, pages]) => pages.size > 1).map(([key, pages]) => ['FAIL', 'lint:repeat-inline', 'P7',
+    `same section inline on ${[...pages].join(', ')}: "${key.slice(0, 60)}…" → make it /fragments/<name> and use a fragment block`, 'duplicated content']);
+}
+
 /* ---------- self-test (P9) ---------- */
 
 function selfTest() {
@@ -100,6 +116,8 @@ function selfTest() {
     ['pipes ok', lintFormSheet('/forms/x.json', [{ field: 'Consent', type: 'checkbox', options: 'By submitting, I consent|' }]), false],
     ['campaign index', lintMeta('/', { 'campaign-x': '/campaigns/x/index' }), true],
     ['campaign folder', lintMeta('/', { 'campaign-x': '/campaigns/x/' }), false],
+    ['repeat inline', lintRepeats({ '/a': `<div><p>${'Talk to our institutional team about your goals today. '.repeat(2)}</p></div>`, '/b': `<div><p>${'Talk to our institutional team about your goals today. '.repeat(2)}</p></div>` }), true],
+    ['repeat as fragment', lintRepeats({ '/a': '<div><div class="fragment"><div><div><a href="/fragments/cta">/fragments/cta</a></div></div></div></div>', '/b': '<div><div class="fragment"><div><div><a href="/fragments/cta">/fragments/cta</a></div></div></div></div>' }), false],
   ];
   let bad = 0;
   cases.forEach(([name, results, expectFail]) => {
@@ -140,6 +158,7 @@ async function main() {
   });
   if (!linted.length) push([['FAIL', 'lint:no-pages', 'P1', 'no page could be loaded: nothing was linted']]);
   linted.forEach(([p, r]) => push(lintPage(p, r.body, { faqIndex, originalHost })));
+  push(lintRepeats(Object.fromEntries(linted.map(([p, r]) => [p, r.body]))));
 
   const chrome = await Promise.all(['nav', 'footer'].map(async (n) => [n, await get(`${o.live}/${n}.plain.html`)]));
   chrome.forEach(([n, r]) => push(r.ok ? lintChrome(n, r.body) : [['WARN', 'lint:chrome', 'P2', `/${n} not available (${r.status})`]]));

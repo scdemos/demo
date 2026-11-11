@@ -6,8 +6,8 @@ in phase 1d-2, and again in the final sweep (10a). For each row: **copy**, **rec
 **skip on purpose** (and write the reason in the report). `scripts/doctor.mjs` checks the
 rows marked 🩺.
 
-Write the site config **one key at a time** (GET → change one key → POST), so a rejected key doesn't block the others. Admin API calls run from a signed-in `https://admin.hlx.page/profile/scdemos/<slug>/main`
-tab (`fetch` with cookies). Read the base with `GET /config/scdemos/sites/demo.json`, read the
+Write the site config **one key at a time** (GET → change one key → POST), so a rejected key doesn't block the others. Admin API calls run in the signed-in da.live tab (`fetch` with the tab's IMS token as
+Bearer, like `scripts/browser/site-tab.js`), or headless with `DA_TOKEN`. Read the base with `GET /config/scdemos/sites/demo.json`, read the
 site with `GET /config/scdemos/sites/<slug>.json`, merge, then
 `POST /config/scdemos/sites/<slug>.json` (the full object, `content-type: application/json`).
 Never print or copy secrets (`apiKeys`, `cdn.*.apiToken`).

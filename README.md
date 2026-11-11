@@ -17,18 +17,19 @@ from this repo, adds it to AEM Code Sync, makes you its admin, copies the demo c
 site config (you as admin) and the query index, publishes everything, logs the demo in
 `da.live/#/scdemos/demo-registry`, and shows the next prompt. Nothing is taken from the customer's website yet.
 
-**2. Optional: make it look like the customer.** Install **GitHub Copilot** in VS Code or **Claude Code**,
-open the new repo (CloneIt's **Open in VS Code**), sign in to the preconfigured MCP servers (`.vscode/mcp.json`,
-`.mcp.json`), and paste the prompt CloneIt shows (the customer site is already filled in):
+**2. Optional: make it look like the customer.** Use **GitHub Copilot** in VS Code (best: it has an integrated
+browser), **Claude Code**, Cursor, Gemini CLI or the ChatGPT desktop app / Codex. Open the new repo (CloneIt's
+**Open in VS Code**), sign in to the preconfigured DA and EMA MCP servers (`.vscode/mcp.json`, `.mcp.json`,
+`.cursor/mcp.json`, `.codex/config.toml`, `.gemini/settings.json`), and paste the prompt CloneIt shows (the customer site is already filled in):
 ```
 /customer-demo https://www.acme.com/institutional/us/en
 ```
 The agent then:
-1. attaches to `scdemos/<slug>`, clones it next to your workspace and starts `aem up` (watch on localhost:3000)
-2. replaces the demo content with the customer's (rendered in a real browser, nothing dropped)
-3. applies the customer brand (`BRAND TOKENS` in `styles/styles.css`) and maps every pattern onto blocks, variants and section styles, adding generic ones when needed
-4. bakes in experimentation, audiences, campaigns, forms, search and a demo walkthrough
-5. QA-checks against the original site (`doctor.mjs`, `lint-content.mjs`, `compare.mjs`), runs a final sweep, and hands back the links
+1. asks you to sign in to da.live **once** in its browser tab (covers DA, preview and publish), starts `aem up` (watch on localhost:3000)
+2. moves the base demo pages to DA `drafts/demo-backup` (unpublished) and rebuilds the customer's real pages with their real content (rendered in a real browser, nothing dropped, nothing made up)
+3. analyzes the design (nav with dropdowns/mega menus, header, type, buttons, cards, section layouts, carousels), applies the brand (`BRAND TOKENS` in `styles/styles.css`) and maps every pattern onto blocks, variants and section styles, adding new ones (and their block library entries) when nothing fits
+4. bakes in forms, search, the block library and a demo walkthrough (experiments and campaigns only when you ask)
+5. checks every page against the original (`compare.mjs`: header layout, section layout, carousels, invented copy; `doctor.mjs`, `lint-content.mjs`), runs a final sweep that loops until it matches, and hands back the links
 
 **One-time admin setup:** set the CloneIt worker secrets (`ADOBE_CLIENT_ID`, `ADOBE_CLIENT_SECRET`, and
 `GITHUB_PROVISION_TOKEN`, required to create demos: a classic PAT of an `scdemos` org owner or bot with the `repo` and

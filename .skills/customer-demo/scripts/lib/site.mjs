@@ -8,6 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const MANIFEST = JSON.parse(fs.readFileSync(path.join(HERE, '../../references/demo-manifest.json'), 'utf8'));
+/** Source of an in-page function in scripts/browser/<name>.js, ready for page.evaluate(`(${src})()`). */
+export const browserFn = (name) => fs.readFileSync(path.join(HERE, `../browser/${name}.js`), 'utf8')
+  .replace(/^\/\*[\s\S]*?\*\/\s*(\/\/.*\n)?/, '').trim().replace(/;$/, '');
+
 export const FORMS_ENDPOINT = 'https://demo.bbird.live/contact-us/';
 
 // paths that must never be in the query index (non-content)

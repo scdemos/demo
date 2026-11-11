@@ -5,7 +5,7 @@ gets **its own repo** `scdemos/<site>` (created from `scdemos/demo`, added to AE
 and **its own DA folder**, so it can be demoed as is and customized later (content and code) with the
 `customer-demo` AI skill. CloneIt shows that prompt and an "Open in VS Code" link at the end.
 
-CloneIt copies the demo site's content, **all DA config sheets** (`scdemos/demo` references rewritten; publish
+CloneIt copies the demo site's content (except `drafts`, `demo-docs`, `demo-slides` and the locale folders), **all DA config sheets** (`scdemos/demo` references rewritten; publish
 approvers set to you), the AEM site config (you as admin, `*@adobe.com` author/publish), the query
 index config, then **preview and publish everything automatically** and add a row to the demo
 registry (`da.live/#/scdemos/demo-registry`, sheet `demos.json`).

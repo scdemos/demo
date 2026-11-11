@@ -225,6 +225,18 @@
     "siteNotices": {
       "level": 8,
       "use": "metadata site-gate: /fragments/<disclaimer> (modal with #agree/#cancel links; site-gate-exit for cancel) and consent: /fragments/<consent> (banner with #accept/#reject/#settings, optional category list). Choices persist in localStorage and drive Web SDK consent via martech updateUserConsent."
+    },
+    "login": {
+      "level": 0,
+      "use": "header builds the login/logout link to demo.bbird.live (base auth flow, keep it there); customer wording via metadata login-label / logout-label"
+    },
+    "gatedContent": {
+      "level": 0,
+      "use": "page metadata Gated: true + section metadata View: logged-in | logged-out (teaser vs member content); author toggle on aem.page/localhost, enforced by the CDN worker + Cloudflare Access on the gated production host"
+    },
+    "templates": {
+      "level": 7,
+      "use": "Template: article (insights/news, breadcrumb, date) and Template: events (listing); add a new template for a page type that appears on 2+ pages"
     }
   },
   "mappingRules": [
@@ -233,7 +245,8 @@
     "New block when the content model, interaction or over ~40% of the CSS differs; otherwise a variant.",
     "Name everything generically; record level, content model and baseCandidate in this manifest.",
     "Section-driven blocks (tabs = Tab Id/Tab title section metadata; faq = /faq-index.json; journey-map = gated checklist) must not be authored as row tables. When the original shows tiles, use cards panel; timelines use table striped.",
-    "Text on colored bands/overlaps must be verified against what is painted under it, not its DOM parent (capture.mjs readability check)."
+    "Text on colored bands/overlaps must be verified against what is painted under it, not its DOM parent (capture.mjs readability check).",
+    "Content repeated on 2+ pages (CTA band, sign-up, disclaimer, contact strip) is one /fragments/<generic-name> doc, placed with a fragment block on each page (lint:repeat-inline)."
   ],
   "pageMetadata": {
     "social-share": "off hides the floating share dock (delayed.js)",

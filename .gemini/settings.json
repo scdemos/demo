@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "da": {
+      "httpUrl": "https://mcp.adobeaemcloud.com/adobe/mcp/da"
+    },
+    "adobe-aem-ema": {
+      "httpUrl": "https://mcp.adobeaemcloud.com/adobe/mcp/ema"
+    }
+  }
+}

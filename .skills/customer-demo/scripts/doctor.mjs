@@ -7,8 +7,9 @@
  *                   [--pages "/a,/b" | --scope "/a,/b"] [--strict] [--terms "credit,equity"] [--admin-token <token> | --site-config f --base-config f] [--json]
  *   node doctor.mjs --self-test          # negative tests: every evaluator must FAIL on broken fixtures
  *
- * `state` needs the site config (admin.hlx.page). Either pass --admin-token (or set AEM_ADMIN_TOKEN),
- * or save both configs from a signed-in admin.hlx.page tab (redact apiKeys / cdn tokens) and pass
+ * `state` needs the site config (admin.hlx.page). Either set DA_TOKEN (IMS token of a signed-in da.live
+ * user), pass --admin-token (or set AEM_ADMIN_TOKEN), or save both configs from the signed-in da.live
+ * tab (site-tab.js / fetch with the tab's token; redact apiKeys / cdn tokens) and pass
  * --site-config site.json --base-config demo.json. Without either, the state checks are SKIPPED,
  * never passed.
  *
@@ -42,7 +43,7 @@ export function evalIndex(rows, navPaths) {
   const indexed = new Set(rows.map((r) => r.path));
   const missing = navPaths.filter((p) => isContentPath(p) && !indexed.has(p));
   out.push(missing.length
-    ? ['WARN', 'index:coverage', 'P2', `nav pages not indexed (publish them): ${missing.join(', ')}`]
+    ? ['FAIL', 'index:coverage', 'P2', `nav pages not indexed (publish them): ${missing.join(', ')}`, 'dead search']
     : ['PASS', 'index:coverage', 'P2', 'every nav page is indexed']);
   const untitled = rows.filter((r) => !r.title || !r.description).map((r) => r.path);
   if (untitled.length) out.push(['WARN', 'index:metadata', 'P4', `rows without title/description (poor search results): ${untitled.join(', ')}`]);
@@ -98,7 +99,7 @@ export function samplePayload(rows) {
 
 export function evalState(site, base, slug) {
   const out = [];
-  if (!site) return [['SKIP', 'state', 'P2', 'site config not readable: pass --admin-token (auth_token cookie of admin.hlx.page)']];
+  if (!site) return [['SKIP', 'state', 'P2', 'site config not readable: set DA_TOKEN, pass --admin-token, or pass --site-config/--base-config saved from the da.live tab']];
   const roles = site.access?.admin?.role || {};
   const has = (role) => (roles[role] || []).includes('*@adobe.com');
   out.push(has('author') && (has('publish') || has('basic_publish'))
@@ -247,7 +248,8 @@ async function main() {
   const nav = await get(`${o.live}/nav.plain.html`);
   const navPaths = [...new Set(hrefs(nav.body).map((h) => internalPath(h, o)).filter(Boolean))];
 
-  if (want('index')) push(evalIndex(rows, navPaths));
+  // every scoped page (CTA targets, legal pages, template examples) must be searchable, not only nav pages
+  if (want('index')) push(evalIndex(rows, [...new Set([...navPaths, ...list(args.scope).filter((p) => p !== '/search')])]));
 
   if (want('search')) {
     const s = await get(`${o.live}/search.plain.html`);
@@ -346,7 +348,8 @@ async function main() {
       return [pair, (await get(`${o.live}${target}`, { method: 'HEAD' })).status];
     }));
     const bad = res.filter(([, s]) => s !== 200);
-    push([!urls.size ? ['WARN', 'experiments', 'P1', 'no experiment/campaign/audience variants found']
+    // experiments, campaigns and audiences are opt-in (the SC adds them when the demo story needs them)
+    push([!urls.size ? ['PASS', 'experiments', 'P1', 'none set (optional: add them when the SC asks)']
       : bad.length ? ['FAIL', 'experiments', 'P1', `variant URLs not served: ${bad.map(([u, s]) => `${u} (${s})`).join(', ')}`, 'campaign index 404']
         : ['PASS', 'experiments', 'P1', `${urls.size} variant URLs served`]]);
   }
@@ -387,6 +390,7 @@ async function main() {
 
   if (want('state')) {
     const token = args['admin-token'] || process.env.AEM_ADMIN_TOKEN;
+    const ims = process.env.DA_TOKEN;
     let site = null;
     let base = null;
     if (args['site-config']) {
@@ -394,8 +398,8 @@ async function main() {
       const fs = await import('node:fs');
       site = JSON.parse(fs.readFileSync(args['site-config'], 'utf8'));
       base = args['base-config'] ? JSON.parse(fs.readFileSync(args['base-config'], 'utf8')) : null;
-    } else if (token) {
-      const h = { headers: { 'x-auth-token': token } };
+    } else if (token || ims) {
+      const h = { headers: token ? { 'x-auth-token': token } : { authorization: `Bearer ${ims}` } };
       site = (await getJson(`https://admin.hlx.page/config/${org}/sites/${args.site}.json`, h)).json;
       base = (await getJson(`https://admin.hlx.page/config/${org}/sites/demo.json`, h)).json;
       const q = await get(`https://admin.hlx.page/config/${org}/sites/${args.site}/content/query.yaml`, h);

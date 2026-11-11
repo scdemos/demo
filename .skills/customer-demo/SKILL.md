@@ -32,7 +32,7 @@ a demo in a personal account or in another org.
 | GitHub repo | Always `scdemos/<slug>` | `github.com/scdemos/acmeinvest` |
 | DA site | Always `scdemos/<slug>`, the same name as the repo, so the Config Service maps code → content automatically | `da.live/#/scdemos/acmeinvest` |
 | Preview | `https://main--<slug>--scdemos.aem.page/` | |
-| Page scope | Home + top nav pages, one per template, **max 8** | |
+| Page scope | Real pages only (F1), same slugs. **Always:** the SC's URL (home of the demo) and every top-nav page. **Plus what they depend on:** pages their CTAs and forms lead to (contact, thank-you), the footer's legal pages (privacy, terms, disclaimer) and one page per distinct template (article, event, product, fund). Typically 8–15; ask the SC once only if it exceeds 20. Never invent pages. | |
 | Locale | From the URL path | `en` |
 | Customer name | From `og:site_name`, otherwise the `<title>` brand, otherwise the domain | `Acme Investments` |
 
@@ -42,10 +42,27 @@ proposed separately." Treat the SC's go-ahead (or the original prompt, if it alr
 "go"/"autopilot") as approval for commits to the **customer repo only**. Then continue without
 waiting.
 
-**SC identity.** Roles and publish approvers need the SC's Adobe email. Read it from
-`GET https://admin.hlx.page/profile` (signed in; `profile.email`), falling back to
+**SC identity.** Roles and publish approvers need the SC's Adobe email. Read it with
+`site-tab.js` `{ op: 'whoami' }` in the signed-in da.live tab (phase 0), falling back to
 `git config user.email` when it ends in `@adobe.com`. Never guess it; if neither works, ask
 once.
+
+## Fidelity contract (non-negotiable, enforced by gates)
+
+The demo is the customer's site rebuilt on the base: **same pages, same look, same words.** Five
+rules, each with the gate that fails when it's broken. Don't hand off with a failing gate. The
+fidelity checks can only be waived **by the SC** (`waivers.json` reason starting with `SC:`, e.g.
+`"SC: licensed font, Source Sans 3 accepted"`); `compare.mjs` ignores any other waiver on them.
+Environmental checks (`health` noise from third-party scripts, Lighthouse on preview) may carry
+the agent's own written reason.
+
+| # | Rule | Enforced by |
+|---|---|---|
+| F1 | **Real pages.** Every demo page is a page of the customer site (same slug where possible). No invented pages, no base pages left live (they're backed up in 7a). | scope list from the SC's URL + nav; `lint:base-leftover`; `doctor:index` |
+| F2 | **Real content.** Headings, copy, stats, CTAs, images and forms come from the original pages (`scrape/<page>/outline.json`, `assets/`). Never write filler copy. Allowed new text, outside the migrated pages only: a short "for illustration only" note on mocked data, block library and walkthrough docs, base UI strings (search, calculator, form messages, login labels) and gated-content teasers built from the page's own copy. | `compare:provenance`, `compare:headings`, `compare:text`, `compare:media` |
+| F3 | **Same chrome.** The header has the original's anatomy (rows: utility bar / main nav / sub-nav; logo size and placement; sticky; search, region, login CTAs; the full dropdown / mega-menu tree from `design.json`). Same for the footer. | `compare:header layout`, `compare:header items`, `compare:footer links`, `compare:side rail` |
+| F4 | **Same layout.** Section by section: alignment (centered vs left), text width, full-bleed bands, tone (dark/light), columns, and every carousel/slider, tab set and accordion. | `compare:layout`, `compare:carousels`, `compare:section count` |
+| F5 | **Same look.** Type scale, button and card styles, container width and spacing follow `design.json`; verified by eye, page by page, original next to demo at 1440 and 390 px. | `compare --final` → `review.json` (one written verdict per page) |
 
 ## Operating principles (read first, apply in every phase)
 
@@ -56,7 +73,7 @@ automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.m
 
 | # | Principle | What it means in practice |
 |---|---|---|
-| **P1** | **Verify outcomes, not artifacts.** | A feature is done only after you've used it as a visitor would: typed a search, submitted every form (dry-run), opened the experiment/campaign URL, clicked every nav, footer and in-page link, and changed calculator inputs. "The block renders" is not "the feature works". |
+| **P1** | **Verify outcomes, not artifacts.** | A feature is done only after you've used it as a visitor would: typed a search, submitted every form (dry-run), opened the experiment/campaign URL (if set), clicked every nav, footer and in-page link, and changed calculator inputs. "The block renders" is not "the feature works". |
 | **P2** | **The template copies code, not state.** | A repo made from the template has none of the base's per-site state: site config (`query.yaml`, `headers`, `robots`, `sidekick`, `public`, `features`), roles, the query index, the DA config/library, untracked icons, workers and secrets. Walk `references/base-state-inventory.md`: copy, recreate or explicitly skip every row. |
 | **P3** | **Read the contract before reuse.** | Before using a block, worker, endpoint or plugin, read its content model and inputs (manifest, block JS, worker README). Never assume something is "generic". If it doesn't fit, choose another construct or make it generic at the source. Never force content into the wrong model. |
 | **P4** | **Content parity before polish.** | Migrate every section of every page in scope (headings, copy, lists, stats, images, CTAs, forms, embedded widgets) before styling. Compare against the original's outline (`extract-outline.js`). A missing section is a FAIL, not a polish item. |
@@ -86,7 +103,9 @@ automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.m
 - `scripts/da-config.mjs`: migrates every DA config sheet from the base, rewritten for the customer (P2).
 - `scripts/setup-check.mjs`: machine/harness check; `--fix` installs Playwright + matching Chromium outside the repo (phase 0).
 - `scripts/scrape.mjs`: renders the original pages in a real browser; outline, brand, rendered images (phases 3/3b).
-- `scripts/admin.mjs`: AEM Admin API without a browser: preview, publish, unindex, code sync, status, config.
+- `scripts/admin.mjs`: AEM Admin API without a browser: preview, publish, unpublish, unindex, code sync, status, config.
+- `scripts/browser/site-tab.js`: DA + AEM Admin API from the signed-in da.live tab (no tokens): whoami, list, move, bulk preview/publish/unpublish, status, code sync, base backup.
+- `scripts/browser/design.js` / `inventory.js`: in-page probes (design analysis; fidelity inventory) used by `scrape.mjs` / `capture.mjs` and runnable in the integrated browser.
 - `scripts/docs-check.mjs`: keeps `SC-QUICKSTART.md` and the docs in sync with the skill (pre-commit).
 - `SC-QUICKSTART.md`: the SC-facing one-pager. **Any change to SC-facing behavior (prompts,
   approvals, setup, outputs, troubleshooting) updates it in the same change**; `docs-check.mjs`
@@ -96,36 +115,63 @@ automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.m
 
 Track each phase as a todo. Run the phases in order. Keep going until the handoff, unless you hit a ⛔ blocker.
 
-### 0. Environment check
-Run **`node .skills/customer-demo/scripts/setup-check.mjs --fix`** first. It checks Node, git,
-GitHub reachability, `playwright-core` plus the **matching** Chromium build, the AEM CLI and
-Lighthouse, and installs the browser tooling into `~/.cache/customer-demo` (never into
-`package.json`). Then check silently, and report only failures:
-- **DA MCP**: run `da_list_sources(org: "scdemos", repo: "demo")`. If it fails, have the SC
-  sign in to da.live, then use the `da-auth` skill.
-- **GitHub MCP**: run `get_me`. If it fails, have the SC sign in to GitHub in their harness
-  (`.vscode/mcp.json` / `.mcp.json` already declare the server).
-- **EMA MCP**: optional. It is only used as a scraping fallback.
+**Run state (resume, never redo).** Keep `.customer-demo/run.json` in the demo repo (git-ignored)
+and update it after every step: `{ site, customerUrl, scope: [{ original, demo, template, status }],
+phases: { "<id>": "pending|running|done|failed" }, backup: { done, failed }, waivers, notes }`.
+On start, if it exists, **resume**: skip `done` phases and pages, re-verify anything `running`
+(status calls, not blind retries), and never re-run the backup if `backup.done`. Report progress to
+the SC in one line per phase ("3/9 · discovered 11 pages, design brief written"). The handoff
+(phase 10) is generated from this file.
 
-#### Harness capabilities (P9: scripts first, harness tools as a convenience)
-Every step that needs a browser or an authenticated API has a **script path** that works in any
-harness (Copilot, Claude Code, plain CLI). Use the harness's built-in browser only when it's
-there and convenient.
+### 0. Environment check and the one sign-in (everything up front, never blocked later)
+Do all of this **before** any work, in one go, and report only what needs the SC:
+1. **Tools:** `node .skills/customer-demo/scripts/setup-check.mjs --fix` (Node, git, GitHub, AEM CLI,
+   Lighthouse, `playwright-core` + the **matching** Chromium in `~/.cache/customer-demo`, never in
+   `package.json`).
+2. **The one sign-in (integrated browser).** Open `https://da.live/#/scdemos/<slug>` in the harness's
+   browser (VS Code: `openBrowserPage`; Claude Code / others: Playwright MCP). If it shows the Adobe
+   sign-in, ask the SC **once**: "Sign in to da.live in the browser tab I opened, then say done."
+   Then run `site-tab.js` `{ op: 'whoami' }` → the SC's email and the token's remaining hours. That
+   tab now covers **DA and the AEM Admin API** (da.live sends the IMS token to both), so no token is
+   ever copied, pasted or printed. Keep the tab open for the whole run. The sign-in lasts about a
+   day (`whoami` → `hours`); if fewer than 4 hours are left, have the SC sign in again now. If a
+   call later returns 401, reload the tab, ask the SC once to sign in, and retry the same call.
+3. **MCP servers** (declared in `.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`,
+   `.codex/config.toml`, `.gemini/settings.json`; keep the server names `da` / `adobe-aem-ema` / `github` and
+   the URLs identical in all of them): **DA** `da_list_sources(org: "scdemos", repo: "<slug>")`, **GitHub**
+   `get_me`. If either fails, ask the SC to sign in to that server in their tool (same message as
+   step 2). **EMA** is optional (scraping fallback). Gemini CLI and Codex don't preconfigure GitHub (it
+   needs a token there): use `git` / `gh` with the SC's existing credentials for commits and pushes.
+4. **Dev server:** `aem up` in the demo repo (phase 1b), so every browser test runs on
+   **http://localhost:3000**.
 
-| Capability | Script path (any harness) | Auth | Browser-only fallback |
-|---|---|---|---|
-| Scrape original: brand, outline, images | `scrape.mjs --headed` | none | integrated browser + `extract-outline.js` |
-| Screenshots / fidelity | `capture.mjs` + `compare.mjs` | none | n/a |
-| Preview / publish / unindex / code sync / site config | `admin.mjs` | `AEM_ADMIN_TOKEN` (`auth_token` cookie of admin.hlx.page) | `fetch()` from a signed-in admin.hlx.page tab (cookies are sent) |
-| DA documents and media | DA MCP (`da_*`) | MCP sign-in | `fetch()` to admin.da.live with the tab's IMS token |
-| DA site config sheets | `da-config.mjs` | `DA_TOKEN` (IMS token) | paste `mergeDaConfig` into a signed-in da.live tab |
-| Site health / content lint | `doctor.mjs`, `lint-content.mjs` | optional `--admin-token` | n/a |
-| Local preview for the SC | `aem up` (detached) | none | n/a |
+Then work unattended: the only other reasons to talk to the SC are the ⛔ blockers in the failure
+policy.
 
-Some embedded browsers can't read HttpOnly cookies. In that case use the in-tab `fetch()`
-fallback rather than trying to extract the token. Never print or store tokens.
-Session/todo tracking: use the harness's task list if it has one; otherwise keep a short
-checklist in the run report.
+#### Harness capabilities (integrated browser first, scripts as the headless path)
+Prefer the **integrated browser** for anything that needs a signed-in session or a look at a page:
+the SC sees what happens, nothing needs a token, and the SC can answer a prompt in place. Use the
+scripts when there's no browser in the harness, for long batch work (screenshots of every page),
+and for the gates.
+
+| Capability | Integrated browser (preferred) | Script path (any harness, headless) |
+|---|---|---|
+| Sign-in / SC identity | da.live tab + `site-tab.js` `whoami` | `git config user.email` |
+| Preview / publish / unpublish / status / code sync | `site-tab.js` `bulk` / `status` / `code` in the da.live tab | `admin.mjs` with `DA_TOKEN` or `AEM_ADMIN_TOKEN` |
+| DA documents, moves, media | DA MCP (`da_*`), or `site-tab.js` `list` / `move` | DA MCP |
+| DA site config sheets | `mergeDaConfig` from `da-config.mjs` evaluated in the da.live tab | `da-config.mjs` with `DA_TOKEN` |
+| Design analysis of the original | open the page, evaluate `browser/design.js` + `browser/inventory.js` | `scrape.mjs --headed` (writes the same files) |
+| Look at the demo, use features (P1) | tab on `http://localhost:3000/<page>` at 1440 and 390 px | `capture.mjs --base http://localhost:3000` |
+| Fidelity gate | (review screenshots side by side in tabs) | `capture.mjs` + `compare.mjs` (the gate itself) |
+| Site health / content lint | n/a | `doctor.mjs`, `lint-content.mjs` |
+
+How to evaluate a helper in the integrated browser: read the file, then
+`runPlaywrightCode` → `return page.evaluate(<file contents>, { op: 'bulk', site: '<slug>', action: 'publish', paths })`
+(raise `timeoutMs` for jobs). Browser tests always target **http://localhost:3000** (code from the
+working copy, content from `main--<slug>--scdemos.aem.page`), never the CDN, which can serve stale
+CSS for minutes after a push. If localhost isn't up, run `aem up` (phase 1b) first.
+Never print or store tokens. Session/todo tracking: use the harness's task list if it has one;
+otherwise keep a short checklist in the run report.
 
 ### 1. Attach to the demo site (CloneIt creates it) · P2
 
@@ -158,8 +204,9 @@ So the skill **attaches** to an existing site:
 Usually you're already in the demo repo (CloneIt's "Open in VS Code"). If not, clone it **next to the
 SC's workspace** (never a hidden temp dir): `git clone https://github.com/scdemos/<slug>.git <workspace-parent>/<slug>`.
 ```bash
-cd <demo repo> && npx -y @adobe/aem-cli up --no-open --forward-browser-logs   # async, keep it running
+cd <demo repo> && aem up --no-open --forward-browser-logs   # detached/async, keep it running
 ```
+(`aem` missing? `npm install -g @adobe/aem-cli`; `setup-check.mjs --fix` reports it.)
 - Tell the SC in one line: "Watch it build at http://localhost:3000. Code is
   `<workspace-parent>/<slug>`."
 - `aem up` serves **local code** with content proxied from `main--<slug>--scdemos.aem.page`.
@@ -172,14 +219,14 @@ cd <demo repo> && npx -y @adobe/aem-cli up --no-open --forward-browser-logs   # 
 
 #### 1c. If code isn't served
 `scripts/aem.js` returning 404 on aem.page means Code Sync hasn't synced the template
-commit. Run `AEM_ADMIN_TOKEN=… node .skills/customer-demo/scripts/admin.mjs code-sync --site <slug>`
-(or `POST https://admin.hlx.page/code/scdemos/<slug>/main/*` from a signed-in
-admin.hlx.page tab), then re-check. If the repo isn't in Code Sync at all, an scdemos admin
+commit. Run `site-tab.js` `{ op: 'code', site: '<slug>' }` in the da.live tab (headless:
+`DA_TOKEN=… node .skills/customer-demo/scripts/admin.mjs code-sync --site <slug>`), then re-check. If the repo isn't in Code Sync at all, an scdemos admin
 must add it (Org settings → GitHub Apps → AEM Code Sync → Configure → add `<slug>`).
 
 #### 1d. Verify the per-site state CloneIt created
 CloneIt does the inventory rows S2–S6, S12 (config sheets) and S13 for you. Confirm with
-`doctor.mjs --site <slug> --only state,index,search` (pass `--admin-token`), and fix gaps with
+`doctor.mjs --site <slug> --only state,index,search` (state needs the site config: `DA_TOKEN`, or
+`--site-config` saved from the da.live tab), and fix gaps with
 1d-2.
 
 #### 1d-2. Recreate the per-site state the template doesn't carry (P2)
@@ -206,24 +253,7 @@ The demo uses customer assets. `.aem.page` is not indexed, so in the handoff cal
 preview URL unlisted, not protected. If the SC wants authentication, link
 https://www.aem.live/docs/authentication-setup-site.
 
-### 2. Replace the template content (write it, don't copy it)
-
-CloneIt copied the **demo site's** content (`scdemos/demo`) into the new site, so it starts as a copy of the
-base demo. Keep the authoring kit (`docs/library/**`, `forms/`, `fragments/` you'll reuse,
-`metadata.json`, `nav`, `footer`) and **delete or overwrite every template page that is not in
-the demo's scope**, then unpublish/unindex them (`admin.mjs unindex …`), so that search, the
-index and the nav never show the base's content (`lint-content.mjs` fails on base leftovers).
-`da_copy_content` **cannot copy between sites** (it returns `{}`); write new documents with
-`da_create_source`, using the base pages as the **markup reference** (`da_get_source scdemos/demo
-index.html` shows the block table structure):
-- `nav.html`: brand `:logo:` link, then the nav list, then `:search:`. Don't add a
-  Robots metadata table in nav; it renders in the header.
-- `footer.html`, the `metadata.json` sheet (url, robots, currency, locale), and
-  `forms/<name>.json` for the forms.
-- Icons: add the customer's (`icons/logo.svg`, rail/social icons) to the customer repo; check every
-  `:icon:` used resolves (`doctor.mjs --only icons`).
-
-### Failure policy (phases 0–2)
+### Failure policy (phases 0–1)
 
 Talk to the SC before the handoff only when:
 - the site doesn't exist yet (create it in CloneIt, see 1a)
@@ -232,21 +262,34 @@ Talk to the SC before the handoff only when:
 
 Each time, send **one** message with the exact link or action, then resume automatically.
 
-### 3. Discover · P4 P9
+### 3. Discover: deep analysis of the original · P4 P9 (F1–F5)
 Enterprise sites often block bots (the first pilot's site returned 403 to `curl` and to DA's
 server-side fetch), and many render client-side. **Always render in a real browser**, never
-parse raw HTML:
+parse raw HTML. First open the SC's URL in the integrated browser, click through the nav (hover
+every top item: dropdowns, mega menus, sub-navs) and pick the pages in scope (F1). Then:
 ```bash
 node .skills/customer-demo/scripts/scrape.mjs --base <original origin+path> \
   --pages "/,/about,/products,…" --out scrape --headed
 ```
+Besides content, it writes the **design analysis** per page (`<page>/design.json`,
+`<page>/inventory.json`) and for the site (`scrape/design.json`): the full nav tree with hidden
+children, header anatomy (rows, logo, sticky), type scale, button and card styles, container width,
+section bands, per-section alignment/tone/columns and carousels. In the integrated browser, evaluate
+`browser/design.js` and `browser/inventory.js` on any page for the same data.
+
+Write a short **design brief** into the run report from these files before phase 4: header anatomy
+(e.g. "white top bar, 80 px, logo left 52 px high, rail nav with 7 items, Capabilities has 5
+children, search + region + 2 CTAs, not sticky"), the type scale, the 2 button styles, the card
+style, the container width, and per page the section list (`#, pattern, alignment, tone, columns,
+carousel?`), plus the **repeated sections** from `scrape/repeats.json` (CTA bands, newsletter
+sign-ups, contact strips, disclaimers, "related insights"). Phase 5 maps every line of it; phase 10a checks every line again.
 It renders each page, dismisses gates and cookie banners, slow-scrolls (lazy/reveal content),
 and writes per page an `outline.json` (sections with headings, copy, lists, **tables, forms
 with fields/options/required, embeds, background images, and `unknown` widgets** that keep
 their text, so nothing is silently dropped) and a screenshot. It also writes `brand.json`
 (colors by frequency, fonts, radius, logo, favicon, site name) and the images that were
 actually rendered (`assets/` + `assets.json`).
-- Choose the page scope from the nav plus the SC's URL: home plus at most 8 pages, one per template.
+- Choose the page scope with the Inputs rule (SC's URL, top nav, CTA/form targets, footer legal pages, one per template) and write it into the run state.
 - Every `form` item in an outline is a form to migrate (Forms rule, phase 8). Every `unknown`
   item needs a construct decision in phase 5.
 - Without `--headed`, headless Chromium may get a 403 or an empty page; use `--headed` for
@@ -324,6 +367,12 @@ For each section of each page, run `identify-page-structure` on the scrape. Then
 | 8 | **Global feature / plugin** | Cross-cutting behavior configured by metadata, loaded lazily or delayed. | Consent manager, analytics, chat |
 
 Decision rules:
+- **Repeated content becomes a fragment.** A section that appears on 2+ pages (from
+  `repeats.json`, or the same band you'd otherwise write twice) is authored **once** as
+  `/fragments/<generic-name>` (e.g. `fragments/contact-cta`, `fragments/legal-disclaimer`) and placed
+  on each page with a `fragment` block linking to it. Authors then edit it in one place, and the
+  library lists it. `lint-content.mjs` fails (`lint:repeat-inline`) when the same section is
+  written inline on two pages.
 - Look for **variants of variants**: if two customer sections differ only in density or
   columns, use one variant plus a modifier class (`cards text two-up`), not two variants.
 - **Name constructs generically** (`carousel`, `cards list`, `nav-layout: rail`), never
@@ -336,9 +385,14 @@ Decision rules:
 - When in doubt between levels 3 and 5, prototype the variant. If the CSS fights the
   base block (heavy `!important`, reordering DOM in CSS), switch to a new block.
 
-Record the decision for every section in session SQL (`page, section, customer_pattern,
-level, construct, rationale, status`). The QA loop (phase 9) compares section by section
-against this table.
+Record the decision for **every line of the design brief** in session SQL (`page, section,
+customer_pattern, level, construct, rationale, status`): every section of every page **plus** the
+chrome rows (`header`, each nav item with children, `footer`, `type`, `buttons`, `cards`, `container`).
+A row is `done` only after the construct exists and renders like the original on localhost:3000.
+Nothing is skipped because the base has no match: an unmappable pattern gets a **new construct** at
+the right level (variant, section style, block, chrome variant), named generically, and goes into
+`references/demo-manifest.json` **and** the DA block library (phase 9b) so the SC can use it in the
+demo. The QA loop (phase 9) and the final sweep (10a) compare section by section against this table.
 
 ### 6. Build · P7
 
@@ -367,32 +421,92 @@ in the base so the next demo starts with them. Do this **after** the demo is sig
    `gh pr create`; the SC decides on merging.
 
 ### 7. Content · P4
-At the end of this phase, republish every content page so that the query index fills (inventory S4).
+First run 7a (below). At the end of this phase, republish every content page so that the query index fills (inventory S4).
 Keep the first section substantive. EDS loads only the first section eagerly, so a section holding just a title pushes LCP into a lazy section (−10 Performance in the pilot). Put the `page-title` heading together with the lead copy or image, or start with a hero.
-- Write each page with `da_create_source`, using real customer copy from discovery and
-  images from `https://content.da.live/scdemos/<slug>/media/<file>`.
-- Every page gets a metadata table: Title, Description, and `Social-share: off` on
-  corporate pages.
-- **Preview in bulk** through the Admin API. It needs a signed-in browser tab on
-  `admin.hlx.page/login/scdemos/<slug>/main`:
-  `POST /preview/scdemos/<slug>/main/*` with body `{"paths":[...],"forceUpdate":true}`.
-  This is also the only reliable way to preview **sheets**: the DA MCP preview of
-  `metadata.json` fails with an html2md 404.
-- Poll `GET /job/scdemos/<slug>/main/preview/<job>/details`.
-- Publish with `POST /live/...`. Its job topic is `publish`, not `live`.
+- Write the **fragments first** (`/fragments/<name>` for every repeated section from phase 5), then
+  each page with `da_create_source`, using real customer copy from discovery and images from
+  `https://content.da.live/scdemos/<slug>/media/<file>`; repeated sections are a `fragment` block
+  linking to `/fragments/<name>`. Preview/publish the fragments with the pages.
+- Every page gets a metadata table with the original's **Title, Description and Image** (from
+  `<page>/design.json` `meta`), and `Social-share: off` on corporate pages.
+- **Downloads** (PDF factsheets, reports): link to the original file URL, or upload it to DA
+  `media/` when it's small and public. Never link to a file that 404s.
+- **Video and maps:** use the `embed` block (YouTube/Vimeo/map URL from the original). If an embed
+  needs a key or is blocked, show the original's poster image with a link, and note it.
+- **Templates:** pages of a distinct type use a template: insight/news/article pages →
+  `Template: article`; event listings and event pages → `Template: events`. A page type the base
+  has no template for (fund detail, product, office locator) gets a new template (level 7) when it
+  appears on 2+ pages, and goes into the manifest, the library `templates.json` and a DA template doc.
+- **Preview and publish in bulk** with `site-tab.js` in the da.live tab:
+  `{ op: 'bulk', site: '<slug>', action: 'publish', paths: [...] }` (preview + live, waits for the
+  AEM jobs, returns only the failures). Headless: `admin.mjs publish`. This is also the only reliable
+  way to preview **sheets**: the DA MCP preview of `metadata.json` fails with an html2md 404.
 - Data-heavy or regulated content (AUM, fund facts): use `cards stats` / `table striped`
   plus a "Demo content for illustration only" note.
 - Links: point every CTA at a page you actually create, or at an anchor (`/about-us#news`).
   No 404s.
 
+#### 7a. Back up the base demo pages, then write the customer's chrome (F1)
+
+CloneIt copied the **base demo's** content (`scdemos/demo`) into the new site, and the SC may be
+showing it. This is the first step of phase 7, right before the first customer page is written (the
+base demo stays browsable while you discover, brand and build). Move the base demo out
+of the way, **unpublished, not deleted**, so the SC can still open it in DA:
+1. **Dry run:** `site-tab.js` `{ op: 'backup', site: '<slug>', dryRun: true }` → the list of items it will
+   move and how many paths it will unpublish. Read it once.
+2. **Run:** `{ op: 'backup', site: '<slug>' }`. It unpublishes and unpreviews every base page (so the
+   live site, search and the query index forget them), moves them to **`/drafts/demo-backup/`** (same
+   tree), and keeps a copy of the base `nav` and `footer` there. `/drafts/**` is never published or
+   indexed. It returns `ok: false` with the failed paths if anything couldn't be unpublished (then
+   **nothing** is moved) or moved; fix those and re-run (it's idempotent). Record `backup` in the run
+   state.
+3. **What stays** (the authoring kit): `docs/` (block library), `forms/`, `fragments/404`, `icons/`,
+   `media/`, `nav`, `footer`, `search`, `metadata.json`, `placeholders.json`, `redirects.json`. Everything
+   else (home, base pages, language folders, `tools/` calculators, base fragments and quizzes,
+   experimentation and campaign pages) moves. Pass `keep: [...]` to change the list. Reset
+   `redirects.json` to the customer's needs (empty by default).
+4. Headless path: list with the DA MCP, `admin.mjs unpublish --site <slug> <paths…>`, then
+   `da_move_content` each item to `drafts/demo-backup/<path>`.
+5. Tell the SC in the handoff: "The original demo pages are in DA under `drafts/demo-backup`
+   (unpublished)."
+
+Then write the customer's pages. `lint-content.mjs` fails on base leftovers.
+`da_copy_content` **cannot copy between sites** (it returns `{}`); write new documents with
+`da_create_source`, using the base pages as the **markup reference** (`da_get_source scdemos/demo
+index.html` shows the block table structure):
+- `nav.html`: brand `:logo:` link, then the nav list, then `:search:`. Don't add a
+  Robots metadata table in nav; it renders in the header.
+- `footer.html`, the `metadata.json` sheet (url, robots, currency, locale), and
+  `forms/<name>.json` for the forms.
+- Icons: add the customer's (`icons/logo.svg`, rail/social icons) to the customer repo; check every
+  `:icon:` used resolves (`doctor.mjs --only icons`).
+
 ### 8. Bake in demo features · P1 P3 P8
-- **Experiment** (home): `Experiment: home-hero`, `Experiment Variants: /experiments/home-hero/challenger-1`.
-  The variant is a full page; use another real customer hero (carousel slides are
-  perfect). Verify with `?experiment=home-hero/challenger-1`.
-- **Campaign**: `Campaign-<name>: /campaigns/<name>/`. Use the **folder URL**: a DA doc
-  named `index` is served at `/campaigns/<name>/`, not `/…/index`. Verify with
-  `?campaign=<name>`. (The base needed two plugin fixes for multi-word names and relative
-  URLs; they are in the base now.)
+- **Experiments, campaigns and audiences are not set by default.** The code ships them; the SC
+  adds them in DA when the demo story needs them (the walkthrough and handoff say how). Only when the
+  SC asks:
+  - Experiment: `Experiment: <id>`, `Experiment Variants: /experiments/<id>/challenger-1` (a full
+    page; use another real customer hero). Verify with `?experiment=<id>/challenger-1`.
+  - Campaign: `Campaign-<name>: /campaigns/<name>/`. Use the **folder URL**: a DA doc named `index`
+    is served at `/campaigns/<name>/`, not `/…/index`. Verify with `?campaign=<name>`.
+- **Site notices (consent + disclaimer), when the original has them:** recreate the customer's
+  cookie banner as the `consent` fragment (`/fragments/consent`: their text, their buttons as
+  `#accept` / `#reject` / `#settings` links, their categories as a list) and an entry disclaimer /
+  investor-type gate as the `site-gate` fragment (`/fragments/disclaimer`: their text, `#agree` /
+  `#cancel`). Switch them on in the metadata sheet (`consent`, `site-gate`). Verify in a fresh
+  browser profile: the banner shows, reject and accept persist after reload, and the gate blocks
+  until agreed. Choices drive Web SDK consent through the martech plugin; leave the base's
+  datastream as is.
+- **Login (always on, via the base):** the header builds the login link and it **stays on
+  `demo.bbird.live`** (the base login flow; never point it at the customer's IdP). Use the
+  customer's wording: `login-label` / `logout-label` in the metadata sheet ("Log in", "Client
+  login", "Sign in"). A "Register" CTA in the original links to a register page or the contact form.
+- **Gated content (showcase it when the original has a members/client/advisor area or "log in to
+  view" content):** build that page with page metadata `Gated: true`, and split sections with section
+  metadata `View: logged-out` (the teaser: the original's public copy and a login CTA) and
+  `View: logged-in` (the member content, from the original where public, otherwise the closest real
+  copy marked "for illustration only"). On `aem.page`/localhost the author toggle switches views; on
+  the gated production host the login decides. Mention it in the walkthrough.
 - **Interactive**: a calculator block on a solutions page. Set `currency`/`locale` in
   the metadata sheet.
 - **Forms (P3, P8), best effort:** recreate the original's forms as closely as is practical
@@ -401,7 +515,9 @@ Keep the first section substantive. EDS loads only the first section eagerly, so
   block is the shared endpoint **`https://demo.bbird.live/contact-us/`**. It accepts any
   field names. Never point a form elsewhere and never create per-customer endpoints. Check
   with `doctor.mjs --only forms` (dry-run only). **Never send a real submission**: the
-  endpoint posts to a live Slack channel.
+  endpoint posts to a live Slack channel. Browser tests are **fail-closed**: intercept the POST,
+  add `x-dry-run: 1`, and abort the request (`route.abort()`) if the header can't be set; the test
+  passes only when the response says `"dryRun":true`.
 - **Site search**: the rail/top-bar search box submits to `/search?q=`. Create a `/search`
   page with a `search` block (`view: list`, `excluded-keywords: noindex`, `searchbar:
   enabled`; add facet rows only if pages carry matching `keywords` metadata). Give it
@@ -410,14 +526,18 @@ Keep the first section substantive. EDS loads only the first section eagerly, so
   the results page lists the right pages, and no nav, footer, fragment or form paths
   appear.
 - **Walkthrough**: commit `tools/demo/<slug>-walkthrough.json` (see
-  `demo-walkthrough.schema.json`) with 5–7 slides: site, authoring, performance,
-  experiment, campaign, engagement. Open it with
+  `demo-walkthrough.schema.json`) with 5–7 slides: site, authoring, block library (incl. the new
+  constructs), performance, search/forms, and "add an experiment or campaign" (how, not a live one). Open it with
   `/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`.
 
 ### 9. QA loop (maximum 3 passes per page; fidelity gate) · P4 P5 P9
-- Headless screenshots at 1440 and 390 px of every page. Check: blocks decorated, no
-  broken images, no console 404s. A 404 often means a block expects an index (`faq` →
-  `/faq-index.json`).
+After the third pass a page that still fails is **not** shipped silently: mark it `failed` in the
+run state, list the failing checks in the handoff, and ask the SC for a decision (fix scope, accept
+with an `SC:` waiver, or drop the page).
+- Per page, in the integrated browser: the original in one tab, `http://localhost:3000/<page>` in
+  another, at 1440 and 390 px. Walk the phase-5 table top to bottom (header, each section, footer)
+  and fix every difference before moving on. Check: blocks decorated, no broken images, no console
+  404s. A 404 often means a block expects an index (`faq` → `/faq-index.json`).
 - Capture the original at 1440 px. Headless Chromium gets a 403 from bot-protected sites;
   use `headless: false` plus a real Chrome user agent, and click away cookie and disclaimer
   modals.
@@ -441,6 +561,8 @@ the reference:
 - `blocks.json` sheet `data` with columns `name`, `path`, `focal-point`. Add one library page
   per block under `docs/library/blocks/<block>.html` that shows **every variant** used on
   the site, with customer content and a `library-metadata` table (name, description).
+  **Every new construct from phase 5** (block, variant, section style, chrome variant) gets an
+  entry with a working example, so the SC can drag it into any page during the demo.
 - `blocks.json` sheet `options` with section-metadata `style` values (every section style
   the site uses) and `background` swatches in the customer palette.
 - `icons.json` (key, icon URL), `templates.json` (key, value = template doc URL),
@@ -453,13 +575,17 @@ Work through **`references/signoff-checklist.md`** item by item: chrome, every p
 theming (including dark-OS readability), block library, demo features, engineering
 quality. Run the fidelity tooling:
 ```bash
-node .skills/customer-demo/scripts/capture.mjs --base <original origin+path> --pages "/,/x,..." --out fid/orig --headed
-node .skills/customer-demo/scripts/capture.mjs --base https://main--<slug>--scdemos.aem.page --pages "/,/x,..." --out fid/demo --scheme dark
-node .skills/customer-demo/scripts/compare.mjs --original fid/orig --demo fid/demo --out fid/fidelity.html
+S=.skills/customer-demo/scripts
+node $S/capture.mjs --base <original origin+path> --pages "/,/x,..." --out fid/orig --headed
+node $S/capture.mjs --base http://localhost:3000 --pages "/,/x,..." --out fid/demo --scheme dark
+node $S/compare.mjs --original fid/orig --demo fid/demo --out fid/fidelity.html --map "/x=/y"
+# mobile: same with --width 390 into fid/orig-390 and fid/demo-390
 ```
-`compare.mjs` exits non-zero until every page passes: side rail, header items, footer links,
-section count, headings, forms and inputs, buttons, media, color scheme, readability,
-health. Loop back to phase 5 for each FAIL. A closest-possible alternative is the **last
+`compare.mjs` exits non-zero until every page passes: side rail, header items, **header layout**
+(height, rows, logo, sticky, mega menu), footer links, section count, headings, **layout**
+(alignment, tone, bleed, columns, width per section), **carousels**, **provenance** (no invented
+copy), forms and inputs, buttons, media, text, color scheme, readability, health. Loop back to
+phase 5 for each FAIL. A closest-possible alternative is the **last
 resort** and must be listed in the report with its reason. Copy the completed checklist
 into the report.
 
@@ -481,15 +607,42 @@ Fidelity tooling gotchas (learned in the pilot):
 - Original-only widgets that render empty (a strategy finder showing only its title)
   still need their heading or anchor on the demo; note them as ⚠️ in the report.
 
-### 10a. Final sweep (every demo, right before handoff)
-A fresh pass that re-applies every principle to the finished site, as if someone else built it.
-Fix what you find, then re-run until clean.
+### 10a. Final sweep: deep re-check and course-correct (every demo, right before handoff)
+A fresh pass that re-applies the fidelity contract and every principle to the finished site, as if
+someone else built it and you're the reviewer. Fix what you find, then re-run until clean (at most 3
+loops; anything left is a ⚠️ with its reason in the report).
+0. **Fidelity re-check (F1–F5), page by page, in the integrated browser** (original tab next to
+   `http://localhost:3000`, 1440 then 390 px):
+   - F1: the page list is the scoped list of real customer pages; no base page is live
+     (`site-tab.js` `status` on two base paths → 404) and `/drafts/demo-backup` holds the backup.
+   - F2: read every section: is each heading, paragraph, stat, CTA and image the original's? Replace
+     any filler with the original's copy (`scrape/<page>/outline.json`).
+   - F3: header and footer against the design brief, line by line, including every dropdown / mega
+     menu and the mobile menu.
+   - F4/F5: each section's alignment, width, background band, columns, carousel/tabs, type, buttons
+     and cards against the brief and the phase-5 table. Every row must be `done`.
+   - **Functionality:** use both sites the same way, side by side: open every dropdown / mega menu,
+     the mobile menu at 390 px, every carousel (next, dots, autoplay), tabs, accordions, search, the
+     consent banner (accept, reject, reload), the disclaimer gate, login (link to `demo.bbird.live`,
+     gated page toggle), every form (dry-run, fail-closed) and every in-page link. What works on the
+     original must work on the demo.
+   - New patterns found now go back to phase 5 (new construct + manifest + block library), not into
+     a waiver.
+   Write the **parity matrix** into the run report, one row per page, one ✅ / ⚠️ / ❌ per column with
+   evidence: `page | design (chrome, layout, type, buttons, cards) | content (pages, copy, images,
+   downloads) | look & feel (1440, 390, dark OS) | functionality (menus, mobile, carousel, tabs,
+   accordion, search, forms) | notices & login (consent, gate, login, gated) | base features (library,
+   templates, fragments, search index)`. Any ❌ loops back; the handoff shows the matrix.
+   Then write `fid/review.json` (template: `fid/review.template.json`): per page `verdict`
+   (`match` / `mismatch` / `waived`) and a `note` naming what you compared and what still differs.
 1. **Automated:**
    ```bash
    node .skills/customer-demo/scripts/lint-content.mjs --site <slug> --scope "/,/a,/b" --strict   # P3 content models
-   node .skills/customer-demo/scripts/doctor.mjs --site <slug> --scope "/,/a,/b" --strict --admin-token <auth_token>   # P1 P2 P6 P8
+   node .skills/customer-demo/scripts/doctor.mjs --site <slug> --scope "/,/a,/b" --strict   # P1 P2 P6 P8 (state checks: DA_TOKEN, or --site-config saved from the da.live tab)
    node .skills/customer-demo/scripts/da-config.mjs --check <saved merged config>   # optional: no base refs
-   node .skills/customer-demo/scripts/capture.mjs ... --scheme dark && node .skills/customer-demo/scripts/compare.mjs ...   # P4 P5
+   node .skills/customer-demo/scripts/capture.mjs --base <original> ... --headed --interact        # also --width 390
+   node .skills/customer-demo/scripts/capture.mjs --base http://localhost:3000 ... --scheme dark --interact   # also --width 390
+   node .skills/customer-demo/scripts/compare.mjs ... --final --review fid/review.json   # P4 P5, F1–F5 + functionality
    ```
    All must exit 0, or every remaining FAIL is listed as ⚠️ in the report with its reason.
    `compare.mjs` is strict by default (no missing header/footer items, CTAs ≥ 80%, images ≥ 90%,
@@ -500,9 +653,10 @@ Fix what you find, then re-run until clean.
 3. **Assumptions (P6):** walk `base-assumptions.md`; every row has a customer decision.
    Look in particular at controls that only appear in flows: the search results page,
    form buttons and selects, the empty and error states of forms, and modals.
-4. **Outcomes (P1):** in a real browser, use every feature: search with two customer terms,
-   every form (dry-run), the experiment and campaign URLs, the calculator, the theme toggle (if
-   any), the gate and consent buttons, and the carousel controls.
+4. **Outcomes (P1):** in the integrated browser on localhost:3000, use every feature: search with
+   two customer terms, every form (dry-run), the calculator, the theme toggle (if any), the gate
+   and consent buttons, every dropdown / mega menu, and the carousel controls (plus experiment and
+   campaign URLs only if the SC asked for them).
 5. **Looks (P5):** every page at 1440 and 390 px under a dark OS. Look at every section
    screenshot, not just the PASS line.
 6. **Lighthouse:** home + two inner pages. Performance ≥ 90 and Accessibility ≥ 95, or explain why not.
@@ -510,10 +664,15 @@ Fix what you find, then re-run until clean.
 
 ### 10. Handoff (the only long message to the SC)
 
-Report, in this order:
+Generate it from `.customer-demo/run.json` (scope vs done, retries, waivers, failures). Report, in this order:
 - Preview, live, DA edit and repo URLs.
-- The page list, each with a ✅ or ⚠️ fidelity note.
-- The features baked in, and where to show them.
+- The parity matrix from 10a (page × design, content, look & feel, functionality, notices & login,
+  base features), each cell ✅ / ⚠️ with a one-line note.
+- The features baked in, and where to show them; how to add an experiment or campaign if the
+  story needs one (not set by default).
+- Where the original demo pages went: DA `drafts/demo-backup` (unpublished).
+- Consent / disclaimer, login wording, gated pages and templates in use, and how to show them.
+- The new constructs (blocks, variants, section styles) and where they are in the block library.
 - Substitutions made: fonts, mocked data, skipped interactions.
 - Manual follow-ups, which should be few: any brand sign-off, and an admin adding the repo to
   Code Sync only if code still isn't served.

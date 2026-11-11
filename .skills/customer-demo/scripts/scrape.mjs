@@ -14,6 +14,11 @@
  *   <out>/assets/<hash>.<ext>   images actually rendered at >= --min-width px, deduplicated
  *   <out>/assets.json           [{ file, url, alt, width, pages }], for upload to DA media/
  *   <out>/brand.json            computed colors (by frequency), fonts, logo candidates, favicon
+ *   <out>/<slug>/design.json    browser/design.js: nav tree (dropdowns, mega menu, sub-nav), type scale,
+ *                               button and card styles, container width, section bands
+ *   <out>/<slug>/inventory.json browser/inventory.js: header anatomy + per-section layout, tone, carousel
+ *   <out>/design.json           site-level summary: nav tree, type, buttons, cards, container (home page)
+ *   <out>/repeats.json          sections that repeat on 2+ pages (same text): fragment candidates
  *
  * Use --headed when the CDN blocks headless Chromium (403 / empty page).
  */
@@ -21,7 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { loadChromium, DESKTOP_UA } from './lib/pw.mjs';
-import { HERE, parseArgs } from './lib/site.mjs';
+import { HERE, parseArgs, browserFn } from './lib/site.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 if (!args.base) {
@@ -54,7 +59,12 @@ await ctx.addInitScript(() => Object.defineProperty(navigator, 'webdriver', { ge
 
 const bodies = new Map(); // url -> { buf, type }
 const assets = new Map(); // hash -> asset
+const truncated = new Set(); // rendered images skipped because of --max-images (a scope decision, never silent)
 let brand = null;
+let design = null;
+const repeats = new Map(); // normalized section text -> { title, pages }
+const designSrc = browserFn('design');
+const inventorySrc = browserFn('inventory');
 
 for (const p of pages) {
   const dir = path.join(out, slug(p));
@@ -98,6 +108,12 @@ for (const p of pages) {
 
   const outline = await evalSafe(page, `${outlineSrc}\nextractOutline();`);
   fs.writeFileSync(path.join(dir, 'outline.json'), JSON.stringify(outline, null, 2));
+  // deep design analysis: what must look the same, not just what must be said
+  const pageDesign = await evalSafe(page, `(${designSrc})()`).catch((e) => ({ error: e.message }));
+  fs.writeFileSync(path.join(dir, 'design.json'), JSON.stringify(pageDesign, null, 2));
+  const inventory = await evalSafe(page, `(${inventorySrc})()`).catch((e) => ({ error: e.message }));
+  fs.writeFileSync(path.join(dir, 'inventory.json'), JSON.stringify(inventory, null, 2));
+  if (!design && !pageDesign.error) design = { ...pageDesign, header: inventory.header, rail: inventory.rail };
 
   // rendered images (incl. CSS backgrounds) with their displayed width + alt
   const shown = await evalSafe(page, (min) => {
@@ -119,7 +135,7 @@ for (const p of pages) {
     const hash = crypto.createHash('sha1').update(body.buf).digest('hex').slice(0, 12);
     const ext = (body.type.match(/image\/(\w+)/)?.[1] || 'jpg').replace('jpeg', 'jpg');
     if (!assets.has(hash)) {
-      if (assets.size >= maxImages) return;
+      if (assets.size >= maxImages) { truncated.add(s.url); return; }
       const file = `${hash}.${ext}`;
       fs.writeFileSync(path.join(out, 'assets', file), body.buf);
       assets.set(hash, { file, url: s.url, alt: s.alt, width: s.width, pages: [] });
@@ -153,6 +169,14 @@ for (const p of pages) {
       };
     });
   }
+  outline.sections.forEach((s) => {
+    // every string in the section (lists, tables, forms, image alts, links), not just paragraph text
+    const leaves = (v) => (typeof v === 'string' ? [v] : Array.isArray(v) ? v.flatMap(leaves) : v && typeof v === 'object' ? Object.entries(v).filter(([k]) => k !== 'html').flatMap(([, x]) => leaves(x)) : []);
+    const key = [s.title?.text, ...leaves(s.items)].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (key.length < 80) return;
+    if (!repeats.has(key)) repeats.set(key, { title: s.title?.text || key.slice(0, 60), pages: [] });
+    if (!repeats.get(key).pages.includes(p)) repeats.get(key).pages.push(p);
+  });
   const counts = outline.sections.reduce((a, s) => a + s.items.length, 0);
   console.log(`${resp && resp.status() < 400 ? '✅' : '⚠️ '} ${p} (${resp?.status()}): ${outline.sections.length} sections, ${counts} items`);
   await page.close();
@@ -160,5 +184,13 @@ for (const p of pages) {
 
 fs.writeFileSync(path.join(out, 'assets.json'), JSON.stringify([...assets.values()], null, 2));
 fs.writeFileSync(path.join(out, 'brand.json'), JSON.stringify(brand, null, 2));
+if (truncated.size) {
+  fs.writeFileSync(path.join(out, 'assets-truncated.json'), JSON.stringify([...truncated], null, 2));
+  console.log(`⚠️  ${truncated.size} rendered images not saved (--max-images ${maxImages}): see assets-truncated.json; raise the limit or record the decision`);
+}
+if (design) fs.writeFileSync(path.join(out, 'design.json'), JSON.stringify(design, null, 2));
+const shared = [...repeats.values()].filter((r) => r.pages.length > 1);
+fs.writeFileSync(path.join(out, 'repeats.json'), JSON.stringify(shared, null, 2));
+if (shared.length) console.log(`${shared.length} section(s) repeat across pages → fragment candidates in repeats.json`);
 console.log(`${assets.size} images → ${out}/assets (manifest assets.json), brand → ${out}/brand.json`);
 await browser.close();

@@ -59,10 +59,11 @@ const aem = sh('aem --version') || sh('npx --no-install aem --version');
 add(!!aem, 'AEM CLI (aem up)', aem || 'missing', 'npm i -g @adobe/aem-cli');
 add(!!sh('npm view lighthouse@12 version'), 'Lighthouse (npx lighthouse@12)', 'reachable via npx', 'npm registry access needed');
 
-add(!!process.env.AEM_ADMIN_TOKEN, 'AEM_ADMIN_TOKEN (optional)', process.env.AEM_ADMIN_TOKEN ? 'set' : 'not set: admin.mjs / doctor state need it, or use a signed-in browser',
-  'sign in at https://admin.hlx.page/login, then copy the auth_token cookie');
-add(!!process.env.DA_TOKEN, 'DA_TOKEN (optional)', process.env.DA_TOKEN ? 'set' : 'not set: da-config.mjs needs it, or use a signed-in browser',
-  'in a signed-in da.live tab: JSON.parse(localStorage[Object.keys(localStorage).find(k=>k.startsWith("adobeid_ims_access_token"))]).tokenValue');
+// sign-in: the integrated browser's da.live tab covers DA + AEM Admin (scripts/browser/site-tab.js);
+// tokens in the environment are only for headless runs
+const headless = !!(process.env.DA_TOKEN || process.env.AEM_ADMIN_TOKEN);
+add(headless, 'Headless tokens (optional)', headless ? 'set (never printed)' : 'not set: fine, sign in to da.live in the integrated browser instead',
+  'only for harnesses without a browser: DA_TOKEN (da.live IMS token) or AEM_ADMIN_TOKEN');
 
 rows.forEach((r) => console.log(`${r.ok ? '✅' : (r.item.includes('optional') ? '⚠️ ' : '❌')} ${r.item.padEnd(32)} ${r.detail}${r.ok ? '' : `\n   → ${r.howTo}`}`));
 const blocking = rows.filter((r) => !r.ok && !r.item.includes('optional'));

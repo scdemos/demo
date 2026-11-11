@@ -10,7 +10,9 @@ Mark each item:
 
 **Fidelity rule:** first try to reproduce the original exactly with the right construct (see
 SKILL.md phase 5 levels). A "closest-possible alternative" is the **last resort**, and every
-one has to be listed in the report with its reason.
+one has to be listed in the report with its reason. Fidelity checks (headings, header, footer,
+rail, carousels, layout, provenance, section count, review) can only be waived **by the SC**
+(`waivers.json` reason starting with `SC:`); `compare.mjs` ignores any other waiver on them.
 
 > Add new items under the right heading. Keep each item a single verifiable statement and tag
 > it with its principle (`[P1]`–`[P10]`, see SKILL.md) and, where one exists, the script check
@@ -20,22 +22,31 @@ one has to be listed in the report with its reason.
 ## 0. Automated gates (all must exit 0, or every FAIL is listed as ⚠️ with a reason)
 - [ ] `lint-content.mjs --site <slug>` passes: block content models, nav and form sheets. [P3] `lint:*`
 - [ ] `doctor.mjs --site <slug>` passes: state, index and search, forms (dry-run), links, metadata decisions, library. [P1 P2 P6 P8] `doctor:*`
-- [ ] `compare.mjs` passes on every page in scope, captured with `--scheme dark`. [P4 P5] `compare`
+- [ ] `compare.mjs --final --review review.json` passes on every page in scope, both sites captured with `--interact` at 1440 **and** 390 px (demo from `localhost:3000`, also with `--scheme dark`): header layout, carousels, layout, provenance, **functionality** (menus, mobile menu, carousel, tabs, accordion) and the by-eye review included. [P1 P4 P5] `compare`
+- [ ] The **parity matrix** (page × design, content, look & feel, functionality, notices & login, base features) is in the report with evidence, and has no ❌. [P1 P4 P5]
 - [ ] Each new check added in this run has a negative test (break it on purpose and it fails). [P9]
 - [ ] `setup-check.mjs` passes on the machine that built the demo. [P9]
 - [ ] If anything SC-facing changed in the skill this run, `SC-QUICKSTART.md` is updated and `docs-check.mjs` passes. [P10] `docs-check`
 
 ## 1. Chrome: nav, header, footer
-- [ ] Header layout matches the original: top bar or side rail, logo, search, region/language, login/register CTAs. Checked at 1440 and 390 px. [P5] `compare:header`
-- [ ] Nav: every original top-level item is present, in the same order, with the same icons and the same sub-menus. Every link resolves (no 404s). [P1] `doctor:links`
+- [ ] Header layout matches the original: top bar or side rail, rows (utility bar, main nav, sub-nav), height, logo size and placement, sticky behavior, search, region/language, login/register CTAs. Checked at 1440 and 390 px. [P5] `compare:header layout` `compare:header items`
+- [ ] Nav: every original top-level item from `scrape/design.json` (`nav.tree`) is present, in the same order, with the same icons and the same dropdown / mega-menu / sub-nav children. Every link resolves (no 404s). [P1] `doctor:links`
 - [ ] Footer matches the original: logo, link rows, legal/copyright text, legal links, social. [P4] `compare:footer`
-- [ ] Global notices: entry disclaimer/gate and cookie consent are present if the original has them, and the consent choices are wired to analytics consent. [P4 P6]
+- [ ] Global notices: entry disclaimer/gate and cookie consent are present if the original has them (`site-gate` / `consent` fragments with the customer's text and buttons). Tested in a fresh browser profile: banner shows, **reject and accept both persist after reload**, the gate blocks until agreed. [P1 P4 P6]
+- [ ] Login: the header login link goes to `demo.bbird.live` (base flow, `returnTo` = current page) on desktop **and** in the mobile menu, with the customer's wording (`login-label` / `logout-label`). [P1 P6]
+- [ ] Gated content: if the original has a members/client area or "log in to view" content, one demo page shows it (`Gated: true`, sections `View: logged-out` teaser / `View: logged-in` content), and the author toggle switches views on localhost/aem.page. [P1]
 - [ ] Favicon, logo and brand mark are the customer's. [P6]
 
 ## 2. Every migrated page
+- [ ] Pages in scope are **real pages of the customer site** (same URL slugs where possible), one demo page per original page: the SC's URL, every top-nav page, the pages their CTAs/forms lead to, the footer's legal pages and one per distinct template. No invented pages. [P4]
+- [ ] Pages of a distinct type use a template (`Template: article` / `events`, or a new one for a type on 2+ pages), and the library `templates.json` lists them. [P7]
+- [ ] Each page's Title, Description and social Image come from the original (`design.json` `meta`). Downloads (PDFs) open; embeds (video, maps) play or show a poster with a link. [P4]
 - [ ] `compare.mjs` reports **PASS** for every page. Any accepted FAIL is listed in the report with its reason. [P4 P5] `compare`
-- [ ] Section by section, the layout matches: columns, bands/backgrounds, overlaps, carousels, tabs, accordions, grids, icons. [P5] (visual)
+- [ ] **Real content only:** headings, copy, stats, CTAs and images come from the original pages; nothing is made up (only "for illustration only" notes are allowed). [P4] `compare:provenance`
+- [ ] Section by section, the layout matches: alignment (centered vs left), text width, full-bleed bands and backgrounds, columns, overlaps, carousels, tabs, accordions, grids, icons. [P5] `compare:layout` `compare:carousels` + `review.json`
+- [ ] Type, buttons and cards match `scrape/design.json`: family (or documented substitute), sizes, weights, case, button shape and color, card radius/shadow; the content container has the original's width. [P5 P6] (visual)
 - [ ] Content is complete: every original heading, paragraph, list, stat, CTA and image is present. Nothing has been silently dropped. [P4] `compare:headings`
+- [ ] Repeated sections (CTA bands, sign-ups, disclaimers, contact strips) are one fragment each under `/fragments/`, placed with a `fragment` block on every page that shows them; the block library lists them. [P7] `lint:repeat-inline`
 - [ ] Interactions work: carousel controls, tabs, accordions, toggles, forms (with the same fields, options and required markers) and the submit flow. [P1]
 - [ ] No broken images, no console errors, no network 404s (`capture.mjs` health check). [P1] `compare:health`
 - [ ] Every internal link points to an existing page or anchor. [P1] `doctor:links`
@@ -43,7 +54,7 @@ one has to be listed in the report with its reason.
 - [ ] Text on colored bands, overlaps and images is readable (the `compare.mjs` readability check passes, plus a visual check of every band/overlap section). [P5] `compare:readability`
 - [ ] Forms embedded in content pages (e.g. a "contact sales" or "partner with us" form on a product page) exist wherever the original has them, not only on Contact Us. [P4] `compare:forms`
 - [ ] **Forms:** every form block posts to `https://demo.bbird.live/contact-us/` (hard rule); fields, options and the thank-you page follow the original on a best-effort basis. [P3] `doctor:forms`
-- [ ] **Every form is submitted end to end** in a real browser, scoped to the content form (not the header search), **always in dry-run mode**: add the `x-dry-run: 1` request header (e.g. Playwright `route` → `continue({ headers })`). The POST returns 200 with `"dryRun":true`, and the thank-you page or message appears. **Never post a real submission: the worker feeds an active Slack channel.** [P1 P8] `doctor:forms`
+- [ ] **Every form is submitted end to end** in a real browser, scoped to the content form (not the header search), **always in dry-run mode, fail-closed**: intercept the POST, add the `x-dry-run: 1` request header (Playwright `route` → `continue({ headers })`), and `route.abort()` if that isn't possible. The POST returns 200 with `"dryRun":true`, and the thank-you page or message appears. **Never post a real submission: the worker feeds an active Slack channel.** [P1 P8] `doctor:forms`
 
 ## 3. Design system and theming
 - [ ] Brand tokens are set: colors, fonts (with a licensed-font substitute documented), radius, nav casing, h2 accent. [P6]
@@ -67,7 +78,7 @@ one has to be listed in the report with its reason.
 - [ ] `/query-index.json` returns 200 and lists only real content pages. [P2] `doctor:index`
 - [ ] **Base assumptions** walked: every row of `base-assumptions.md` has a customer decision, including control styling on the search results page and in forms. [P6]
 - [ ] Site search works: a customer term typed in the header search box lands on `/search?q=…` with relevant results at 1440 and 390 px. Blocks that read an index (search, related articles, faq) show data. [P1] `doctor:search`
-- [ ] Experiment, campaign and audience variants work (`?experiment=`, `?campaign=`). [P1] `doctor:experiments`
+- [ ] Experiments, campaigns and audiences are **not** set by default. If the SC asked for them, every variant works (`?experiment=`, `?campaign=`). [P1] `doctor:experiments`
 - [ ] Interactive tool (calculator/quiz) uses the correct currency and locale. [P6] `doctor:metadata`
 - [ ] Demo walkthrough deck exists and every link in it works.
 - [ ] Sidekick project name is the customer's; preview, publish and edit work from Sidekick. [P2] `doctor:state`
@@ -77,6 +88,7 @@ one has to be listed in the report with its reason.
 - [ ] New constructs are generic and opt-in (metadata or variant), and ported to the base without changing its default look. Verified by a base home page screenshot. [P7]
 - [ ] Lighthouse on the home page and one inner page: Performance ≥ 90 (target 100), Accessibility ≥ 95. Any shortfall is explained.
 - [ ] Every page is previewed and published. `aem.live` returns 200 for every page. [P1] `doctor:pages`
+- [ ] The base demo pages are unpublished and backed up to `/drafts/demo-backup` (DA); nothing of the base demo is live, indexed or linked. [P2 P6] `lint:base-leftover` `doctor:index`
 
 ## 7. Guardrails
 - [ ] No commit was made without the SC's OK, and only to the allowed branch. [P8]
