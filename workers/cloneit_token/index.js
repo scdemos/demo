@@ -134,11 +134,7 @@ export async function verifyUser(request, env, fetchImpl = fetch) {
   const p = await prof.json().catch(() => ({}));
   const email = String(p.email || '').toLowerCase();
   const domains = (env.ALLOWED_EMAIL_DOMAINS || 'adobe.com').split(',').map((d) => d.trim().toLowerCase());
-  if (!email || !domains.some((d) => email.endsWith(`@${d}`))) {
-    // diagnostics without personal data: profile status, which fields came back, the email domain only
-    console.warn('user_not_allowed', JSON.stringify({ profileStatus: prof.status, keys: Object.keys(p).slice(0, 20), domain: email.split('@')[1] || null, client: claims.client_id }));
-    throw fail('user_not_allowed', 403);
-  }
+  if (!email || !domains.some((d) => email.endsWith(`@${d}`))) throw fail('user_not_allowed', 403);
   userCache.set(key, { email, exp: Date.now() + 5 * 60 * 1000 });
   return { email };
 }
