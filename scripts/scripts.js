@@ -189,12 +189,21 @@ function inlineColorIcons(scope) {
  * @param {Element} main
  */
 function decorateDefaultContent(main) {
+  /* Eyebrow and heading move into a wrapper (layout view rebuilds authored text and drops
+     classes added to it, so styles key off the wrapper). Split sections always get one. */
   main.querySelectorAll('.default-content-wrapper > :is(h1, h2)').forEach((h) => {
     const prev = h.previousElementSibling;
-    if (prev?.tagName === 'P' && !prev.classList.contains('button-container')
-      && !prev.querySelector('picture, a') && prev.textContent.trim().length <= 60) {
-      prev.classList.add('eyebrow');
+    const eyebrow = prev?.tagName === 'P' && !prev.classList.contains('button-container')
+      && !prev.querySelector('picture, a') && prev.textContent.trim().length <= 60 ? prev : null;
+    if (!eyebrow && !h.closest('.section.split')) return;
+    const group = document.createElement('div');
+    group.className = 'heading-group';
+    h.before(group);
+    if (eyebrow) {
+      eyebrow.classList.add('eyebrow');
+      group.append(eyebrow);
     }
+    group.append(h);
   });
   main.querySelectorAll('.default-content-wrapper > p.button-container').forEach((p) => {
     if (p.parentElement.classList.contains('button-group')) return;
@@ -209,6 +218,17 @@ function decorateDefaultContent(main) {
       p.before(group);
       group.append(p);
     }
+  });
+  /* split: heading group on the left, everything else of the first text block on the right */
+  main.querySelectorAll('.section.split > .default-content-wrapper:first-child').forEach((wrapper) => {
+    const group = wrapper.querySelector(':scope > .heading-group');
+    if (!group || wrapper.querySelector(':scope > .split-body')) return;
+    const rest = [...wrapper.children].filter((el) => el !== group);
+    if (!rest.length) return;
+    const splitBody = document.createElement('div');
+    splitBody.className = 'split-body';
+    splitBody.append(...rest);
+    wrapper.append(splitBody);
   });
 }
 

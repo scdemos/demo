@@ -39,7 +39,12 @@
   line-height: 1.4;
 }
 
+.stats .stats-item p {
+  margin: 0;
+}
+
 .stats dd {
+  position: relative;
   order: -1;
   margin: 0;
   color: var(--color-text-strong);
@@ -51,6 +56,17 @@
   white-space: nowrap;
 }
 
+/* count-up: an overlay animates while the authored number stays put underneath */
+.stats .stats-counting {
+  color: transparent;
+}
+
+.stats .stats-count {
+  position: absolute;
+  inset: 0;
+  color: var(--color-text-strong);
+}
+
 @media (width >= 900px) {
   .stats .stats-list {
     grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
@@ -59,19 +75,41 @@
 
 /* ticker */
 .stats .stats-ticker {
-  overflow: hidden;
   margin-top: var(--gap-2xl);
   padding-block: var(--gap-s);
   border-block: var(--border);
+}
+
+.stats .stats-ticker-viewport {
+  overflow: hidden;
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
-.stats .stats-ticker ul {
+.stats .stats-ticker-label {
+  margin-bottom: var(--gap-xs);
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.stats .stats-ticker-label p {
+  margin: 0;
+}
+
+.stats .stats-ticker-track,
+.stats .stats-ticker-source,
+.stats .stats-ticker-copy {
+  display: flex;
+  width: max-content;
+}
+
+.stats .stats-ticker :is(ul, ol) {
   display: flex;
   gap: var(--gap-xl);
-  width: max-content;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--gap-xl) 0 0;
   color: var(--color-text-muted);
   font-size: var(--step-1);
   font-weight: var(--weight-bold);
@@ -88,11 +126,11 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .stats .stats-ticker ul {
+  .stats .stats-ticker-track {
     animation: stats-ticker 48s linear infinite;
   }
 
-  .stats .stats-ticker:hover ul {
+  .stats .stats-ticker:hover .stats-ticker-track {
     animation-play-state: paused;
   }
 }
