@@ -21,6 +21,18 @@ export function getMarket() {
 }
 
 /**
+ * Whether a page path (e.g. a query index row) is in the current page's market. On a page
+ * under /{lang}/{region}/, only that market's pages are; elsewhere every page is.
+ * @param {string} path
+ * @returns {boolean}
+ */
+export function inCurrentMarket(path) {
+  const { root } = getMarket();
+  if (!window.location.pathname.startsWith(root)) return true;
+  return String(path || '').startsWith(root);
+}
+
+/**
  * Page metadata `gated=true` — same signal as CDN worker HTML gating; author preview uses this too.
  * @returns {boolean}
  */

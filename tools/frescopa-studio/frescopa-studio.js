@@ -44,7 +44,7 @@ const TEXT = {
   published: (time) => `Published ${time}`,
   previewed: (time) => `Previewed ${time}, not published yet`,
   notPreviewed: 'Saved, not previewed yet',
-  noDocument: 'Add the document to the address after #, like #/scdemos/demo/drafts/frescopa/en/us/app/experience',
+  noDocument: 'Add the document to the address after #, like #/scdemos/demo/en/us/app/experience',
   notFound: (path) => `${path} isn’t in DA. Create it with DA’s form editor first.`,
   loadFailed: (status) => `Couldn’t load the document (${status}).`,
   noSchemaName: 'This document doesn’t name a schema. Open it in DA’s form editor and pick one.',

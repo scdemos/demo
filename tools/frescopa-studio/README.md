@@ -5,10 +5,10 @@ A DA app for editing a structured content document next to the app that uses it,
 **Open** with the document after `#`, addressed as DA's form editor does (`/org/site/path`):
 
 ```
-https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio?ref=frescopa#/scdemos/demo/drafts/frescopa/en/us/app/experience
+https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio#/scdemos/demo/en/us/app/experience
 ```
 
-Studio is hosted in `scdemos/demo`; only the part after `#` changes. Until Frescopa merges into `main`, Studio's code is on the `frescopa` branch, so open it with `?ref=frescopa` as above. Studio reads and saves the document with the author's own DA login, so it works for any site they can edit.
+Studio is hosted in `scdemos/demo`; only the part after `#` changes. Studio reads and saves the document with the author's own DA login, so it works for any site they can edit.
 
 - **As you type:** changes save to DA, and the app on the right shows them straight away.
 - **Preview:** updates the document's preview content (what `…?preview` apps read).
@@ -35,7 +35,7 @@ Everything below lives in the document's own site (`/org/site`), not in this rep
 | `frescopa-app` | Frescopa app (local) | `http://localhost:4321/app/?{tier}` | `phone` |
 
 - **schema:** which documents the channel shows. Empty means every document.
-- **url:** tokens `{tier}` (`preview`), `{tld}` (`page`), `{path}` (`/drafts/frescopa/en/us/app/experience`), `{slug}` (`experience`), `{org}`, `{site}`. `http://localhost` channels only show while Studio itself runs locally.
+- **url:** tokens `{tier}` (`preview`), `{tld}` (`page`), `{path}` (`/en/us/app/experience`), `{slug}` (`experience`), `{org}`, `{site}`. `http://localhost` channels only show while Studio itself runs locally.
 - **device:** the device the channel opens on; `phone` when empty.
 
 ## Make an app previewable as you type
@@ -60,4 +60,4 @@ aem up                     # serves this repo on localhost:3000
 # in frescopa-app: npm start (the app on localhost:4321)
 ```
 
-Open the Studio URL with `?ref=local` before the `#`: `…/frescopa-studio?ref=local#/scdemos/demo/drafts/frescopa/en/us/app/experience`.
+Open the Studio URL with `?ref=local` before the `#`: `…/frescopa-studio?ref=local#/scdemos/demo/en/us/app/experience`.
