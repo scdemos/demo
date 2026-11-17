@@ -6,6 +6,7 @@ import {
   getArticleKeywords,
   getAuthoredLinks,
   getContentTimestamp,
+  inCurrentMarket,
   normalizePath,
   parseKeywords,
   pathFromHref,
@@ -230,7 +231,7 @@ async function fetchArticles(block, config) {
   const excluded = String(config['excluded-keywords'] || '').trim();
   const current = normalizePath(window.location.pathname);
   const allArticles = (await fetchQueryIndexAll())
-    .filter((row) => row?.path && normalizePath(row.path) !== current);
+    .filter((row) => row?.path && inCurrentMarket(row.path) && normalizePath(row.path) !== current);
   return matchArticles(allArticles, keywords, excluded, RESULT_LIMIT);
 }
 

@@ -5,6 +5,7 @@ import {
   formatDate,
   getContentTimestamp,
   getArticleKeywords,
+  inCurrentMarket,
   normalizePath,
   parseKeywords,
 } from '../../scripts/shared.js';
@@ -86,6 +87,7 @@ function isMatch(row, keywords, excluded) {
   return (
     row?.path
     && row?.title
+    && inCurrentMarket(row.path)
     && matchesKeywords(row, keywords)
     && !matchesExcluded(row, excluded)
   );
