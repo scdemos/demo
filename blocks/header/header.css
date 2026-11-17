@@ -406,25 +406,18 @@ header:has(> .header) {
   display: none;
 }
 
-/* default header: sign-in is an icon button; its label stays as the accessible name */
 .header .header-signin:any-link {
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1px solid transparent;
+  align-items: center;
+  gap: 0.45em;
+  min-height: 2.5rem;
+  padding: 0.45em 1em 0.45em 0.8em;
+  border: var(--border-strong);
   border-radius: var(--radius-pill);
   color: var(--color-text-strong);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-bold);
   text-decoration: none;
   transition: background-color var(--duration-1) var(--ease-out);
-}
-
-.header .header-signin-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 .header .header-signin:hover {
@@ -629,7 +622,7 @@ header:has(> .header) {
   }
 
   .header .header-signin {
-    display: inline-grid;
+    display: inline-flex;
   }
 }
 
@@ -872,27 +865,10 @@ body.nav-layout-rail {
     display: none;
   }
 
-  /* the rail has room for a labelled pill */
+  /* the rail shows sign-in from 900px (default header: 1200px) */
   .header.nav-layout-rail .header-signin:any-link {
     display: inline-flex;
-    align-items: center;
-    gap: 0.45em;
-    width: auto;
-    height: auto;
-    min-height: 2.5rem;
-    padding: 0.45em 1em 0.45em 0.8em;
-    border: var(--border-strong);
-    font-size: var(--step-n1);
-    font-weight: var(--weight-bold);
     white-space: nowrap;
-  }
-
-  .header.nav-layout-rail .header-signin-label {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
   }
 
   /* secondary (outlined) CTA buttons */
