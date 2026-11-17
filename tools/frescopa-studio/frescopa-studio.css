@@ -1,0 +1,315 @@
+:root {
+  --ink: #151325;
+  --muted: #565b6b;
+  --line: #e6e8ee;
+  --sunken: #f8f9fb;
+  --flame: #d6300d;
+  --error: #b0240a;
+  --focus: #7c5cff;
+
+  color: var(--ink);
+  font: 15px/1.45 montserrat, system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--sunken);
+}
+
+button, input, select, textarea { font: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* top bar */
+.studio-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+  background: #fff;
+}
+
+.studio-bar h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.studio-status {
+  flex: 1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.studio-link {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.studio-button {
+  padding: 8px 18px;
+  border: 1px solid var(--ink);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.studio-button.primary {
+  border-color: var(--flame);
+  background: var(--flame);
+  color: #fff;
+}
+
+.studio-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* form and phone side by side */
+.studio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+@media (width >= 900px) {
+  .studio { grid-template-columns: minmax(0, 1fr) minmax(390px, 0.9fr); }
+
+  .studio-phone {
+    position: sticky;
+    top: 80px;
+    align-self: start;
+  }
+}
+
+.studio-phone {
+  display: grid;
+  justify-items: center;
+}
+
+.studio-preview-bar:not([hidden]) {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.studio-select {
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+/* the device at its own size, scaled to fit by frescopa-studio.js */
+.studio-stage:not([hidden]) {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.studio-stage iframe {
+  display: block;
+  box-sizing: content-box;
+  border: 10px solid var(--ink);
+  border-radius: 44px;
+  background: #fff;
+  flex: none;
+  transform-origin: top center;
+}
+
+.studio-stage iframe[data-device="desktop"],
+.studio-stage iframe[data-device="car"] { border-radius: 16px; }
+
+.studio-phone-note {
+  max-width: 390px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* form */
+.studio-form {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.group {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.group .group {
+  padding: 14px 16px;
+  background: var(--sunken);
+}
+
+.group legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.field label { font-weight: 600; }
+
+.field-required { color: var(--flame); }
+
+.field-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.field input:not([type="checkbox"]), .field select, .field textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d0d3dc;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.field [aria-invalid="true"] { border-color: var(--error); }
+
+.field-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+}
+
+.field-error:empty { display: none; }
+
+.field-check label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* lists: tabs, quick actions, sheets */
+.items {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--sunken);
+}
+
+.item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-title { font-weight: 700; }
+
+.item-tools {
+  display: flex;
+  gap: 4px;
+}
+
+.item-tool {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.item-tool:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.item-add {
+  justify-self: start;
+  padding: 8px 14px;
+  border: 1px dashed var(--muted);
+  border-radius: 99px;
+  background: none;
+  cursor: pointer;
+}
+
+.item-add:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* fragment fields: path + Choose */
+.field-row {
+  display: flex;
+  gap: 8px;
+}
+
+/* fragment picker plugin, in a dialog */
+.picker {
+  width: min(1200px, 94vw);
+  height: min(800px, 90vh);
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.picker[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.picker::backdrop { background: #15132566; }
+
+.picker > .studio-button {
+  align-self: flex-end;
+  margin: 12px 16px 0;
+}
+
+.picker iframe {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+/* an object's fields with no box of their own (the form itself, list items) */
+.fields {
+  display: grid;
+  gap: inherit; /* spaced like the fields around it */
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

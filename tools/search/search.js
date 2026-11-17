@@ -541,7 +541,7 @@ async function getVersionContent(path, versionId) {
 
 async function getVersionContentByUrl(versionUrl) {
   const { token } = app;
-  // The versionUrl is a relative path like "/versionsource/kunwarsaluja/..."
+  // The versionUrl is a relative path like "/versionsource/scdemos/demo/..."
   // We need to make it a full URL
   const url = `https://admin.da.live${versionUrl}`;
 
