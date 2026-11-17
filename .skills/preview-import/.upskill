@@ -1,0 +1,15 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "preview-import",
+  "path": "plugins/aem/edge-delivery-services/skills/preview-import",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:26.000Z",
+  "files": [
+    ".releaserc.json",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "package.json"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "generate-import-html",
+  "path": "plugins/aem/edge-delivery-services/skills/generate-import-html",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:52:56.000Z",
+  "files": [
+    ".releaserc.json",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "package.json",
+    "references/metadata-extraction.md",
+    "references/metadata-mapping.md"
+  ]
+}

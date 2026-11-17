@@ -1,0 +1,21 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "block-collection-and-party",
+  "path": "plugins/aem/edge-delivery-services/skills/block-collection-and-party",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:12.000Z",
+  "files": [
+    ".releaserc.json",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "package.json",
+    "scripts/get-block-structure.js",
+    "scripts/package-lock.json",
+    "scripts/package.json",
+    "scripts/search-block-collection-github.js",
+    "scripts/search-block-collection.js",
+    "scripts/search-block-party.js"
+  ]
+}

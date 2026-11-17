@@ -1,0 +1,14 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "ue-component-model",
+  "path": "plugins/aem/edge-delivery-services/skills/ue-component-model",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:01.000Z",
+  "files": [
+    "CHANGELOG.md",
+    "SKILL.md",
+    "package.json"
+  ]
+}
