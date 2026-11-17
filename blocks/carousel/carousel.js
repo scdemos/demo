@@ -28,7 +28,7 @@ function showSlide(block, index, { focus = false } = {}) {
 }
 
 function buildSlide(row, index) {
-  const slide = createTag('li', {
+  const slide = createTag('div', {
     class: 'carousel-slide',
     role: 'group',
     'aria-roledescription': 'slide',
@@ -56,16 +56,32 @@ function startAutoplay(block) {
   if (!block.classList.contains('autoplay')
     || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   let timer;
+  let userPaused = false;
+  const track = block.querySelector('.carousel-slides');
+  const toggle = createTag('button', { type: 'button', class: 'carousel-toggle', 'aria-label': 'Pause slides' });
   const advance = () => showSlide(block, Number(block.dataset.activeSlide) + 1);
   const stop = () => {
     clearInterval(timer);
     block.classList.add('paused');
+    track.setAttribute('aria-live', 'polite');
   };
   const start = () => {
+    if (userPaused) return;
     clearInterval(timer);
     block.classList.remove('paused');
+    // rotating slides must not be announced while they change by themselves
+    track.setAttribute('aria-live', 'off');
     timer = setInterval(advance, AUTOPLAY_MS);
   };
+  // WCAG 2.2.2: moving content needs a visible way to pause it
+  toggle.addEventListener('click', () => {
+    userPaused = !userPaused;
+    toggle.setAttribute('aria-label', userPaused ? 'Play slides' : 'Pause slides');
+    toggle.classList.toggle('is-paused', userPaused);
+    if (userPaused) stop();
+    else start();
+  });
+  block.querySelector('.carousel-controls')?.prepend(toggle);
   block.style.setProperty('--carousel-interval', `${AUTOPLAY_MS}ms`);
   block.addEventListener('mouseenter', stop);
   block.addEventListener('mouseleave', start);
@@ -75,7 +91,8 @@ function startAutoplay(block) {
 }
 
 function buildControls(block, count) {
-  const go = (delta) => showSlide(block, Number(block.dataset.activeSlide) + delta, { focus: true });
+  // focus stays on the control so Next can be pressed again (WAI-ARIA carousel pattern)
+  const go = (delta) => showSlide(block, Number(block.dataset.activeSlide) + delta);
   const prev = createTag('button', { type: 'button', class: 'carousel-prev', 'aria-label': 'Previous slide' });
   const next = createTag('button', { type: 'button', class: 'carousel-next', 'aria-label': 'Next slide' });
   prev.addEventListener('click', () => go(-1));
@@ -89,7 +106,7 @@ function buildControls(block, count) {
       'aria-label': `Show slide ${i + 1} of ${count}`,
       'aria-controls': `carousel-slide-${i}`,
     });
-    dot.addEventListener('click', () => showSlide(block, i, { focus: true }));
+    dot.addEventListener('click', () => showSlide(block, i));
     dots.append(createTag('li', {}, dot));
   }
 
@@ -102,7 +119,8 @@ function buildControls(block, count) {
 
 /**
  * Carousel: each row is a slide (image cell, content cell).
- * Variants: `autoplay` rotates slides with a progress indicator (paused on hover/focus).
+ * Variants: `autoplay` rotates slides with a progress indicator (pause button; also paused
+ * on hover/focus).
  * @param {Element} block
  */
 export default function decorate(block) {
@@ -111,7 +129,7 @@ export default function decorate(block) {
   block.setAttribute('aria-roledescription', 'carousel');
   block.setAttribute('aria-label', 'Featured');
 
-  const track = createTag('ul', { class: 'carousel-slides' });
+  const track = createTag('div', { class: 'carousel-slides' });
   rows.forEach((row, i) => track.append(buildSlide(row, i)));
   block.replaceChildren(track);
 

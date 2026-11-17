@@ -33,11 +33,15 @@ function isAuthorEnvironment() {
 }
 
 /**
- * @returns {boolean} true = authenticated, false = anonymous
+ * `?auth=true|false` overrides; otherwise the real Access session decides.
+ * @returns {Promise<boolean>} true = authenticated, false = anonymous
  */
-function getAuthState() {
+async function getAuthState() {
   const authValue = new URLSearchParams(window.location.search).get('auth');
-  return authValue === 'true';
+  if (authValue === 'true' || authValue === 'false') return authValue === 'true';
+  const { getSessionState } = await import('../shared/auth-api.js');
+  const session = await getSessionState();
+  return Boolean(session?.authenticated);
 }
 
 /** @returns {boolean} */
@@ -112,10 +116,11 @@ function applySectionLevelProtection(protectionMetadata, isAuthenticated) {
 /**
  * Apply content protection in author/dev environments when the page is gated (`meta gated=true`).
  */
-function applyContentProtection() {
+async function applyContentProtection() {
   if (!isAuthorEnvironment() || !isGatedPage()) return;
 
-  const isAuthenticated = getAuthState();
+  const isAuthenticated = await getAuthState();
+  document.documentElement.dataset.auth = String(isAuthenticated);
   const sectionProtectionMetadata = checkSectionLevelProtection(isAuthenticated);
   applySectionLevelProtection(sectionProtectionMetadata, isAuthenticated);
 }
@@ -133,14 +138,13 @@ function initContentProtection() {
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
-      applyContentProtection();
+      await applyContentProtection();
       await createAuthorToggle();
     }, { once: true });
     return;
   }
 
-  applyContentProtection();
-  createAuthorToggle();
+  applyContentProtection().then(createAuthorToggle);
 }
 
 export {

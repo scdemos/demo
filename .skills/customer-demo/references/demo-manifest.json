@@ -6,105 +6,107 @@
     "preview": "https://main--demo--scdemos.aem.page/"
   },
   "brandSlots": {
-    "$comment": "Blocks reference these palette tokens directly (~250 refs). Re-theming = re-assigning these values inside the BRAND TOKENS block at the top of styles/styles.css. Do not rename them.",
+    "$comment": "Blocks use semantic tokens (--color-*, --gap-*, --step-*, --radius-*), which all derive from the brand primitives between BRAND TOKENS:start and :end at the top of styles/styles.css. Re-theming = re-assigning those primitive values. Do not rename them.",
     "file": "styles/styles.css",
     "colors": {
-      "--color-rust": "primary brand color (buttons, rust sections, links on hover)",
-      "--color-rust-bright": "primary, lighter/hover variant",
-      "--color-gold": "accent / highlight (eyebrows, underlines, gold hero)",
-      "--color-parchment": "light page background + light text on dark",
-      "--color-ink": "body text on light",
-      "--color-obsidian": "darkest background (dark scheme, ink sections)",
-      "--color-card-dark": "card / surface on dark",
-      "--color-muted": "secondary / muted text"
+      "--ink-1000 .. --ink-700": "dark ramp: text on light, dark scheme and `ink` / `band` sections",
+      "--stone-600 .. --stone-50": "neutral ramp: muted text, borders, light surfaces",
+      "--flame-700 .. --flame-100": "primary brand colour: buttons, links, `flame` sections (600 must keep 4.5:1 with white)",
+      "--magenta-600 / --magenta-500": "secondary vivid accent (gradient middle)",
+      "--aurora-600 .. --aurora-100": "cool accent: secondary colour, gradient end, dark-section glow",
+      "--volt-400": "highlight / focus colour in dark scheme",
+      "--mint-*, --amber-*": "success / warning states",
+      "--gradient-vivid": "brand gradient built from flame, magenta and aurora"
     },
     "semantic": [
-      "--color-brand",
-      "--color-accent",
+      "--color-bg",
+      "--color-surface",
+      "--color-surface-sunken",
+      "--color-surface-raised",
       "--color-text",
-      "--color-link",
-      "--color-link-hover",
-      "--background-color",
-      "--color-shaded"
+      "--color-text-strong",
+      "--color-text-muted",
+      "--color-border",
+      "--color-accent",
+      "--color-accent-fill",
+      "--color-on-accent",
+      "--color-secondary",
+      "--color-highlight",
+      "--color-link"
     ],
     "typography": {
-      "--font-family": "body font stack (declared in styles/fonts.css, file in /fonts)",
-      "--font-family-serif": "heading font stack (via --heading-font-family)",
-      "--heading-font-size-*": "xxl..xxs scale (mobile; desktop overrides in @media (width >= 900px))",
-      "--body-font-size-*": "xxxl..xs scale"
+      "--brand-font-sans": "brand font stack (declared in styles/fonts.css, files in /fonts); --font-sans and --font-display derive from it",
+      "--step-n2 .. --step-6": "fluid type scale",
+      "--weight-*": "regular 400 .. black 800"
     },
     "shape": {
-      "--border-radius-heritage": "global card/button radius",
-      "--border-heritage": "decorative border",
-      "--nav-height": "header height"
+      "--radius-xs .. --radius-xl, --radius-pill": "corner radii",
+      "--shadow-1 .. --shadow-3": "elevation",
+      "--header-h / --announce-h": "header and announcement bar heights"
     },
-    "hardcodedHex": [
-      "blocks/header/header.css",
-      "blocks/footer/footer.css",
-      "blocks/quiz/quiz.css"
-    ],
-    "extraTokens": {
-      "--nav-text-transform": "nav label casing (base default uppercase)",
-      "--nav-letter-spacing": "nav label tracking (base default 1.5px)",
-      "--footer-logo-filter": "e.g. brightness(0) invert(1) when a dark raster logo sits on the dark footer",
-      "--border-radius-card": "cards + columns image radius (base default 12px)",
-      "--h2-accent-display": "none to hide the brand bar under h2 (base default block)"
-    },
-    "rgbLiterals": "~87 rgb(161 79 43 / x%), rgb(197 160 89 / x%), rgb(209 106 62 / x%), rgb(245 242 237 / x%), rgb(6 13 13 / x%), rgb(22 33 33 / x%) tints in blocks/styles: remap mechanically to the new brand rgb values."
+    "darkMode": "[data-theme='dark'] re-maps the semantic tokens; `ink` and `band` sections reuse the same mapping, so blocks inside them turn light automatically."
   },
   "sectionStyles": {
-    "$comment": "Applied with a Section Metadata block, key 'style'.",
-    "rust": "solid primary background, light text",
-    "ink": "dark background",
-    "gradient": "brand gradient background",
-    "light": "light/shaded background",
-    "warm": "warm tinted background",
-    "highlight": "accent-highlighted band",
-    "divider": "top divider rule",
-    "center": "centered content",
-    "light-scheme": "force light color-scheme",
-    "dark-scheme": "force dark color-scheme",
-    "head-row": "heading left, lone link paragraph right (e.g. \"Latest news\" ... \"All news\")",
-    "social": "links rendered as raised cards with trailing icon (Stay connected)",
-    "page-title": "white title band: optional icon paragraph above the H1 (simple landing pages: contact, search, insights hub)",
+    "$comment": "Applied with a Section Metadata block, key 'style'. Combine with commas.",
+    "sunken": "light shaded background",
+    "ink": "dark background (dark token mapping)",
+    "flame": "solid primary background, light text",
+    "tight": "less vertical padding",
+    "flush": "no top padding",
+    "narrow": "narrower content width (60rem)",
+    "prose": "reading width (44rem) with article typography",
+    "wide": "wider content width (92rem); images become 21:9 banners",
+    "center": "centered default content",
+    "split": "heading left, text right (from 900px)",
+    "cover": "an image + caption laid out like a cover card",
     "band": "full-bleed color band (default ink) with light text; a lone image paragraph fills the right edge; modifiers band-green | band-purple | band-blue",
-    "overlap": "follows a band: pulls its panel/stats/form up into the band (desktop); text before the panel and cards stats turn light",
-    "tags": "lists render as pill clouds (browse by tag/category/author, all tags)",
     "band-green": "band modifier: green background",
     "band-purple": "band modifier: purple background",
-    "band-blue": "band modifier: blue background"
+    "band-blue": "band modifier: blue background",
+    "overlap": "follows a band: pulls its panel/stats/form up into the band (desktop)",
+    "tags": "lists render as pill clouds (browse by tag/category/author, all tags)",
+    "page-title": "plain title band: optional icon paragraph above the H1 (simple landing pages: contact, search, insights hub)",
+    "social": "links rendered as raised cards (Stay connected)",
+    "head-row": "heading left, lone link paragraph right (e.g. \"Latest news\" ... \"All news\")"
   },
   "blocks": {
     "hero": {
       "variants": [
-        "banner",
-        "gold",
+        "home",
         "ink",
-        "rust",
-        "no-image"
+        "no-image",
+        "banner"
       ],
-      "use": "page-top banner. banner = full-bleed photo, dark scrim, white sans text (corporate/FS sites); default = faded heritage hero"
+      "use": "page-top hero: text with one picture (or a light + dark pair). home = flagship first viewport; ink = dark; no-image = text only; banner = full-bleed photo behind a dark gradient, white text (corporate/FS sites)"
     },
     "cards": {
       "variants": [
+        "links",
+        "tiles",
+        "stories",
+        "cover",
+        "tiers",
+        "bento",
         "panel",
         "panel cols-2",
+        "panel cols-4",
+        "panel emphasis",
         "text",
         "list",
         "list switchable",
         "stats",
-        "bento",
-        "panel cols-4",
-        "panel emphasis",
         "promo",
         "promo ink",
+        "promo wide",
         "logos"
       ],
-      "use": "panel = one raised white panel with hairline-separated cells (capabilities, ESG, news; works with/without images); list = rows with date/title/author bylines (paragraph with headshot picture) + thumbnail; switchable adds a grid/list toggle (JS); stats = big figures; text = simple tiles; default = image grid; panel cols-4 = 4-up tiles (anchor nav strips); emphasis = larger headings in panel cells (contact cards); promo = image + text feature tile, ink = dark promo (campaign/outlook callouts); logos = partner/memberships logo wall"
+      "use": "default = image grid; links = cards for authored page links (title, image, description from the query index); tiles = icon tiles; stories = lead story + grid; cover = one wide feature card; tiers = one row per plan with an optional badge line; bento = mixed-size grid; panel = one raised panel with hairline-separated cells (capabilities, ESG, news; with or without images); cols-2 / cols-4 set the columns; emphasis = larger headings (contact cards); text = text-only tiles; list = rows with date/title/author byline (paragraph with headshot picture) + thumbnail; switchable adds a grid/list toggle (JS); stats = big figures; promo = image + text feature tile (ink = dark, wide = one per row); logos = partner/membership logo wall"
     },
     "columns": {
-      "variants": [],
-      "use": "side-by-side text/media (split layouts, feature rows)"
+      "variants": [
+        "media"
+      ],
+      "use": "side-by-side text/media (split layouts, feature rows); media = art-directed image + text split"
     },
     "teaser": {
       "variants": [],
@@ -122,7 +124,8 @@
       "variants": [
         "bordered",
         "striped",
-        "no-header"
+        "no-header",
+        "compare"
       ],
       "use": "data tables (fund facts, performance, fees)"
     },
@@ -136,25 +139,9 @@
       "variants": [],
       "use": "grid driven by a JSON index (products, funds, strategies)"
     },
-    "journey-map": {
-      "variants": [],
-      "use": "GATED step-by-step checklist (\"complete each checkpoint to unlock\"). Not a timeline: use table striped (Year | Milestone) for history."
-    },
     "quiz": {
       "variants": [],
       "use": "interactive questionnaire (risk profiler, product finder)"
-    },
-    "compound-interest-calculator": {
-      "variants": [],
-      "use": "financial calculator; currency/locale from metadata (currency, locale)"
-    },
-    "networth-calculator": {
-      "variants": [],
-      "use": "financial calculator; currency/locale from metadata"
-    },
-    "savings-rate-calculator": {
-      "variants": [],
-      "use": "financial calculator; currency/locale from metadata"
     },
     "form": {
       "variants": [
@@ -190,7 +177,7 @@
     },
     "auth-toggle": {
       "variants": [],
-      "use": "logged-in / logged-out content switch"
+      "use": "author-host preview toggle for gated pages (logged-in / logged-out views)"
     },
     "header": {
       "variants": [],
@@ -207,11 +194,84 @@
       ],
       "use": "rotating hero/promo slides with prev/next arrows, dots (progress pill when autoplay), keyboard + reduced-motion support. Each row = image cell | content cell.",
       "baseCandidate": true
+    },
+    "campaign": {
+      "variants": [
+        "ink",
+        "flame",
+        "reverse",
+        "no-image"
+      ],
+      "use": "featured offer band: picture, body (eyebrow, h2, lede, buttons) and an optional meta list (**value** label)"
+    },
+    "quote": {
+      "variants": [],
+      "use": "testimonial / pull quote: quote text, attribution (**Name** + role), optional picture"
+    },
+    "stats": {
+      "variants": [
+        "ink"
+      ],
+      "use": "proof figures: number + label rows; optional intro row; optional ticker list"
+    },
+    "steps": {
+      "variants": [
+        "horizontal"
+      ],
+      "use": "numbered sequence: title + description rows"
+    },
+    "timeline": {
+      "variants": [],
+      "use": "dated entries, newest first (what's new, history)"
+    },
+    "toc": {
+      "variants": [],
+      "use": "on-this-page list with optional governance facts (Last updated | date); turns its section into a two-column layout from 900px"
+    },
+    "events": {
+      "variants": [
+        "featured"
+      ],
+      "use": "event listing from authored rows with date, filters and count (config keys filter, filter-label, count, empty)"
+    },
+    "catalog": {
+      "variants": [],
+      "use": "filterable product catalog driven by a JSON sheet (source)"
+    },
+    "product-detail": {
+      "variants": [
+        "no-media"
+      ],
+      "use": "product page header: gallery, price, availability, rating, plans (config keys sku, price, currency, …); emits Product structured data"
+    },
+    "offer-summary": {
+      "variants": [
+        "accent"
+      ],
+      "use": "offer / sale summary with price, dates, optional countdown and share link"
+    },
+    "locations": {
+      "variants": [],
+      "use": "store / location finder: toolbar, map and cards from a JSON sheet (source)"
+    },
+    "booking": {
+      "variants": [],
+      "use": "multi-step booking flow (experience, date, details) from a JSON sheet; embeddable with aem-embed"
+    },
+    "journeys": {
+      "variants": [],
+      "use": "Studio: list of demo journeys (authored links or <studio>/journeys.json)"
+    },
+    "journey-steps": {
+      "variants": [],
+      "use": "Studio: one row per demo step (title + page link, talk track, capabilities)"
     }
   },
   "templates": {
-    "article": "insight / article pages (metadata: Template = article)",
-    "events": "event listing"
+    "article": "insight / article pages (metadata: Template = article): byline in the hero",
+    "event": "single event page (metadata: Template = event)",
+    "events": "event listing",
+    "journey": "single-column talk track for solution consultants (Studio journeys)"
   },
   "features": {
     "experimentation": "plugins/experimentation: experiments, audiences, campaigns + sidekick overlay",
@@ -244,17 +304,17 @@
     "Pick the lowest level that reproduces the pattern faithfully: 0 default content, 1 existing block, 2 section style, 3 CSS-only variant, 4 variant with JS, 5 new block, 6 header/footer chrome variant via site metadata, 7 template, 8 global feature/plugin.",
     "New block when the content model, interaction or over ~40% of the CSS differs; otherwise a variant.",
     "Name everything generically; record level, content model and baseCandidate in this manifest.",
-    "Section-driven blocks (tabs = Tab Id/Tab title section metadata; faq = /faq-index.json; journey-map = gated checklist) must not be authored as row tables. When the original shows tiles, use cards panel; timelines use table striped.",
+    "Section-driven blocks (tabs = Tab Id/Tab title section metadata; faq = /faq-index.json) must not be authored as row tables. When the original shows tiles, use cards panel; timelines use table striped.",
     "Text on colored bands/overlaps must be verified against what is painted under it, not its DOM parent (capture.mjs readability check).",
     "Content repeated on 2+ pages (CTA band, sign-up, disclaimer, contact strip) is one /fragments/<generic-name> doc, placed with a fragment block on each page (lint:repeat-inline)."
   ],
   "pageMetadata": {
     "social-share": "off hides the floating share dock (delayed.js)",
-    "currency": "ISO code for calculators (USD, TWD, CAD…)",
-    "locale": "Intl locale for calculators (en-US…)",
     "Experiment / Experiment Variants": "page-level A/B: variants are full pages, relative paths OK",
     "Campaign-<name>": "value must be the served URL of the campaign page: a DA doc named index is served at the FOLDER url (/campaigns/x/), not /campaigns/x/index",
-    "color-scheme": "light | dark | auto (default). Set light/dark site-wide in metadata.json when the customer has no dark mode, so the OS preference cannot flip the demo"
+    "color-scheme": "light | dark | auto (default). Set light/dark site-wide in metadata.json when the customer has no dark mode, so the OS preference cannot flip the demo",
+    "gated": "true makes logged-in / logged-out sections (section metadata View) apply; server-side on demo.bbird.live, preview toggle on author hosts",
+    "login-label / logout-label": "override the header sign-in / sign-out link text"
   },
   "chrome": {
     "header nav-layout: rail": {

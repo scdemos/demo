@@ -1,4 +1,4 @@
-import { readBlockConfig } from '../../scripts/aem.js';
+import { createOptimizedPicture, readBlockConfig } from '../../scripts/aem.js';
 import {
   createTag,
   fetchQueryIndexAll,
@@ -63,12 +63,22 @@ function matchArticles(rows, keywordsConfig, excludedConfig, limit) {
    Default slider variant
    ----------------------------------------------------------------------- */
 
+function buildImage(src) {
+  const url = new URL(src, window.location.href);
+  if (url.origin === window.location.origin) return createOptimizedPicture(url.pathname, '', false, [{ width: '750' }]);
+  return createTag('img', { src: url.href, alt: '', loading: 'lazy' });
+}
+
 function buildSliderCard(article) {
   const href = normalizePath(article.path);
   const link = createTag('a', { href, class: 'related-articles-card-link' });
-  link.append(createTag('div', { class: 'related-articles-card-strip' }));
+  if (article.image) {
+    link.append(createTag('div', { class: 'related-articles-card-image' }, buildImage(article.image)));
+  }
 
   const content = createTag('div', { class: 'related-articles-card-content' });
+  const [tag] = parseKeywords(getArticleKeywords(article));
+  if (tag) content.append(createTag('p', { class: 'related-articles-card-tag' }, tag));
   content.append(createTag('h3', {}, article.title || href));
   if (article.description) {
     content.append(createTag('p', { class: 'related-articles-card-description' }, article.description));
@@ -218,7 +228,9 @@ async function fetchArticles(block, config) {
 
   const keywords = String(config.keywords || 'random').trim();
   const excluded = String(config['excluded-keywords'] || '').trim();
-  const allArticles = await fetchQueryIndexAll();
+  const current = normalizePath(window.location.pathname);
+  const allArticles = (await fetchQueryIndexAll())
+    .filter((row) => row?.path && normalizePath(row.path) !== current);
   return matchArticles(allArticles, keywords, excluded, RESULT_LIMIT);
 }
 

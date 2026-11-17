@@ -1,0 +1,59 @@
+/* Steps: numbered sequence */
+
+.steps .steps-list {
+  display: grid;
+  gap: var(--grid-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: steps;
+}
+
+.steps .steps-list > li {
+  padding-top: var(--gap-m);
+  border-top: var(--border-strong);
+  counter-increment: steps;
+}
+
+.steps .steps-list > li::before {
+  content: counter(steps, decimal-leading-zero);
+  display: block;
+  margin-bottom: var(--gap-xs);
+  color: var(--color-accent-text);
+  font-size: var(--step-3);
+  font-weight: var(--weight-black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.steps .steps-list :is(h2, h3, h4) {
+  margin-bottom: 0.35em;
+  font-size: var(--step-1);
+}
+
+.steps .steps-list p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.steps .steps-list p + p {
+  margin-top: 0.5em;
+}
+
+@media (width >= 600px) {
+  .steps:not(.horizontal) .steps-list > li {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    column-gap: var(--gap-m);
+  }
+
+  .steps:not(.horizontal) .steps-list > li::before {
+    grid-row: span 4;
+  }
+}
+
+@media (width >= 900px) {
+  .steps.horizontal .steps-list {
+    grid-template-columns: repeat(var(--steps, 3), minmax(0, 1fr));
+  }
+}

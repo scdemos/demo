@@ -4,50 +4,50 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-l) var(--space-2xl);
-  margin: var(--space-xl) auto 0;
-  padding-top: var(--space-l);
-  border-top: var(--border-heritage);
+  gap: var(--gap-m) var(--gap-xl);
+  margin: var(--gap-l) auto 0;
+  padding-top: var(--gap-m);
+  border-top: var(--border);
 }
 
 .events .event-meta > div {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--gap-3xs);
 }
 
 .events .event-meta dt {
-  font-family: var(--font-family-mono);
-  font-size: var(--body-font-size-xs);
+  font-family: var(--font-mono);
+  font-size: var(--step-n2);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: light-dark(var(--color-rust), var(--color-gold));
+  color: var(--color-accent-text);
 }
 
 .events .event-meta dd {
   margin: 0;
-  font-family: var(--font-family-serif);
-  font-size: var(--body-font-size-l);
+  font-family: var(--font-display);
+  font-size: var(--step-1);
 }
 
 .events .event-meta-badge {
   display: inline-block;
-  padding: 3px var(--space-m);
-  border: 1px solid light-dark(rgb(161 79 43 / 30%), rgb(209 106 62 / 35%));
+  padding: 3px var(--gap-s);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
   border-radius: 20px;
-  background-color: light-dark(rgb(161 79 43 / 8%), rgb(209 106 62 / 10%));
-  font-family: var(--font-family-mono);
-  font-size: var(--body-font-size-xs);
+  background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--step-n2);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: light-dark(var(--color-rust), var(--color-rust-bright));
+  color: var(--color-accent-text);
 }
 
 @media (width >= 900px) {
   .events .event-meta {
-    gap: var(--space-l) var(--space-4xl);
+    gap: var(--gap-m) var(--gap-3xl);
   }
 }

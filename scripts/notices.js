@@ -64,6 +64,11 @@ async function showGate(path) {
   const content = await fragmentContent(path);
   if (!content) return;
   const dialog = createTag('dialog', { class: 'site-notice site-gate', 'aria-modal': 'true' });
+  const heading = content.querySelector('h1, h2, h3');
+  if (heading) {
+    heading.id ||= 'site-gate-title';
+    dialog.setAttribute('aria-labelledby', heading.id);
+  }
   const { agree, cancel } = actionButtons(content, ['agree', 'cancel']);
   const actions = createTag('div', { class: 'site-notice-actions' }, [cancel, agree]);
   dialog.append(content, actions);
@@ -136,15 +141,20 @@ async function showConsent(path) {
   banner.append(content, createTag('div', { class: 'site-notice-actions' }, [settings, reject, accept]));
   document.body.append(banner);
 
+  let settingsDialog;
   const decide = (choices) => {
     const consent = Object.fromEntries(categories.map(({ key }, i) => [key, i === 0 || !!choices[key]]));
     write(CONSENT_KEY, { ...consent, ts: Date.now() });
     applyConsent(consent);
     banner.remove();
+    settingsDialog?.remove();
   };
   accept?.addEventListener('click', () => decide(Object.fromEntries(categories.map(({ key }) => [key, true]))));
   reject?.addEventListener('click', () => decide({}));
-  settings?.addEventListener('click', () => buildSettings(categories, null, decide).showModal());
+  settings?.addEventListener('click', () => {
+    settingsDialog ??= buildSettings(categories, null, decide);
+    settingsDialog.showModal();
+  });
 }
 
 export default async function loadSiteNotices() {

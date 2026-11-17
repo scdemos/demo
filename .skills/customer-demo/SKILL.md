@@ -59,7 +59,7 @@ reason. The Lighthouse gate (100 on mobile and desktop) is waivable only by the 
 | # | Rule | Enforced by |
 |---|---|---|
 | F1 | **Real pages.** Every demo page is a page of the customer site (same slug where possible). No invented pages, no base pages left live (they're backed up in 7a). | scope list from the SC's URL + nav; `lint:base-leftover`; `doctor:index` |
-| F2 | **Real content.** Headings, copy, stats, CTAs, images and forms come from the original pages (`scrape/<page>/outline.json`, `assets/`). Never write filler copy. Allowed new text, outside the migrated pages only: a short "for illustration only" note on mocked data, block library and walkthrough docs, base UI strings (search, calculator, form messages, login labels) and gated-content teasers built from the page's own copy. | `compare:provenance`, `compare:headings`, `compare:text`, `compare:media` |
+| F2 | **Real content.** Headings, copy, stats, CTAs, images and forms come from the original pages (`scrape/<page>/outline.json`, `assets/`). Never write filler copy. Allowed new text, outside the migrated pages only: a short "for illustration only" note on mocked data, block library and walkthrough docs, base UI strings (search, form messages, login labels) and gated-content teasers built from the page's own copy. | `compare:provenance`, `compare:headings`, `compare:text`, `compare:media` |
 | F3 | **Same chrome.** The header has the original's anatomy (rows: utility bar / main nav / sub-nav; logo size and placement; sticky; search, region, login CTAs; the full dropdown / mega-menu tree from `design.json`). Same for the footer. | `compare:header layout`, `compare:header items`, `compare:footer links`, `compare:side rail` |
 | F4 | **Same layout.** Section by section: alignment (centered vs left), text width, full-bleed bands, tone (dark/light), columns, and every carousel/slider, tab set and accordion. | `compare:layout`, `compare:carousels`, `compare:section count` |
 | F5 | **Same look.** Type scale, button and card styles, container width and spacing follow `design.json`; verified by eye, page by page, original next to demo at 1440 and 390 px. | `compare --final` → `review.json` (one written verdict per page) |
@@ -73,12 +73,12 @@ automated checks: `scripts/doctor.mjs` (site health) and `scripts/lint-content.m
 
 | # | Principle | What it means in practice |
 |---|---|---|
-| **P1** | **Verify outcomes, not artifacts.** | A feature is done only after you've used it as a visitor would: typed a search, submitted every form (dry-run), opened the experiment/campaign URL (if set), clicked every nav, footer and in-page link, and changed calculator inputs. "The block renders" is not "the feature works". |
+| **P1** | **Verify outcomes, not artifacts.** | A feature is done only after you've used it as a visitor would: typed a search, submitted every form (dry-run), opened the experiment/campaign URL (if set), clicked every nav, footer and in-page link, and used every interactive block (quiz, booking, catalog filters). "The block renders" is not "the feature works". |
 | **P2** | **The template copies code, not state.** | A repo made from the template has none of the base's per-site state: site config (`query.yaml`, `headers`, `robots`, `sidekick`, `public`, `features`), roles, the query index, the DA config/library, untracked icons, workers and secrets. Walk `references/base-state-inventory.md`: copy, recreate or explicitly skip every row. |
 | **P3** | **Read the contract before reuse.** | Before using a block, worker, endpoint or plugin, read its content model and inputs (manifest, block JS, worker README). Never assume something is "generic". If it doesn't fit, choose another construct or make it generic at the source. Never force content into the wrong model. |
 | **P4** | **Content parity before polish.** | Migrate every section of every page in scope (headings, copy, lists, stats, images, CTAs, forms, embedded widgets) before styling. Compare against the original's outline (`extract-outline.js`). A missing section is a FAIL, not a polish item. |
 | **P5** | **Judge what renders, where it renders, under hostile conditions.** | Measure the painted result in a real browser: dark OS preference, 390 px and 1440 px, local code (`aem up`, no CDN cache), after lazy/reveal loading, with smooth scroll. Never infer looks from DOM ancestry or source. |
-| **P6** | **Decide every base assumption.** | The base is opinionated (theme, currency/locale, casing, radius, gradients, accent bar, social dock, color literals, control styles). Walk `references/base-assumptions.md` and set each one to the customer's value, or confirm it. Nothing is inherited by accident. |
+| **P6** | **Decide every base assumption.** | The base is opinionated (theme, market paths, casing, radius, gradients, eyebrows, social dock, color literals, control styles). Walk `references/base-assumptions.md` and set each one to the customer's value, or confirm it. Nothing is inherited by accident. |
 | **P7** | **Generic, opt-in, ported back.** | New constructs are variants, section styles or metadata switches with generic names. They're recorded in the manifest, ported to the base, and leave the base's default look unchanged (verified). Customer specifics live in content and tokens, never in code. |
 | **P8** | **Zero side effects on shared systems.** | Automated checks use dry-run/test modes (`x-dry-run: 1` on the forms endpoint). Never post to live channels, inboxes or analytics. Commits go to the customer repo under the one-time approval; anything touching the base (`scdemos/demo`) needs its own explicit approval and goes in as a PR. |
 | **P9** | **Encapsulate workarounds; verify the verifier.** | A tool quirk becomes a script or helper (see the scripts), not a paragraph to remember. Every new check gets a negative test: break the thing on purpose and confirm the check fails. |
@@ -311,13 +311,16 @@ actually rendered (`assets/` + `assets.json`).
 ### 4. Brand (reskin, no rebuild) · P6
 Walk **`references/base-assumptions.md`** and decide every row; the steps below cover the brand rows.
 
-Edit **only** the `BRAND TOKENS` block, the font tokens, `--border-radius-heritage`,
-`--border-heritage` and `--shadow-glow-*` in `styles/styles.css`. Map the customer's colors
-to the brand slots listed in `demo-manifest.json.brandSlots`. Do **not** rename tokens:
-- primary → `--color-rust` (and the hover/lighter shade → `--color-rust-bright`)
-- accent/highlight → `--color-gold`
-- light background → `--color-parchment`; body text → `--color-ink`
-- dark background → `--color-obsidian`; dark surface → `--color-card-dark`; muted text → `--color-muted`
+Edit **only** the `BRAND TOKENS` block at the top of `styles/styles.css` (brand primitives
+and `--brand-font-sans`). Every semantic token (`--color-*`, gradients, fonts) derives from it,
+and dark mode re-maps the same primitives. Map the customer's colors to the ramps listed in
+`demo-manifest.json.brandSlots`. Do **not** rename tokens:
+- primary → the `--flame-*` ramp (`600` is the button/link colour and must keep 4.5:1 with white;
+  `700` is hover; `400` is the dark-scheme primary; `100` is the soft tint)
+- secondary / cool accent → the `--aurora-*` ramp; vivid gradient middle → `--magenta-*`
+- dark backgrounds and body text → the `--ink-*` ramp; neutrals, borders, light surfaces → `--stone-*`
+- dark-scheme highlight and focus → `--volt-400`
+- radius and shadows: `--radius-*` and `--shadow-*` in the structural tokens just below
 
 Fonts:
 - If the customer font is open (Google Fonts or OFL), download the woff2 into `/fonts`, and
@@ -330,10 +333,9 @@ Logo and favicon:
 - Upload the logo to DA with `da_upload_media` and reference it in `nav`.
 - Replace `favicon.ico`.
 
-Also re-check the hard-coded hex values in the files listed in `brandSlots.hardcodedHex`, and
-remap the old-brand `rgb()` literals (`brandSlots.rgbLiterals`) mechanically with `sed`.
 Then:
-- Set `brandSlots.extraTokens`: nav casing, footer logo filter, card radius.
+- Grep block CSS for literal brand colours (`rgb(214 48 13`, `#d6300d`, `rgb(124 92 255` …) and
+  move any you find onto tokens.
 - **Fold** button and heading changes into the existing rules. Don't append an override
   layer; stylelint `no-duplicate-selectors` will fail.
 - Remove decorative base effects the customer doesn't use: body gradient blobs, button
@@ -341,8 +343,8 @@ Then:
 - Proprietary font: pick an open match. For example, Source Sans 3 is a close open match for many humanist corporate sans faces. Download
   the latin woff2 from Google Fonts CSS2 with a Chrome user agent, and add a
   `size-adjust` fallback face.
-- Serif-italic emphasis (`h1 em`, `h2 em`) is a common corporate pattern. The base ships
-  EB Garamond italic.
+- Serif-italic emphasis (`h1 em`, `h2 em`) is a common corporate pattern. `/fonts` ships
+  EB Garamond italic; add it to the heading rules if the customer uses it.
 
 Commit the change as `feat: apply <customer> brand tokens`.
 
@@ -359,8 +361,8 @@ For each section of each page, run `identify-page-structure` on the scrape. Then
 | Level | Construct | Use when | Examples |
 |---|---|---|---|
 | 0 | **Default content** | Plain headings, text, lists, buttons, images. No repeating structure. | Intro paragraphs, disclosures, "Stay connected" CTA |
-| 1 | **Existing block, as is** | The content model **and** the look match, apart from brand tokens. Read the block's content model first: `tabs` is **section-driven** (`Tab Id` / `Tab title` section metadata, not a table), `faq` reads `/faq-index.json`. | `table`, `form`, calculators, section-driven `tabs` |
-| 2 | **Section style** (`section-metadata` style) | The difference is the section's background, width, spacing or alignment, whatever is inside. | `light`, `ink`, `center`, a new `bordered` band |
+| 1 | **Existing block, as is** | The content model **and** the look match, apart from brand tokens. Read the block's content model first: `tabs` is **section-driven** (`Tab Id` / `Tab title` section metadata, not a table), `faq` reads `/faq-index.json`. | `table`, `form`, `stats`, section-driven `tabs` |
+| 2 | **Section style** (`section-metadata` style) | The difference is the section's background, width, spacing or alignment, whatever is inside. | `sunken`, `ink`, `center`, a new `bordered` band |
 | 3 | **CSS-only block variant** | Same authoring table, different visual treatment or layout. | `cards text` / `list` / `stats`, `hero banner` |
 | 4 | **Block variant with JS** | Same authoring table, but extra behavior gated on the variant class. Keep existing authoring backward compatible. | `cards list` + grid/list toggle, section-driven `tabs` with a `vertical` |
 | 5 | **New block** | Different content model **or** behavior that would distort an existing block. Rule of thumb: over ~40% new CSS, a different row/column contract, or a new interaction model. | `carousel` (slides + prev/next + dots + autoplay), `consent`, `quote-slider`, `fund-finder` |
@@ -464,7 +466,7 @@ of the way, **unpublished, not deleted**, so the SC can still open it in DA:
    state.
 3. **What stays** (the authoring kit): `docs/` (block library), `forms/`, `fragments/404`, `icons/`,
    `media/`, `nav`, `footer`, `search`, `metadata.json`, `placeholders.json`, `redirects.json`. Everything
-   else (home, base pages, language folders, `tools/` calculators, base fragments and quizzes,
+   else (home, base pages, market folders, base fragments and quizzes,
    experimentation and campaign pages) moves. Pass `keep: [...]` to change the list. Reset
    `redirects.json` to the customer's needs (empty by default).
 4. Headless path: list with the DA MCP, `admin.mjs unpublish --site <slug> <paths…>`, then
@@ -479,7 +481,7 @@ Then write the customer's pages. `lint-content.mjs` fails on base leftovers.
 index.html` shows the block table structure):
 - `nav.html`: brand `:logo:` link, then the nav list, then `:search:`. Don't add a
   Robots metadata table in nav; it renders in the header.
-- `footer.html`, the `metadata.json` sheet (url, robots, currency, locale), and
+- `footer.html`, the `metadata.json` sheet (url, robots, color-scheme), and
   `forms/<name>.json` for the forms.
 - Icons: add the customer's (`icons/logo.svg`, rail/social icons) to the customer repo; check every
   `:icon:` used resolves (`doctor.mjs --only icons`).
@@ -510,8 +512,8 @@ index.html` shows the block table structure):
   `View: logged-in` (the member content, from the original where public, otherwise the closest real
   copy marked "for illustration only"). On `aem.page`/localhost the author toggle switches views; on
   the gated production host the login decides. Mention it in the walkthrough.
-- **Interactive**: a calculator block on a solutions page. Set `currency`/`locale` in
-  the metadata sheet.
+- **Interactive**: a quiz, `catalog` / `product-detail` or `booking` block where the original has
+  a comparable tool.
 - **Forms (P3, P8), best effort:** recreate the original's forms as closely as is practical
   (sheet `/forms/<name>.json` + `form` block; fields, options and required markers from the
   original; a confirmation page if there is one). The **one hard rule**: row 2 of every form
@@ -682,7 +684,7 @@ handoff.
    Look in particular at controls that only appear in flows: the search results page,
    form buttons and selects, the empty and error states of forms, and modals.
 4. **Outcomes (P1):** in the integrated browser on localhost:3000, use every feature: search with
-   two customer terms, every form (dry-run), the calculator, the theme toggle (if any), the gate
+   two customer terms, every form (dry-run), any interactive block, the theme toggle (if any), the gate
    and consent buttons, every dropdown / mega menu, and the carousel controls (plus experiment and
    campaign URLs only if the SC asked for them).
 5. **Looks (P5):** every page at 1440 and 390 px under a dark OS. Look at every section

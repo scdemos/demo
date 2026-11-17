@@ -22,12 +22,24 @@ import {
 import {
   initMartech, martechEager, martechLazy, martechDelayed,
 } from '../plugins/martech/src/index.js';
-import { getAllMetadata, getLocale } from './shared.js';
-import { initPageSchemas } from './schema.js';
-import dynamicBlocks from '../blocks/dynamic/index.js';
+import { getAllMetadata, getMarket, isGatedPage } from './shared.js';
 
+const { searchParams } = new URL(window.location.href);
+const IS_QUICK_EDIT = searchParams.has('quick-edit');
+const DA_PREVIEW = !!searchParams.get('dapreview');
+// DA preflight runs the site's own checks (scripts/preflight) on *.preview.da.live.
 const IS_PREFLIGHT_HOST = window.location.hostname.endsWith('.preview.da.live');
 let preflightSource = null;
+
+// Authoring surfaces (Sidekick quick-edit + DA preview). Martech (tracking +
+// personalization) is bypassed entirely here so offers never mutate the DOM while authoring
+// and the Target-injected-block observer can't fight preview/quick-edit DOM changes.
+const IS_EDITOR = IS_QUICK_EDIT || DA_PREVIEW;
+
+async function dynamicBlocks(main) {
+  const { default: run } = await import('../blocks/dynamic/index.js');
+  await run(main);
+}
 
 const AUDIENCES = {
   mobile: () => window.innerWidth < 600,
@@ -48,8 +60,17 @@ function isExperimentationEnabled() {
 
 const THEME_STORAGE_KEY = 'demo-theme';
 
+/**
+ * Applies the colour theme: an explicit choice (persisted), else the stored one,
+ * else the OS preference.
+ * @param {'light'|'dark'} [theme]
+ */
 function applyTheme(theme) {
-  let t = theme ?? (() => { try { return localStorage.getItem(THEME_STORAGE_KEY); } catch (e) { return null; } })();
+  let t = theme;
+  try {
+    if (theme) localStorage.setItem(THEME_STORAGE_KEY, theme);
+    else t = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (e) { /* storage unavailable */ }
   if (t !== 'light' && t !== 'dark') {
     // site default from metadata `color-scheme` (light | dark | auto); auto follows the OS
     const preferred = (document.querySelector('meta[name="color-scheme"]')?.content || 'auto').toLowerCase();
@@ -101,7 +122,7 @@ async function loadFonts() {
   }
 }
 
-/** Hash that opts out of fragment auto-blocking (do not block). Links with #_dnb stay as normal links. */
+/** Hash that opts a fragment link out of auto-blocking (it stays a normal link). */
 const DNB_HASH = '#_dnb';
 
 async function loadFragments(section) {
@@ -137,25 +158,13 @@ function buildAutoBlocks(main) {
   }
 }
 
-function loadErrorPage(main) {
-  if (window.errorCode === '404') {
-    const fragmentPath = '/fragments/404';
-    const fragmentLink = document.createElement('a');
-    fragmentLink.href = fragmentPath;
-    fragmentLink.textContent = fragmentPath;
-    const fragment = buildBlock('fragment', [[fragmentLink]]);
-    const section = main.querySelector('.section');
-    if (section) section.replaceChildren(fragment);
-  }
-}
-
 /**
  * Inline SVG icons that need to inherit currentColor (e.g. logo).
  * Replaces <img src="…/icon.svg"> with the actual <svg> element
  * so CSS color and light-dark() work across themes.
  * @param {Element} scope element tree to search within
  */
-async function inlineColorIcons(scope) {
+function inlineColorIcons(scope) {
   const icons = scope.querySelectorAll('.icon.icon-logo img[src$=".svg"]');
   icons.forEach(async (img) => {
     try {
@@ -173,15 +182,134 @@ async function inlineColorIcons(scope) {
   });
 }
 
+/**
+ * Default-content conventions for authors:
+ * - a short line directly above an h1/h2 becomes an eyebrow
+ * - consecutive button paragraphs are grouped into one row
+ * @param {Element} main
+ */
+function decorateDefaultContent(main) {
+  main.querySelectorAll('.default-content-wrapper > :is(h1, h2)').forEach((h) => {
+    const prev = h.previousElementSibling;
+    if (prev?.tagName === 'P' && !prev.classList.contains('button-container')
+      && !prev.querySelector('picture, a') && prev.textContent.trim().length <= 60) {
+      prev.classList.add('eyebrow');
+    }
+  });
+  main.querySelectorAll('.default-content-wrapper > p.button-container').forEach((p) => {
+    if (p.parentElement.classList.contains('button-group')) return;
+    const prev = p.previousElementSibling;
+    if (prev?.classList.contains('button-group')) {
+      prev.append(p);
+      return;
+    }
+    if (p.nextElementSibling?.classList.contains('button-container')) {
+      const group = document.createElement('div');
+      group.className = 'button-group';
+      p.before(group);
+      group.append(p);
+    }
+  });
+}
+
+/**
+ * Breadcrumbs generated from the path for pages below a market root
+ * (e.g. /en/us/offers/member-week). Opt out with metadata `breadcrumbs: off`.
+ * @param {Element} main
+ */
+function buildBreadcrumbs(main) {
+  if (getMetadata('breadcrumbs') === 'off' || document.querySelector('nav.breadcrumbs')) return;
+  const { root, segments } = getMarket();
+  if (!segments.length) return;
+  const nav = document.createElement('nav');
+  nav.className = 'breadcrumbs';
+  nav.setAttribute('aria-label', getMetadata('breadcrumbs-label') || 'Breadcrumb');
+  const ol = document.createElement('ol');
+  const crumb = (label, href) => {
+    const li = document.createElement('li');
+    if (href) {
+      const a = document.createElement('a');
+      a.href = href;
+      a.textContent = label;
+      li.append(a);
+    } else {
+      li.setAttribute('aria-current', 'page');
+      li.textContent = label;
+    }
+    ol.append(li);
+  };
+  const titleCase = (seg) => seg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  crumb(getMetadata('breadcrumbs-home') || 'Home', root);
+  const parent = getMetadata('breadcrumb-parent');
+  if (parent) {
+    const [label, href] = parent.split('|').map((v) => v.trim());
+    crumb(label, href);
+  } else {
+    segments.slice(0, -1).forEach((seg, i) => crumb(titleCase(seg), `${root}${segments.slice(0, i + 1).join('/')}`));
+  }
+  const h1 = main.querySelector('h1')?.textContent.trim();
+  crumb(getMetadata('breadcrumb-title') || h1 || titleCase(segments.at(-1)));
+  nav.append(ol);
+  main.before(nav);
+}
+
+/**
+ * Applies a Section Metadata table to its section (Style → classes, other keys → data
+ * attributes) and removes the table.
+ * @param {Element} section
+ * @param {Element} meta
+ */
+function applySectionMetadata(section, meta) {
+  const cfg = readBlockConfig(meta);
+  Object.keys(cfg).forEach((key) => {
+    if (key === 'style') {
+      String(cfg.style).split(',').map((s) => toClassName(s.trim())).filter(Boolean)
+        .forEach((c) => section.classList.add(c));
+    } else {
+      section.dataset[toCamelCase(key)] = cfg[key];
+    }
+  });
+  const wrapper = meta.parentElement;
+  meta.remove();
+  if (wrapper && wrapper !== section && !wrapper.children.length) wrapper.remove();
+}
+
+/** @param {Element} main */
+function decorateSectionMetadata(main) {
+  main.querySelectorAll(':scope > div.section div.section-metadata').forEach((meta) => {
+    applySectionMetadata(meta.closest('.section'), meta);
+  });
+}
+
+/**
+ * Wraps bare content images in <picture>. Images that are not in the media bus
+ * (e.g. local content/ previews) are rendered without one, but blocks expect it.
+ * @param {Element} main
+ */
+function wrapBareImages(main) {
+  main.querySelectorAll('img').forEach((img) => {
+    if (img.closest('picture, .icon')) return;
+    const picture = document.createElement('picture');
+    img.replaceWith(picture);
+    picture.append(img);
+  });
+}
+
 export function decorateMain(main) {
+  wrapBareImages(main);
   decorateButtons(main);
   decorateIcons(main);
   inlineColorIcons(main);
   buildAutoBlocks(main);
   decorateSections(main);
+  decorateSectionMetadata(main);
   decorateBlocks(main);
+  decorateDefaultContent(main);
+  if (document.contains(main)) buildBreadcrumbs(main);
+  if (main.querySelector('a[href*="/auth/log"]')) {
+    import('./shared/auth-api.js').then(({ decorateAuthLinks }) => decorateAuthLinks(main));
+  }
   if (IS_PREFLIGHT_HOST && document.contains(main)) preflightSource = main.cloneNode(true);
-  if (document.contains(main)) initPageSchemas();
 }
 
 /**
@@ -293,23 +421,9 @@ function watchForTargetInjectedBlocks(main) {
     // blocks are skipped above via the `block` class / `data-block-status` guards.
 
     toDecorate.forEach((block) => {
-      const wrapper = block.parentElement;
-      const sectionMeta = wrapper?.querySelector('div.section-metadata');
-      if (sectionMeta) {
-        const section = block.closest('.section');
-        if (section) {
-          const meta = readBlockConfig(sectionMeta);
-          Object.keys(meta).forEach((key) => {
-            if (key === 'style') {
-              meta.style.split(',').map((s) => toClassName(s.trim())).filter(Boolean)
-                .forEach((s) => section.classList.add(s));
-            } else {
-              section.dataset[toCamelCase(key)] = meta[key];
-            }
-          });
-          sectionMeta.remove();
-        }
-      }
+      const section = block.closest('.section');
+      const sectionMeta = block.parentElement?.querySelector('div.section-metadata');
+      if (section && sectionMeta) applySectionMetadata(section, sectionMeta);
     });
 
     [...toDecorate].forEach((block) => {
@@ -324,21 +438,20 @@ function watchForTargetInjectedBlocks(main) {
   observer.observe(main, { childList: true, subtree: true });
 }
 
-
 async function loadEager(doc) {
-  getLocale();
+  document.documentElement.lang = getMarket().lang;
   decorateTemplateAndTheme();
   applyTheme();
 
-  // Consent stub — wire to real CMP later; true for demo
-  const isConsentGiven = true;
-  const personalizationEnabled = !!getMetadata('target') && isConsentGiven;
+  // Demo site: consent is assumed; wire a real CMP here when needed.
+  const personalizationEnabled = !!getMetadata('target');
 
   const martechLoadedPromise = !IS_EDITOR && initMartech(
     {
       datastreamId: 'd73be188-bc37-4ede-a5da-8aa7cd1e343b',
       orgId: '138A07885EE042D20A495CFA@AdobeOrg',
       defaultConsent: 'in',
+      thirdPartyCookiesEnabled: false,
       edgeConfigOverrides: {
         com_adobe_target: {
           propertyToken: '2375354b-3ff1-6d5d-1304-7c38fccd590b',
@@ -357,7 +470,6 @@ async function loadEager(doc) {
 
   const main = doc.querySelector('main');
   if (main) {
-    if (window.isErrorPage) loadErrorPage(main);
     if (isExperimentationEnabled()) {
       const { loadEager: runEager } = await import('../plugins/experimentation/src/index.js');
       await runEager(document, { audiences: AUDIENCES }, getExperimentationContext());
@@ -398,16 +510,17 @@ async function loadLazy(doc) {
   }
 
   const main = doc.querySelector('main');
-  const { initContentProtection, applyContentProtection } = await import('./utils/gated-content.js');
-  initContentProtection();
+  const gated = isGatedPage() && await import('./utils/gated-content.js');
+  if (gated) gated.initContentProtection();
   const sections = main ? [...main.querySelectorAll('div.section')] : [];
   for (let i = 0; i < sections.length; i += 1) {
     await loadSection(sections[i], loadFragments);
     if (i === 0 && sampleRUM.enhance) sampleRUM.enhance();
   }
   await dynamicBlocks(main);
-  applyContentProtection();
+  if (gated) gated.applyContentProtection();
   decorateCodeBlocks(main);
+  import('./schema.js').then(({ initPageSchemas }) => initPageSchemas());
 
   const { hash } = window.location;
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
@@ -441,34 +554,6 @@ async function loadLazy(doc) {
     }
   }
 
-  /* Header scroll shadow: add .scrolled class once user scrolls past nav height */
-  const navWrapper = doc.querySelector('.nav-wrapper');
-  if (navWrapper) {
-    const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height'), 10) || 64;
-    const scrollObserver = new IntersectionObserver(
-      ([entry]) => navWrapper.classList.toggle('scrolled', !entry.isIntersecting),
-      { rootMargin: `-${navH}px 0px 0px 0px` },
-    );
-    const sentinel = document.createElement('div');
-    sentinel.setAttribute('aria-hidden', 'true');
-    sentinel.style.cssText = 'position:absolute;top:0;left:0;height:1px;width:1px;pointer-events:none;';
-    doc.body.prepend(sentinel);
-    scrollObserver.observe(sentinel);
-  }
-
-  /* inline logo SVGs in header/footer once they are decorated */
-  const waitAndInline = (el) => {
-    const observer = new MutationObserver(() => {
-      if (el.querySelector('.icon.icon-logo img[src$=".svg"]')) {
-        observer.disconnect();
-        inlineColorIcons(el);
-      }
-    });
-    observer.observe(el, { childList: true, subtree: true });
-  };
-  waitAndInline(headerEl);
-  waitAndInline(footerEl);
-
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
 
@@ -476,37 +561,23 @@ async function loadLazy(doc) {
     const { loadLazy: runLazy } = await import('../plugins/experimentation/src/index.js');
     await runLazy(document, { audiences: AUDIENCES }, getExperimentationContext());
   }
-
-  const loadQuickEdit = async (...args) => {
-    const { default: initQuickEdit } = await import('../tools/quick-edit/quick-edit.js');
-    initQuickEdit(...args);
-  };
-
-  const addSidekickListeners = (sk) => {
-    sk.addEventListener('custom:quick-edit', loadQuickEdit);
-  };
-
-  const sk = document.querySelector('aem-sidekick');
-  if (sk) {
-    addSidekickListeners(sk);
-  } else {
-    // wait for sidekick to be loaded
-    document.addEventListener('sidekick-ready', () => {
-    // sidekick now loaded
-      addSidekickListeners(document.querySelector('aem-sidekick'));
-    }, { once: true });
-  }
 }
 
-const IS_QUICK_EDIT = new URL(window.location.href).searchParams.has('quick-edit');
-if (IS_QUICK_EDIT) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
+const loadQuickEdit = async (...args) => {
+  const { default: initQuickEdit } = await import('../tools/quick-edit/quick-edit.js');
+  initQuickEdit(...args);
+};
 
-const DA_PREVIEW = new URL(window.location.href).searchParams.get('dapreview');
-
-// Authoring surfaces (Sidekick quick-edit + DA preview). Martech (tracking +
-// personalization) is bypassed entirely here so offers never mutate the DOM while authoring
-// and the Target-injected-block observer can't fight preview/quick-edit DOM changes.
-const IS_EDITOR = IS_QUICK_EDIT || DA_PREVIEW;
+/** Wires Sidekick-dependent features once the Sidekick is (or becomes) available. */
+function initSidekick() {
+  const init = (sk) => {
+    sk.addEventListener('custom:quick-edit', loadQuickEdit);
+    import('./sidekick.js');
+  };
+  const sk = document.querySelector('aem-sidekick');
+  if (sk) init(sk);
+  else document.addEventListener('sidekick-ready', () => init(document.querySelector('aem-sidekick')), { once: true });
+}
 
 function loadDelayed() {
   window.setTimeout(() => {
@@ -546,24 +617,12 @@ export async function loadPage() {
 if (!window.hlx?.suppressLoadPage) {
   if (IS_PREFLIGHT_HOST) registerPreflight();
   loadPage();
-
-  (async function loadDa() {
-    const { searchParams } = new URL(window.location.href);
-    if (searchParams.get('dapreview')) {
-      import('https://da.live/scripts/dapreview.js').then(({ default: daPreview }) => daPreview(loadPage));
-    }
-    if (searchParams.get('daexperiment')) {
-      import('https://da.live/nx/public/plugins/exp/exp.js');
-    }
-  }());
-
-  if (document.querySelector('aem-sidekick')) {
-    import('./sidekick.js');
-  } else {
-    document.addEventListener('sidekick-ready', () => {
-      import('./sidekick.js');
-    }, { once: true });
+  initSidekick();
+  if (IS_QUICK_EDIT) loadQuickEdit();
+  if (DA_PREVIEW) {
+    import('https://da.live/scripts/dapreview.js').then(({ default: daPreview }) => daPreview(loadPage));
   }
+  if (searchParams.get('daexperiment')) import('https://da.live/nx/public/plugins/exp/exp.js');
 
   window.addEventListener('aem-theme-change', (e) => {
     applyTheme(e.detail?.theme);

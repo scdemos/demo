@@ -1,0 +1,182 @@
+.offer-summary .offer-summary-card {
+  display: grid;
+  gap: var(--gap-m);
+  padding: var(--gap-m);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+@media (width >= 900px) {
+  .offer-summary .offer-summary-card {
+    padding: var(--gap-l);
+  }
+}
+
+.offer-summary .offer-summary-head > :first-child {
+  margin-top: 0;
+}
+
+.offer-summary .offer-summary-head > :last-child {
+  margin-bottom: 0;
+}
+
+.offer-summary .offer-summary-head :is(h2, h3) {
+  font-size: var(--step-2);
+}
+
+.offer-summary .offer-summary-main {
+  display: grid;
+  gap: var(--gap-m);
+}
+
+@media (width >= 900px) {
+  .offer-summary .offer-summary-main:has(.offer-summary-countdown:not([hidden])) {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: var(--gap-xl);
+  }
+}
+
+/* Countdown */
+.offer-summary .offer-summary-countdown[hidden],
+.offer-summary .offer-summary-countdown [hidden] {
+  display: none;
+}
+
+.offer-summary .offer-summary-countdown-label {
+  margin: 0 0 var(--gap-3xs);
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.offer-summary .offer-summary-timer {
+  display: flex;
+  gap: var(--gap-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.offer-summary .offer-summary-timer li {
+  display: grid;
+  min-width: 4.5rem;
+  padding: var(--gap-3xs);
+  border: var(--border-strong);
+  border-radius: var(--radius-m);
+  text-align: center;
+}
+
+.offer-summary .offer-summary-timer strong {
+  color: var(--color-accent-text);
+  font-size: var(--step-3);
+  font-weight: var(--weight-black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.offer-summary .offer-summary-timer span {
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.offer-summary .offer-summary-live {
+  width: fit-content;
+  margin: 0;
+  padding: 0.3em 0.75em;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-bold);
+}
+
+/* Key facts */
+.offer-summary .offer-summary-facts {
+  display: grid;
+  margin: 0;
+  border-top: var(--border);
+}
+
+@media (width >= 600px) {
+  .offer-summary .offer-summary-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--gap-m);
+  }
+}
+
+.offer-summary .offer-summary-fact {
+  display: grid;
+  gap: var(--gap-3xs);
+  padding-block: var(--gap-2xs);
+  border-bottom: var(--border);
+}
+
+.offer-summary .offer-summary-fact dt {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.offer-summary .offer-summary-fact dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
+}
+
+.offer-summary .offer-summary-fact dd p {
+  margin: 0;
+}
+
+.offer-summary .offer-summary-actions .button-group {
+  margin: 0;
+}
+
+.offer-summary .offer-summary-share {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-2xs);
+  margin: 0;
+}
+
+.offer-summary .offer-summary-share-status {
+  color: var(--color-success);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+}
+
+/* Callout variant (fine print, notes) */
+.offer-summary .offer-summary-callout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--gap-2xs);
+  padding: var(--gap-s);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-sunken);
+}
+
+.offer-summary.accent .offer-summary-callout {
+  background: var(--color-accent-soft);
+}
+
+.offer-summary .offer-summary-icon {
+  color: var(--color-accent-text);
+  line-height: 0;
+}
+
+.offer-summary .offer-summary-callout-body > * {
+  margin: 0;
+}
+
+.offer-summary .offer-summary-callout-body > * + * {
+  margin-top: var(--gap-3xs);
+}
+
+.offer-summary .offer-summary-callout-body :is(h2, h3, h4) {
+  font-size: var(--step-0);
+}

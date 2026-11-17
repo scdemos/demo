@@ -58,10 +58,10 @@ rail, carousels, layout, provenance, section count, review) can only be waived *
 - [ ] **Every form is submitted end to end** in a real browser, scoped to the content form (not the header search), **always in dry-run mode, fail-closed**: intercept the POST, add the `x-dry-run: 1` request header (Playwright `route` → `continue({ headers })`), and `route.abort()` if that isn't possible. The POST returns 200 with `"dryRun":true`, and the thank-you page or message appears. **Never post a real submission: the worker feeds an active Slack channel.** [P1 P8] `doctor:forms`
 
 ## 3. Design system and theming
-- [ ] Brand tokens are set: colors, fonts (with a licensed-font substitute documented), radius, nav casing, h2 accent. [P6]
+- [ ] Brand tokens are set: colors, fonts (with a licensed-font substitute documented), radius, nav casing. [P6]
 - [ ] **Color scheme:** [P5 P6] `doctor:metadata` `compare:scheme`. The site sets a `color-scheme` default in the metadata sheet that matches the original (usually `light`). The page renders correctly with the OS in **dark mode** (`capture.mjs --scheme dark`): the declared scheme is honored and no text is below 3:1 contrast.
 - [ ] If both schemes are supported, the nav has a theme toggle (`:toggle:`) and both themes pass the readability check. [P6]
-- [ ] No leftover base-brand colors (heritage rust/gold) are visible anywhere. [P6]
+- [ ] No leftover base-brand colors (Frescopa flame/aurora) are visible anywhere. [P6]
 
 ## 4. Block library and authoring kit (DA `/<org>/<site>/docs/library`)
 - [ ] `docs/library/blocks.json` lists **every** block used on the site plus all base blocks an SC may demo. Each entry has a library page under `docs/library/blocks/<name>`. [P2] `doctor:library`
@@ -80,7 +80,7 @@ rail, carousels, layout, provenance, section count, review) can only be waived *
 - [ ] **Base assumptions** walked: every row of `base-assumptions.md` has a customer decision, including control styling on the search results page and in forms. [P6]
 - [ ] Site search works: a customer term typed in the header search box lands on `/search?q=…` with relevant results at 1440 and 390 px. Blocks that read an index (search, related articles, faq) show data. [P1] `doctor:search`
 - [ ] Experiments, campaigns and audiences are **not** set by default. If the SC asked for them, every variant works (`?experiment=`, `?campaign=`). [P1] `doctor:experiments`
-- [ ] Interactive tool (calculator/quiz) uses the correct currency and locale. [P6] `doctor:metadata`
+- [ ] Interactive blocks (quiz, catalog, booking) work with the customer's content and market. [P6]
 - [ ] Demo walkthrough deck exists and every link in it works.
 - [ ] Sidekick project name is the customer's; preview, publish and edit work from Sidekick. [P2] `doctor:state`
 

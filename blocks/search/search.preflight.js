@@ -21,8 +21,14 @@ export default function validate(source) {
       hint: 'Set searchbar to enabled or disabled.',
     });
   }
+  if (config.source !== undefined) {
+    issues.push({
+      message: 'Search reads the site\'s query index; the source row is shown as a filter.',
+      hint: 'Delete the source row.',
+    });
+  }
   Object.entries(config)
-    .filter(([key, value]) => !RESERVED.includes(key) && !String(value).split(',').some((v) => v.trim()))
+    .filter(([key, value]) => key !== 'source' && !RESERVED.includes(key) && !String(value).split(',').some((v) => v.trim()))
     .forEach(([key]) => issues.push({
       message: `Search filter '${key}' has no options and is not shown.`,
       hint: 'List the filter options, separated by commas.',

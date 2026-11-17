@@ -4,7 +4,6 @@ import embed from '../../blocks/embed/embed.preflight.js';
 import form from '../../blocks/form/form.preflight.js';
 import fragment from '../../blocks/fragment/fragment.preflight.js';
 import hero from '../../blocks/hero/hero.preflight.js';
-import journeyMap from '../../blocks/journey-map/journey-map.preflight.js';
 import productGrid from '../../blocks/product-grid/product-grid.preflight.js';
 import relatedArticles from '../../blocks/related-articles/related-articles.preflight.js';
 import search from '../../blocks/search/search.preflight.js';
@@ -16,9 +15,8 @@ export const UTILITY_CLASSES = [/^spacer-(top|bottom)-(s|m|l)$/];
 
 export default {
   'auth-toggle': {},
-  cards: { variants: ['default', 'links', 'bento'], validate: cards },
+  cards: { variants: ['default', 'links', 'bento', 'cover'], validate: cards },
   columns: { validate: columns },
-  'compound-interest-calculator': {},
   dynamic: { authored: false },
   embed: { variants: [/^(fixedheight-|fixed-height-|h-)?\d+(px)?$/i], validate: embed },
   faq: {},
@@ -27,14 +25,11 @@ export default {
   fragment: { validate: fragment },
   header: { authored: false },
   hero: { variants: ['gold', 'ink', 'rust'], validate: hero },
-  'journey-map': { validate: journeyMap },
   modal: { authored: false },
   'n8n-form': {},
-  'networth-calculator': {},
   'product-grid': { validate: productGrid },
   quiz: {},
   'related-articles': { variants: ['bento'], validate: relatedArticles },
-  'savings-rate-calculator': {},
   search: { validate: search },
   'social-share': {},
   table: { variants: ['no-header', 'striped', 'bordered'] },

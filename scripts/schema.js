@@ -1,7 +1,9 @@
 import { getMetadata } from './aem.js';
+import { getMarket } from './shared.js';
 
 const graph = [];
 let scriptEl;
+let initialized = false;
 
 function flush() {
   const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
@@ -11,32 +13,6 @@ function flush() {
     document.head.append(scriptEl);
   }
   scriptEl.textContent = json;
-}
-
-/**
- * Adds a schema object to the page's LD+JSON @graph.
- * No-ops if an entry with the same @type already exists (prevents duplicates when
- * a server-side schema has been hydrated from the DOM).
- * @param {object} schema - schema.org structured data object (without @context)
- */
-export function addSchema(schema) {
-  if (!schema?.['@type']) return;
-  if (graph.some((s) => s['@type'] === schema['@type'])) return;
-  graph.push(schema);
-  flush();
-}
-
-/**
- * Finds an existing graph entry by @type and merges properties into it.
- * Optionally changes the @type (e.g. WebPage -> FAQPage).
- * @param {string} type - the @type to find in the graph
- * @param {object} updates - properties to merge (including optional @type override)
- */
-export function extendSchema(type, updates) {
-  const entry = graph.find((s) => s['@type'] === type);
-  if (!entry) return;
-  Object.assign(entry, updates);
-  flush();
 }
 
 function getCanonicalUrl() {
@@ -55,10 +31,10 @@ function getAbsoluteUrl(value) {
 function buildOrganizationSchema() {
   return {
     '@type': 'Organization',
-    name: 'diyFIRE',
-    url: 'https://demo.bbird.live',
-    logo: 'https://demo.bbird.live/icons/logo.svg',
-    description: 'A step-by-step, uniquely Canadian path to financial independence.',
+    name: 'Frescopa',
+    url: window.location.origin,
+    logo: `${window.location.origin}/icons/logo.svg`,
+    description: 'Frescopa brings products, services, experiences and membership together for customers in markets worldwide.',
     sameAs: [],
   };
 }
@@ -78,7 +54,8 @@ function buildWebPageSchema() {
 
 function buildArticleSchema() {
   const template = getMetadata('template');
-  if (template !== 'article') return null;
+  const hasByline = getMetadata('author') && (getMetadata('date') || getMetadata('published'));
+  if (template !== 'article' && !hasByline) return null;
 
   const schema = {
     '@type': 'Article',
@@ -95,7 +72,7 @@ function buildArticleSchema() {
   const author = getMetadata('author');
   if (author) schema.author = { '@type': 'Person', name: author };
 
-  const date = getMetadata('date');
+  const date = getMetadata('date') || getMetadata('published');
   if (date) {
     const parsed = new Date(String(date).trim());
     if (!Number.isNaN(parsed.getTime())) {
@@ -108,10 +85,10 @@ function buildArticleSchema() {
 
   schema.publisher = {
     '@type': 'Organization',
-    name: 'diyFIRE',
+    name: 'Frescopa',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://demo.bbird.live/icons/logo.svg',
+      url: `${window.location.origin}/icons/logo.svg`,
     },
   };
 
@@ -144,7 +121,7 @@ function buildEventSchema() {
   if (date) {
     const parsed = new Date(String(date).trim());
     if (!Number.isNaN(parsed.getTime())) {
-      schema.startDate = parsed.toISOString().split('T')[0];
+      [schema.startDate] = parsed.toISOString().split('T');
     }
   }
 
@@ -161,8 +138,8 @@ function buildEventSchema() {
 
   schema.organizer = {
     '@type': 'Organization',
-    name: 'diyFIRE',
-    url: 'https://demo.bbird.live',
+    name: 'Frescopa',
+    url: window.location.origin,
   };
 
   return schema;
@@ -179,17 +156,58 @@ function hydrateFromDOM() {
   } catch { /* ignore malformed */ }
 }
 
+/** Adds a schema to the graph unless an entry with the same @type and @id/name exists. */
+function pushSchema(schema) {
+  if (!schema?.['@type']) return;
+  const key = (s) => s['@id'] || s.name || '';
+  if (graph.some((s) => s['@type'] === schema['@type'] && key(s) === key(schema))) return;
+  graph.push(schema);
+  flush();
+}
+
+/**
+ * Seeds the graph with any server-rendered LD+JSON plus the page-level schema.
+ * Idempotent; also runs on the first addSchema/extendSchema call so blocks can use the
+ * API in any order relative to page decoration.
+ */
 export function initPageSchemas() {
+  if (initialized) return;
+  initialized = true;
   hydrateFromDOM();
 
-  if (window.location.pathname === '/') {
-    addSchema(buildOrganizationSchema());
+  if (window.location.pathname === getMarket().root || window.location.pathname === '/') {
+    pushSchema(buildOrganizationSchema());
   }
-
-  const article = buildArticleSchema();
-  const event = buildEventSchema();
 
   // Only emit WebPage when no more specific type applies.
   // FAQ block upgrades WebPage to FAQPage via extendSchema().
-  addSchema(article || event || buildWebPageSchema());
+  pushSchema(buildArticleSchema() || buildEventSchema() || buildWebPageSchema());
+}
+
+/**
+ * Adds a schema object to the page's LD+JSON @graph.
+ * No-ops if an entry with the same @type and @id/name already exists (prevents duplicates when
+ * a server-side schema has been hydrated from the DOM).
+ * @param {object} schema - schema.org structured data object (without @context)
+ */
+export function addSchema(schema) {
+  // inside <aem-embed> the page is someone else's: leave its structured data alone
+  if (window.hlx?.suppressLoadPage) return;
+  initPageSchemas();
+  pushSchema(schema);
+}
+
+/**
+ * Finds an existing graph entry by @type and merges properties into it.
+ * Optionally changes the @type (e.g. WebPage -> FAQPage).
+ * @param {string} type - the @type to find in the graph
+ * @param {object} updates - properties to merge (including optional @type override)
+ */
+export function extendSchema(type, updates) {
+  if (window.hlx?.suppressLoadPage) return;
+  initPageSchemas();
+  const entry = graph.find((s) => s['@type'] === type);
+  if (!entry) return;
+  Object.assign(entry, updates);
+  flush();
 }

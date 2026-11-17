@@ -1,142 +1,239 @@
-/* Site notices: entry gate (modal) and cookie consent banner. Loaded only when enabled by metadata. */
+/* Site notices: entry gate (modal), cookie consent banner and its settings dialog.
+   Loaded only when the `site-gate` or `consent` metadata is set. */
 .site-notice {
-  font-family: var(--body-font-family);
-  font-size: var(--body-font-size-s);
-  color: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--step-n1);
+  line-height: var(--leading-body);
+}
+
+.site-notice .site-notice-content > :last-child {
+  margin-bottom: 0;
+}
+
+/* action links move into the actions row, leaving their paragraphs or button group empty */
+.site-notice .site-notice-content > :is(p, .button-group):empty {
+  display: none;
+}
+
+.site-notice .site-notice-content a:any-link {
+  color: var(--color-link);
+  font-weight: var(--weight-semibold);
 }
 
 .site-notice .site-notice-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-m);
+  gap: var(--gap-xs);
 }
 
+/* accept / reject / agree / save = filled pill; settings / cancel / close = outline pill */
 .site-notice .site-notice-btn {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
   margin: 0;
-  padding: 10px 16px;
-  border: 1px solid var(--color-rust);
-  border-radius: 0;
-  background: var(--color-rust);
-  color: var(--color-light);
+  padding: 0.6em 1.4em;
+  border: 1.5px solid var(--color-accent-fill);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
   cursor: pointer;
+  transition:
+    background-color var(--duration-1) var(--ease-out),
+    border-color var(--duration-1) var(--ease-out),
+    color var(--duration-1) var(--ease-out);
 }
 
-.site-notice .site-notice-btn:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
+.site-notice .site-notice-btn:hover {
+  border-color: var(--color-accent-fill-hover);
+  background: var(--color-accent-fill-hover);
 }
 
 .site-notice .site-notice-settings,
 .site-notice .site-notice-cancel {
+  border-color: var(--color-border-strong);
   background: transparent;
-  color: var(--color-rust);
+  color: var(--color-text-strong);
 }
 
-/* consent banner: fixed bottom bar */
+.site-notice .site-notice-settings:hover,
+.site-notice .site-notice-cancel:hover {
+  border-color: var(--color-text-strong);
+  background: transparent;
+}
+
+/* ---------- consent banner: floating card pinned to the bottom ---------- */
 .consent-banner {
   position: fixed;
-  inset: auto 0 0;
+  inset: auto var(--gap-s) var(--gap-s);
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  gap: var(--space-m);
-  padding: var(--space-l) var(--space-xl);
-  border-top: 1px solid var(--color-gray-200);
-  background: var(--color-light);
-  box-shadow: 0 -4px 16px rgb(0 0 0 / 10%);
+  gap: var(--gap-m);
+  max-width: var(--container-narrow);
+  max-height: calc(100dvh - 2 * var(--gap-s));
+  margin-inline: auto;
+  padding: var(--gap-m);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+  overflow-y: auto;
+}
+
+.consent-banner .site-notice-content :is(h2, h3) {
+  margin-bottom: var(--gap-2xs);
+  font-size: var(--step-1);
 }
 
 .consent-banner .site-notice-content p {
-  margin: 0;
-  line-height: 1.55;
+  margin: 0 0 var(--gap-2xs);
 }
 
-.consent-banner .site-notice-content a:any-link {
-  color: var(--color-rust);
-  font-weight: 700;
+@media (prefers-reduced-motion: no-preference) {
+  .consent-banner {
+    animation: site-notice-in var(--duration-3) var(--ease-out);
+  }
 }
 
-/* dialogs: entry gate and consent settings */
+@keyframes site-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+
+/* ---------- dialogs: entry gate and cookie settings ---------- */
 dialog.site-notice {
-  width: min(900px, calc(100vw - 2 * var(--space-m)));
-  max-height: calc(100vh - 2 * var(--space-2xl));
+  width: min(46rem, 100% - 2 * var(--gap-s));
+  max-width: none;
+  max-height: calc(100dvh - 2 * var(--gap-l));
   padding: 0;
-  border: 0;
-  background: var(--color-ink);
-  color: var(--color-light);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+
+dialog.site-notice[open] {
+  display: flex;
+  flex-direction: column;
 }
 
 dialog.site-notice::backdrop {
-  background: rgb(0 0 0 / 55%);
+  background: color-mix(in srgb, var(--ink-1000, #07060d) 55%, transparent);
   backdrop-filter: blur(6px);
 }
 
-dialog.site-gate .site-notice-content {
-  max-height: 55vh;
-  overflow-y: auto;
-  padding: var(--space-xl) var(--space-2xl);
-}
-
-dialog.site-gate .site-notice-content :is(h2, h3) {
-  margin-top: 0;
-  color: var(--color-light);
-  font-weight: 300;
-}
-
-dialog.site-gate .site-notice-content p {
-  line-height: 1.7;
-}
-
 dialog.site-notice .site-notice-actions {
+  flex: none;
   justify-content: flex-end;
-  padding: var(--space-l) var(--space-2xl) var(--space-xl);
-  border-top: 1px solid rgb(255 255 255 / 15%);
+  padding: var(--gap-m);
+  border-top: var(--border);
+  background: var(--color-surface-sunken);
+}
+
+dialog.site-gate .site-notice-content {
+  min-height: 0;
+  padding: var(--gap-l) var(--gap-m);
+  overflow-y: auto;
+  font-size: var(--step-0);
+}
+
+dialog.site-gate .site-notice-content :is(h1, h2, h3) {
+  font-size: var(--step-3);
 }
 
 dialog.site-gate .site-notice-actions .site-notice-btn {
-  flex: 1 1 200px;
-  padding: 14px 16px;
-}
-
-dialog.site-gate .site-notice-cancel {
-  border-color: var(--color-muted);
-  background: var(--color-muted);
-  color: var(--color-light);
-}
-
-dialog.consent-settings {
-  background: var(--color-light);
-  color: var(--color-ink);
+  flex-basis: 12rem;
 }
 
 dialog.consent-settings h2 {
+  flex: none;
   margin: 0;
-  padding: var(--space-xl) var(--space-2xl) 0;
+  padding: var(--gap-l) var(--gap-m) 0;
+  font-size: var(--step-3);
 }
 
 dialog.consent-settings .consent-categories {
+  min-height: 0;
   margin: 0;
-  padding: var(--space-l) var(--space-2xl);
+  padding: var(--gap-xs) var(--gap-m) var(--gap-m);
+  overflow-y: auto;
   list-style: none;
 }
 
 dialog.consent-settings .consent-categories li {
   display: flex;
-  gap: var(--space-m);
-  padding: var(--space-m) 0;
-  border-bottom: 1px solid var(--color-gray-200);
+  align-items: flex-start;
+  gap: var(--gap-xs);
+  padding: var(--gap-s) 0;
+  border-bottom: var(--border);
+}
+
+dialog.consent-settings .consent-categories li:last-child {
+  border-bottom: 0;
+}
+
+dialog.consent-settings .consent-categories input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.2em 0 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+dialog.consent-settings .consent-categories input:disabled {
+  cursor: not-allowed;
 }
 
 dialog.consent-settings .consent-categories label {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: var(--gap-3xs);
+  cursor: pointer;
 }
 
-dialog.consent-settings .site-notice-actions {
-  border-top: 0;
+dialog.consent-settings .consent-categories strong {
+  color: var(--color-text-strong);
+}
+
+dialog.consent-settings .consent-categories span {
+  color: var(--color-text-muted);
+}
+
+@media (width >= 600px) {
+  .site-notice .site-notice-btn {
+    flex: 0 0 auto;
+  }
+
+  .consent-banner {
+    padding: var(--gap-m) var(--gap-l);
+  }
+
+  dialog.site-notice .site-notice-actions {
+    padding: var(--gap-m) var(--gap-xl);
+  }
+
+  dialog.site-gate .site-notice-content {
+    padding: var(--gap-xl);
+  }
+
+  dialog.consent-settings h2 {
+    padding: var(--gap-xl) var(--gap-xl) 0;
+  }
+
+  dialog.consent-settings .consent-categories {
+    padding-inline: var(--gap-xl);
+  }
 }
 
 @media (width >= 900px) {
@@ -144,13 +241,11 @@ dialog.consent-settings .site-notice-actions {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-  }
-
-  .consent-banner .site-notice-content {
-    max-width: 760px;
+    gap: var(--gap-l);
   }
 
   .consent-banner .site-notice-actions {
+    flex: none;
     flex-wrap: nowrap;
   }
 }

@@ -20,10 +20,11 @@ const CSS_CLASSES = {
 };
 
 /**
- * @returns {boolean} true when auth=true query param is set
+ * @returns {boolean} state resolved by gated-content (`?auth` override or real session)
  */
 function getAuthState() {
-  const authValue = new URLSearchParams(window.location.search).get('auth');
+  const authValue = new URLSearchParams(window.location.search).get('auth')
+    ?? document.documentElement.dataset.auth;
   return authValue === 'true';
 }
 
@@ -58,7 +59,7 @@ export default function decorate(block) {
     class: CSS_CLASSES.CLOSE,
     type: 'button',
     'aria-label': 'Close auth panel',
-  }, 'x');
+  }, '×');
   const header = createTag('div', { class: CSS_CLASSES.HEADER }, [headerText, closeBtn]);
 
   const panelBody = createTag('div', { class: 'auth-toggle-body', id: `${block.id || CSS_CLASSES.TOGGLE}-panel` });

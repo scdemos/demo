@@ -267,7 +267,7 @@ export default async function decorate(block) {
   const empty = createTag('p', { class: 'search-empty', hidden: true }, 'No matching results.');
   const loadMore = createTag('button', {
     type: 'button',
-    class: 'search-load-more search-load-more-hidden btn btn-primary',
+    class: 'search-load-more search-load-more-hidden button secondary',
   }, 'Load More');
   resultsWrap.append(status, list, loadMore, empty);
 
@@ -341,7 +341,7 @@ export default async function decorate(block) {
       placeholder: 'Search',
       'aria-label': 'Search',
     });
-    form.append(input, createTag('button', { type: 'submit' }, 'Search'));
+    form.append(input, createTag('button', { type: 'submit', class: 'button primary' }, 'Search'));
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       state.query = input.value.trim();

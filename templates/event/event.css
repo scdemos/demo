@@ -1,0 +1,23 @@
+body.event .event-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--gap-m) var(--gap-xl);
+  margin: var(--gap-l) 0 0;
+  padding: var(--gap-m) 0;
+  border-block: var(--border);
+}
+
+body.event .event-meta dt {
+  font-family: var(--font-mono);
+  font-size: var(--step-n2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+body.event .event-meta dd {
+  margin: var(--gap-3xs) 0 0;
+  font-size: var(--step-0);
+  font-weight: 600;
+  color: var(--color-text-strong);
+}

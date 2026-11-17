@@ -1,6 +1,5 @@
-import { toClassName, loadCSS } from '../../scripts/aem.js';
-
-let tabsStyleLoaded;
+import { toClassName } from '../../scripts/aem.js';
+import { loadStylesFor } from '../../scripts/shared.js';
 
 function getTabDefinition(section, fallbackIdx = 0) {
   const tabId = String(section.dataset?.tabId || '').trim();
@@ -42,11 +41,13 @@ function updateTabState(tabDefs, selectedId, tabButtons, tabPanels) {
 
     if (button) {
       button.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+      button.setAttribute('tabindex', isSelected ? '0' : '-1');
       button.classList.toggle('is-active', isSelected);
     }
 
     if (panel) {
       panel.setAttribute('aria-hidden', isSelected ? 'false' : 'true');
+      panel.hidden = !isSelected;
     }
   });
 }
@@ -60,7 +61,24 @@ function scrollActiveTab(button, tabList) {
   tabList.scrollLeft = Math.max(0, offset);
 }
 
-function buildTabsUI(tabDefs, tabsContainer, sectionId = '') {
+function handleTabKeydown(event, tabList) {
+  const tabs = [...tabList.querySelectorAll('[role="tab"]')];
+  const index = tabs.indexOf(event.target);
+  if (index < 0) return;
+  const keys = {
+    ArrowRight: (index + 1) % tabs.length,
+    ArrowLeft: (index - 1 + tabs.length) % tabs.length,
+    Home: 0,
+    End: tabs.length - 1,
+  };
+  if (!(event.key in keys)) return;
+  event.preventDefault();
+  const next = tabs[keys[event.key]];
+  next.focus();
+  next.click();
+}
+
+function buildTabsUI(tabDefs, tabsContainer, sectionId = '', label = '') {
   const hash = window.location.hash.replace('#', '').toLowerCase();
   const selectedId = tabDefs.find((tabDef) => tabDef.id === hash)?.id || tabDefs[0]?.id;
 
@@ -71,6 +89,8 @@ function buildTabsUI(tabDefs, tabsContainer, sectionId = '') {
   tabList.className = 'tabs-list';
   tabList.setAttribute('role', 'tablist');
   tabList.setAttribute('aria-orientation', 'horizontal');
+  if (label) tabList.setAttribute('aria-label', label);
+  tabList.addEventListener('keydown', (event) => handleTabKeydown(event, tabList));
 
   const tabContent = document.createElement('div');
   tabContent.className = 'tabs-content';
@@ -91,6 +111,7 @@ function buildTabsUI(tabDefs, tabsContainer, sectionId = '') {
     button.role = 'tab';
     button.setAttribute('aria-controls', panelId);
     button.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    button.setAttribute('tabindex', isSelected ? '0' : '-1');
     button.classList.toggle('is-active', isSelected);
     button.textContent = tabDef.title;
 
@@ -100,6 +121,8 @@ function buildTabsUI(tabDefs, tabsContainer, sectionId = '') {
     panel.role = 'tabpanel';
     panel.setAttribute('aria-labelledby', buttonId);
     panel.setAttribute('aria-hidden', isSelected ? 'false' : 'true');
+    panel.setAttribute('tabindex', '0');
+    panel.hidden = !isSelected;
     panel.append(tabDef.section);
 
     button.addEventListener('click', () => {
@@ -156,16 +179,14 @@ export default function decorate(block) {
   currSection.classList.add('tabs');
   tabDefs.forEach((def) => def.section.classList.remove('tabs'));
 
-  const tabsUI = buildTabsUI(tabDefs, currSection, currSection.id || '');
+  const label = block.textContent.trim();
+  const tabsUI = buildTabsUI(tabDefs, currSection, currSection.id || '', label);
   block.replaceChildren(tabsUI);
 }
 
 export async function createTabs(main) {
   if (!main) return;
-  if (!tabsStyleLoaded) {
-    tabsStyleLoaded = loadCSS(`${window.hlx.codeBasePath}/blocks/tabs/tabs.css`);
-  }
-  await tabsStyleLoaded;
+  await loadStylesFor(main, new URL('./tabs.css', import.meta.url));
   const tabGroups = findTabGroups(main);
   tabGroups.forEach((group) => buildTabsFromSections(group));
 }
