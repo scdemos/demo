@@ -15,6 +15,21 @@ function createElement(tag, className) {
   return el;
 }
 
+/**
+ * Splits an authored options string. `|` separates options when present (so labels can
+ * contain commas; end a single comma-containing option with `|`), otherwise `,`.
+ * @param {string} options
+ * @returns {string[]}
+ */
+function splitOptions(options = '') {
+  return options.split(options.includes('|') ? '|' : ',').map((o) => o.trim()).filter(Boolean);
+}
+
+/** Sheet booleans arrive as `true`, `TRUE` or `True`. */
+function isRequired(value) {
+  return String(value).toLowerCase() === 'true';
+}
+
 function generateId(name, option = null) {
   const id = toCamelCase(name);
   return option ? `${id}-${toCamelCase(option)}` : id;
@@ -37,7 +52,7 @@ function buildInput(field) {
   else input.type = type || 'text';
   input.id = generateId(fieldName);
   input.name = input.id;
-  input.required = required === 'true';
+  input.required = isRequired(required);
   if (defaultValue) input.value = defaultValue;
   if (placeholder) input.placeholder = placeholder;
   return input;
@@ -53,7 +68,7 @@ function buildOptionInput(field, option) {
   input.name = generateId(fieldName);
   input.value = option;
   input.checked = option === defaultValue;
-  input.required = required === 'true';
+  input.required = isRequired(required);
   return input;
 }
 
@@ -64,10 +79,10 @@ function buildOptions(field) {
   if (!options) return null;
 
   const fieldset = createElement('fieldset', `form-field ${type}-field`);
-  fieldset.append(buildLabel(label, 'legend', null, required === 'true'));
-  options.split(',').forEach((o) => {
-    const input = buildOptionInput(field, o.trim());
-    const labelEl = buildLabel(o.trim(), 'label', input.id);
+  fieldset.append(buildLabel(label, 'legend', null, isRequired(required)));
+  splitOptions(options).forEach((option) => {
+    const input = buildOptionInput(field, option);
+    const labelEl = buildLabel(option, 'label', input.id);
     labelEl.prepend(input, createElement('span'));
     fieldset.append(labelEl);
   });
@@ -95,7 +110,7 @@ function buildSelect(field) {
   const select = createElement('select');
   select.id = generateId(fieldName);
   select.name = select.id;
-  select.required = required === 'true';
+  select.required = isRequired(required);
   wrapper.append(buildLabel(label, 'label', select.id, select.required), select);
 
   if (placeholder) {
@@ -110,10 +125,10 @@ function buildSelect(field) {
   if (/^https?:\/\//.test(options)) {
     buildOptionsFromUrl(options).then((os) => select.append(...os));
   } else {
-    options.split(',').forEach((o) => {
+    splitOptions(options).forEach((option) => {
       const optionEl = createElement('option');
-      optionEl.value = o.trim();
-      optionEl.textContent = o.trim();
+      optionEl.value = option;
+      optionEl.textContent = option;
       select.append(optionEl);
     });
   }
@@ -125,7 +140,7 @@ function buildToggle(field) {
   const wrapper = createElement('div', 'form-field toggle-field');
   const input = buildOptionInput({ ...field, type: 'checkbox' }, defaultValue || 'true');
   input.setAttribute('role', 'switch');
-  const labelEl = buildLabel(label, 'label', input.id, required === 'true');
+  const labelEl = buildLabel(label, 'label', input.id, isRequired(required));
   labelEl.prepend(input, createElement('span'));
   wrapper.append(labelEl);
   return wrapper;
@@ -143,7 +158,7 @@ function buildTextField(field) {
   const { type, label, required } = field;
   const wrapper = createElement('div', `form-field ${type}-field`);
   const input = buildInput(field);
-  wrapper.append(buildLabel(label, 'label', input.id, required === 'true'), input);
+  wrapper.append(buildLabel(label, 'label', input.id, isRequired(required)), input);
   return wrapper;
 }
 

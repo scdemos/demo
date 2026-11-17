@@ -280,3 +280,119 @@ footer .footer {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+/* ==========================================================================
+   Layout: legal (metadata `footer-layout: legal`)
+   Logo + link row, copyright/legal paragraphs, stacked legal links.
+   ========================================================================== */
+footer .footer.footer-layout-legal {
+  min-height: 0;
+  padding-block: var(--gap-xl) var(--gap-l);
+  font-size: var(--step-n1);
+}
+
+.footer .footer-legal-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-m);
+  padding-bottom: var(--gap-l);
+  border-bottom: var(--border);
+}
+
+.footer .footer-legal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: var(--step-2);
+  font-weight: var(--weight-black);
+  letter-spacing: -0.04em;
+  text-decoration: none;
+}
+
+.footer .footer-legal-brand:hover {
+  color: var(--color-text-strong);
+}
+
+.footer .footer-legal-brand svg {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.footer .footer-legal-links,
+.footer .footer-legal-stack {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer .footer-legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-2xs) var(--gap-l);
+}
+
+.footer .footer-legal-links a {
+  color: var(--color-text);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.footer .footer-legal-text {
+  max-width: var(--container-narrow);
+  padding-top: var(--gap-l);
+}
+
+.footer .footer-legal-copy {
+  margin: 0 0 var(--gap-s);
+  color: var(--color-text-muted);
+  line-height: var(--leading-body);
+}
+
+.footer .footer-legal-copy a {
+  color: var(--color-text);
+}
+
+.footer .footer-legal-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap-m);
+  padding-top: var(--gap-s);
+}
+
+.footer .footer-legal-stack {
+  display: grid;
+  gap: var(--gap-2xs);
+}
+
+.footer .footer-legal-stack a {
+  color: var(--color-text-strong);
+  font-weight: var(--weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.footer .footer-legal-links a:hover,
+.footer .footer-legal-copy a:hover,
+.footer .footer-legal-stack a:hover {
+  color: var(--color-highlight);
+  text-decoration: underline;
+}
+
+@media (width >= 900px) {
+  .footer .footer-legal-row {
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer .footer-legal-bottom {
+    flex-flow: row wrap;
+  }
+
+  .footer .footer-legal-stack {
+    margin-right: auto;
+  }
+}

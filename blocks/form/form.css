@@ -242,3 +242,55 @@
   background: var(--color-warning-soft);
   color: var(--color-warning);
 }
+
+/* ==========================================================================
+   Panel: one raised card, compact labels, leading required marker,
+   end-aligned submit. The section's intro text lines up with the card.
+   ========================================================================== */
+main > .section.form-container:has(.form.panel) > div {
+  width: min(100% - 2 * var(--gutter), var(--container-prose));
+}
+
+.form.panel form {
+  gap: var(--gap-l);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+}
+
+.form.panel .form-field:not(.toggle-field) > label:first-child,
+.form.panel .form-field > legend {
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.form.panel .form-field:not(.toggle-field) > label[data-required]::after,
+.form.panel legend[data-required]::after {
+  content: none;
+}
+
+.form.panel .form-field:not(.toggle-field) > label[data-required]::before,
+.form.panel legend[data-required]::before {
+  content: '* ';
+  color: var(--color-danger);
+}
+
+.form.panel input:not([type='checkbox'], [type='radio']),
+.form.panel select {
+  min-height: 3.25rem;
+}
+
+.form.panel textarea {
+  min-height: 13.75rem;
+}
+
+.form.panel .button-wrapper {
+  justify-content: flex-end;
+}
+
+.form.panel .button-wrapper .button {
+  min-width: 9.5rem;
+}

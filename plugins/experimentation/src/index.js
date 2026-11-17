@@ -526,11 +526,14 @@ export async function runCampaign(document, options, context) {
   }
 
   const allowedCampaigns = context.getAllMetadata(pluginOptions.campaignsMetaTagPrefix);
-  if (!Object.keys(allowedCampaigns).includes(campaign)) {
+  // getAllMetadata camel-cases keys (global-credit -> globalCredit); accept either form
+  const campaignKey = [campaign, context.toCamelCase(campaign)]
+    .find((k) => Object.keys(allowedCampaigns).includes(k));
+  if (!campaignKey) {
     return false;
   }
 
-  const urlString = allowedCampaigns[campaign];
+  const urlString = allowedCampaigns[campaignKey];
   if (!urlString) {
     return false;
   }
@@ -541,7 +544,7 @@ export async function runCampaign(document, options, context) {
   }
 
   try {
-    const url = new URL(urlString);
+    const url = new URL(urlString, window.location.origin);
     const result = await replaceInner(url.pathname, document.querySelector('main'));
     window.hlx.campaign.servedExperience = result || window.location.pathname;
     if (!result) {
@@ -597,7 +600,7 @@ export async function serveAudience(document, options, context) {
   window.hlx.audience = { selectedAudience };
 
   try {
-    const url = new URL(urlString);
+    const url = new URL(urlString, window.location.origin);
     const result = await replaceInner(url.pathname, document.querySelector('main'));
     window.hlx.audience.servedExperience = result || window.location.pathname;
     if (!result) {

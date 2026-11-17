@@ -8,7 +8,23 @@ account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
 PATH_PREFIX = "cloneit"
 # Origins allowed for POST /cloneprocess and POST / (IMS ping + Admin API forwarding).
 # Include the origin that serves CloneIt (e.g. https://demo.bbird.live if the tool is hosted there).
-ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000"
+ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.preview.da.live,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live"
+
+# Previous CloneIt page (no token) keeps working until this is set to "false".
+LEGACY_COMPAT = "true"
+# New routes: callers must present their own Adobe IMS token (DA session); only these email domains are allowed.
+ALLOWED_EMAIL_DOMAINS = "adobe.com"
+# IMS client ids whose user tokens are accepted (DA = darkalley).
+IMS_CLIENT_IDS = "darkalley"
+# Standalone lane: template repo; the requesting SC (GitHub username) becomes repo admin.
+TEMPLATE_REPO = "scdemos/demo"
+# SC_TEAM = "solution-consultants"   # optional team slug: requester must be in it, and it gets push on new repos;
+#                                     # when unset, scdemos org membership is required and only the requester (admin) gets access
+CODE_SYNC_INSTALLATION_ID = "180300339"   # AEM Code Sync on scdemos (org settings → GitHub Apps); auto-discovered when unset
+# Secrets (wrangler secret put …): ADOBE_CLIENT_ID, ADOBE_CLIENT_SECRET, GITHUB_PROVISION_TOKEN
+#   GITHUB_PROVISION_TOKEN: classic PAT of an scdemos org OWNER/bot (scopes: repo, read:org; + admin:org only with SC_TEAM;
+#   authorize for SSO if enforced). Without it the
+#   standalone lane is disabled and only repoless clones are offered.
 
 [observability.logs]
 enabled = true

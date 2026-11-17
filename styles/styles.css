@@ -20,6 +20,13 @@
 :root,
 :host {
   /* ---- 1. Brand primitives ---- */
+
+  /*
+   * BRAND TOKENS:start
+   * Every semantic token (--color-*, gradients, fonts) derives from these primitives.
+   * To re-theme for a customer, re-assign the values only; never rename them.
+   * Keep the ink ramp dark and the stone ramp light so text contrast holds.
+   */
   --ink-1000: #07060d;
   --ink-950: #0e0c1a;
   --ink-900: #151325;
@@ -51,6 +58,8 @@
   --amber-100: #fdf1d6;
   --gradient-vivid: linear-gradient(120deg, var(--flame-500) 0%, var(--magenta-500) 50%, var(--aurora-500) 100%);
   --brand-font-sans: montserrat, montserrat-fallback, system-ui, sans-serif;
+
+  /* BRAND TOKENS:end */
 
   /* ---- 2. Structural tokens ---- */
   --font-sans: var(--brand-font-sans);
@@ -180,6 +189,7 @@
 /* dark mode and always-dark surfaces share one mapping */
 [data-theme='dark'],
 main > .section.ink,
+main > .section.band,
 .surface-ink {
   color-scheme: dark;
 
@@ -953,3 +963,174 @@ main > .section.cover > .default-content-wrapper > :not(:has(> picture)) {
 .library-metadata-wrapper {
   display: none;
 }
+
+/* nav-layout: rail reserves the rail's width before the header loads (no sideways shift) */
+@media (width >= 900px) {
+  :root:has(meta[name='nav-layout'][content='rail' i]) :is(body > .breadcrumbs, main, footer) {
+    padding-left: 6rem;
+  }
+}
+
+/* stylelint-disable no-descending-specificity -- each style targets its own section class */
+
+/* band: full-bleed colour band with light text (default ink; band-green | band-purple | band-blue).
+   A lone image paragraph fills the right edge from 900px. A following `overlap` section pulls
+   its panel up into the band. */
+main > .section.band {
+  position: relative;
+  overflow: hidden;
+  background: var(--band-bg, var(--ink-950));
+
+  /* band colours are author-chosen, so links, eyebrows and muted text go white (as on flame) */
+  --color-text-muted: rgb(255 255 255 / 88%);
+  --color-accent-text: var(--white);
+  --color-link: var(--white);
+  --color-link-hover: var(--white);
+  --color-highlight: var(--white);
+}
+
+main > .section.band.band-green { --band-bg: #046138; }
+main > .section.band.band-purple { --band-bg: #533573; }
+main > .section.band.band-blue { --band-bg: #0000c1; }
+
+main > .section.band .cards.stats .cards-card-body :is(h2, h3) {
+  color: var(--color-highlight);
+}
+
+main > .section.band .icon img {
+  filter: brightness(0) invert(1);
+}
+
+main > .section.band > .default-content-wrapper > p:has(> picture:only-child) {
+  margin: var(--gap-xl) calc(-1 * var(--gutter)) 0;
+  line-height: 0;
+}
+
+main > .section.band > .default-content-wrapper > p:has(> picture:only-child) img {
+  width: 100%;
+  max-height: 20rem;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+main > .section.overlap {
+  position: relative;
+  z-index: 1;
+  padding-block-start: 0;
+  background: transparent;
+}
+
+/* tags: lists render as pill clouds */
+main > .section.tags ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-2xs);
+  margin: var(--gap-s) 0 var(--gap-xl);
+  padding: 0;
+  list-style: none;
+}
+
+main > .section.tags li {
+  padding: 0.4em 1em;
+  border: var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+}
+
+/* page-title: plain title band, optional icon paragraph above the h1 */
+main > .section.page-title {
+  padding-block: var(--gap-2xl) var(--gap-xl);
+  border-bottom: var(--border);
+}
+
+main > .section.page-title h1 {
+  margin-top: var(--gap-s);
+}
+
+main > .section.page-title > .default-content-wrapper > p:first-child:has(> .icon:only-child) {
+  margin: 0;
+}
+
+main > .section.page-title .icon {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* social: links shown as raised cards */
+main > .section.social > .default-content-wrapper > p:has(> a) {
+  display: inline-flex;
+  margin: 0 var(--gap-s) var(--gap-s) 0;
+}
+
+main > .section.social > .default-content-wrapper a:any-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-2xs);
+  padding: var(--gap-s) var(--gap-m);
+  border: var(--border);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-2);
+  color: var(--color-text-strong);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-bold);
+  text-decoration: none;
+}
+
+/* head-row: the first heading on the left, a lone link paragraph on the right */
+main > .section.head-row > .default-content-wrapper:first-child {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  column-gap: var(--gap-l);
+}
+
+main > .section.head-row > .default-content-wrapper:first-child > * {
+  grid-column: 1 / -1;
+}
+
+main > .section.head-row > .default-content-wrapper:first-child > :is(h1, h2):first-child {
+  grid-column: 1;
+}
+
+main > .section.head-row > .default-content-wrapper:first-child > p:nth-child(2):has(> a:only-child) {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+}
+
+@media (width >= 900px) {
+  main > .section.band:has(+ .section.overlap) {
+    padding-block-end: 14rem;
+  }
+
+  main > .section.band:has(> .default-content-wrapper > p > picture:only-child) > .default-content-wrapper > :not(p:has(> picture:only-child)) {
+    max-width: 58%;
+  }
+
+  main > .section.band > .default-content-wrapper > p:has(> picture:only-child) {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 32%;
+    margin: 0;
+  }
+
+  main > .section.band > .default-content-wrapper > p:has(> picture:only-child) :is(picture, img) {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+  }
+
+  /* keep blocks clear of the right-edge image */
+  main > .section.band:has(> .default-content-wrapper > p > picture:only-child) > div:not(.default-content-wrapper) > .block {
+    max-width: 62%;
+  }
+
+  main > .section.overlap {
+    margin-top: -12rem;
+  }
+}
+
+/* stylelint-enable no-descending-specificity */

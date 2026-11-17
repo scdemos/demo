@@ -1,3 +1,4 @@
+import { getMetadata } from '../../scripts/aem.js';
 import { createTag } from '../../scripts/shared.js';
 import {
   authoredHref, buildMarketSwitcher, fetchChrome, icon, LOGO_MARK, readLabels,
@@ -11,6 +12,14 @@ const SOCIAL = [
 
 const isExternal = (a) => /^https?:/.test(authoredHref(a));
 const isMarketLink = (a) => /^\/(?:[^/]+\/)*[a-z]{2}\/[a-z]{2}\/$/.test(authoredHref(a));
+const isSocialLink = (a) => {
+  try {
+    const host = new URL(a.href).hostname.replace(/^www\./, '');
+    return SOCIAL.some(([, re]) => re.test(host));
+  } catch (e) {
+    return false;
+  }
+};
 
 function buildNewsletter(labels) {
   const id = 'footer-newsletter-email';
@@ -59,12 +68,97 @@ function buildSocial(list) {
   return ul;
 }
 
+/** Copy of an authored paragraph with `{year}` replaced, keeping inline links and emphasis. */
+function legalCopy(p) {
+  const copy = createTag('p', { class: 'footer-legal-copy' });
+  copy.append(...p.cloneNode(true).childNodes);
+  const walker = document.createTreeWalker(copy, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    node.textContent = node.textContent.replace('{year}', new Date().getFullYear());
+  }
+  copy.querySelectorAll('a').forEach((a) => a.setAttribute('href', authoredHref(a)));
+  return copy;
+}
+
+/** Plain list of authored links. */
+function linkList(list, cls, label) {
+  const ul = createTag('ul', { class: cls, 'aria-label': label });
+  list.querySelectorAll('a').forEach((a) => ul.append(createTag('li', {}, createTag('a', { href: authoredHref(a) }, a.textContent.trim()))));
+  return ul;
+}
+
+/**
+ * `footer-layout: legal`: logo + link row, copyright/legal paragraphs, stacked legal links.
+ * Section 1: brand link (optional, its text is the wordmark) and a list of links.
+ * Section 2: copyright and legal paragraphs (`{year}` is replaced).
+ * Section 3: legal links; a list of market links becomes the market switcher and a list of
+ * social profile links becomes icons.
+ * @param {Element} block
+ * @param {HTMLElement[]} sections
+ */
+function decorateLegal(block, sections) {
+  const [rowSec, copySec, ...restSecs] = sections;
+  const labels = sections.reduce((all, sec) => ({ ...all, ...readLabels(sec) }), {});
+  const inner = createTag('div', { class: 'footer-inner' });
+
+  /* logo + link row */
+  const row = createTag('div', { class: 'footer-legal-row' });
+  const brandLink = rowSec?.querySelector(':scope > p a, :scope > h2 a, :scope > h3 a');
+  const brand = createTag(brandLink ? 'a' : 'p', { class: 'footer-legal-brand' });
+  if (brandLink) brand.setAttribute('href', authoredHref(brandLink));
+  brand.innerHTML = LOGO_MARK;
+  brand.append(createTag('span', {}, brandLink?.textContent.trim() || 'Frescopa'));
+  row.append(brand);
+  const rowList = rowSec?.querySelector('ul');
+  if (rowList) {
+    const nav = createTag('nav', { 'aria-label': labels['footer-nav'] || 'Footer' });
+    nav.append(linkList(rowList, 'footer-legal-links'));
+    row.append(nav);
+  }
+  inner.append(row);
+
+  /* copyright + legal paragraphs */
+  const copy = createTag('div', { class: 'footer-legal-text' });
+  copySec?.querySelectorAll(':scope > p').forEach((p) => copy.append(legalCopy(p)));
+  if (copy.children.length) inner.append(copy);
+
+  /* stacked legal links, market switcher, social icons */
+  const stacks = [];
+  const extras = [];
+  restSecs.flatMap((sec) => [...sec.querySelectorAll('ul')]).forEach((list) => {
+    const links = [...list.querySelectorAll('a')];
+    if (!links.length) return;
+    if (links.every(isMarketLink)) {
+      extras.push(buildMarketSwitcher(list, labels, 'footer-market'));
+    } else if (links.every(isSocialLink)) {
+      extras.push(buildSocial(list));
+    } else {
+      stacks.push(linkList(list, 'footer-legal-stack', labels['legal-nav'] || 'Legal'));
+    }
+  });
+  const bottom = createTag('div', { class: 'footer-legal-bottom' }, [...stacks, ...extras]);
+  if (bottom.children.length) inner.append(bottom);
+
+  block.classList.add('surface-ink');
+  block.append(inner);
+}
+
 /**
  * loads and decorates the footer
  * @param {Element} block The footer block element
  */
 export default async function decorate(block) {
   const sections = await fetchChrome('footer');
+
+  /* optional layout from page/site metadata, e.g. `footer-layout: legal` */
+  const layout = getMetadata('footer-layout').trim().toLowerCase();
+  if (layout) block.classList.add(`footer-layout-${layout}`);
+  if (layout === 'legal') {
+    block.textContent = '';
+    decorateLegal(block, sections);
+    return;
+  }
+
   const [introSec, colsSec, bottomSec] = sections;
   const labels = readLabels(introSec);
   block.textContent = '';

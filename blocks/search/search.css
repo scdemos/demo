@@ -86,7 +86,8 @@
 }
 
 .search .search-filters-toggle:focus-visible {
-  outline: var(--focus-ring);
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
 }
 
 .search .search-filters-toggle::after {
@@ -240,7 +241,8 @@
 }
 
 .search .search-result.is-card:has(:focus-visible) {
-  outline: var(--focus-ring);
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
 }
 
 .search .search-result.is-card .search-result-strip {

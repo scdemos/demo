@@ -1615,3 +1615,76 @@ body.cloneit-app {
 .cloneit-canvas[data-step="3"] .result-summary > li {
   margin-bottom: 0;
 }
+
+/* AI handoff after a clone */
+.ai-handoff {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--accent-dim);
+}
+
+.ai-handoff-prompt {
+  margin: 8px 0 12px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: rgb(15 23 42 / 90%);
+  color: #e2e8f0;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+}
+
+.cloneit-unavailable {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgb(225 29 72 / 8%);
+  color: var(--danger);
+  font-size: 0.875rem;
+}
+
+.ai-handoff-steps {
+  margin: 8px 0 4px;
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.ai-handoff-steps > :not(:first-child) {
+  margin-top: 4px;
+}
+
+.ai-handoff-note {
+  margin: 12px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.publish-failures {
+  margin-top: 12px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.publish-failures summary {
+  cursor: pointer;
+}
+
+.publish-failures ul {
+  margin: 6px 0 0;
+  padding-left: 1.25rem;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.cloneit-aside-head {
+  margin: 16px 0 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}

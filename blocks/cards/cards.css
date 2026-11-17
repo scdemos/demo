@@ -33,7 +33,7 @@
 }
 
 .cards > ul > li:has(:focus-visible) {
-  outline: var(--focus-ring);
+  outline: var(--focus-width) solid var(--color-focus);
   outline-offset: var(--focus-offset);
 }
 
@@ -747,5 +747,615 @@
 @media (width >= 900px) {
   .cards.tiers > ul {
     grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+}
+
+/* ==========================================================================
+   Promo variant: solid brand tiles, text left and image right.
+   Tiles alternate flame / aurora; modifier `ink` makes every tile ink,
+   `wide` (and `ink`) keeps one tile per row.
+   ========================================================================== */
+
+.cards.promo {
+  --promo-1: var(--flame-600);
+  --promo-2: var(--aurora-600);
+}
+
+.cards.promo > ul {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.cards.promo > ul > li {
+  /* white text on a fixed brand tile, in light and dark mode */
+  --color-text: var(--white);
+  --color-text-strong: var(--white);
+  --color-text-muted: var(--white);
+  --color-accent-text: var(--white);
+  --color-accent-fill: var(--white);
+  --color-on-accent: var(--promo-bg, var(--promo-1));
+  --color-focus: var(--white);
+
+  flex-direction: row;
+  min-height: 12.5rem;
+  border-color: var(--promo-border, transparent);
+  background: var(--promo-bg, var(--promo-1));
+}
+
+/* the white focus ring sits inside the tile */
+.cards.promo > ul > li:has(:focus-visible) {
+  outline-offset: calc((var(--focus-width) + var(--focus-offset)) * -1);
+}
+
+.cards.promo > ul > li:nth-child(2n) {
+  --promo-bg: var(--promo-2);
+}
+
+.cards.promo.ink > ul > li {
+  --promo-bg: var(--ink-900);
+  --promo-border: var(--color-border);
+}
+
+.cards.promo > ul > li:hover {
+  border-color: var(--promo-border, transparent);
+}
+
+.cards.promo .cards-card-link {
+  flex-direction: row;
+}
+
+.cards.promo .cards-card-image {
+  flex: 0 0 35%;
+  order: 2;
+}
+
+.cards.promo .cards-card-image img {
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.cards.promo .cards-card-body {
+  justify-content: center;
+  padding: var(--gap-m);
+}
+
+.cards.promo .cards-card-body :is(h2, h3, h4) {
+  font-size: var(--step-3);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-snug);
+}
+
+.cards.promo .cards-card-body > p:last-child:has(a) {
+  margin-top: var(--gap-s);
+  padding-top: 0;
+}
+
+@media (width >= 900px) {
+  .cards.promo > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cards.promo:is(.ink, .wide) > ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cards.promo .cards-card-body {
+    padding: var(--gap-l);
+  }
+
+  .cards.promo:is(.ink, .wide) .cards-card-image {
+    flex-basis: 34%;
+    max-height: 18rem;
+  }
+
+  .cards.promo:is(.ink, .wide) .cards-card-body {
+    padding: var(--gap-xl);
+  }
+}
+
+/* ==========================================================================
+   Panel variant: one raised panel, cells split by hairlines.
+   Modifiers: cols-2, cols-4 (desktop columns), emphasis (contact cards).
+   ========================================================================== */
+
+.cards.panel > ul {
+  gap: 0;
+  overflow: hidden;
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-2);
+}
+
+/* hairlines on the right and bottom of each cell; the panel clips the outer ones */
+.cards.panel > ul > li,
+.cards.panel > ul > li:hover {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: 1px 0 0 var(--color-border), 0 1px 0 var(--color-border);
+  transform: none;
+}
+
+.cards.panel > ul > li:has(:focus-visible) {
+  z-index: 1;
+  outline-offset: calc(var(--focus-width) * -1);
+}
+
+.cards.panel:not(.emphasis) > ul > li.cards-card-linked:hover {
+  background: var(--color-surface-sunken);
+}
+
+.cards.panel .cards-card-image {
+  margin: var(--gap-m) var(--gap-m) 0;
+}
+
+.cards.panel .cards-card-image img {
+  aspect-ratio: 2 / 1;
+}
+
+.cards.panel .cards-card-body {
+  padding: var(--gap-m);
+}
+
+.cards.panel .cards-card-eyebrow {
+  color: var(--color-text-muted);
+}
+
+.cards.panel .cards-card-body p:not(.cards-card-eyebrow) {
+  color: var(--color-text);
+  font-size: var(--step-0);
+}
+
+.cards.panel.emphasis .cards-card-body :is(h2, h3, h4) {
+  font-size: var(--step-3);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--tracking-snug);
+}
+
+/* contact cards hold several links: none of them stretches over the whole cell */
+.cards.panel.emphasis .cards-card-body a.cards-card-primary {
+  position: relative;
+}
+
+.cards.panel.emphasis .cards-card-body a.cards-card-primary::after {
+  content: none;
+}
+
+.cards.panel.emphasis .cards-card-body > p:last-child:has(a) {
+  margin-top: var(--gap-xs);
+  padding-top: 0;
+}
+
+@media (width >= 600px) {
+  .cards.panel > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 900px) {
+  .cards.panel > ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cards.panel.cols-2 > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cards.panel.cols-4 > ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .cards.panel .cards-card-image {
+    margin: var(--gap-l) var(--gap-l) 0;
+  }
+
+  .cards.panel .cards-card-body {
+    padding: var(--gap-l);
+  }
+
+  .cards.panel .cards-card-text-only .cards-card-body {
+    padding: var(--gap-xl) var(--gap-l);
+  }
+}
+
+/* ==========================================================================
+   Text variant: text-only tiles that end in an arrow link
+   ========================================================================== */
+
+.cards.text .cards-card-body {
+  padding: var(--gap-m);
+}
+
+.cards.text .cards-card-body :is(h2, h3, h4) {
+  font-size: var(--step-3);
+  letter-spacing: var(--tracking-snug);
+}
+
+.cards.text .cards-card-body p {
+  font-size: var(--step-0);
+}
+
+@media (width >= 900px) {
+  .cards.text > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cards.text .cards-card-body {
+    padding: var(--gap-l);
+  }
+}
+
+/* linked titles read as titles, not as accent links */
+:is(.cards.promo, .cards.panel, .cards.text, .cards.list) .cards-card-body :is(h2, h3, h4) a:any-link:not(.button) {
+  color: inherit;
+  font-weight: inherit;
+}
+
+/* "Learn more" links in promo, panel and text cards get a circled arrow */
+:is(.cards.promo, .cards.panel:not(.emphasis), .cards.text) .cards-card-body > p:last-child > a:any-link:only-child {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-2xs);
+  color: var(--color-text-strong);
+  font-weight: var(--weight-bold);
+}
+
+:is(.cards.promo, .cards.panel:not(.emphasis), .cards.text) .cards-card-body > p:last-child > a:any-link:only-child::before {
+  content: '→';
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 1.75em;
+  height: 1.75em;
+  border: 1.5px solid currentcolor;
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-text);
+  font-size: 0.8em;
+  line-height: 1;
+  transition:
+    background-color var(--duration-2) var(--ease-out),
+    border-color var(--duration-2) var(--ease-out),
+    color var(--duration-2) var(--ease-out);
+}
+
+:is(.cards.promo, .cards.panel:not(.emphasis), .cards.text) > ul > li:hover .cards-card-body > p:last-child > a:any-link:only-child::before {
+  border-color: var(--color-accent-fill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+}
+
+/* ==========================================================================
+   List variant: rows with date, linked title, byline and a thumbnail on the right.
+   `switchable` adds a grid/list toggle (built in cards.js).
+   ========================================================================== */
+
+.cards.list > ul {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border-top: var(--border);
+}
+
+.cards.list > ul > li,
+.cards.list > ul > li:hover {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--gap-m);
+  padding: var(--gap-m) 0;
+  border: 0;
+  border-bottom: var(--border);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.cards.list .cards-card-link {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--gap-m);
+}
+
+.cards.list .cards-card-image {
+  flex: 0 0 5.5rem;
+  order: 2;
+  border-radius: var(--radius-s);
+}
+
+.cards.list .cards-card-image img {
+  aspect-ratio: 1;
+}
+
+.cards.list .cards-card-body,
+.cards.list .cards-card-text-only .cards-card-body {
+  padding: 0;
+}
+
+.cards.list .cards-card-eyebrow {
+  color: var(--color-text-muted);
+}
+
+.cards.list .cards-card-body :is(h2, h3, h4) {
+  font-size: var(--step-1);
+  line-height: var(--leading-snug);
+  transition: color var(--duration-2) var(--ease-out);
+}
+
+.cards.list > ul > li:hover .cards-card-body :is(h2, h3, h4) {
+  color: var(--color-accent-text);
+}
+
+/* byline: a paragraph with a headshot */
+.cards.list .cards-card-body p:has(picture) {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2xs);
+  line-height: 1.4;
+}
+
+.cards.list .cards-card-body p picture {
+  flex: none;
+  line-height: 0;
+}
+
+.cards.list .cards-card-body p picture img {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+}
+
+/* grid view: stacked cards, image on top */
+.cards.list.view-grid > ul {
+  gap: var(--gap-xl) var(--grid-gap);
+  border-top: 0;
+}
+
+.cards.list.view-grid > ul > li,
+.cards.list.view-grid > ul > li:hover,
+.cards.list.view-grid .cards-card-link {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--gap-s);
+}
+
+.cards.list.view-grid > ul > li,
+.cards.list.view-grid > ul > li:hover {
+  padding: 0;
+  border-bottom: 0;
+}
+
+.cards.list.view-grid .cards-card-image {
+  flex-basis: auto;
+  order: 0;
+  border-radius: var(--radius-m);
+}
+
+.cards.list.view-grid .cards-card-image img {
+  aspect-ratio: 4 / 3;
+}
+
+.cards.switchable .cards-view-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gap-3xs);
+  margin-bottom: var(--gap-m);
+}
+
+.cards.switchable .cards-view-toggle button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0;
+  padding: 0;
+  border: var(--border);
+  border-radius: var(--radius-s);
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-1) var(--ease-out),
+    color var(--duration-1) var(--ease-out);
+}
+
+.cards.switchable .cards-view-toggle button:hover {
+  color: var(--color-text-strong);
+}
+
+.cards.switchable .cards-view-toggle button:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.cards.switchable .cards-view-toggle button[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+
+.cards.switchable .cards-view-toggle button::before {
+  content: '';
+  width: 1rem;
+  height: 1rem;
+  background:
+    linear-gradient(currentcolor, currentcolor) 0 0 / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 100% 0 / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 100% / 7px 7px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 100% 100% / 7px 7px no-repeat;
+}
+
+.cards.switchable .cards-view-toggle button[data-view='list']::before {
+  height: 0.875rem;
+  background:
+    linear-gradient(currentcolor, currentcolor) 0 0 / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 50% / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) 0 100% / 100% 2px no-repeat;
+}
+
+@media (width >= 600px) {
+  .cards.list > ul > li,
+  .cards.list > ul > li:hover,
+  .cards.list .cards-card-link {
+    gap: var(--gap-l);
+  }
+
+  .cards.list .cards-card-image {
+    flex-basis: 12rem;
+    border-radius: var(--radius-m);
+  }
+
+  .cards.list .cards-card-image img {
+    aspect-ratio: 4 / 3;
+  }
+
+  .cards.list .cards-card-body :is(h2, h3, h4) {
+    font-size: var(--step-2);
+  }
+
+  .cards.list.view-grid > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width >= 900px) {
+  .cards.list > ul > li,
+  .cards.list > ul > li:hover {
+    padding-block: var(--gap-l);
+  }
+
+  .cards.list .cards-card-image {
+    flex-basis: 16rem;
+  }
+
+  .cards.list.view-grid > ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cards.list.view-grid .cards-card-body :is(h2, h3, h4) {
+    font-size: var(--step-1);
+  }
+}
+
+/* ==========================================================================
+   Stats variant: big figure (heading) over a short label
+   ========================================================================== */
+
+.cards.stats > ul {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-l) var(--grid-gap);
+}
+
+.cards.stats > ul > li,
+.cards.stats > ul > li:hover {
+  padding: var(--gap-s) 0 0;
+  border: 0;
+  border-top: 3px solid var(--color-accent-text);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.cards.stats .cards-card-body,
+.cards.stats .cards-card-text-only .cards-card-body {
+  padding: 0;
+}
+
+.cards.stats .cards-card-body :is(h2, h3, h4) {
+  color: var(--color-accent-text);
+  font-size: var(--step-5);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.cards.stats .cards-card-body p {
+  color: var(--color-text);
+  font-size: var(--step-0);
+  line-height: 1.4;
+}
+
+@media (width >= 900px) {
+  .cards.stats > ul {
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  }
+}
+
+/* ==========================================================================
+   Logos variant: borderless logo wall, greyscale until hover
+   ========================================================================== */
+
+.cards.logos > ul {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-s) var(--grid-gap);
+  align-items: center;
+}
+
+.cards.logos > ul > li,
+.cards.logos > ul > li:hover {
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap-xs);
+  border: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+.cards.logos .cards-card-image {
+  border-radius: 0;
+  background: none;
+}
+
+.cards.logos .cards-card-image img,
+.cards.logos > ul > li:hover .cards-card-image img {
+  width: auto;
+  max-width: 100%;
+  height: 3rem;
+  aspect-ratio: auto;
+  object-fit: contain;
+  transform: none;
+}
+
+.cards.logos .cards-card-image img {
+  filter: grayscale(1);
+  opacity: 0.7;
+  mix-blend-mode: multiply;
+  transition:
+    filter var(--duration-2) var(--ease-out),
+    opacity var(--duration-2) var(--ease-out);
+}
+
+.cards.logos > ul > li:hover .cards-card-image img {
+  filter: none;
+  opacity: 1;
+}
+
+/* dark surfaces (same selectors as the dark token mapping): light monochrome logos */
+:is([data-theme='dark'], main > .section.ink, main > .section.band, .surface-ink) .cards.logos .cards-card-image img,
+:is([data-theme='dark'], main > .section.ink, main > .section.band, .surface-ink) .cards.logos > ul > li:hover .cards-card-image img {
+  filter: grayscale(1) invert(1);
+  mix-blend-mode: screen;
+}
+
+:is([data-theme='dark'], main > .section.ink, main > .section.band, .surface-ink) .cards.logos > ul > li:hover .cards-card-image img {
+  opacity: 1;
+}
+
+@media (width >= 600px) {
+  .cards.logos > ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .cards.logos .cards-card-image img,
+  .cards.logos > ul > li:hover .cards-card-image img {
+    height: 4rem;
+  }
+}
+
+@media (width >= 900px) {
+  .cards.logos > ul {
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   }
 }

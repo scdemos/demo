@@ -13,7 +13,7 @@ async function wireAuth(links) {
   links.forEach((link) => { link.href = getLoginUrl(); });
   const session = await getSessionState();
   if (!session?.authenticated) return;
-  const label = getDefaultAuthLabel('logout');
+  const label = getMetadata('logout-label') || getDefaultAuthLabel('logout');
   links.forEach((link) => {
     link.href = getLogoutUrl();
     link.title = session.email ? `${label} (${session.email})` : label;
@@ -176,6 +176,49 @@ function trailingText(li) {
 
 const PROMO_ART = ['horizon', 'split', 'rings', 'aurora', 'dots'];
 
+/** Name of the `:rail-*:` icon authored on a nav item's own label (e.g. `rail-explore`), or ''. */
+function railIconName(li) {
+  const iconEl = li.querySelector(':scope > [class*="icon-rail-"], :scope > :not(ul, ol) [class*="icon-rail-"]');
+  const cls = [...(iconEl?.classList || [])].find((c) => c.startsWith('icon-rail-'));
+  return cls ? cls.slice('icon-'.length) : '';
+}
+
+/**
+ * Rail item icon: the authored `:rail-*:` SVG as a currentColor mask, else the label's initial.
+ * @param {string} name icon name without the `icon-` prefix
+ * @param {string} label
+ * @returns {HTMLSpanElement}
+ */
+function buildRailIcon(name, label) {
+  const span = createTag('span', { class: 'header-rail-icon', 'aria-hidden': 'true' });
+  if (name) {
+    span.classList.add('has-icon');
+    span.style.setProperty('--rail-icon', `url("${window.hlx.codeBasePath}/icons/${name}.svg")`);
+  } else {
+    span.textContent = (label || '').charAt(0);
+  }
+  return span;
+}
+
+/**
+ * Wide search field for the rail layout; submits `q` to the authored search link.
+ * @param {{label: string, href: string}} search
+ * @returns {HTMLFormElement}
+ */
+function buildRailSearch({ label, href }) {
+  const form = createTag('form', {
+    class: 'header-rail-search', role: 'search', action: href, method: 'get',
+  });
+  const input = createTag('input', {
+    type: 'search', name: 'q', placeholder: label, 'aria-label': label, autocomplete: 'off',
+  });
+  input.value = new URLSearchParams(window.location.search).get('q') || '';
+  const submit = createTag('button', { class: 'header-rail-search-submit', type: 'submit', 'aria-label': label });
+  submit.innerHTML = icon('search');
+  form.append(input, submit);
+  return form;
+}
+
 function parseNav(section) {
   const top = section?.querySelector('ul');
   if (!top) return [];
@@ -201,6 +244,7 @@ function parseNav(section) {
       links,
       promo,
       art: PROMO_ART[i % PROMO_ART.length],
+      railIcon: railIconName(li),
     };
   });
 }
@@ -256,6 +300,14 @@ export default async function decorate(block) {
   const items = parseNav(navSec);
   const primaryLabel = labels.primary || 'Primary';
 
+  /* optional layout from page/site metadata, e.g. `nav-layout: rail` */
+  const layout = getMetadata('nav-layout').trim().toLowerCase();
+  const rail = layout === 'rail';
+  if (layout) {
+    block.classList.add(`nav-layout-${layout}`);
+    document.body.classList.add(`nav-layout-${layout}`);
+  }
+
   block.textContent = '';
   const wrapper = createTag('div', { class: 'nav-wrapper' });
 
@@ -271,6 +323,20 @@ export default async function decorate(block) {
   if (labels.home) brand.setAttribute('aria-label', labels.home);
   brand.innerHTML = LOGO_MARK;
   brand.append(createTag('span', labels.home ? { 'aria-hidden': 'true' } : {}, brandLink?.textContent.trim() || 'Frescopa'));
+  if (rail) {
+    /* square brand mark above the rail: authored `:rail-mark:` icon, else the logo mark */
+    const tile = createTag('span', { class: 'header-rail-mark', 'aria-hidden': 'true' });
+    if (brandSec?.querySelector('.icon-rail-mark')) {
+      const img = createTag('img', {
+        src: `${window.hlx.codeBasePath}/icons/rail-mark.svg`, alt: '', width: 32, height: 32, loading: 'lazy',
+      });
+      img.addEventListener('error', () => { tile.innerHTML = LOGO_MARK; }, { once: true });
+      tile.append(img);
+    } else {
+      tile.innerHTML = LOGO_MARK;
+    }
+    brand.prepend(tile);
+  }
 
   /* desktop mega navigation */
   const nav = createTag('nav', { class: 'header-nav', 'aria-label': primaryLabel });
@@ -282,6 +348,7 @@ export default async function decorate(block) {
     });
     btn.textContent = item.label;
     btn.insertAdjacentHTML('beforeend', icon('chevron'));
+    if (rail) btn.prepend(buildRailIcon(item.railIcon, item.label));
     if (isActive(item)) btn.setAttribute('aria-current', 'true');
 
     const panel = createTag('div', { class: 'header-mega', id: `mega-${item.id}`, hidden: '' });
@@ -322,22 +389,26 @@ export default async function decorate(block) {
   const market = buildMarketSwitcher(toolsSec?.querySelector('ul'), labels, 'header-market');
   if (market) actions.append(market);
 
-  let cta = null;
+  const ctas = [];
   let signIn = null;
+  let searchLink = null;
   const authLinks = [];
   toolsSec?.querySelectorAll('a').forEach((a) => {
     if (a.closest('ul')) return;
     const label = a.textContent.trim();
     if (a.closest('strong')) {
-      cta = createTag('a', { class: 'button primary header-cta', href: authoredHref(a) }, label);
+      ctas.push(createTag('a', { class: 'button primary header-cta', href: authoredHref(a) }, label));
     } else if (a.querySelector('.icon-search') || /search/i.test(`${a.getAttribute('href')} ${label}`)) {
       const search = createTag('a', { class: 'header-icon-btn header-search', href: authoredHref(a), 'aria-label': label });
       search.innerHTML = icon('search');
       actions.append(search);
+      searchLink = { label, href: authoredHref(a) };
     } else {
-      signIn = { label, href: authoredHref(a) };
+      signIn = { label: getMetadata('login-label') || label, href: authoredHref(a) };
     }
   });
+  /* default layout shows the last authored CTA; the rail shows all of them */
+  const shownCtas = rail ? ctas : ctas.slice(-1);
 
   const themeBtn = createTag('button', { class: 'header-icon-btn header-theme', type: 'button' });
   themeBtn.innerHTML = `${icon('moon')}${icon('sun')}`;
@@ -362,7 +433,7 @@ export default async function decorate(block) {
     a.append(createTag('span', { class: 'header-signin-label' }, signIn.label));
     actions.append(a);
   }
-  if (cta) actions.append(cta);
+  shownCtas.forEach((c) => actions.append(c));
 
   const menuBtn = createTag('button', {
     class: 'header-icon-btn header-menu',
@@ -374,7 +445,9 @@ export default async function decorate(block) {
   menuBtn.innerHTML = `${icon('menu')}${icon('close')}`;
   actions.append(menuBtn);
 
-  inner.append(brand, nav, actions);
+  inner.append(brand, nav);
+  if (rail && searchLink) inner.append(buildRailSearch(searchLink));
+  inner.append(actions);
   bar.append(inner);
   wrapper.append(bar);
 
@@ -395,7 +468,10 @@ export default async function decorate(block) {
     drawerNav.append(details);
   });
   const drawerActions = createTag('div', { class: 'header-drawer-actions' });
-  if (cta) drawerActions.append(createTag('a', { class: 'button primary', href: cta.getAttribute('href') }, cta.textContent));
+  shownCtas.forEach((c, i) => {
+    const variant = i === shownCtas.length - 1 ? 'primary' : 'secondary';
+    drawerActions.append(createTag('a', { class: `button ${variant}`, href: c.getAttribute('href') }, c.textContent));
+  });
   if (signIn) {
     const a = createTag('a', { class: 'button secondary', href: signIn.href }, signIn.label);
     authLinks.push(a);
@@ -453,7 +529,7 @@ export default async function decorate(block) {
   };
   menuBtn.addEventListener('click', () => setDrawer(menuBtn.getAttribute('aria-expanded') !== 'true'));
   closeOnEscape(drawer, () => setDrawer(false), menuBtn);
-  window.matchMedia('(width >= 1200px)').addEventListener('change', (e) => {
+  window.matchMedia(rail ? '(width >= 900px)' : '(width >= 1200px)').addEventListener('change', (e) => {
     if (e.matches && !drawer.hidden) setDrawer(false);
   });
 }

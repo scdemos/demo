@@ -1,0 +1,8 @@
+---
+description: Make this CloneIt demo look like the customer. Give the customer's website, e.g. https://www.acme.com/institutional/us/en
+argument-hint: <customer website URL>
+---
+
+Use the `customer-demo` skill (`.skills/customer-demo/SKILL.md`) to make the CloneIt demo look like the customer: $ARGUMENTS
+
+Run the skill end-to-end on the demo whose repo this is (`git remote get-url origin` → `scdemos/<slug>`; `slug=` in the prompt overrides it). If `scdemos/<slug>` doesn't exist yet, send the SC to CloneIt (Customer demo, own repo) once and wait; don't provision it yourself. Do everything that needs the SC up front (phase 0): one da.live sign-in in the integrated browser, MCP sign-ins, and the one-time approval to commit to `scdemos/<slug>`; then run unattended. Any change to the base `scdemos/demo` is offered as a PR. Follow the fidelity contract (F1–F5): the customer's real pages, real content, same header and layout, checked side by side on http://localhost:3000 until the gates pass. The migration is done only when `.skills/customer-demo/scripts/parity.mjs` exits 0 (every page revisited, fixed and re-tested against the original) and then `lighthouse.mjs` exits 0 (100 on mobile and desktop for Performance, Accessibility and Best Practices; SEO excluded); never report it complete before that.

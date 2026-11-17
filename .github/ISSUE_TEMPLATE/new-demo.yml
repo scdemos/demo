@@ -1,0 +1,22 @@
+name: New customer demo
+description: Provision github.com/scdemos/<slug> from the scdemos/demo base (usually opened automatically by the customer-demo skill)
+title: "new-demo: "
+labels: ["demo-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Put the repo slug after `new-demo:` in the title, e.g. `new-demo: acmeinvest`. Use lowercase letters, numbers and hyphens.
+        Provisioning starts automatically. Watch this issue for the "provisioned ✅" comment.
+  - type: input
+    id: source
+    attributes:
+      label: Customer site URL
+      placeholder: https://www.acme.com/institutional/us/en
+    validations:
+      required: true
+  - type: input
+    id: customer
+    attributes:
+      label: Customer name
+      placeholder: Acme Investments

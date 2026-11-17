@@ -93,7 +93,8 @@
 }
 
 .quiz .quiz-option:has(input:focus-visible) {
-  outline: var(--focus-ring);
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
 }
 
 .quiz .quiz-option input {

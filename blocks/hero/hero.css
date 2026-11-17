@@ -432,3 +432,116 @@ html[data-theme='dark'] .hero.home .hero-title em {
     transform: translateY(12px);
   }
 }
+
+/* ==========================================================================
+   Banner: full-bleed photo behind a dark scrim, light text on top.
+   Always dark (semantic tokens remapped like ink surfaces); the photo is out
+   of flow, so the banner height comes from the text and a fixed minimum.
+   ========================================================================== */
+main > .section > .hero-wrapper:has(> .hero.banner) {
+  width: 100%;
+}
+
+.hero.banner {
+  --hero-bg: var(--ink-950);
+  --color-bg: var(--ink-950);
+  --color-text: var(--stone-100);
+  --color-text-strong: var(--white);
+  --color-text-muted: #b4b6c6;
+  --color-border: rgb(255 255 255 / 25%);
+  --color-border-strong: rgb(255 255 255 / 55%);
+  --color-accent-fill: var(--flame-400);
+  --color-accent-fill-hover: #ff9466;
+  --color-accent-glow: rgb(255 122 69 / 35%);
+  --color-on-accent: var(--ink-1000);
+  --color-accent-text: var(--flame-400);
+  --color-accent-hover: #ff9466;
+  --color-link: var(--flame-400);
+  --color-link-hover: #ff9466;
+  --color-focus: var(--volt-400);
+  --focus-ring: 0 0 0 var(--focus-offset) var(--color-bg), 0 0 0 calc(var(--focus-offset) + var(--focus-width)) var(--color-focus);
+
+  display: grid;
+  align-items: center;
+  min-height: 26.25rem;
+  padding-block: 0;
+  border-image: none;
+  color-scheme: dark;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.hero.banner .hero-inner {
+  display: block;
+  width: min(100% - 2 * var(--gutter), var(--container));
+  margin-inline: auto;
+  padding-block: var(--gap-2xl);
+}
+
+.hero.banner .hero-content {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 40rem;
+}
+
+.hero.banner .hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.hero.banner .hero-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg,
+    color-mix(in srgb, var(--ink-1000) 85%, transparent) 0%,
+    color-mix(in srgb, var(--ink-1000) 60%, transparent) 100%);
+}
+
+.hero.banner .hero-art {
+  height: 100%;
+  border-radius: 0;
+  background: none;
+  animation: none;
+}
+
+.hero.banner .hero-art img {
+  aspect-ratio: auto;
+  max-height: none;
+}
+
+/* floating cards need a side column; the banner has none */
+.hero.banner .hero-floats {
+  display: none;
+}
+
+.hero.banner .hero-title {
+  color: var(--color-text-strong);
+}
+
+.hero.banner .lede {
+  color: var(--color-text);
+}
+
+@media (width >= 900px) {
+  .hero.banner {
+    min-height: 32rem;
+  }
+
+  .hero.banner .hero-inner {
+    padding-block: var(--gap-3xl);
+  }
+
+  .hero.banner .hero-media::after {
+    background: linear-gradient(90deg,
+      color-mix(in srgb, var(--ink-1000) 85%, transparent) 0%,
+      color-mix(in srgb, var(--ink-1000) 55%, transparent) 45%,
+      transparent 80%);
+  }
+}
+
+@media (width >= 1200px) {
+  .hero.banner {
+    min-height: 35rem;
+  }
+}

@@ -1,0 +1,166 @@
+# Self-service customer demo provisioning.
+#
+# An issue titled "new-demo: <slug>" (opened by the customer-demo skill or by hand) creates
+# github.com/scdemos/<slug>, seeds it with this repo's code, adds it to the AEM Code Sync
+# installation, grants the requester write access, and comments the links back. The issue
+# list doubles as the audit log for every customer demo.
+#
+# One-time setup (org owner):
+#   secrets.DEMO_PROVISION_TOKEN: classic PAT of an scdemos org owner (or bot owner account)
+#     with scopes: repo, admin:org. Classic is required to add repos to a GitHub App install.
+#   vars.DEMO_BASE_REF (optional): branch of scdemos/demo to seed from (default: main).
+name: Provision customer demo
+
+on:
+  issues:
+    types: [opened, reopened]
+
+concurrency:
+  group: provision-demo-${{ github.event.issue.number }}
+
+jobs:
+  provision:
+    if: startsWith(github.event.issue.title, 'new-demo:')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Validate request
+        id: req
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DEMO_PROVISION_TOKEN || github.token }}
+          script: |
+            const { issue } = context.payload;
+            const fail = async (msg) => {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: issue.number, body: `⛔ ${msg}` });
+              core.setFailed(msg);
+            };
+            if (process.env.HAS_TOKEN !== 'true') return fail('DEMO_PROVISION_TOKEN secret is not configured on scdemos/demo.');
+
+            const slug = issue.title.replace(/^new-demo:/, '').trim().split(/\s+/)[0].toLowerCase();
+            if (!/^[a-z0-9][a-z0-9-]{1,38}$/.test(slug) || ['demo', 'admin', 'api', 'config'].includes(slug)) {
+              return fail(`Invalid slug \`${slug}\`. Use 2-39 chars: lowercase letters, numbers, hyphens.`);
+            }
+
+            const requester = issue.user.login;
+            try {
+              await github.rest.orgs.checkMembershipForUser({ org: context.repo.owner, username: requester });
+            } catch {
+              return fail(`@${requester} is not a member of ${context.repo.owner}.`);
+            }
+
+            let exists = false;
+            try { await github.rest.repos.get({ owner: context.repo.owner, repo: slug }); exists = true; } catch { /* free */ }
+            if (exists) return fail(`Repo ${context.repo.owner}/${slug} already exists. Open a new issue with another slug.`);
+
+            const source = (issue.body || '').match(/https?:\/\/\S+/)?.[0] || '';
+            core.setOutput('slug', slug);
+            core.setOutput('requester', requester);
+            core.setOutput('source', source);
+        env:
+          HAS_TOKEN: ${{ secrets.DEMO_PROVISION_TOKEN != '' }}
+
+      - name: Create repository
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DEMO_PROVISION_TOKEN }}
+          script: |
+            const { slug, source } = process.env;
+            await github.rest.repos.createInOrg({
+              org: context.repo.owner,
+              name: slug,
+              visibility: 'public',
+              auto_init: false,
+              description: `Customer demo built from ${context.repo.owner}/${context.repo.repo}${source ? ` (source: ${source})` : ''}`,
+              homepage: `https://main--${slug}--${context.repo.owner}.aem.page/`,
+            });
+        env:
+          slug: ${{ steps.req.outputs.slug }}
+          source: ${{ steps.req.outputs.source }}
+
+      - name: Add to AEM Code Sync (before seeding, so the first push syncs everything) + grant access
+        id: finish
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DEMO_PROVISION_TOKEN }}
+          script: |
+            const { slug, requester } = process.env;
+            const org = context.repo.owner;
+            const { data: repo } = await github.rest.repos.get({ owner: org, repo: slug });
+
+            let codeSync = 'manual';
+            try {
+              const installs = await github.paginate(github.rest.orgs.listAppInstallations, { org, per_page: 100 });
+              const app = installs.find((i) => i.app_slug === 'aem-code-sync');
+              if (app && app.repository_selection === 'all') codeSync = 'all';
+              else if (app) {
+                await github.request('PUT /user/installations/{installation_id}/repositories/{repository_id}', {
+                  installation_id: app.id, repository_id: repo.id,
+                });
+                codeSync = 'added';
+              }
+            } catch (e) {
+              core.warning(`Could not add repo to AEM Code Sync: ${e.message}`);
+            }
+
+            await github.rest.repos.addCollaborator({ owner: org, repo: slug, username: requester, permission: 'maintain' });
+            core.setOutput('codesync', codeSync);
+        env:
+          slug: ${{ steps.req.outputs.slug }}
+          requester: ${{ steps.req.outputs.requester }}
+
+      - name: Checkout base
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ vars.DEMO_BASE_REF || 'main' }}
+          fetch-depth: 1
+          path: base
+
+      - name: Seed code
+        working-directory: base
+        env:
+          SLUG: ${{ steps.req.outputs.slug }}
+          OWNER: ${{ github.repository_owner }}
+          TOKEN: ${{ secrets.DEMO_PROVISION_TOKEN }}
+        run: |
+          rm -rf .git .github/workflows/provision-demo.yaml .github/ISSUE_TEMPLATE/new-demo.yml
+          git init -q -b main
+          git config user.name "scdemos-provisioner"
+          git config user.email "scdemos-provisioner@users.noreply.github.com"
+          git add -A
+          git commit -q -m "chore: seed from ${GITHUB_REPOSITORY}@${{ vars.DEMO_BASE_REF || 'main' }}"
+          git push -q "https://x-access-token:${TOKEN}@github.com/${OWNER}/${SLUG}.git" main
+
+      - name: Report
+        if: always() && steps.req.outputs.slug
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.DEMO_PROVISION_TOKEN || github.token }}
+          script: |
+            const { slug, codesync, outcome } = process.env;
+            const org = context.repo.owner;
+            const issue_number = context.payload.issue.number;
+            if (outcome !== 'success') {
+              const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+              await github.rest.issues.createComment({ ...context.repo, issue_number, body: `⛔ Provisioning failed. See ${run}` });
+              return;
+            }
+            const codeSyncLine = codesync === 'manual'
+              ? `⚠️ AEM Code Sync: add the repo at https://github.com/apps/aem-code-sync/installations/new`
+              : `✅ AEM Code Sync: ${codesync === 'all' ? 'covered by org-wide install' : 'repo added to installation'}`;
+            const body = [
+              'provisioned ✅',
+              '',
+              `- Repo: https://github.com/${org}/${slug}`,
+              `- Preview: https://main--${slug}--${org}.aem.page/`,
+              `- DA: https://da.live/#/${org}/${slug}`,
+              `- ${codeSyncLine}`,
+            ].join('\n');
+            await github.rest.issues.createComment({ ...context.repo, issue_number, body });
+            await github.rest.issues.addLabels({ ...context.repo, issue_number, labels: ['demo-provisioned'] }).catch(() => {});
+        env:
+          slug: ${{ steps.req.outputs.slug }}
+          codesync: ${{ steps.finish.outputs.codesync }}
+          outcome: ${{ steps.finish.outcome }}

@@ -58,6 +58,11 @@ const ANONYMOUS_SESSION = {
 let sessionPromise;
 
 export function getSessionState() {
+  // The Access cookie belongs to the auth origin; elsewhere (localhost, aem.page/live) the
+  // browser won't send it cross-site, so asking would only log a cookie issue.
+  if (window.location.origin !== AUTH_ORIGIN) {
+    return Promise.resolve({ ...ANONYMOUS_SESSION, path: AUTH_PATHS.session });
+  }
   sessionPromise ??= fetchSessionState();
   return sessionPromise;
 }

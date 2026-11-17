@@ -1,0 +1,251 @@
+/* Site notices: entry gate (modal), cookie consent banner and its settings dialog.
+   Loaded only when the `site-gate` or `consent` metadata is set. */
+.site-notice {
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--step-n1);
+  line-height: var(--leading-body);
+}
+
+.site-notice .site-notice-content > :last-child {
+  margin-bottom: 0;
+}
+
+/* action links move into the actions row, leaving their paragraphs or button group empty */
+.site-notice .site-notice-content > :is(p, .button-group):empty {
+  display: none;
+}
+
+.site-notice .site-notice-content a:any-link {
+  color: var(--color-link);
+  font-weight: var(--weight-semibold);
+}
+
+.site-notice .site-notice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+}
+
+/* accept / reject / agree / save = filled pill; settings / cancel / close = outline pill */
+.site-notice .site-notice-btn {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.6em 1.4em;
+  border: 1.5px solid var(--color-accent-fill);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font: inherit;
+  font-weight: var(--weight-bold);
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-1) var(--ease-out),
+    border-color var(--duration-1) var(--ease-out),
+    color var(--duration-1) var(--ease-out);
+}
+
+.site-notice .site-notice-btn:hover {
+  border-color: var(--color-accent-fill-hover);
+  background: var(--color-accent-fill-hover);
+}
+
+.site-notice .site-notice-settings,
+.site-notice .site-notice-cancel {
+  border-color: var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-strong);
+}
+
+.site-notice .site-notice-settings:hover,
+.site-notice .site-notice-cancel:hover {
+  border-color: var(--color-text-strong);
+  background: transparent;
+}
+
+/* ---------- consent banner: floating card pinned to the bottom ---------- */
+.consent-banner {
+  position: fixed;
+  inset: auto var(--gap-s) var(--gap-s);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-m);
+  max-width: var(--container-narrow);
+  max-height: calc(100dvh - 2 * var(--gap-s));
+  margin-inline: auto;
+  padding: var(--gap-m);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+  overflow-y: auto;
+}
+
+.consent-banner .site-notice-content :is(h2, h3) {
+  margin-bottom: var(--gap-2xs);
+  font-size: var(--step-1);
+}
+
+.consent-banner .site-notice-content p {
+  margin: 0 0 var(--gap-2xs);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .consent-banner {
+    animation: site-notice-in var(--duration-3) var(--ease-out);
+  }
+}
+
+@keyframes site-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+
+/* ---------- dialogs: entry gate and cookie settings ---------- */
+dialog.site-notice {
+  width: min(46rem, 100% - 2 * var(--gap-s));
+  max-width: none;
+  max-height: calc(100dvh - 2 * var(--gap-l));
+  padding: 0;
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+
+dialog.site-notice[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog.site-notice::backdrop {
+  background: color-mix(in srgb, var(--ink-1000, #07060d) 55%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+dialog.site-notice .site-notice-actions {
+  flex: none;
+  justify-content: flex-end;
+  padding: var(--gap-m);
+  border-top: var(--border);
+  background: var(--color-surface-sunken);
+}
+
+dialog.site-gate .site-notice-content {
+  min-height: 0;
+  padding: var(--gap-l) var(--gap-m);
+  overflow-y: auto;
+  font-size: var(--step-0);
+}
+
+dialog.site-gate .site-notice-content :is(h1, h2, h3) {
+  font-size: var(--step-3);
+}
+
+dialog.site-gate .site-notice-actions .site-notice-btn {
+  flex-basis: 12rem;
+}
+
+dialog.consent-settings h2 {
+  flex: none;
+  margin: 0;
+  padding: var(--gap-l) var(--gap-m) 0;
+  font-size: var(--step-3);
+}
+
+dialog.consent-settings .consent-categories {
+  min-height: 0;
+  margin: 0;
+  padding: var(--gap-xs) var(--gap-m) var(--gap-m);
+  overflow-y: auto;
+  list-style: none;
+}
+
+dialog.consent-settings .consent-categories li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-xs);
+  padding: var(--gap-s) 0;
+  border-bottom: var(--border);
+}
+
+dialog.consent-settings .consent-categories li:last-child {
+  border-bottom: 0;
+}
+
+dialog.consent-settings .consent-categories input {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.2em 0 0;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+dialog.consent-settings .consent-categories input:disabled {
+  cursor: not-allowed;
+}
+
+dialog.consent-settings .consent-categories label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-3xs);
+  cursor: pointer;
+}
+
+dialog.consent-settings .consent-categories strong {
+  color: var(--color-text-strong);
+}
+
+dialog.consent-settings .consent-categories span {
+  color: var(--color-text-muted);
+}
+
+@media (width >= 600px) {
+  .site-notice .site-notice-btn {
+    flex: 0 0 auto;
+  }
+
+  .consent-banner {
+    padding: var(--gap-m) var(--gap-l);
+  }
+
+  dialog.site-notice .site-notice-actions {
+    padding: var(--gap-m) var(--gap-xl);
+  }
+
+  dialog.site-gate .site-notice-content {
+    padding: var(--gap-xl);
+  }
+
+  dialog.consent-settings h2 {
+    padding: var(--gap-xl) var(--gap-xl) 0;
+  }
+
+  dialog.consent-settings .consent-categories {
+    padding-inline: var(--gap-xl);
+  }
+}
+
+@media (width >= 900px) {
+  .consent-banner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-l);
+  }
+
+  .consent-banner .site-notice-actions {
+    flex: none;
+    flex-wrap: nowrap;
+  }
+}

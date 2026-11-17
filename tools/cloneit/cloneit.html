@@ -3,7 +3,7 @@
   <head>
     <title>Clone IT</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Clone a template site to create a new repoless AEM site with DA content">
+    <meta name="description" content="Create a demo with its own repo and DA folder from the scdemos demo site">
     <meta name="theme-color" content="#f1f5f9"/>
     <base href="/tools/">
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -34,19 +34,27 @@
         <div class="cloneit-aside-meta" aria-label="Target org">
           <span class="cloneit-pill">org: scdemos</span>
         </div>
-        <p class="cloneit-aside-lede">Spin up a new <strong>repoless</strong> AEM site from a <strong>template</strong> you pick—content, config, and index in one run.</p>
+        <p class="cloneit-aside-lede">Create your own demo site from the <strong>scdemos demo</strong> in a few minutes. It's yours to show as is, or to make look like a customer with AI.</p>
+        <p class="cloneit-aside-head">You get</p>
         <ul class="cloneit-aside-facts">
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
-            DA content copy + AEM site config
+            <span><strong>GitHub repo</strong> <code>scdemos/&lt;site&gt;</code>, connected to AEM Code Sync, with you as admin</span>
           </li>
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
-            Same code as the selected template baseline
+            <span><strong>DA folder</strong> with the demo's pages, block library and authoring config</span>
           </li>
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
-            Query index when baseline has <code>query.yaml</code>
+            <span><strong>Live site</strong>: everything previewed and published, search index included</span>
+          </li>
+        </ul>
+        <p class="cloneit-aside-head">Next, optional</p>
+        <ul class="cloneit-aside-facts">
+          <li>
+            <span class="cloneit-aside-dot" aria-hidden="true"></span>
+            <span>Run the <code>customer-demo</code> AI skill to match a customer's brand, pages and content</span>
           </li>
         </ul>
       </aside>
@@ -91,19 +99,27 @@
           <section class="surface-card" id="config-card">
             <div class="surface-card-head">
               <span class="surface-eyebrow">Site identity</span>
-              <h2 class="card-title">Choose template and site name</h2>
+              <h2 class="card-title">Customer site and site name</h2>
               <p class="card-desc">
-                Content copy skips drafts, demo-docs, and locale roots
+                Every demo gets its own repo and DA folder, starting from the scdemos demo site (code and content). The site name is suggested from the customer site; change it if you like. CloneIt doesn't copy the customer's website: it's used for the ready-to-paste AI prompt you get at the end.
               </p>
             </div>
             <div class="card-content">
               <div class="cloneit-config-inline">
                 <div class="cloneit-config-field">
-                  <label for="baseline-select" class="cloneit-config-label">Template</label>
+                  <label for="customer-site-input" class="cloneit-config-label">Customer site</label>
                   <span class="cloneit-config-colon" aria-hidden="true">:</span>
-                  <select id="baseline-select" class="cloneit-baseline-select" disabled>
-                    <option value="">Loading templates…</option>
-                  </select>
+                  <div class="input-wrap cloneit-site-input-wrap">
+                    <input
+                      type="url"
+                      id="customer-site-input"
+                      class="input-field"
+                      placeholder="e.g. https://www.acme-investments.com/en"
+                      autocomplete="off"
+                      maxlength="300"
+                      spellcheck="false"
+                    >
+                  </div>
                 </div>
                 <div class="cloneit-config-field">
                   <label for="site-name-input" class="cloneit-config-label">Site name</label>
@@ -114,44 +130,44 @@
                       type="text"
                       id="site-name-input"
                       class="input-field"
-                      placeholder="yoursite"
+                      placeholder="acme-investments"
                       autocomplete="off"
                       maxlength="50"
-                      pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
                       aria-describedby="site-name-hint"
                     >
                     <span class="input-affix input-affix-end" aria-hidden="true">--scdemos</span>
                   </div>
                 </div>
+              </div>
+              <div class="cloneit-config-inline">
                 <div class="cloneit-config-field">
-                  <label for="admin-email-input" class="cloneit-config-label">Admin email</label>
+                  <label for="github-user-input" class="cloneit-config-label">GitHub user</label>
                   <span class="cloneit-config-colon" aria-hidden="true">:</span>
                   <div class="input-wrap cloneit-site-input-wrap">
                     <input
-                      type="email"
-                      id="admin-email-input"
+                      type="text"
+                      id="github-user-input"
                       class="input-field"
-                      placeholder="optional — name@example.com"
+                      placeholder="your GitHub username (made repo admin)"
                       autocomplete="off"
-                      maxlength="254"
-                      aria-describedby="admin-email-hint"
+                      maxlength="39"
                     >
                   </div>
                 </div>
               </div>
-              <p id="site-name-hint" class="cloneit-sr-only">Site slug: lowercase letters, numbers, hyphens only. Max 50 characters.</p>
-              <p id="admin-email-hint" class="cloneit-sr-only">Optional. Enter an email to grant the admin role on the new site via the AEM Admin API. Sidekick authentication will be enforced for admin actions when set.</p>
+              <p id="site-name-hint" class="cloneit-sr-only">Suggested from the customer site and editable: lowercase letters, numbers and hyphens, max 50 characters.</p>
               <div class="preview-panel">
                 <span class="preview-panel-label">Preview URL</span>
                 <p class="input-preview">
-                  <code>https://main--<span id="site-preview">yoursite</span>--scdemos.aem.page</code>
+                  <code>https://main--<span id="site-preview">acme-investments</span>--scdemos.aem.page</code>
                 </p>
               </div>
+              <p class="cloneit-unavailable" id="unavailable-note" hidden>Demo creation isn't enabled yet: the CloneIt worker needs its GitHub provisioning token. Ask an scdemos admin.</p>
               <button id="clone-btn" class="btn btn-primary" type="button" disabled aria-busy="false">
-                <span class="btn-text">Start clone</span>
+                <span class="btn-text">Create demo</span>
                 <span class="btn-loading" style="display: none;">
                   <span class="spinner"></span>
-                  <span>Cloning…</span>
+                  <span>Creating…</span>
                 </span>
               </button>
             </div>
@@ -189,7 +205,7 @@
                   </div>
                   <div class="result-hero-text">
                     <h3 class="result-title">Site ready</h3>
-                    <p class="result-sub">Your repoless site and DA folder are in place. Use the links below to continue.</p>
+                    <p class="result-sub" id="result-sub">Your site and DA folder are in place. Use the links below to continue.</p>
                   </div>
                 </div>
                 <div class="result-body">
@@ -253,7 +269,27 @@
                       </a>
                     </div>
 
-                    <div class="bulk-actions" id="bulk-actions">
+                    <details class="publish-failures" id="publish-failures" hidden>
+                      <summary id="publish-failures-summary"></summary>
+                      <ul id="publish-failures-list"></ul>
+                    </details>
+
+                    <div class="ai-handoff" id="ai-handoff" hidden>
+                      <p class="bulk-actions-label">Optional: make it look like the customer</p>
+                      <ol class="ai-handoff-steps">
+                        <li><strong>Open the repo</strong> in VS Code with GitHub Copilot (button below), or clone it and open it in Claude Code.</li>
+                        <li><strong>Paste this prompt</strong> in the chat. The <code>customer-demo</code> skill restyles the site with the customer's brand, rebuilds its key pages and content, adds blocks or variants where needed, and checks it against the original.</li>
+                        <li><strong>Watch it build</strong> on <code>http://localhost:3000</code>. You approve the commits once; everything else is automatic.</li>
+                      </ol>
+                      <pre class="ai-handoff-prompt"><code id="ai-handoff-prompt"></code></pre>
+                      <div class="bulk-buttons">
+                        <button id="copy-prompt-btn" class="btn btn-secondary" type="button">Copy prompt</button>
+                        <a id="open-vscode-link" class="btn btn-secondary" href="#">Open in VS Code</a>
+                      </div>
+                      <p class="ai-handoff-note">Not sure yet? Demo the site as is: it's live and editable in DA now. You can run the prompt any time later.</p>
+                    </div>
+
+                    <div class="bulk-actions" id="bulk-actions" hidden>
                       <div class="bulk-actions-head">
                         <p class="bulk-actions-label">Next step</p>
                         <p class="bulk-hint"></p>
@@ -328,11 +364,8 @@
           <div class="modal-body modal-body-help">
             <div class="help-section">
               <h3>What does CloneIt do?</h3>
-              <p>CloneIt creates a new repoless AEM site by:</p>
-              <ol>
-                <li><strong>Creating the AEM site config</strong> – Copies the template site configuration and points it to a new content source</li>
-                <li><strong>Creating the DA content repo</strong> – Creates a new folder in Document Authoring (DA) for your site's content</li>
-              </ol>
+              <p>CloneIt creates <code>github.com/scdemos/&lt;site&gt;</code> from <code>scdemos/demo</code>, adds it to AEM Code Sync and makes you its admin, then copies the demo content, DA config and index into <code>da.live/#/scdemos/&lt;site&gt;</code>. Demo it as is, or run the <code>customer-demo</code> AI skill to make it look like the customer.</p>
+              <p>CloneIt previews and publishes all pages for you. You need to be signed in to da.live with your Adobe account.</p>
             </div>
             <div class="help-section">
               <h3>Site naming</h3>
@@ -340,11 +373,11 @@
             </div>
             <div class="help-section">
               <h3>After cloning</h3>
-              <p>Your new site shares the same codebase as the template. Add content in DA and preview/publish to see it live.</p>
+              <p>Your demo has its own copy of the code, so you (or the AI skill) can change anything. Add content in DA and preview/publish to see it live.</p>
             </div>
             <div class="help-section">
               <h3>Bulk Preview / Publish</h3>
-              <p>After a successful clone, use <strong>Bulk Preview/Publish</strong>. URLs are copied to your clipboard and a modal guides you to the <a href="https://da.live/apps/bulk" target="_blank" rel="noopener noreferrer">DA Bulk app</a>, where you paste and run preview or publish.</p>
+              <p>Pages are previewed and published automatically. If that step fails, use <strong>Bulk Preview/Publish</strong>: URLs are copied to your clipboard and a modal guides you to the <a href="https://da.live/apps/bulk" target="_blank" rel="noopener noreferrer">DA Bulk app</a>.</p>
             </div>
           </div>
         </div>
