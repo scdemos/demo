@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta
@@ -7,12 +7,11 @@
     content="script-src 'nonce-aem' 'strict-dynamic' 'unsafe-inline' http: https:; base-uri 'self'; object-src 'none';"
     move-to-http-header="true"
   >
-  <title>Page not found</title>
-  <script nonce="aem" type="text/javascript">
-    window.isErrorPage = true;
-    window.errorCode = '404';
-  </script>
+  <title>Page not found | Frescopa</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="breadcrumbs" content="off">
+  <meta name="social-share" content="off">
   <meta property="og:title" content="Page not found">
   <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
   <script nonce="aem" type="module">
@@ -20,13 +19,17 @@
       if (document.referrer) {
         const { origin, pathname } = new URL(document.referrer);
         if (origin === window.location.origin) {
+          const label = document.querySelector('main.error')?.dataset.backLabel || 'Go back';
           const backBtn = document.createElement('a');
-          backBtn.classList.add('button', 'error-button-back');
-          backBtn.href = pathname;
-          backBtn.textContent = 'Go back';
-          backBtn.title = 'Go back';
-          const btnContainer = document.querySelector('.button-container');
-          btnContainer.append(backBtn);
+          backBtn.classList.add('button', 'secondary', 'error-button-back');
+          backBtn.href = `${origin}${pathname}`;
+          backBtn.textContent = label;
+          const p = document.createElement('p');
+          p.className = 'button-container';
+          p.append(backBtn);
+          const group = document.querySelector('main.error .button-group')
+            || document.querySelector('main.error .button-container')?.parentElement;
+          group?.append(p);
         }
       }
     });
@@ -37,19 +40,84 @@
   </script>
   <link rel="stylesheet" href="/styles/styles.css">
   <link rel="stylesheet" href="/styles/lazy-styles.css">
+  <style>
+    main.error {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: calc(100svh - var(--chrome-h, 7rem));
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    main.error::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(60% 60% at 85% 10%, color-mix(in srgb, var(--aurora-500, #6b4cf5) 22%, transparent), transparent 70%),
+        radial-gradient(45% 55% at 10% 100%, color-mix(in srgb, var(--flame-500, #e8471c) 20%, transparent), transparent 70%),
+        var(--color-surface-sunken, #f3f1ec);
+    }
+
+    main.error .section {
+      width: min(100% - 2 * var(--gutter, 1.5rem), var(--container-narrow, 60rem));
+      margin-inline: auto;
+      padding-block: var(--gap-3xl, 5rem);
+      background: transparent;
+      text-align: center;
+    }
+
+    main.error .error-code {
+      display: block;
+      width: min(100%, 28rem);
+      height: auto;
+      margin-inline: auto;
+      font-family: var(--font-display, sans-serif);
+      font-size: 48px;
+      font-weight: var(--weight-black, 800);
+      letter-spacing: -0.06em;
+    }
+
+    main.error em {
+      font-style: normal;
+    }
+
+    main.error h1 {
+      margin-top: var(--gap-m, 1.5rem);
+    }
+
+    main.error p {
+      max-width: 36rem;
+      margin-inline: auto;
+      color: var(--color-text-muted, #5c5a66);
+    }
+
+    main.error .button-group {
+      justify-content: center;
+    }
+  </style>
 </head>
 
 <body>
   <header></header>
-  <main class="error">
-    <div class="section">
-      <svg viewBox="1 0 38 18" class="error-number">
-        <text x="0" y="17">404</text>
+  <main class="error" data-back-label="Go back">
+    <div>
+      <svg class="error-code" viewBox="0 0 120 48" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="error-code-fill" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#ff7a45"/>
+            <stop offset="0.55" stop-color="#e8471c"/>
+            <stop offset="1" stop-color="#7b5cff"/>
+          </linearGradient>
+        </defs>
+        <text x="60" y="42" text-anchor="middle" fill="url(#error-code-fill)">404</text>
       </svg>
-      <h2 class="error-message">Page Not Found</h2>
-      <p class="button-container">
-        <a href="/" class="button secondary error-button-home">Go home</a>
-      </p>
+      <h1>This page took a different path.</h1>
+      <p>The page you’re looking for may have moved or no longer exists. Let’s get you somewhere useful.</p>
+      <p><strong><a href="/en/us/">Go to Frescopa home</a></strong></p>
+      <p><em><a href="/en/us/support">Visit the help centre</a></em></p>
     </div>
   </main>
   <footer></footer>

@@ -27,7 +27,7 @@
 }
 
 .auth-toggle.expanded {
-  right: max(var(--space-m), env(safe-area-inset-right, 0px));
+  right: max(var(--gap-s), env(safe-area-inset-right, 0px));
 }
 
 .auth-toggle-body {

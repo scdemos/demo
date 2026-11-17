@@ -1,18 +1,23 @@
 import { getMetadata, readBlockConfig } from '../../scripts/aem.js';
 import { createTag, getMarket } from '../../scripts/shared.js';
 
-/** Sign-in authored as an /auth/login link toggles login/logout from the Access session. */
+/**
+ * The header's sign-in link always goes through the auth worker (Cloudflare Access),
+ * coming back to this page. Signed in, it becomes a sign-out link.
+ * @param {HTMLAnchorElement[]} links desktop and drawer sign-in links
+ */
 async function wireAuth(links) {
   const {
     getLoginUrl, getLogoutUrl, getDefaultAuthLabel, getSessionState,
   } = await import('../../scripts/shared/auth-api.js');
+  links.forEach((link) => { link.href = getLoginUrl(); });
   const session = await getSessionState();
-  const signedIn = Boolean(session?.authenticated);
-  const label = getDefaultAuthLabel(signedIn ? 'logout' : 'login');
+  if (!session?.authenticated) return;
+  const label = getDefaultAuthLabel('logout');
   links.forEach((link) => {
-    link.href = signedIn ? getLogoutUrl() : getLoginUrl();
-    link.title = signedIn && session.email ? `${label} (${session.email})` : label;
-    link.classList.toggle('is-signed-in', signedIn);
+    link.href = getLogoutUrl();
+    link.title = session.email ? `${label} (${session.email})` : label;
+    link.classList.add('is-signed-in');
     (link.querySelector('.header-signin-label') || link).textContent = label;
   });
 }
@@ -396,7 +401,7 @@ export default async function decorate(block) {
     authLinks.push(a);
     drawerActions.append(a);
   }
-  if (signIn && /\/auth\/login/i.test(signIn.href)) wireAuth(authLinks);
+  if (signIn) wireAuth(authLinks);
   const drawerMarket = buildMarketSwitcher(toolsSec?.querySelector('ul'), labels, 'header-drawer-market');
   drawer.append(drawerNav, drawerActions);
   if (drawerMarket) drawer.append(drawerMarket);

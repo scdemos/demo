@@ -1,6 +1,5 @@
-import { toClassName, loadCSS } from '../../scripts/aem.js';
-
-let tabsStyleLoaded;
+import { toClassName } from '../../scripts/aem.js';
+import { loadStylesFor } from '../../scripts/shared.js';
 
 function getTabDefinition(section, fallbackIdx = 0) {
   const tabId = String(section.dataset?.tabId || '').trim();
@@ -187,10 +186,7 @@ export default function decorate(block) {
 
 export async function createTabs(main) {
   if (!main) return;
-  if (!tabsStyleLoaded) {
-    tabsStyleLoaded = loadCSS(`${window.hlx.codeBasePath}/blocks/tabs/tabs.css`);
-  }
-  await tabsStyleLoaded;
+  await loadStylesFor(main, new URL('./tabs.css', import.meta.url));
   const tabGroups = findTabGroups(main);
   tabGroups.forEach((group) => buildTabsFromSections(group));
 }

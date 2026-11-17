@@ -1,39 +1,8 @@
-import { getMetadata } from './aem.js';
+import { getMetadata, loadCSS } from './aem.js';
 
 /**
- * Locale config: maps URL prefix to locale metadata.
- * Root locale uses empty string key.
- * Add or remove entries to match the site's language support.
- */
-export const LOCALES = {
-  '': { lang: 'en' },
-  '/de': { lang: 'de' },
-  '/es': { lang: 'es' },
-  '/fr': { lang: 'fr' },
-  '/ja': { lang: 'ja' },
-  '/zh': { lang: 'zh' },
-  '/hi': { lang: 'hi' }
-};
-
-/**
- * Detect the current locale from the URL pathname and apply its lang to <html>.
- * @param {Object} [locales] - Locale map (defaults to LOCALES)
- * @returns {{ prefix: string, lang: string }}
- */
-export function getLocale(locales = LOCALES) {
-  const { pathname } = window.location;
-  const matches = Object.keys(locales).filter(
-    (prefix) => prefix !== '' && pathname.startsWith(`${prefix}/`),
-  );
-  const prefix = matches.sort((a, b) => b.length - a.length)[0] || '';
-  const locale = locales[prefix] || locales[''];
-
-  document.documentElement.lang = locale?.lang || 'en';
-  return { prefix, ...locale };
-}
-
-/**
- * Market from a `/{lang}/{region}/` path segment, with any prefix before it as `base`.
+ * Market context from the URL: the first /{lang}/{region}/ pair in the path.
+ * Anything before it (e.g. a content folder such as /drafts/frescopa) is part of the root.
  * @returns {{ lang: string, region: string, root: string, base: string, segments: string[] }}
  */
 export function getMarket() {
@@ -126,13 +95,11 @@ export function formatDate(dateValue) {
 
   if (Number.isNaN(date.getTime())) return normalized;
 
-  const formattedDateString = date.toLocaleString('en-US', {
+  return date.toLocaleDateString(document.documentElement.lang || 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-
-  return formattedDateString;
 }
 
 /**
@@ -180,7 +147,7 @@ export function getContentTimestamp(entry = {}) {
 }
 
 /** Default page size for query-index pagination */
-export const QUERY_INDEX_PAGE_SIZE = 500;
+const QUERY_INDEX_PAGE_SIZE = 500;
 
 /**
  * Fetch a page of query-index.
@@ -222,7 +189,7 @@ export async function fetchQueryIndexAll(options = {}) {
  * @param {string} [base] - Base URL
  * @returns {string}
  */
-export function pathFromHref(href, base = typeof window !== 'undefined' ? window.location.origin : '') {
+export function pathFromHref(href, base = window.location.origin) {
   try {
     const u = new URL(href, base);
     return u.pathname.replace(/\/+$/, '') || '/';
@@ -333,7 +300,8 @@ export function moveInstrumentation(from, to) {
  * Returns the correct body and event root whether the block runs
  * in the normal document or inside a shadow DOM (aem-embed).
  * @param {Element} block
- * @returns {{ root: Document|ShadowRoot, body: HTMLElement, eventRoot: Document|ShadowRoot, isEmbed: boolean }}
+ * @returns {{ root: Document|ShadowRoot, body: HTMLElement,
+ *   eventRoot: Document|ShadowRoot, isEmbed: boolean }}
  */
 export function getBlockContext(block) {
   const root = block.getRootNode();
@@ -344,4 +312,28 @@ export function getBlockContext(block) {
     eventRoot: isEmbed ? root : document,
     isEmbed,
   };
+}
+
+/**
+ * Loads a stylesheet for an element. On a page it goes in <head>; inside an
+ * aem-embed shadow root it goes into that root, because <head> styles don't
+ * reach shadow DOM.
+ * @param {Element} el element the styles are for
+ * @param {string|URL} href resolve it with import.meta.url so it points at this
+ *   site even when the code runs on another page (aem-embed)
+ * @returns {Promise<void>}
+ */
+export function loadStylesFor(el, href) {
+  const { origin, pathname } = new URL(href, window.location.href);
+  const url = `${origin}${pathname}`;
+  const root = el.getRootNode();
+  // on the site's own pages, use the path so loadCSS recognises styles the block loader added
+  if (!(root instanceof ShadowRoot)) return loadCSS(origin === window.location.origin ? pathname : url);
+  if (root.querySelector(`link[href="${url}"]`)) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const link = createTag('link', { rel: 'stylesheet', href: url });
+    link.addEventListener('load', () => resolve());
+    link.addEventListener('error', reject);
+    root.append(link);
+  });
 }

@@ -28,6 +28,21 @@ export function getLogoutUrl() {
   return authUrl(AUTH_PATHS.logout);
 }
 
+/**
+ * Points authored sign-in/sign-out links (`/auth/login`, `/auth/logout`, relative or on the
+ * auth origin) at the auth worker; sign-in comes back to the current page unless the link
+ * already names a `returnTo`.
+ * @param {Element} root
+ */
+export function decorateAuthLinks(root) {
+  root.querySelectorAll('a[href*="/auth/log"]').forEach((a) => {
+    const url = new URL(a.getAttribute('href'), window.location.href);
+    if (url.origin !== window.location.origin && url.origin !== AUTH_ORIGIN) return;
+    if (url.pathname === AUTH_PATHS.login) a.href = getLoginUrl(url.searchParams.get('returnTo') || undefined);
+    else if (url.pathname === AUTH_PATHS.logout) a.href = getLogoutUrl();
+  });
+}
+
 /** Shape aligned with `workers/auth` `/auth/session` JSON (anonymous when not logged in). */
 const ANONYMOUS_SESSION = {
   authenticated: false,

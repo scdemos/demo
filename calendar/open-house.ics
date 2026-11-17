@@ -1,0 +1,17 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Frescopa//Events//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:open-house-new-york-2026@frescopa
+DTSTAMP:20261117T000000Z
+DTSTART:20261206T233000Z
+DTEND:20261207T023000Z
+SUMMARY:Frescopa Open House · New York
+DESCRIPTION:An evening with our makers: live demos\, short talks and good f
+ ood. Free\, places are limited.
+LOCATION:Frescopa House SoHo\, 112 Greene Street\, New York\, NY 10012
+URL:https://demo.bbird.live/en/us/events/open-house
+END:VEVENT
+END:VCALENDAR

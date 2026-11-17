@@ -303,7 +303,7 @@
 
   .search .search-filters {
     position: sticky;
-    top: calc(var(--header-height, 7rem) + var(--gap-m));
+    top: calc(var(--chrome-h) + var(--gap-m));
   }
 
   .search .search-filters-toggle {

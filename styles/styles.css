@@ -320,6 +320,11 @@ body.appear {
   display: block;
 }
 
+/* inside <aem-embed>, the body is only as tall as the embedded content */
+:host body {
+  min-height: 0;
+}
+
 body.is-locked {
   overflow: hidden;
 }

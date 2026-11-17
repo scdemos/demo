@@ -3,11 +3,11 @@
  */
 
 import { loadFragment } from '../fragment/fragment.js';
-import { loadCSS } from '../../scripts/aem.js';
-import { createTag, getBlockContext } from '../../scripts/shared.js';
+import { createTag, getBlockContext, loadStylesFor } from '../../scripts/shared.js';
 import dynamicBlocks from '../dynamic/index.js';
 
 const FRAGMENT_PREFIX = '/fragments/';
+let initialized = false;
 
 function getFragmentPath(href = '') {
   try {
@@ -20,12 +20,13 @@ function getFragmentPath(href = '') {
 }
 
 export function setupFragmentModal(el) {
-  if (window.__fragmentModalReady) return;
-  window.__fragmentModalReady = true;
+  if (initialized) return;
+  initialized = true;
 
-  const { eventRoot } = getBlockContext(el);
+  // inside <aem-embed> the modal and its styles live in the embed's shadow root
+  const { eventRoot, body } = getBlockContext(el);
 
-  loadCSS(`${window.hlx.codeBasePath}/blocks/modal/modal.css`);
+  loadStylesFor(el, new URL('./modal.css', import.meta.url));
 
   const closeBtn = createTag('button', { type: 'button', class: 'modal-close', 'aria-label': 'Close dialog' }, '×');
   const content = createTag('div', { class: 'modal-content' });
@@ -37,22 +38,20 @@ export function setupFragmentModal(el) {
   }, [closeBtn, content]);
   const backdrop = createTag('div', { class: 'modal-backdrop', 'aria-hidden': 'true' });
   const modalRoot = createTag('div', { class: 'modal', hidden: 'true' }, [backdrop, dialog]);
-  document.body.append(modalRoot);
-  let previousOverflow = '';
+  body.append(modalRoot);
   let previousFocus = null;
 
   const close = () => {
     modalRoot.hidden = true;
     content.replaceChildren();
-    document.body.style.overflow = previousOverflow;
+    body.classList.remove('is-locked');
     if (previousFocus?.focus) previousFocus.focus();
   };
 
   const open = async (path) => {
     previousFocus = el.getRootNode().activeElement;
     modalRoot.hidden = false;
-    previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    body.classList.add('is-locked');
     content.textContent = 'Loading...';
     closeBtn.focus();
 
@@ -93,5 +92,4 @@ export function setupFragmentModal(el) {
 
 export default function decorate(block) {
   setupFragmentModal(block);
-  block.style.display = 'none';
 }
