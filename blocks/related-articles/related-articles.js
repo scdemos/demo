@@ -204,16 +204,8 @@ function renderBentoGrid(block, articles, emptyMessage) {
    Shared init
    ----------------------------------------------------------------------- */
 
-async function fetchRows(source) {
-  if (!source) return fetchQueryIndexAll();
-  const resp = await fetch(source);
-  if (!resp.ok) throw new Error(`Source request failed: ${resp.status}`);
-  return (await resp.json())?.data || [];
-}
-
 async function fetchArticles(block, config) {
   const mode = String(config.mode || 'dynamic').trim().toLowerCase();
-  const source = String(config.source || '').trim();
 
   const authoredLinks = mode === 'links'
     ? getLinksFromBlock(block)
@@ -221,7 +213,7 @@ async function fetchArticles(block, config) {
   if (authoredLinks.length > 0) {
     let indexRows = [];
     try {
-      indexRows = await fetchRows(source);
+      indexRows = await fetchQueryIndexAll();
     } catch {
       indexRows = [];
     }
@@ -237,7 +229,7 @@ async function fetchArticles(block, config) {
   const keywords = String(config.keywords || 'random').trim();
   const excluded = String(config['excluded-keywords'] || '').trim();
   const current = normalizePath(window.location.pathname);
-  const allArticles = (await fetchRows(source))
+  const allArticles = (await fetchQueryIndexAll())
     .filter((row) => row?.path && normalizePath(row.path) !== current);
   return matchArticles(allArticles, keywords, excluded, RESULT_LIMIT);
 }

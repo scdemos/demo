@@ -11,7 +11,7 @@ import {
 
 const PAGE_SIZE = 15;
 const FETCH_LIMIT = 500;
-const RESERVED_CONFIG_KEYS = ['view', 'keywords', 'excluded-keywords', 'searchbar', 'source'];
+const RESERVED_CONFIG_KEYS = ['view', 'keywords', 'excluded-keywords', 'searchbar'];
 
 function parseFilterGroupsFromConfig(config) {
   return Object.entries(config)
@@ -91,20 +91,9 @@ function isMatch(row, keywords, excluded) {
   );
 }
 
-async function fetchSourcePage(source, offset, limit) {
-  const url = new URL(source, window.location.href);
-  url.searchParams.set('offset', offset);
-  url.searchParams.set('limit', limit);
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`Search source request failed: ${resp.status}`);
-  return (await resp.json())?.data || [];
-}
-
 async function fetchMatchingRows(state, keywords, excluded, query, neededCount) {
   if (state.rows.length >= neededCount || !state.hasMore) return;
-  const batch = state.source
-    ? await fetchSourcePage(state.source, state.offset, FETCH_LIMIT)
-    : await fetchQueryIndexPage(state.offset, FETCH_LIMIT);
+  const batch = await fetchQueryIndexPage(state.offset, FETCH_LIMIT);
   state.offset += batch.length;
   state.hasMore = batch.length === FETCH_LIMIT;
   batch
@@ -264,7 +253,6 @@ export default async function decorate(block) {
     query: initialQuery,
     sort: 'newest',
     loading: false,
-    source: String(config.source || '').trim(),
   };
 
   block.textContent = '';

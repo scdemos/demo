@@ -150,14 +150,16 @@ export function getContentTimestamp(entry = {}) {
 const QUERY_INDEX_PAGE_SIZE = 500;
 
 /**
- * Fetch a page of query-index.
+ * Fetch a page of the site's query index. The index sits at the site root, before the
+ * /{lang}/{region}/ market folder: /query-index.json, or /drafts/<site>/query-index.json
+ * for a site authored under a content folder (see query.yaml).
  * @param {number} offset - Offset
  * @param {number} limit - Limit
  * @param {string} [baseUrl=''] - Base URL
  * @returns {Promise<Array>}
  */
 export async function fetchQueryIndexPage(offset, limit, baseUrl = '') {
-  const path = `/query-index.json?offset=${offset}&limit=${limit}`;
+  const path = `${getMarket().base}/query-index.json?offset=${offset}&limit=${limit}`;
   const url = baseUrl ? `${String(baseUrl).replace(/\/+$/, '')}${path}` : path;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Query index request failed: ${resp.status}`);
