@@ -506,7 +506,8 @@ button {
    Text utilities (eyebrow is auto-applied to a short line above a heading)
    ========================================================================== */
 
-.eyebrow {
+.eyebrow,
+.heading-group p {
   display: flex;
   align-items: center;
   gap: 0.6em;
@@ -519,7 +520,8 @@ button {
   text-transform: uppercase;
 }
 
-.eyebrow::before {
+.eyebrow::before,
+.heading-group p::before {
   content: '';
   flex: none;
   width: 1.75em;
@@ -788,7 +790,7 @@ main > .section.center > .default-content-wrapper {
   text-align: center;
 }
 
-main > .section.center > .default-content-wrapper :is(.eyebrow, .button-group) {
+main > .section.center > .default-content-wrapper :is(.eyebrow, .heading-group p, .button-group) {
   justify-content: center;
 }
 
@@ -796,11 +798,19 @@ main > .section.center > .default-content-wrapper :is(h2, p:not(.button-containe
   margin-inline: auto;
 }
 
-main > .section > .default-content-wrapper > h2 {
+main > .section > .default-content-wrapper > h2,
+main > .section > .default-content-wrapper > .heading-group h2 {
   max-width: 20em;
 }
 
-main > .section:not(.prose) > .default-content-wrapper > h2 + p:not(.button-container) {
+main > .section.split:not(.prose) .split-body p:not(.button-container) {
+  max-width: 38em;
+  color: var(--color-text-muted);
+  font-size: var(--step-1);
+  line-height: 1.55;
+}
+
+main > .section:not(.prose) > .default-content-wrapper > :is(h2, .heading-group) + p:not(.button-container) {
   max-width: 38em;
   color: var(--color-text-muted);
   font-size: var(--step-1);
@@ -819,24 +829,26 @@ main > .section > .default-content-wrapper > :last-child {
     align-items: end;
   }
 
-  main > .section.split > .default-content-wrapper:first-child > :is(.eyebrow, h2) {
-    grid-column: 1;
-  }
-
-  main > .section.split > .default-content-wrapper:first-child > h2 {
+  main > .section.split .heading-group h2 {
     margin-bottom: 0;
   }
 
-  main > .section.split > .default-content-wrapper:first-child > :not(.eyebrow, h2) {
-    grid-column: 2;
-    grid-row: 2;
+  main > .section.split .split-body {
     justify-self: end;
-    margin: 0;
     text-align: right;
+  }
+
+  main > .section.split .split-body p {
+    margin-inline-start: auto;
+  }
+
+  main > .section.split .split-body > :last-child {
+    margin-bottom: 0;
   }
 }
 
-main > .section.prose .default-content-wrapper > h2 {
+main > .section.prose .default-content-wrapper > h2,
+main > .section.prose .default-content-wrapper > .heading-group h2 {
   margin-top: 1.6em;
   font-size: var(--step-3);
 }
@@ -845,7 +857,8 @@ main > .section.prose .default-content-wrapper > h3 {
   margin-top: 1.4em;
 }
 
-main > .section.prose .default-content-wrapper > :is(p, ul, ol) {
+main > .section.prose .default-content-wrapper > :is(p, ul, ol),
+main > .section.prose .split-body :is(p, ul, ol) {
   font-size: var(--step-1);
   line-height: 1.7;
 }
