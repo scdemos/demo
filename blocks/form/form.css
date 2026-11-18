@@ -294,3 +294,50 @@ main > .section.form-container:has(.form.panel) > div {
 .form.panel .button-wrapper .button {
   min-width: 9.5rem;
 }
+
+/* ==========================================================================
+   Newsletter: the email field and its button on one line, no card.
+   The field label stays for screen readers only.
+   ========================================================================== */
+.form.newsletter form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-2xs);
+  max-width: 32rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+}
+
+.form.newsletter .form-field {
+  flex: 1 1 14rem;
+}
+
+.form.newsletter .form-field:not(.toggle-field) > label:first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.form.newsletter input:not([type='checkbox'], [type='radio']) {
+  padding: 0.7em 1.1em;
+  border-radius: var(--radius-pill);
+}
+
+.form.newsletter .button-wrapper {
+  margin-top: 0;
+}
+
+.form.newsletter .form-status,
+.form.newsletter .form-status[data-state] {
+  flex-basis: 100%;
+  padding: 0;
+  background: none;
+  font-size: var(--step-n1);
+  font-weight: var(--weight-regular);
+}

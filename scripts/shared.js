@@ -1,28 +1,28 @@
 import { getMetadata, loadCSS } from './aem.js';
 
 /**
- * Market context from the URL: the first /{lang}/{region}/ pair in the path.
+ * Market context from the URL: the first /{lang}/ folder in the path (e.g. /en/, /de/).
  * Anything before it (e.g. a content folder such as /drafts/frescopa) is part of the root.
- * @returns {{ lang: string, region: string, root: string, base: string, segments: string[] }}
+ * @returns {{ lang: string, root: string, base: string, segments: string[] }}
  */
 export function getMarket() {
   const { pathname } = window.location;
-  const m = pathname.match(/^(.*?)\/([a-z]{2})\/([a-z]{2})(?:\/|$)/);
+  const m = pathname.match(/^(.*?)\/([a-z]{2})(?:\/|$)/);
   if (!m) {
     return {
-      lang: 'en', region: 'us', root: '/en/us/', base: '', segments: pathname.split('/').filter(Boolean),
+      lang: 'en', root: '/en/', base: '', segments: pathname.split('/').filter(Boolean),
     };
   }
-  const [, base, lang, region] = m;
-  const root = `${base}/${lang}/${region}/`;
+  const [, base, lang] = m;
+  const root = `${base}/${lang}/`;
   return {
-    lang, region, root, base, segments: pathname.slice(root.length).split('/').filter(Boolean),
+    lang, root, base, segments: pathname.slice(root.length).split('/').filter(Boolean),
   };
 }
 
 /**
  * Whether a page path (e.g. a query index row) is in the current page's market. On a page
- * under /{lang}/{region}/, only that market's pages are; elsewhere every page is.
+ * under /{lang}/, only that market's pages are; elsewhere every page is.
  * @param {string} path
  * @returns {boolean}
  */
@@ -163,7 +163,7 @@ const QUERY_INDEX_PAGE_SIZE = 500;
 
 /**
  * Fetch a page of the site's query index. The index sits at the site root, before the
- * /{lang}/{region}/ market folder: /query-index.json, or /drafts/<site>/query-index.json
+ * /{lang}/ market folder: /query-index.json, or /drafts/<site>/query-index.json
  * for a site authored under a content folder (see query.yaml).
  * @param {number} offset - Offset
  * @param {number} limit - Limit

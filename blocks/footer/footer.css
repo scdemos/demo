@@ -59,55 +59,9 @@ footer .footer {
 }
 
 /* newsletter */
-.footer .footer-newsletter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--gap-2xs);
-  max-width: 32rem;
-}
-
-.footer .footer-newsletter input {
-  flex: 1 1 14rem;
-  min-height: 3rem;
-  padding: 0.7em 1.1em;
-  border: var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text-strong);
-  font: inherit;
-}
-
-.footer .footer-newsletter input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.footer .footer-newsletter input[aria-invalid='true'] {
-  border-color: var(--color-danger);
-}
-
-.footer .footer-newsletter .button.primary {
+.footer .form.newsletter .button.primary {
   --btn-bg: var(--volt-400);
   --btn-fg: var(--ink-1000);
-}
-
-.footer .footer-newsletter-error,
-.footer .footer-newsletter-status {
-  flex-basis: 100%;
-  margin: 0;
-  font-size: var(--step-n1);
-}
-
-.footer .footer-newsletter-error {
-  color: var(--color-danger);
-}
-
-.footer .footer-newsletter-status {
-  color: var(--color-success);
-}
-
-.footer .footer-newsletter-error:empty,
-.footer .footer-newsletter-status:empty {
-  display: none;
 }
 
 /* columns */

@@ -96,7 +96,7 @@ export function readLabels(section) {
   return labels;
 }
 
-const marketRoot = (path) => (path.match(/^.*?\/[a-z]{2}\/[a-z]{2}\//) || [])[0] || '';
+const marketRoot = (path) => (path.match(/^.*?\/[a-z]{2}\//) || [])[0] || '';
 
 /**
  * Market switcher (details/summary disclosure).
@@ -113,13 +113,12 @@ export function buildMarketSwitcher(list, labels, variant = '') {
   const markets = [...list.querySelectorAll('a')].map((a) => {
     const href = authoredHref(a);
     const mRoot = marketRoot(href);
-    const [lang, region] = mRoot.split('/').filter(Boolean).slice(-2);
+    const lang = mRoot.split('/').filter(Boolean).pop() || '';
     return {
       label: a.textContent.trim(),
       href,
       root: mRoot,
-      hreflang: lang ? `${lang}-${region.toUpperCase()}` : '',
-      region: region || '',
+      hreflang: lang,
     };
   });
   const current = markets.find((m) => m.root === root) || markets[0];
@@ -127,7 +126,7 @@ export function buildMarketSwitcher(list, labels, variant = '') {
 
   const details = createTag('details', { class: `chrome-market ${variant}`.trim() });
   const summary = createTag('summary', { 'aria-label': `${labels.market || 'Market & language'}: ${current.label}` });
-  summary.innerHTML = `${icon('globe')}<span class="chrome-market-code">${current.region.toUpperCase()}</span><span class="chrome-market-label">${current.label}</span>`;
+  summary.innerHTML = `${icon('globe')}<span class="chrome-market-code">${current.hreflang.toUpperCase()}</span><span class="chrome-market-label">${current.label}</span>`;
   const ul = createTag('ul');
   markets.forEach((m) => {
     const li = createTag('li');
