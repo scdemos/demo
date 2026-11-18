@@ -1,5 +1,6 @@
 import { getMetadata } from '../../scripts/aem.js';
 import { createTag } from '../../scripts/shared.js';
+import { loadFragment } from '../fragment/fragment.js';
 import {
   authoredHref, buildMarketSwitcher, fetchChrome, icon, LOGO_MARK, readLabels,
 } from '../header/header.js';
@@ -11,7 +12,7 @@ const SOCIAL = [
 ];
 
 const isExternal = (a) => /^https?:/.test(authoredHref(a));
-const isMarketLink = (a) => /^\/(?:[^/]+\/)*[a-z]{2}\/[a-z]{2}\/$/.test(authoredHref(a));
+const isMarketLink = (a) => /^\/(?:[^/]+\/)*[a-z]{2}\/$/.test(authoredHref(a));
 const isSocialLink = (a) => {
   try {
     const host = new URL(a.href).hostname.replace(/^www\./, '');
@@ -20,39 +21,6 @@ const isSocialLink = (a) => {
     return false;
   }
 };
-
-function buildNewsletter(labels) {
-  const id = 'footer-newsletter-email';
-  const form = createTag('form', { class: 'footer-newsletter', novalidate: '' });
-  const label = createTag('label', { for: id, class: 'visually-hidden' }, labels['email-label'] || 'Email address');
-  const input = createTag('input', {
-    id,
-    name: 'email',
-    type: 'email',
-    autocomplete: 'email',
-    required: '',
-    placeholder: labels.placeholder || 'name@example.com',
-    'aria-describedby': `${id}-error`,
-  });
-  const button = createTag('button', { type: 'submit', class: 'button primary' }, labels.subscribe || 'Subscribe');
-  const error = createTag('p', { class: 'footer-newsletter-error', id: `${id}-error`, 'aria-live': 'polite' });
-  const status = createTag('p', { class: 'footer-newsletter-status', role: 'status' });
-  form.append(label, input, button, error, status);
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!input.checkValidity()) {
-      input.setAttribute('aria-invalid', 'true');
-      error.textContent = labels['email-error'] || 'Enter an email address like name@example.com.';
-      input.focus();
-      return;
-    }
-    input.removeAttribute('aria-invalid');
-    error.textContent = '';
-    status.textContent = labels.thanks || '';
-    form.reset();
-  });
-  return form;
-}
 
 function buildSocial(list) {
   if (!list) return null;
@@ -179,8 +147,20 @@ export default async function decorate(block) {
   } else {
     intro.append(brand);
   }
-  introSec?.querySelectorAll(':scope > p').forEach((p) => intro.append(createTag('p', { class: 'footer-lede' }, p.textContent.trim())));
-  intro.append(buildNewsletter(labels));
+  /* a link to a fragment (e.g. /fragments/newsletter) brings in its content, such as a form */
+  const isFragmentLink = (a) => authoredHref(a).startsWith('/fragments/');
+  introSec?.querySelectorAll(':scope > p').forEach((p) => {
+    const link = p.querySelector('a');
+    if (link && isFragmentLink(link)) {
+      const slot = createTag('div', { class: 'footer-fragment' });
+      intro.append(slot);
+      loadFragment(authoredHref(link)).then((fragment) => {
+        if (fragment) slot.append(...fragment.childNodes);
+      });
+      return;
+    }
+    intro.append(createTag('p', { class: 'footer-lede' }, p.textContent.trim()));
+  });
   top.append(intro);
 
   /* link columns */

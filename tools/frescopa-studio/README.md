@@ -5,7 +5,7 @@ A DA app for editing a structured content document next to the app that uses it,
 **Open** with the document after `#`, addressed as DA's form editor does (`/org/site/path`):
 
 ```
-https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio#/scdemos/demo/en/us/app/experience
+https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio#/scdemos/demo/en/app/experience
 ```
 
 Studio is hosted in `scdemos/demo`; only the part after `#` changes. Studio reads and saves the document with the author's own DA login, so it works for any site they can edit.
@@ -25,7 +25,7 @@ DA's own form editor (`Open in DA`) opens the same document, because both use DA
 
 Everything below lives in the document's own site (`/org/site`), not in this repo:
 
-1. **Schema:** create it with DA's [Schema Editor](https://da.live/apps/schema). To give a field the fragment picker, add `"format": "fragment"` to it (a string field holding a path like `/en/us/fragments/…`).
+1. **Schema:** create it with DA's [Schema Editor](https://da.live/apps/schema). To give a field the fragment picker, add `"format": "fragment"` to it (a string field holding a path like `/en/fragments/…`).
 2. **Document:** create it in DA's form editor with that schema. Studio reads the schema name from the document.
 3. **Channels:** add a row per app to the `channels` sheet of that site's DA config (`https://da.live/config#/{org}/{site}/`). This site's rows:
 
@@ -35,7 +35,7 @@ Everything below lives in the document's own site (`/org/site`), not in this rep
 | `frescopa-app` | Frescopa app (local) | `http://localhost:4321/app/?{tier}` | `phone` |
 
 - **schema:** which documents the channel shows. Empty means every document.
-- **url:** tokens `{tier}` (`preview`), `{tld}` (`page`), `{path}` (`/en/us/app/experience`), `{slug}` (`experience`), `{org}`, `{site}`. `http://localhost` channels only show while Studio itself runs locally.
+- **url:** tokens `{tier}` (`preview`), `{tld}` (`page`), `{path}` (`/en/app/experience`), `{slug}` (`experience`), `{org}`, `{site}`. `http://localhost` channels only show while Studio itself runs locally.
 - **device:** the device the channel opens on; `phone` when empty.
 
 ## Make an app previewable as you type
@@ -60,4 +60,4 @@ aem up                     # serves this repo on localhost:3000
 # in frescopa-app: npm start (the app on localhost:4321)
 ```
 
-Open the Studio URL with `?ref=local` before the `#`: `…/frescopa-studio?ref=local#/scdemos/demo/en/us/app/experience`.
+Open the Studio URL with `?ref=local` before the `#`: `…/frescopa-studio?ref=local#/scdemos/demo/en/app/experience`.

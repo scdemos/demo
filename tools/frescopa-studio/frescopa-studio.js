@@ -2,7 +2,7 @@
  * Frescopa Studio: edit a structured content document in DA and see it in the app that
  * uses it, as you type. One Studio for every org, site, document and schema:
  *
- *   https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio#/{org}/{site}/en/us/app/experience
+ *   https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio#/{org}/{site}/en/app/experience
  *
  * - The document is the one after #, addressed as in DA's form editor (/org/site/path).
  *   Its schema is the one the document names.
@@ -44,7 +44,7 @@ const TEXT = {
   published: (time) => `Published ${time}`,
   previewed: (time) => `Previewed ${time}, not published yet`,
   notPreviewed: 'Saved, not previewed yet',
-  noDocument: 'Add the document to the address after #, like #/scdemos/demo/en/us/app/experience',
+  noDocument: 'Add the document to the address after #, like #/scdemos/demo/en/app/experience',
   notFound: (path) => `${path} isn’t in DA. Create it with DA’s form editor first.`,
   loadFailed: (status) => `Couldn’t load the document (${status}).`,
   noSchemaName: 'This document doesn’t name a schema. Open it in DA’s form editor and pick one.',
@@ -66,7 +66,7 @@ const { context, token, actions } = await DA_SDK;
 const { daFetch } = actions;
 // reads from the DA admin API, always fresh (DA's responses allow the browser to reuse them)
 const readDA = (path) => daFetch(`${DA_ADMIN}${path}`, { cache: 'no-store' });
-// the document, from the address as DA's form editor writes it: #/{org}/{site}/en/us/app/experience
+// the document, from the address as DA's form editor writes it: #/{org}/{site}/en/app/experience
 const [, org = '', site = '', ...rest] = (context.hash || window.location.hash)
   .replace(/^#/, '').replace(/\.html$/, '').split('/');
 const DOCUMENT = `/${rest.join('/')}`;

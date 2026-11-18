@@ -234,13 +234,13 @@ function decorateDefaultContent(main) {
 
 /**
  * Breadcrumbs generated from the path for pages below a market root
- * (e.g. /en/us/offers/member-week). Opt out with metadata `breadcrumbs: off`.
+ * (e.g. /en/offers/member-week). Opt out with metadata `breadcrumbs: off`.
  * @param {Element} main
  */
 function buildBreadcrumbs(main) {
   if (getMetadata('breadcrumbs') === 'off' || document.querySelector('nav.breadcrumbs')) return;
   const { root, segments } = getMarket();
-  if (!segments.length) return;
+  if (!window.location.pathname.startsWith(root) || !segments.length) return;
   const nav = document.createElement('nav');
   nav.className = 'breadcrumbs';
   nav.setAttribute('aria-label', getMetadata('breadcrumbs-label') || 'Breadcrumb');

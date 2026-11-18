@@ -53,6 +53,7 @@ function buildInput(field) {
   input.id = generateId(fieldName);
   input.name = input.id;
   input.required = isRequired(required);
+  if (type === 'email') input.autocomplete = 'email';
   if (defaultValue) input.value = defaultValue;
   if (placeholder) input.placeholder = placeholder;
   return input;
@@ -172,6 +173,14 @@ function buildField(field) {
     type, help, field: fieldName, conditional,
   } = field;
   if (type === 'submit' || type === 'reset') return buildButton(field);
+  if (type === 'hidden') {
+    // sent as authored (e.g. `_form` names the form in the Slack message)
+    const input = createElement('input');
+    input.type = 'hidden';
+    input.name = fieldName;
+    input.value = field.default || '';
+    return input;
+  }
 
   let el;
   if (type === 'radio' || type === 'checkbox') el = buildOptions(field);
@@ -246,7 +255,9 @@ function generatePayload(form) {
 function normalizeConfirmationPath(raw) {
   try {
     const url = new URL(String(raw || '').trim(), window.location.origin);
-    return url.origin === window.location.origin ? url.pathname : null;
+    // links to this site's aem.page / aem.live hosts work on every host, including localhost
+    const sameSite = url.origin === window.location.origin || /\.aem\.(page|live)$/.test(url.hostname);
+    return sameSite ? url.pathname : null;
   } catch {
     return null;
   }
@@ -354,6 +365,31 @@ function enableSubmission(form, submit, fields) {
   });
 }
 
+let formCount = 0;
+
+/**
+ * Keeps ids unique when a page has several forms (e.g. the contact form and the footer
+ * newsletter both have an email field): every form after the first gets a numbered suffix,
+ * and its labels and descriptions follow. Field names, and so the payload, are unchanged.
+ * @param {HTMLFormElement} form
+ */
+function makeIdsUnique(form) {
+  formCount += 1;
+  if (formCount === 1) return;
+  const ids = new Map();
+  form.querySelectorAll('[id]').forEach((el) => {
+    ids.set(el.id, `${el.id}-${formCount}`);
+    el.id = ids.get(el.id);
+  });
+  form.querySelectorAll('label[for]').forEach((label) => {
+    if (ids.has(label.htmlFor)) label.htmlFor = ids.get(label.htmlFor);
+  });
+  form.querySelectorAll('[aria-describedby]').forEach((el) => {
+    const refs = el.getAttribute('aria-describedby').split(/\s+/).map((id) => ids.get(id) || id);
+    el.setAttribute('aria-describedby', refs.join(' '));
+  });
+}
+
 /**
  * Creates a complete form from field configurations
  * @param {Array<Object>} fields - Array of field configurations
@@ -379,6 +415,7 @@ function buildForm(fields, submit) {
   status.setAttribute('aria-live', 'polite');
   form.append(status);
 
+  makeIdsUnique(form);
   enableConditionals(form);
   enableSubmission(form, submit, fields);
   return form;
