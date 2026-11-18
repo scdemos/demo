@@ -48,10 +48,10 @@ export function getLogoutUrl() {
  * Points authored sign-in/sign-out links (`/auth/login`, `/auth/logout`, relative or on the
  * auth origin) at the auth worker; sign-in comes back to the current page unless the link
  * already names a `returnTo`.
- * @param {Element} root
+ * @param {Iterable<HTMLAnchorElement>} links
  */
-export function decorateAuthLinks(root) {
-  root.querySelectorAll('a[href*="/auth/log"]').forEach((a) => {
+export function decorateAuthLinks(links) {
+  [...links].forEach((a) => {
     const url = new URL(a.getAttribute('href'), window.location.href);
     if (url.origin !== window.location.origin && url.origin !== AUTH_ORIGIN) return;
     if (url.pathname === AUTH_PATHS.login) a.href = getLoginUrl(url.searchParams.get('returnTo') || undefined);

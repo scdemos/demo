@@ -367,8 +367,10 @@ export function decorateMain(main) {
   decorateDefaultContent(main);
   decorateSectionLayouts(main);
   if (document.contains(main)) buildBreadcrumbs(main);
-  if (main.querySelector('a[href*="/auth/log"]')) {
-    import('./shared/auth-api.js').then(({ decorateAuthLinks }) => decorateAuthLinks(main));
+  // Collect the links now: a fragment's sections move into the page before the import resolves.
+  const authLinks = main.querySelectorAll('a[href*="/auth/log"]');
+  if (authLinks.length) {
+    import('./shared/auth-api.js').then(({ decorateAuthLinks }) => decorateAuthLinks(authLinks));
   }
   if (IS_PREFLIGHT_HOST && document.contains(main)) preflightSource = main.cloneNode(true);
 }
