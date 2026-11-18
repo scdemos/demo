@@ -2,7 +2,7 @@ import { getMetadata, readBlockConfig } from '../../scripts/aem.js';
 import { createTag, getMarket } from '../../scripts/shared.js';
 
 /**
- * The header's sign-in link always goes through the auth worker (Cloudflare Access),
+ * The header's sign-in link always goes through the auth worker (demo login),
  * coming back to this page. Signed in, it becomes a sign-out link.
  * @param {HTMLAnchorElement[]} links desktop and drawer sign-in links
  */

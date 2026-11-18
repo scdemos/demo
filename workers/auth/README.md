@@ -1,58 +1,92 @@
-# Auth Test Worker
+# Demo Login Worker
 
-Lightweight Cloudflare Worker to drive login/logout/session state for the header auth button.
+Public demo login for the scdemos/demo site (ported from [aem-sandbox/examples](https://github.com/aem-sandbox/examples/tree/main/workers/auth)).
 
-## Endpoints
+This worker intentionally **does not verify identity**. It asks for a display name, assigns the
+reserved fake address `visitor@example.invalid`, and stores that demo identity in a signed,
+short-lived cookie. It demonstrates the browser-to-worker session contract without collecting real
+email addresses or requiring an account with an external identity provider.
 
-- `GET /auth/login?returnTo=<url-or-path>` -> triggers Access and redirects to `returnTo`
-- `GET /auth/logout` -> logs out via app domain `/cdn-cgi/access/logout` (logout success page)
-- `GET /auth/session` -> returns `{ authenticated, email, hasJwtAssertion }`
+Do not use this worker to authorize access to private content. A production implementation replaces
+the demo login handler with OAuth or OpenID Connect while keeping the same site-facing routes.
 
-## Setup
+## Route contract
 
-1. Make sure your Cloudflare Access application protects the same hostname and `/auth/*` path.
-2. Use the configured worker name in `wrangler.toml` (`demo-bbird-auth`) or change it.
-3. Deploy from the project root:
+| Route | Purpose |
+| --- | --- |
+| `GET /auth/login?returnTo=<path>` | Shows the demo login form. |
+| `POST /auth/login` | Creates the signed demo session and returns to the requested path. |
+| `GET /auth/session` | Returns the current session as JSON. |
+| `GET /auth/logout` | Clears the demo session and returns to the home page. |
 
-```bash
-npm install
-npm run deploy:auth
+`returnTo` must be a path on this site. Absolute, protocol-relative, malformed, and non-HTTP targets
+fall back to `/auth/session`, preventing an open redirect after login.
+
+## Session
+
+The worker stores this payload in an HMAC-SHA256-signed cookie:
+
+```json
+{
+  "v": 1,
+  "name": "Ada Lovelace",
+  "email": "visitor@example.invalid",
+  "exp": 1788796800
+}
 ```
 
-## Local dev
+The cookie is host-only, `HttpOnly`, `Secure`, `SameSite=Lax`, available on `/`, and expires after
+one hour. The signing key is intentionally a public constant in this example. It demonstrates the
+mechanics of a signed session, but anyone can forge a cookie because the key is public.
 
-```bash
-npm run dev:auth
-```
+The fixed `.invalid` email makes the response shape realistic without collecting or inventing a
+real address. The chosen display name is held only in the visitor's cookie; the worker has no user
+database.
 
-## Test flow
-
-1. Open an incognito window.
-2. Visit the login endpoint, for example:
-
-```text
-https://demo-bbird-auth.aem-poc-lab.workers.dev/auth/login?returnTo=http://localhost:3000/
-```
-
-3. Enter an allowed email address on the Access screen.
-4. Enter the one-time PIN.
-5. Confirm your site loads and `/auth/session` shows `authenticated: true`.
-
-## Logout
-
-Visit:
-
-```text
-https://demo-bbird-auth.aem-poc-lab.workers.dev/auth/logout
-```
+There is no session-secret configuration step for this public demo. A real implementation must
+store its signing key in a Worker environment secret and must not share it with browsers or source
+control. This demo remains separate from origin protection and does not make content private.
 
 ## Site integration
 
-Header auth URLs are centralized in:
+- `scripts/shared/auth-api.js` calls the four `/auth/*` routes.
+- `blocks/header/header.js` changes **Login** to **Logout** when `/auth/session` is authenticated.
+- The existing info marker exposes the chosen name and fake email in its tooltip.
+- Login and Logout remain available in the mobile header.
 
-`scripts/shared/auth-api.js`
+Example authenticated session response:
 
-Update `AUTH_ORIGIN` there if your worker hostname changes.
+```json
+{
+  "authenticated": true,
+  "name": "Ada Lovelace",
+  "email": "visitor@example.invalid",
+  "path": "/auth/session"
+}
+```
 
-Logout uses app-domain endpoint: `https://demo-bbird-auth.aem-poc-lab.workers.dev/cdn-cgi/access/logout`
-without additional redirect parameters for demo simplicity.
+## Cloudflare routing
+
+`wrangler.toml` routes `demo.bbird.live/auth/*` to this worker. Remove the existing Cloudflare
+Access application from that route before testing the public demo; otherwise Access intercepts the
+request before this worker can show its form.
+
+## Production adaptation
+
+Keep the route contract, but replace the demo implementation:
+
+1. `/auth/login` redirects to the chosen identity provider.
+2. `/auth/callback` validates state and PKCE, exchanges the authorization code, and creates the
+   application session.
+3. `/auth/session` verifies that session and returns the minimum identity the site needs.
+4. `/auth/logout` clears the application session and, when appropriate, signs out at the provider.
+
+If login controls access to content rather than only personalizing public pages, protect every
+alternate origin and representation as a separate authorization concern.
+
+## Tests
+
+```bash
+npm install --prefix ./workers/auth
+npm test --prefix ./workers/auth
+```

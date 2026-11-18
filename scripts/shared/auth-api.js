@@ -18,9 +18,25 @@ export function getDefaultAuthLabel(type) {
   return AUTH_LABELS[type] || '';
 }
 
+/**
+ * The auth worker only returns to a path on its own site (no open redirect), so reduce the
+ * destination to its path; a page on another site returns to the home page.
+ * @param {string} returnTo path or URL
+ * @returns {string}
+ */
+function toReturnPath(returnTo) {
+  try {
+    const target = new URL(returnTo, window.location.href);
+    if (target.origin !== window.location.origin && target.origin !== AUTH_ORIGIN) return '/';
+    return `${target.pathname}${target.search}${target.hash}`;
+  } catch {
+    return '/';
+  }
+}
+
 export function getLoginUrl(returnTo = window.location.href) {
   const target = new URL(AUTH_PATHS.login, AUTH_ORIGIN);
-  target.searchParams.set('returnTo', returnTo);
+  target.searchParams.set('returnTo', toReturnPath(returnTo));
   return target.toString();
 }
 
@@ -46,19 +62,19 @@ export function decorateAuthLinks(root) {
 /** Shape aligned with `workers/auth` `/auth/session` JSON (anonymous when not logged in). */
 const ANONYMOUS_SESSION = {
   authenticated: false,
+  name: '',
   email: '',
-  hasJwtAssertion: false,
 };
 
 
 /**
  * Loads `/auth/session` JSON (anonymous on non-OK or failure).
- * `redirect: 'manual'` — Cloudflare Access replies with 302 to *.cloudflareaccess.com;
+ * `redirect: 'manual'` — never follow a redirect to a login page;
  */
 let sessionPromise;
 
 export function getSessionState() {
-  // The Access cookie belongs to the auth origin; elsewhere (localhost, aem.page/live) the
+  // The session cookie belongs to the auth origin; elsewhere (localhost, aem.page/live) the
   // browser won't send it cross-site, so asking would only log a cookie issue.
   if (window.location.origin !== AUTH_ORIGIN) {
     return Promise.resolve({ ...ANONYMOUS_SESSION, path: AUTH_PATHS.session });
