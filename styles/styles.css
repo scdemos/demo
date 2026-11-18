@@ -786,15 +786,18 @@ main > .section.flame {
   color: var(--white);
 }
 
-main > .section.center > .default-content-wrapper {
+main > .section.center > .default-content-wrapper,
+main > .section.center :where(.section-layout-column) > .default-content-wrapper {
   text-align: center;
 }
 
-main > .section.center > .default-content-wrapper :is(.eyebrow, .heading-group p, .button-group) {
+main > .section.center > .default-content-wrapper :is(.eyebrow, .heading-group p, .button-group),
+main > .section.center :where(.section-layout-column) > .default-content-wrapper :is(.eyebrow, .heading-group p, .button-group) {
   justify-content: center;
 }
 
-main > .section.center > .default-content-wrapper :is(h2, p:not(.button-container)) {
+main > .section.center > .default-content-wrapper :is(h2, p:not(.button-container)),
+main > .section.center :where(.section-layout-column) > .default-content-wrapper :is(h2, p:not(.button-container)) {
   margin-inline: auto;
 }
 
@@ -861,6 +864,50 @@ main > .section.prose .default-content-wrapper > :is(p, ul, ol),
 main > .section.prose .split-body :is(p, ul, ol) {
   font-size: var(--step-1);
   line-height: 1.7;
+}
+
+/* Section columns: section metadata Layout (widths) + Arrange (items per column).
+   Text in a column keeps the section's heading, lede and spacing rules. */
+.section > .section-layout {
+  display: grid;
+  gap: var(--gap-xl);
+}
+
+/* columns need at least the regular container, even in narrow or prose sections */
+main > .section.has-layout:not(.wide) > .section-layout {
+  width: min(100% - 2 * var(--gutter), var(--container));
+}
+
+.section-layout-column {
+  min-width: 0;
+}
+
+.section .section-layout-column > div + div {
+  margin-top: var(--gap-xl);
+}
+
+main > .section.has-layout .section-layout-column > .default-content-wrapper > h2,
+main > .section.has-layout .section-layout-column > .default-content-wrapper > .heading-group h2 {
+  max-width: 20em;
+}
+
+main > .section:not(.prose) .section-layout-column > .default-content-wrapper > :is(h2, .heading-group) + p:not(.button-container) {
+  max-width: 38em;
+  color: var(--color-text-muted);
+  font-size: var(--step-1);
+  line-height: 1.55;
+}
+
+main > .section .section-layout-column > .default-content-wrapper > :last-child {
+  margin-bottom: 0;
+}
+
+@media (width >= 900px) {
+  .section > .section-layout {
+    grid-template-columns: var(--section-layout-columns);
+    gap: var(--gap-2xl);
+    align-items: start;
+  }
 }
 
 main > .section .default-content-wrapper picture img {

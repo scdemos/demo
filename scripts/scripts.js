@@ -220,7 +220,7 @@ function decorateDefaultContent(main) {
     }
   });
   /* split: heading group on the left, everything else of the first text block on the right */
-  main.querySelectorAll('.section.split > .default-content-wrapper:first-child').forEach((wrapper) => {
+  main.querySelectorAll('.section.split:not([data-layout]) > .default-content-wrapper:first-child').forEach((wrapper) => {
     const group = wrapper.querySelector(':scope > .heading-group');
     if (!group || wrapper.querySelector(':scope > .split-body')) return;
     const rest = [...wrapper.children].filter((el) => el !== group);
@@ -315,6 +315,46 @@ function wrapBareImages(main) {
   });
 }
 
+/**
+ * Section columns from section metadata, as in the FIRE demo:
+ * - Layout: column widths, e.g. "60-40", "50-50", "33-33-33" (relative, any numbers).
+ * - Arrange: how many items go in each column, e.g. "1-2". An item is a block or a run of
+ *   text between blocks. Without Arrange each column gets one item.
+ * Items after the arranged ones stay below the columns. Layout replaces Style split.
+ * Wrappers are moved, never copied, so the section stays editable in layout view.
+ * Columns stack below 900px.
+ * @param {Element} main
+ */
+function decorateSectionLayouts(main) {
+  main.querySelectorAll(':scope > .section[data-layout]').forEach((section) => {
+    if (section.querySelector(':scope > .section-layout')) return;
+    const nums = (value) => String(value || '').split(/[^\d.]+/).map(Number).filter((n) => n > 0);
+    const widths = nums(section.dataset.layout);
+    if (widths.length < 2) return;
+    const counts = nums(section.dataset.arrange).map(Math.round);
+    const perColumn = counts.length === widths.length ? counts : widths.map(() => 1);
+    const items = [...section.children];
+    if (!items.length) return;
+    const layout = document.createElement('div');
+    layout.className = 'section-layout';
+    const total = widths.reduce((sum, w) => sum + w, 0);
+    const tracks = widths.map((w) => `${Math.round((w / total) * 10000) / 100}fr`);
+    layout.style.setProperty('--section-layout-columns', tracks.join(' '));
+    items[0].before(layout);
+    let next = 0;
+    perColumn.forEach((count) => {
+      const column = document.createElement('div');
+      column.className = 'section-layout-column';
+      column.append(...items.slice(next, next + count));
+      next += count;
+      layout.append(column);
+    });
+    // Layout replaces the split style's own two-column arrangement
+    section.classList.remove('split');
+    section.classList.add('has-layout');
+  });
+}
+
 export function decorateMain(main) {
   wrapBareImages(main);
   decorateButtons(main);
@@ -325,6 +365,7 @@ export function decorateMain(main) {
   decorateSectionMetadata(main);
   decorateBlocks(main);
   decorateDefaultContent(main);
+  decorateSectionLayouts(main);
   if (document.contains(main)) buildBreadcrumbs(main);
   if (main.querySelector('a[href*="/auth/log"]')) {
     import('./shared/auth-api.js').then(({ decorateAuthLinks }) => decorateAuthLinks(main));
