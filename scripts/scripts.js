@@ -127,6 +127,8 @@ const DNB_HASH = '#_dnb';
 
 async function loadFragments(section) {
   const main = section.closest('main');
+  // Gone already: the gated-content preview removes sections the current audience can't see.
+  if (!main) return;
   const links = [...section.querySelectorAll('a[href*="/fragments/"]')]
     .filter((a) => !a.closest('.fragment'));
   const fragments = links.filter((a) => {
@@ -577,6 +579,8 @@ async function loadLazy(doc) {
   if (gated) gated.initContentProtection();
   const sections = main ? [...main.querySelectorAll('div.section')] : [];
   for (let i = 0; i < sections.length; i += 1) {
+    // The gated-content preview may remove sections while this loop runs.
+    if (!sections[i].isConnected) continue;
     await loadSection(sections[i], loadFragments);
     if (i === 0 && sampleRUM.enhance) sampleRUM.enhance();
   }
