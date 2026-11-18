@@ -28,7 +28,7 @@ public, so it must not protect confidential content. The worker removes this coo
 forwarding requests to the origin.
 
 **Skips gating:** `/fragments/`, `/nav.plain.html`, `/footer.plain.html`, and `.plain.html`, `.md`
-and `.json` responses. The origin, downloads and html2json fallback are also outside this filter.
+and `.json` responses. The origin and downloads are also outside this filter.
 
 ## Caching
 

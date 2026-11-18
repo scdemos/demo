@@ -39,31 +39,6 @@ const fetchOrigin = (request) => fetch(request, {
   },
 });
 
-// html2json - start
-const HTML2JSON_QUERY_PARAMS = new Set(['head', 'preview', 'compact']);
-// Paths that should NOT fall back to html2json (mhast) on .json 404.
-const HTML2JSON_EXCLUDE_PATTERNS = [
-  // /products/<category>/* — product detail paths are not backed by mhast
-  /^\/products\/[^/]+\/.+/,
-];
-const isHtml2JsonExcluded = (pathname) => {
-  const cleanPath = pathname.replace(/\.json$/, '');
-  return HTML2JSON_EXCLUDE_PATTERNS.some((re) => re.test(cleanPath));
-};
-const buildHTML2JSONURL = (requestURL) => {
-  const pagePath = requestURL.pathname.replace(/\.json$/, '');
-  const html2jsonURL = new URL(
-    `https://mhast-html-to-json.adobeaem.workers.dev/scdemos/demo${pagePath}`,
-  );
-  for (const [key, value] of requestURL.searchParams.entries()) {
-    if (HTML2JSON_QUERY_PARAMS.has(key)) {
-      html2jsonURL.searchParams.append(key, value);
-    }
-  }
-  return html2jsonURL;
-};
-// html2json - end
-
 const handleRequest = async (request, env) => {
   const requestURL = new URL(request.url);
   const url = new URL(request.url);
@@ -148,28 +123,6 @@ const handleRequest = async (request, env) => {
     req.headers.set('authorization', `token ${env.ORIGIN_AUTHENTICATION}`);
   }
   let resp = await fetchOrigin(req);
-
-  // html2json - start
-  if (
-    request.method === 'GET'
-    && extension === 'json'
-    && resp.status === 404
-    && !isHtml2JsonExcluded(requestURL.pathname)
-  ) {
-    const html2jsonResp = await fetch(buildHTML2JSONURL(requestURL), {
-      headers: {
-        accept: 'application/json',
-      },
-      cf: {
-        cacheEverything: true,
-      },
-    });
-
-    if (html2jsonResp.ok) {
-      resp = html2jsonResp;
-    }
-  }
-  // html2json - end
 
   resp = await applyGatingIfNeeded(request, requestURL, resp, () => {
     const fullRequest = new Request(req, { method: 'GET' });

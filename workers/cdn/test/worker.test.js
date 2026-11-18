@@ -486,19 +486,9 @@ describe('unrelated public CDN requests', () => {
     expect(out.status).toBe(206);
   });
 
-  it('preserves existing JSON passthrough and the html2json fallback', async () => {
-    const fetchMock = mockOrigin(new Response(null, { status: 404 }), new Response('{"ok":true}', {
-      headers: { 'Content-Type': 'application/json' },
-    }));
-    const out = await run({}, '/example.json?head=true&compact=true');
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(String(fetchMock.mock.calls[1][0])).toContain('mhast-html-to-json.adobeaem.workers.dev/scdemos/demo/example?head=true&compact=true');
-    expect(await out.json()).toEqual({ ok: true });
-  });
-
-  it('skips the html2json fallback for product detail paths', async () => {
+  it('passes a JSON 404 through with a single origin fetch', async () => {
     const fetchMock = mockOrigin(new Response(null, { status: 404 }));
-    const out = await run({}, '/products/coffee/frescopa-blend.json');
+    const out = await run({}, '/example.json?head=true&compact=true');
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(out.status).toBe(404);
   });
