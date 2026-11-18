@@ -21,7 +21,7 @@ function audience(section) {
 }
 
 /**
- * Author/dev environments only; production gating is server-side (CDN Worker + Cloudflare Access).
+ * Author/dev environments only; production gating is server-side (CDN Worker + demo login session).
  * @returns {boolean}
  */
 function isAuthorEnvironment() {
@@ -33,7 +33,7 @@ function isAuthorEnvironment() {
 }
 
 /**
- * `?auth=true|false` overrides; otherwise the real Access session decides.
+ * `?auth=true|false` overrides; otherwise the real session decides.
  * @returns {Promise<boolean>} true = authenticated, false = anonymous
  */
 async function getAuthState() {
@@ -88,6 +88,7 @@ function checkBlockProtectionInSection(section, isAuthenticated) {
   restrictedBlocks.forEach((block) => {
     const hasLoggedIn = block.classList.contains('logged-in');
     const hasLoggedOut = block.classList.contains('logged-out');
+    if (hasLoggedIn && hasLoggedOut) return; // both variants: everyone sees it
     if ((!isAuthenticated && hasLoggedIn) || (isAuthenticated && hasLoggedOut)) {
       block.remove();
     }
@@ -103,12 +104,9 @@ function applySectionLevelProtection(protectionMetadata, isAuthenticated) {
     sectionData.element.remove();
   });
 
-  const remainingSections = document.querySelectorAll('main > div');
-  const publicSections = Array.from(remainingSections).filter((section) => (
-    audience(section) === null
-  ));
-
-  publicSections.forEach((section) => {
+  // Blocks in kept sections, public or audience-specific, still follow their own audience
+  // (same as the CDN worker).
+  document.querySelectorAll('main > div').forEach((section) => {
     checkBlockProtectionInSection(section, isAuthenticated);
   });
 }

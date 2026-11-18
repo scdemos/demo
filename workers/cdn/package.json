@@ -1,8 +1,14 @@
 {
-  "name": "demo-cdn-worker",
+  "name": "examples-cdn-worker",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
   "dependencies": {
     "cheerio": "^1.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^3"
   }
 }
