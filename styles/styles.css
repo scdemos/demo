@@ -731,6 +731,28 @@ main > .section.flush {
   padding-block-start: 0;
 }
 
+/* section-metadata style=divider: a rule at content width below the section, with the same
+   space on both sides instead of two full section paddings */
+main > .section.divider {
+  padding-block-end: 0;
+}
+
+main > .section.divider::after {
+  content: '';
+  display: block;
+  width: min(100% - 2 * var(--gutter), var(--container));
+  margin: var(--gap-xl) auto 0;
+  border-bottom: var(--border-width) solid var(--color-border-strong);
+}
+
+main > .section.divider + .section:not(
+  .flush,
+  :has(> .hero-wrapper:first-child),
+  :has(> .campaign-wrapper:only-child)
+) {
+  padding-block-start: var(--gap-xl);
+}
+
 main > .section.narrow > div {
   width: min(100% - 2 * var(--gutter), var(--container-narrow));
 }
