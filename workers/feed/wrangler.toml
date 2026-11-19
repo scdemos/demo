@@ -3,7 +3,6 @@ main = "index.js"
 compatibility_date = "2026-02-16"
 account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
 
-# Uncomment once bbird.live zone is in this Cloudflare account
 routes = [
    { pattern = "demo.bbird.live/rss.xml", zone_name = "bbird.live" },
    { pattern = "demo.bbird.live/feed.json", zone_name = "bbird.live" },
@@ -13,6 +12,14 @@ routes = [
 SITE_URL = "https://demo.bbird.live"
 CONTENT_ORIGIN = "https://main--demo--scdemos.aem.network"
 PUSH_INVALIDATION = "enabled"
+# What the feed lists: pages with this `template` under this folder, newest first by `date`.
+FEED_TEMPLATE = "article"
+FEED_PATH_PREFIX = "/en/"
+# Feed text shown in readers.
+FEED_TITLE = "Frescopa Journal"
+FEED_DESCRIPTION = "Long reads from the people and places behind Frescopa."
+FEED_LANGUAGE = "en"
+FEED_AUTHOR = "Frescopa"
 
 [observability.logs]
 enabled = true
