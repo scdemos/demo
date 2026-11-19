@@ -29,7 +29,7 @@ const DA_SDK_URL = 'https://da.live/nx/utils/sdk.js';
 const UI = {
   toastSdkFailed:
     'Sign in to Document Authoring and open CloneIt from DA, then refresh.',
-  toastReady: 'CloneIt is ready. Enter the customer site and your GitHub username to start.',
+  toastReady: 'CloneIt is ready. Enter a site name and your GitHub username to start.',
 };
 
 // Paths must stay aligned with workers/cloneit_token isAllowedProxyPath().
@@ -113,25 +113,8 @@ const app = {
 const SITE_NAME_MAX_LENGTH = 50;
 const RESERVED_NAMES = ['admin', 'api', 'config', 'main', 'live', 'preview', 'status', 'job'];
 
-// base-demo working folders that a new demo shouldn't inherit
-const SKIPPED_FOLDERS = new Set(['drafts', 'demo-docs', 'demo-slides']);
-
-const LOCALE_EXCLUDED_FOLDER_NAMES = new Set([
-  'ar', 'bg', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko',
-  'lt', 'lv', 'ms', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'uk', 'vi', 'zh',
-  'en-gb', 'en-us', 'pt-br', 'zh-cn', 'zh-tw',
-]);
-
-function isExcludedLocaleFolderName(name) {
-  if (!name || typeof name !== 'string') return false;
-  return LOCALE_EXCLUDED_FOLDER_NAMES.has(name.toLowerCase());
-}
-
-function pathStartsWithExcludedLocale(relPath) {
-  if (!relPath) return false;
-  const first = relPath.split('/').filter(Boolean)[0];
-  return isExcludedLocaleFolderName(first);
-}
+// the base demo's working folders; everything else (/en, /de, /media, …) is copied
+const SKIPPED_FOLDERS = new Set(['drafts', 'demo-docs', 'studio']);
 
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
@@ -245,6 +228,7 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     baselineSite: baselineSiteOpt = '',
     codeSynced = true,
     publish = null,
+    copyFailed = [],
   } = options;
   const baselineSite = baselineSiteOpt || '—';
   const {
@@ -279,6 +263,9 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   }
 
   const extra = [];
+  if (copyFailed.length) {
+    extra.push([`<strong>${copyFailed.length} file${copyFailed.length === 1 ? '' : 's'} couldn't be copied</strong>: ${copyFailed.map((f) => `<code>${escapeHtml(f)}</code>`).join(', ')}`, `Not copied: ${copyFailed.join(', ')}`]);
+  }
   extra.push([`Own repository <code>${ORG}/${escapeHtml(siteName)}</code>, added to AEM Code Sync`, `Own repository ${ORG}/${siteName}, added to AEM Code Sync`]);
   if (!codeSynced) extra.push(['<strong>Code sync still running</strong>: the site may show unstyled for a minute', 'Code sync still running']);
   if (publish?.error) {
@@ -635,13 +622,6 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-function getDefaultIndexHtml(siteName) {
-  return `<body><header></header><main>
-  <h1>Welcome to ${siteName}</h1>
-  <p>Your new site has been created. Edit this page in <a href="https://da.live/#/${ORG}/${siteName}">Document Authoring</a>.</p>
-</main><footer></footer></body>`;
-}
-
 async function fetchDaConfig(org, repo) {
   const response = await cloneitProcessFetch('da', Paths.daConfig(org, repo));
   if (!response.ok) return null;
@@ -699,21 +679,15 @@ async function collectAllFilePaths(basePath, files, baselineSite) {
   for (const item of items) {
     const isFile = item.lastModified != null && (item.ext || /\.(html|json|png|jpg|jpeg|gif|svg|webp|pdf)$/i.test(item.name || ''));
     const isFolder = !item.ext && !item.lastModified && item.name && item.name !== '.DS_Store';
-    const skipFolder = isFolder && (
-      SKIPPED_FOLDERS.has(item.name)
-      || isExcludedLocaleFolderName(item.name)
-    );
-
-    if (skipFolder) continue;
+    // only top-level working folders are skipped, not e.g. /en/drafts
+    if (!bp && SKIPPED_FOLDERS.has(isFolder ? item.name : (item.name || '').replace(/\.html$/, ''))) continue;
 
     if (isFile) {
       const itemPath = (item.path || '').replace(/^\/+/, '');
       const relPath = itemPath.startsWith(prefix)
         ? itemPath.slice(prefix.length).replace(/^\/+/, '')
         : (bp ? `${bp}/${item.name}` : (item.name || itemPath));
-      const normalized = relPath || item.name;
-      if (pathStartsWithExcludedLocale(normalized)) continue;
-      fileList.push(normalized);
+      fileList.push(relPath || item.name);
 
       if (item.ext === 'html') {
         const hiddenFolder = `.${item.name}`;
@@ -736,8 +710,9 @@ async function collectAllFilePaths(basePath, files, baselineSite) {
   return fileList;
 }
 
+// per-page attachment folders (`.page/…`) can sit at any depth, e.g. en/.index/photo.png
 function isHiddenAssetPath(path) {
-  return path.split('/')[0].startsWith('.');
+  return path.split('/').slice(0, -1).some((segment) => segment.startsWith('.'));
 }
 
 async function rewriteKnownHiddenAssetRefs(sourcePath, newSiteName, baselineSite, hiddenAssetPaths) {
@@ -779,19 +754,28 @@ async function copyDaFolder(newSiteName, baselineSite, onProgress) {
     throw new Error('No files found in baseline DA folder');
   }
   const hiddenAssetPaths = files.filter(isHiddenAssetPath);
+  const copied = [];
+  const failed = [];
 
+  // one failing file shouldn't stop the rest of the site from being copied
   for (let i = 0; i < files.length; i += 1) {
     if (onProgress) onProgress(i + 1, files.length, files[i]);
-    await copyDaFile(files[i], newSiteName, baselineSite, hiddenAssetPaths);
+    try {
+      await copyDaFile(files[i], newSiteName, baselineSite, hiddenAssetPaths);
+      copied.push(files[i]);
+    } catch (e) {
+      console.warn(e);
+      failed.push(files[i]);
+    }
   }
-  return files;
+  return { copied, failed };
 }
 
 function daPathsToApiPaths(daFiles) {
   return daFiles.map((f) => {
     if (f.endsWith('.html')) {
-      const withoutExt = f.slice(0, -5);
-      return withoutExt === 'index' ? '/' : `/${withoutExt}`;
+      // index.html → folder URL: "index.html" → "/", "en/index.html" → "/en/"
+      return `/${f.slice(0, -5)}`.replace(/(^|\/)index$/, '$1');
     }
     return `/${f}`.replace(/\/+/g, '/');
   });
@@ -1011,11 +995,14 @@ async function cloneSite(siteName, opts = {}) {
       throw new Error(`Repository created, but it couldn't be added to AEM Code Sync (${repo.codeSync?.reason}). Ask an scdemos admin to add ${ORG}/${siteName} to AEM Code Sync, then run CloneIt again with the same name.`);
     }
 
-    setProgress(true, 10, 'Creating DA folder…', null, 'Setup', '');
-    const indexContent = getDefaultIndexHtml(siteName);
-    await createDaSource(siteName, 'index.html', indexContent);
+    setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
+    const { copied: copiedFiles, failed: copyFailed } = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
+      const pct = 15 + Math.floor((current / total) * 35);
+      setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
+    });
+    if (!copiedFiles.length) throw new Error(`No content could be copied from ${ORG}/${baselineSite}.`);
 
-    setProgress(true, 12, 'Copying DA config (all sheets)…', null, 'Setup', '');
+    setProgress(true, 52, 'Copying DA config (all sheets)…', null, 'Setup', '');
     let daConfigCopied = false;
     const daConfigContent = await fetchDaConfig(ORG, baselineSite);
     if (daConfigContent?.trim()) {
@@ -1025,19 +1012,6 @@ async function cloneSite(siteName, opts = {}) {
       } catch (configErr) {
         console.warn('DA config copy skipped:', configErr);
       }
-    }
-
-    setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
-    let copiedFiles = [];
-    try {
-      copiedFiles = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
-        const pct = 15 + Math.floor((current / total) * 35);
-        setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
-      });
-    } catch (copyError) {
-      setProgress(true, 45, 'Copy failed, updating index.html…', null, 'Fallback', '');
-      await createDaSource(siteName, 'index.html', indexContent);
-      copiedFiles = ['index.html'];
     }
 
     setProgress(true, 55, 'Fetching baseline config…', null, 'Configuring', '');
@@ -1105,6 +1079,7 @@ async function cloneSite(siteName, opts = {}) {
       codeSynced,
       publish,
       customerSite,
+      copyFailed,
     });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
@@ -1115,6 +1090,13 @@ async function cloneSite(siteName, opts = {}) {
     setButtonLoading(false);
     setProgress(false);
   }
+}
+
+/** The customer site is optional; '' when empty, null when typed but not a web URL. */
+function getCustomerSite() {
+  const raw = (document.getElementById('customer-site-input')?.value || '').trim();
+  if (!raw) return '';
+  return normalizeCustomerUrl(raw) || null;
 }
 
 function getGithubUser() {
@@ -1133,7 +1115,7 @@ function updateCloneButtonState() {
   const { value } = validateSiteName(siteInput?.value || '', BASELINE_SITE);
   // the requester's GitHub username is required: they become admin of the new repo
   const ghOk = GH_USER_RE.test(getGithubUser());
-  const urlOk = !!normalizeCustomerUrl(document.getElementById('customer-site-input')?.value);
+  const urlOk = getCustomerSite() !== null;
   if (cloneBtn) {
     cloneBtn.disabled = !app.workerReady || !app.sdkReady || !app.standaloneAvailable || !value || !ghOk || !urlOk;
   }
@@ -1169,9 +1151,9 @@ function setupEventListeners() {
         showToast(error, 'error');
         return;
       }
-      const customerSite = normalizeCustomerUrl(document.getElementById('customer-site-input')?.value);
-      if (!customerSite) {
-        showToast('Enter the customer website URL, e.g. https://www.acme-investments.com/en', 'error');
+      const customerSite = getCustomerSite();
+      if (customerSite === null) {
+        showToast('Enter a valid customer website URL (e.g. https://www.acme-investments.com/en) or leave it empty', 'error');
         return;
       }
       const gh = getGithubUser();
