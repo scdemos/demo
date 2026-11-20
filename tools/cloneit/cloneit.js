@@ -278,7 +278,8 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   if (permissions?.error) {
     extra.push([`<strong>Edit access not added</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin for write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>`, `Edit access not added: ${permissions.error}`]);
   } else if (permissions) {
-    extra.push([`You can edit the demo's content and config in DA (<code>${escapeHtml(permissions.email)}</code>: write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>)`, `Edit access in DA for ${permissions.email}: /${siteName}/CONFIG and /${siteName}/**`]);
+    const shared = (permissions.joined || []).length ? `, and added to <code>${permissions.joined.map(escapeHtml).join('</code>, <code>')}</code>` : '';
+    extra.push([`You can edit the demo's content and config in DA (<code>${escapeHtml(permissions.email)}</code>: write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>${shared})`, `Edit access in DA for ${permissions.email}: /${siteName}/CONFIG and /${siteName}/**${(permissions.joined || []).length ? `; added to ${permissions.joined.join(', ')}` : ''}`]);
   }
   extra.forEach(([, plain]) => plainLines.push(plain));
   const extraHtml = extra.map(([html]) => `<li>${html}</li>`).join('');
@@ -716,27 +717,22 @@ async function collectAllFilePaths(basePath, files, baselineSite) {
   return fileList;
 }
 
-// per-page attachment folders (`.page/…`) can sit at any depth, e.g. en/.index/photo.png
-function isHiddenAssetPath(path) {
-  return path.split('/').slice(0, -1).some((segment) => segment.startsWith('.'));
-}
-
-async function rewriteKnownHiddenAssetRefs(sourcePath, newSiteName, baselineSite, hiddenAssetPaths) {
-  if (hiddenAssetPaths.length === 0) return;
+/**
+ * Copied pages and sheets keep absolute links to the template's DA content (images in /media/, hidden
+ * per-page asset folders, …). That content needs a sign-in, so the new site's preview can't load it:
+ * point every such link at the new site's copy instead.
+ */
+async function rewriteBaselineContentRefs(sourcePath, newSiteName, baselineSite) {
   const response = await cloneitProcessFetch('da', Paths.daSource(newSiteName, sourcePath));
   if (!response.ok) return;
   const original = await response.text();
-  let rewritten = original;
-  hiddenAssetPaths.forEach((assetPath) => {
-    const from = `https://content.da.live/${ORG}/${baselineSite}/${assetPath}`;
-    const to = `https://content.da.live/${ORG}/${newSiteName}/${assetPath}`;
-    rewritten = rewritten.split(from).join(to);
-  });
-  if (rewritten === original) return;
+  const from = `https://content.da.live/${ORG}/${baselineSite}/`;
+  if (!original.includes(from)) return;
+  const rewritten = original.split(from).join(`https://content.da.live/${ORG}/${newSiteName}/`);
   await createDaSource(newSiteName, sourcePath, rewritten);
 }
 
-async function copyDaFile(sourcePath, newSiteName, baselineSite, hiddenAssetPaths) {
+async function copyDaFile(sourcePath, newSiteName, baselineSite) {
   const response = await cloneitProcessFetch('da', Paths.daCopyFromBaseline(baselineSite, sourcePath), {
     method: 'POST',
     form: { destination: `/${ORG}/${newSiteName}/${sourcePath}` },
@@ -747,8 +743,8 @@ async function copyDaFile(sourcePath, newSiteName, baselineSite, hiddenAssetPath
     throw new Error(`Failed to copy ${sourcePath}: ${response.status} ${response.statusText} - ${text}`);
   }
 
-  if (sourcePath.endsWith('.html')) {
-    await rewriteKnownHiddenAssetRefs(sourcePath, newSiteName, baselineSite, hiddenAssetPaths);
+  if (/\.(html|json)$/.test(sourcePath)) {
+    await rewriteBaselineContentRefs(sourcePath, newSiteName, baselineSite);
   }
 
   return response;
@@ -759,7 +755,6 @@ async function copyDaFolder(newSiteName, baselineSite, onProgress) {
   if (files.length === 0) {
     throw new Error('No files found in baseline DA folder');
   }
-  const hiddenAssetPaths = files.filter(isHiddenAssetPath);
   const copied = [];
   const failed = [];
 
@@ -767,7 +762,7 @@ async function copyDaFolder(newSiteName, baselineSite, onProgress) {
   for (let i = 0; i < files.length; i += 1) {
     if (onProgress) onProgress(i + 1, files.length, files[i]);
     try {
-      await copyDaFile(files[i], newSiteName, baselineSite, hiddenAssetPaths);
+      await copyDaFile(files[i], newSiteName, baselineSite);
       copied.push(files[i]);
     } catch (e) {
       console.warn(e);
