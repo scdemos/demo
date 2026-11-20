@@ -141,6 +141,10 @@ export function formatDate(dateValue) {
   if (/^[0-9]+$/.test(normalized)) {
     const ts = Number(normalized);
     date = new Date(ts < 1e12 ? ts * 1000 : ts);
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    // A calendar date: `new Date('2026-11-09')` is UTC midnight, the day before in the Americas.
+    const [year, month, day] = normalized.split('-').map(Number);
+    date = new Date(year, month - 1, day);
   } else {
     date = new Date(normalized);
   }

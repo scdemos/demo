@@ -8,7 +8,8 @@ export default function init(main) {
   const metaParas = [];
 
   col.querySelectorAll('p').forEach((p) => {
-    const match = p.textContent.match(/^(.+?)\s*:\s*(.+)$/);
+    // Only the template's own detail lines, so a description with a colon stays text.
+    const match = p.textContent.match(/^(date|time|type)\s*:\s*(.+)$/i);
     if (match) {
       metaPairs[match[1].trim().toLowerCase()] = match[2].trim();
       metaParas.push(p);
