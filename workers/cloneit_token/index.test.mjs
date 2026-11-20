@@ -97,7 +97,17 @@ function fakeAdmin({ requester = 'sc@adobe.com', topics = ['customer-demo'], rep
   let org = {
     ':names': ['data', 'permissions'], ':version': 3, ':type': 'multi-sheet',
     data: { total: 1, limit: 1, offset: 0, data: [{ key: 'k', value: 'v' }], ':colWidths': [1, 2] },
-    permissions: { total: 1, limit: 1, offset: 0, data: [{ path: 'CONFIG', groups: 'ORG', actions: 'read', comments: '' }], ':colWidths': [1, 2, 3, 4] },
+    permissions: {
+      total: 3,
+      limit: 3,
+      offset: 0,
+      data: [
+        { path: 'CONFIG', groups: 'ORG', actions: 'read', comments: '' },
+        { path: 'CONFIG', groups: 'ORG/admins, a@adobe.com', actions: 'write', comments: 'admins' },
+        { path: '/demo/+**', groups: 'ORG/admins, a@adobe.com,', actions: 'write', comments: '' },
+      ],
+      ':colWidths': [1, 2, 3, 4],
+    },
   };
   const writes = []; let lost = loseWrites;
   const adminFetch = async (kind, path, init = {}) => {
@@ -120,19 +130,27 @@ const penv = { ORG: 'scdemos', TEMPLATE_REPO: 'scdemos/demo' };
 { const a = fakeAdmin();
   const r = await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait);
   const rows = a.org().permissions.data;
-  ok('grant adds CONFIG + ** rows at the end', rows.length === 3 && rows[1].path === '/acme/CONFIG' && rows[2].path === '/acme/**'
-    && rows.slice(1).every((x) => x.groups === 'sc@adobe.com' && x.actions === 'write'), JSON.stringify(rows));
-  ok('grant keeps other rows and sheets', rows[0].path === 'CONFIG' && a.org().data.data[0].key === 'k' && a.org()[':names'].length === 2);
-  ok('grant updates totals', a.org().permissions.total === 3 && a.org().permissions.limit === 3);
-  ok('grant reports added', r.added.join() === '/acme/CONFIG,/acme/**');
+  ok('grant adds CONFIG + ** rows at the end', rows.length === 5 && rows[3].path === '/acme/CONFIG' && rows[4].path === '/acme/**'
+    && rows.slice(3).every((x) => x.groups === 'sc@adobe.com' && x.actions === 'write'), JSON.stringify(rows));
+  ok('grant joins the CONFIG write row', rows[1].groups === 'ORG/admins, a@adobe.com, sc@adobe.com' && rows[1].comments === 'admins');
+  ok('grant joins the template row (trailing comma kept clean)', rows[2].groups === 'ORG/admins, a@adobe.com, sc@adobe.com');
+  ok('grant leaves the CONFIG read row alone', rows[0].groups === 'ORG');
+  ok('grant keeps other sheets', a.org().data.data[0].key === 'k' && a.org()[':names'].length === 2);
+  ok('grant updates totals', a.org().permissions.total === 5 && a.org().permissions.limit === 5);
+  ok('grant reports added and joined', r.added.join() === '/acme/CONFIG,/acme/**' && r.joined.join() === 'CONFIG,/demo/+**', JSON.stringify(r));
   const again = await grantDemoPermissions({ site: 'acme', email: 'SC@adobe.com' }, penv, a.deps, nowait);
-  ok('second run adds nothing', again.added.length === 0 && a.writes.length === 1 && a.org().permissions.data.length === 3); }
+  ok('second run changes nothing', again.added.length === 0 && again.joined.length === 0 && a.writes.length === 1
+    && a.org().permissions.data[1].groups.split(',').length === 3); }
+ok('missing shared rows are not created', (() => {
+  const { config, joined } = addPermissionRows({ permissions: { data: [] } }, [], { email: 'sc@adobe.com', paths: ['CONFIG', '/demo/+**'] });
+  return config === null && joined.length === 0;
+})());
 { const a = fakeAdmin({ loseWrites: 1 });
   await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait);
-  ok('lost update is written again', a.writes.length === 2 && a.org().permissions.data.length === 3); }
+  ok('lost update is written again', a.writes.length === 2 && a.org().permissions.data.length === 5); }
 { const a = fakeAdmin({ loseWrites: 2 });
   await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait);
-  ok('third write that sticks is confirmed', a.writes.length === 3 && a.org().permissions.data.length === 3); }
+  ok('third write that sticks is confirmed', a.writes.length === 3 && a.org().permissions.data.length === 5); }
 { const a = fakeAdmin({ loseWrites: 3 });
   try { await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait); ok('never sticks → not confirmed', false); } catch (e) { ok('never sticks → not confirmed', e.message === 'org_config_write_not_confirmed' && a.writes.length === 3); } }
 const denied = async (name, opts, site, email, msg) => {

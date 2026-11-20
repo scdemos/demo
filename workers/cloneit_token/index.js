@@ -334,18 +334,30 @@ export function permissionRows(site, email) {
   ];
 }
 
-/** Appends the rows missing from the org config's permissions sheet; returns { config, added } (config null when nothing to add). */
-export function addPermissionRows(orgConfig, rows) {
+/**
+ * Appends the rows missing from the org config's permissions sheet, and adds `join.email` to the existing
+ * `write` rows whose path is in `join.paths` (e.g. CONFIG and /demo/+**), as one more comma-separated entry.
+ * Returns { config, added, joined } (config null when nothing changes).
+ */
+export function addPermissionRows(orgConfig, rows, join = { email: '', paths: [] }) {
   const sheet = orgConfig?.permissions;
   if (!Array.isArray(sheet?.data)) throw Object.assign(new Error('org_config_has_no_permissions_sheet'), { status: 502 });
-  const has = (r) => sheet.data.some((x) => x.path === r.path && x.actions === r.actions
-    && String(x.groups || '').split(',').some((g) => sameEmail(g, r.groups)));
+  const listed = (x, email) => String(x.groups || '').split(',').some((g) => sameEmail(g, email));
+  const has = (r) => sheet.data.some((x) => x.path === r.path && x.actions === r.actions && listed(x, r.groups));
   const added = rows.filter((r) => !has(r));
-  if (!added.length) return { config: null, added };
-  const data = [...sheet.data, ...added];
+  const joined = [];
+  const data = sheet.data.map((x) => {
+    if (!join.email || x.actions !== 'write' || !join.paths.includes(x.path) || listed(x, join.email)) return x;
+    joined.push(x.path);
+    const groups = String(x.groups || '').trim().replace(/,$/, '');
+    return { ...x, groups: groups ? `${groups}, ${join.email}` : join.email };
+  });
+  if (!added.length && !joined.length) return { config: null, added, joined };
+  data.push(...added);
   return {
     config: { ...orgConfig, permissions: { ...sheet, data, total: data.length, limit: data.length } },
     added,
+    joined,
   };
 }
 
@@ -375,6 +387,11 @@ export async function grantDemoPermissions({ site, email }, env, { adminFetch, g
   const org = env.ORG || DEFAULT_ORG;
   await assertOwnsDemo(site, email, env, gh);
   const rows = permissionRows(site, email);
+  // also join the shared rows: org config (CONFIG) and the template's content, so the requester can
+  // change any site config and the template like the rest of the team
+  const tRepo = (env.TEMPLATE_REPO || `${org}/demo`).split('/')[1];
+  const join = { email, paths: ['CONFIG', `/${tRepo}/+**`] };
+  let joinedPaths = [];
   const path = `/config/${org}/`;
   let addedRows = [];
   // append our rows at the end and re-read to check they're there (if two writes overlap, the last one wins)
@@ -382,8 +399,13 @@ export async function grantDemoPermissions({ site, email }, env, { adminFetch, g
   for (let attempt = 0; attempt < 4; attempt += 1) {
     const res = await adminFetch('da', path);
     if (!res.ok) throw Object.assign(new Error(`org_config_read_failed_${res.status}`), { status: 502 });
-    const { config, added } = addPermissionRows(await res.json(), rows);
-    if (!config) return { site, email, rows: rows.map((r) => r.path), added: addedRows.map((r) => r.path) };
+    const { config, added, joined } = addPermissionRows(await res.json(), rows, join);
+    if (!config) {
+      return {
+        site, email, rows: rows.map((r) => r.path), added: addedRows.map((r) => r.path), joined: joinedPaths,
+      };
+    }
+    if (!joinedPaths.length) joinedPaths = joined;
     if (attempt === 3) break;
     if (!addedRows.length) addedRows = added;
     const form = new FormData();
