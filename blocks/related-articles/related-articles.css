@@ -178,6 +178,12 @@
   }
 }
 
+/* No image: text-only cards, the content starts at the card's top */
+
+.related-articles.no-image .related-articles-card-content {
+  padding-top: var(--gap-s);
+}
+
 /* Bento: featured first card plus a grid */
 
 .related-articles.bento .related-articles-list {
