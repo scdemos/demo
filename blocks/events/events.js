@@ -3,7 +3,7 @@ import { addSchema } from '../../scripts/schema.js';
 import { createTag } from '../../scripts/shared.js';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/;
-const CONFIG_KEYS = ['filter', 'filter-label', 'count', 'empty'];
+const CONFIG_KEYS = ['source', 'cta', 'filter', 'filter-label', 'count', 'empty'];
 
 const format = (str, vars) => str.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
 
@@ -39,7 +39,10 @@ function readRows(rows) {
     const first = cells[0]?.textContent.trim() || '';
     const key = toClassName(first);
     if (DATE_RE.test(first)) items.push(cells);
-    else if (cells.length >= 2 && CONFIG_KEYS.includes(key)) config[key] = cells[1].textContent.trim();
+    else if (cells.length >= 2 && CONFIG_KEYS.includes(key)) {
+      const link = cells[1].querySelector('a');
+      config[key] = key === 'source' && link ? link.getAttribute('href') : cells[1].textContent.trim();
+    }
   });
   return { config, items };
 }
@@ -170,15 +173,63 @@ function buildFilter(block, list, built, config) {
   apply(false);
 }
 
+/**
+ * Turns the rows of a sheet (date, path, title, house, time, price, city) into the same cells an
+ * author would type, so both sources share one rendering path.
+ */
+function rowToCells(row, cta) {
+  const dateCell = createTag('div', {}, row.date);
+  const content = createTag('div');
+  const heading = createTag('h2');
+  heading.append(createTag('a', { href: row.path }, row.title));
+  const meta = [row.house, row.time, row.price].filter(Boolean).join(' · ');
+  content.append(heading, createTag('p', {}, meta));
+  if (cta) {
+    const p = createTag('p');
+    p.append(createTag('a', { href: row.path }, cta));
+    content.append(p);
+  }
+  return [dateCell, content, createTag('div', {}, row.city || '')];
+}
+
+const isLocalPath = (value) => {
+  if (typeof value !== 'string' || !value.startsWith('/')) return false;
+  try {
+    return new URL(value, window.location.href).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+};
+
+async function loadSource(source, cta) {
+  let data = [];
+  try {
+    const url = new URL(source, window.location.href);
+    if (url.origin !== window.location.origin) return [];
+    const resp = await fetch(url);
+    if (!resp.ok) return [];
+    ({ data = [] } = await resp.json());
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((row) => DATE_RE.test(row.date || '') && isLocalPath(row.path) && row.title)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map((row) => rowToCells(row, cta));
+}
+
 /** @param {Element} block */
-export default function decorate(block) {
-  const { config, items } = readRows([...block.children]);
+export default async function decorate(block) {
+  const { config, items: authored } = readRows([...block.children]);
+  const items = config.source ? await loadSource(config.source, config.cta) : authored;
   const built = items.map(buildItem);
   const list = createTag('ul', { class: 'events-list' });
   built.forEach(({ li }) => list.append(li));
   block.replaceChildren(list);
 
   if (config.filter) buildFilter(block, list, built, config);
+  if (!built.length && config.empty) list.after(createTag('p', { class: 'events-empty' }, config.empty));
 
   if (built.length) {
     addSchema({
