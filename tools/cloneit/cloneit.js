@@ -114,7 +114,7 @@ const SITE_NAME_MAX_LENGTH = 50;
 const RESERVED_NAMES = ['admin', 'api', 'config', 'main', 'live', 'preview', 'status', 'job'];
 
 // the base demo's working folders; everything else (/en, /de, /media, …) is copied
-const SKIPPED_FOLDERS = new Set(['drafts', 'demo-docs', 'studio']);
+const SKIPPED_FOLDERS = new Set(['drafts', 'demo-docs']);
 
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
