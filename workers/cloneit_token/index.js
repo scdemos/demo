@@ -77,7 +77,8 @@ function stripPathPrefix(pathname, env) {
 }
 
 function isSafePath(path) {
-  return !!path && typeof path === 'string' && path.startsWith('/') && !path.includes('..');
+  // fetch() normalizes `%2e%2e` and `\` into `..` and `/`, so they could step outside the allowlisted prefix
+  return !!path && typeof path === 'string' && path.startsWith('/') && !path.includes('..') && !/[%\\]/.test(path);
 }
 
 // Allowlist — keep in sync with tools/cloneit/cloneit.js Paths.
@@ -90,6 +91,11 @@ export function isAllowedProxyPath(kind, path, org, legacy = false) {
   }
   if (kind === 'da') return new RegExp(`^/(list|config|copy|source)/${esc}/`).test(path);
   return false;
+}
+
+/** DA copy writes to `form.destination`: it must stay inside the org like the source path. */
+export function isAllowedCopyDestination(destination, org) {
+  return isSafePath(destination) && destination.startsWith(`/${org}/`);
 }
 
 function base64ToUint8Array(b64) {
@@ -172,6 +178,9 @@ async function proxyToAdmin(request, env, cors, legacy = false) {
   const hasForm = !!(payload.form && typeof payload.form === 'object');
   const hasFile = !!(payload.file && typeof payload.file === 'object');
   if ([hasBody, hasForm, hasFile].filter(Boolean).length > 1) return workerErr(cors, 'Use only one of body, form, or file', 400);
+  if (kind === 'da' && targetPath.startsWith('/copy/') && !isAllowedCopyDestination(payload.form?.destination, org)) {
+    return workerErr(cors, 'Copy destination not allowed', 400);
+  }
 
   const bearer = `Bearer ${await generateToken(env)}`;
   const targetUrl = kind === 'helix' ? `${HELIX_ORIGIN}${targetPath}` : `${DA_ORIGIN}${targetPath}`;

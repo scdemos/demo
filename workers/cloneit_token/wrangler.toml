@@ -10,8 +10,9 @@ PATH_PREFIX = "cloneit"
 # Include the origin that serves CloneIt (e.g. https://demo.bbird.live if the tool is hosted there).
 ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.preview.da.live,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live"
 
-# Previous CloneIt page (no token) keeps working until this is set to "false".
-LEGACY_COMPAT = "true"
+# "false": every request needs the caller's IMS token. "true" re-opens the token-less legacy lane
+# (POST / returns the technical token to anyone who sends an allowed Origin), so keep it off.
+LEGACY_COMPAT = "false"
 # New routes: callers must present their own Adobe IMS token (DA session); only these email domains are allowed.
 ALLOWED_EMAIL_DOMAINS = "adobe.com"
 # IMS client ids whose user tokens are accepted (DA = darkalley).
