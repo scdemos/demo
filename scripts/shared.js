@@ -195,14 +195,19 @@ export function getArticleKeywords(article = {}) {
 }
 
 /**
- * Get content timestamp from entry.
+ * When an entry was published, in milliseconds: its own date first (an article's date, a press
+ * release's publisheddate), else when it last changed. The query index gives seconds, AEM
+ * Content Fragments give milliseconds.
  * @param {Object} entry - Content entry
  * @returns {number}
  */
 export function getContentTimestamp(entry = {}) {
-  const value = entry.lastModified || entry.date || entry.publisheddate;
+  const value = entry.date || entry.publisheddate || entry.lastModified;
   if (!value) return 0;
-  if (/^[0-9]+$/.test(String(value))) return Number(value);
+  if (/^[0-9]+$/.test(String(value))) {
+    const ts = Number(value);
+    return ts < 1e12 ? ts * 1000 : ts;
+  }
   const parsed = Date.parse(String(value));
   return Number.isNaN(parsed) ? 0 : parsed;
 }
