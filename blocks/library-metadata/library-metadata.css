@@ -1,0 +1,38 @@
+/* Block library pages: each section is one block variant, labelled by its heading and the
+   library metadata's description, set apart from the block itself. */
+
+main .section:has(> .library-metadata-wrapper) {
+  display: flex;
+  flex-direction: column;
+  border-top: var(--border);
+}
+
+main .section:has(> .library-metadata-wrapper):first-child {
+  border-top: 0;
+}
+
+main .section:has(> .library-metadata-wrapper) > .default-content-wrapper:first-child {
+  order: -2;
+}
+
+main .section:has(> .library-metadata-wrapper) > .default-content-wrapper:first-child h2 {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+main .section > .library-metadata-wrapper {
+  display: block;
+  order: -1;
+  margin-bottom: var(--gap-m);
+}
+
+.library-metadata .library-metadata-description {
+  max-width: 60ch;
+  margin: var(--gap-2xs) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}

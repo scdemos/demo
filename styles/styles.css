@@ -1041,8 +1041,13 @@ main > .section.cover > .default-content-wrapper > :not(:has(> picture)) {
   --color-surface: var(--ink-950);
 }
 
-/* hide library metadata from being seen in block library */
+/* block library pages: library metadata stays hidden until its block shows it as a caption,
+   and the site header and footer are left out so authors see only the blocks */
 .library-metadata-wrapper {
+  display: none;
+}
+
+body:has(main .library-metadata) > :is(header, footer) {
   display: none;
 }
 
