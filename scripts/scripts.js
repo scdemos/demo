@@ -14,7 +14,6 @@ import {
   readBlockConfig,
   sampleRUM,
   loadCSS,
-  loadScript,
   getMetadata,
   toCamelCase,
   toClassName,
@@ -22,7 +21,8 @@ import {
 import {
   initMartech, martechEager, martechLazy, martechDelayed,
 } from '../plugins/martech/src/index.js';
-import { getAllMetadata, getMarket, isGatedPage } from './shared.js';
+import { getMarket, isGatedPage } from './shared.js';
+import { runExperimentation, runExperimentationLazy } from './experiment-loader.js';
 
 const { searchParams } = new URL(window.location.href);
 const IS_QUICK_EDIT = searchParams.has('quick-edit');
@@ -41,22 +41,18 @@ async function dynamicBlocks(main) {
   await run(main);
 }
 
-const AUDIENCES = {
-  mobile: () => window.innerWidth < 600,
-  desktop: () => window.innerWidth >= 600,
+// Experiments, audiences and campaigns (plugins/experimentation). The simulation UI only
+// loads outside production: localhost and *.page previews.
+const EXPERIMENTATION_CONFIG = {
+  isProd: () => {
+    const { hostname } = window.location;
+    return hostname !== 'localhost' && !hostname.endsWith('.page');
+  },
+  audiences: {
+    mobile: () => window.innerWidth < 600,
+    desktop: () => window.innerWidth >= 600,
+  },
 };
-
-function getExperimentationContext() {
-  return {
-    getAllMetadata, getMetadata, loadCSS, loadScript, sampleRUM, toCamelCase, toClassName,
-  };
-}
-
-function isExperimentationEnabled() {
-  return getMetadata('experiment')
-    || Object.keys(getAllMetadata('campaign')).length
-    || Object.keys(getAllMetadata('audience')).length;
-}
 
 const THEME_STORAGE_KEY = 'demo-theme';
 
@@ -535,10 +531,7 @@ async function loadEager(doc) {
 
   const main = doc.querySelector('main');
   if (main) {
-    if (isExperimentationEnabled()) {
-      const { loadEager: runEager } = await import('../plugins/experimentation/src/index.js');
-      await runEager(document, { audiences: AUDIENCES }, getExperimentationContext());
-    }
+    await runExperimentation(doc, EXPERIMENTATION_CONFIG);
     decorateMain(main);
     // Re-decorate EDS block markup that a Target offer injects after decoration has
     // already run (e.g. a replaceHtml offer that brings in authored block HTML). Started
@@ -624,10 +617,7 @@ async function loadLazy(doc) {
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
   loadFonts();
 
-  if (isExperimentationEnabled()) {
-    const { loadLazy: runLazy } = await import('../plugins/experimentation/src/index.js');
-    await runLazy(document, { audiences: AUDIENCES }, getExperimentationContext());
-  }
+  await runExperimentationLazy(doc, EXPERIMENTATION_CONFIG);
 }
 
 const loadQuickEdit = async (...args) => {

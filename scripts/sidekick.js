@@ -1,14 +1,17 @@
-let defined;
+// Experience Workspace's Experimentation panel, opened from the Sidekick "Experimentation"
+// button (https://www.aem.live/docs/ew/developing/set-up-experimentation).
+const DA_EXP = 'https://da.live/nx/public/plugins/exp/exp.js';
+let expMod;
 
-function toggleExp() {
-  if (defined) {
-    defined.remove();
-    defined = undefined;
+async function toggleExp() {
+  // The first import opens the panel as a side effect; later clicks toggle it.
+  const exists = document.querySelector('#aem-sidekick-exp');
+  if (!exists) {
+    expMod = await import(DA_EXP);
     return;
   }
-  import('https://da.live/nx/public/plugins/exp/exp.js').then((mod) => {
-    defined = mod;
-  });
+  if (!expMod) expMod = await import(DA_EXP);
+  expMod.default();
 }
 
 const sk = document.querySelector('aem-sidekick');
