@@ -60,7 +60,7 @@ export async function runExperimentation(doc, config) {
  * @param {Object} config experimentation options
  */
 export async function runExperimentationLazy(doc, config) {
-  if (config.isProd?.() || !enabled) return null;
+  if (config.simulationUI === false || config.isProd?.() || !enabled) return null;
   try {
     const { loadLazy } = await import(PLUGIN);
     return loadLazy(doc, config);
