@@ -17,7 +17,8 @@ function buildByline() {
   const author = getMetadata('author');
   // a press release has a dateline city instead of an author
   const dateline = author ? '' : getMetadata('dateline');
-  const date = calendarDate(getMetadata('date'));
+  // press releases from AEM Content Fragments carry their date as publisheddate
+  const date = calendarDate(getMetadata('date') || getMetadata('publisheddate'));
   if (!author && !dateline && !date) return null;
 
   const byline = createTag('p', { class: 'hero-note article-byline' });
