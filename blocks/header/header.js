@@ -1,5 +1,5 @@
 import { getMetadata, readBlockConfig } from '../../scripts/aem.js';
-import { createTag, getMarket } from '../../scripts/shared.js';
+import { createTag, fetchFragment, getMarket } from '../../scripts/shared.js';
 
 /**
  * The header's sign-in link always goes through the auth worker (demo login),
@@ -69,17 +69,21 @@ export function authoredHref(a) {
 }
 
 /**
- * Fetch a chrome document (nav/footer) as raw sections, without decorating it.
+ * Fetch a chrome document (nav/footer) as raw sections, without decorating it. The `nav` or
+ * `footer` metadata names the document; without it, /fragments/<name> in the page's market
+ * (e.g. /de/fragments/nav, falling back to /fragments/nav).
  * @param {string} name metadata key and default document name
  * @returns {Promise<HTMLElement[]>}
  */
 export async function fetchChrome(name) {
   const meta = getMetadata(name);
-  const path = meta ? new URL(meta, window.location).pathname : `${getMarket().root}${name}`;
-  const resp = await fetch(`${path}.plain.html`);
-  if (!resp.ok) return [];
+  // keep the hash: `#_dnt` pins the default version in every market
+  const metaUrl = meta && new URL(meta, window.location);
+  const path = metaUrl ? `${metaUrl.pathname}${metaUrl.hash}` : `${getMarket().base}/fragments/${name}`;
+  const found = await fetchFragment(path);
+  if (!found) return [];
   const wrapper = document.createElement('div');
-  wrapper.innerHTML = await resp.text();
+  wrapper.innerHTML = found.html;
   return [...wrapper.querySelectorAll(':scope > div')];
 }
 

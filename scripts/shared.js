@@ -32,6 +32,46 @@ export function inCurrentMarket(path) {
   return String(path || '').startsWith(root);
 }
 
+/** Market whose fragments are the defaults at /fragments/ (other markets override them). */
+const DEFAULT_FRAGMENT_LANG = 'en';
+
+/** Hash that keeps a fragment on its default version in every market ("do not translate"). */
+const DNT_HASH = '#_dnt';
+
+/**
+ * Fragment documents to try for this page's market, most specific first. Defaults live in
+ * /fragments/; a market overrides one by putting its own copy in /{lang}/fragments/, so on
+ * /de/ pages /fragments/nav resolves to /de/fragments/nav, falling back to /fragments/nav.
+ * Paths elsewhere, already localized, or with #_dnt are used as they are.
+ * Modelled on localizeUrl() in https://github.com/aemsites/author-kit.
+ * @param {string} path fragment path, e.g. /fragments/newsletter or /fragments/x#_dnt
+ * @returns {string[]} paths without hash
+ */
+export function fragmentPaths(path) {
+  const [pathname] = String(path || '').split('#');
+  const { lang, base } = getMarket();
+  const defaults = `${base}/fragments/`;
+  if (path.includes(DNT_HASH) || lang === DEFAULT_FRAGMENT_LANG || !pathname.startsWith(defaults)) {
+    return [pathname];
+  }
+  return [`${base}/${lang}/fragments/${pathname.slice(defaults.length)}`, pathname];
+}
+
+/**
+ * Fetch a fragment's .plain.html in this page's market (see fragmentPaths).
+ * @param {string} path fragment path
+ * @returns {Promise<{ path: string, html: string } | null>} the version found, or null
+ */
+export async function fetchFragment(path) {
+  const tryPath = async ([first, ...rest]) => {
+    if (!first) return null;
+    const resp = await fetch(`${first}.plain.html`);
+    if (resp.ok) return { path: first, html: await resp.text() };
+    return tryPath(rest);
+  };
+  return tryPath(fragmentPaths(path));
+}
+
 /**
  * Page metadata `gated=true` — same signal as CDN worker HTML gating; author preview uses this too.
  * @returns {boolean}

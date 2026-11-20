@@ -12,24 +12,26 @@ import {
   loadSections,
 } from '../../scripts/aem.js';
 
+import { fetchFragment } from '../../scripts/shared.js';
 import dynamicBlocks from '../dynamic/index.js';
 
 /**
- * Loads a fragment.
+ * Loads a fragment, in this page's market: on /de/ pages /fragments/x loads /de/fragments/x
+ * when it exists, else /fragments/x. Add #_dnt to the link to always load /fragments/x.
  * @param {string} path The path to the fragment
  * @returns {Promise<HTMLElement>} The root element of the fragment
  */
 export async function loadFragment(path) {
   if (path && path.startsWith('/') && !path.startsWith('//')) {
-    const resp = await fetch(`${path.replace(/#.*$/, '')}.plain.html`);
-    if (resp.ok) {
+    const found = await fetchFragment(path);
+    if (found) {
       const main = document.createElement('main');
-      main.innerHTML = await resp.text();
+      main.innerHTML = found.html;
 
-      // reset base path for media to fragment base
+      // reset base path for media to the fragment version that loaded
       const resetAttributeBase = (tag, attr) => {
         main.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((elem) => {
-          elem[attr] = new URL(elem.getAttribute(attr), new URL(path, window.location)).href;
+          elem[attr] = new URL(elem.getAttribute(attr), new URL(found.path, window.location)).href;
         });
       };
       resetAttributeBase('img', 'src');
