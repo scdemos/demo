@@ -70,10 +70,10 @@ function buildImage(src) {
   return createTag('img', { src: url.href, alt: '', loading: 'lazy' });
 }
 
-function buildSliderCard(article) {
+function buildSliderCard(article, showImage) {
   const href = normalizePath(article.path);
   const link = createTag('a', { href, class: 'related-articles-card-link' });
-  if (article.image) {
+  if (showImage && article.image) {
     link.append(createTag('div', { class: 'related-articles-card-image' }, buildImage(article.image)));
   }
 
@@ -141,7 +141,7 @@ function buildSliderControls(list) {
   return controls;
 }
 
-function renderSlider(block, articles, emptyMessage) {
+function renderSlider(block, articles, emptyMessage, showImage) {
   block.textContent = '';
 
   const slider = createTag('div', { class: 'related-articles-slider' });
@@ -153,7 +153,7 @@ function renderSlider(block, articles, emptyMessage) {
     block.append(createTag('p', { class: 'related-articles-empty' }, emptyMessage));
     return;
   }
-  articles.forEach((article) => list.append(buildSliderCard(article)));
+  articles.forEach((article) => list.append(buildSliderCard(article, showImage)));
   if (articles.length > 1) slider.append(buildSliderControls(list));
 }
 
@@ -244,7 +244,8 @@ export default async function init(block) {
     if (isBento) {
       renderBentoGrid(block, articles, 'No related articles found.');
     } else {
-      renderSlider(block, articles, 'No related articles found.');
+      // `no-image` variant: text-only cards, for pages without card images
+      renderSlider(block, articles, 'No related articles found.', !block.classList.contains('no-image'));
     }
   } catch {
     const msg = 'Unable to load related articles right now.';
