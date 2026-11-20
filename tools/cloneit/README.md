@@ -21,7 +21,8 @@ CloneIt creates the new demo by (code sync runs before publishing):
 5. **Copying query index config** – Fetches the template’s `query.yaml` and writes it with **`PUT`** (create per [IndexConfig](https://www.aem.live/docs/admin.html#schema/IndexConfig)); on **409** conflict, **`POST`** (update). Then **GETs the same URL** (with retries) so you see **copied and verified** when propagation succeeds. If the baseline has no `query.yaml`, CloneIt shows that nothing was copied. If the write fails, the error is shown; if write succeeds but `GET` stays empty, the UI warns with a link to the Admin API URL for manual checks.
 
 6. **Preview + publish** – bulk preview, then bulk publish of every copied path through the Admin API (jobs are polled). If that fails, the result card says so and **Bulk Preview/Publish** remains as the manual fallback.
-7. **Registry** – appends who/when/site/customer site to `scdemos/demo-registry/demos.json`.
+7. **Edit access** – the worker adds two rows to the org's DA permissions sheet (`da.live/config#/scdemos/`, tab `permissions`): `/<site>/CONFIG` and `/<site>/**`, both `write` for **you**, so you can edit the demo's content and its DA config without asking an admin. See [Permissions](https://www.aem.live/docs/ew/administering/permissions). Best effort: if it fails, the result card says so.
+8. **Registry** – appends who/when/site/customer site to `scdemos/demo-registry/demos.json`.
 
 After a successful clone, use **Copy handoff** to copy a plain-text block (Preview URL, DA content, Code) for email or Slack.
 
@@ -83,8 +84,9 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 | DA Admin | `GET/POST /source/scdemos/demo-registry/demos.json` | Registry row (best effort) |
 | CloneIt worker | `POST …/whoami` | Verifies the signed-in user; tells the UI whether demo creation is enabled |
 | CloneIt worker | `POST …/standalone` | Own repo: create `scdemos/<site>` from `TEMPLATE_REPO`, add it to the AEM Code Sync installation (auto-discovered), make the requester's GitHub user admin, grant `SC_TEAM` push (if set) |
+| CloneIt worker | `POST …/permissions` | Appends `/<site>/CONFIG` and `/<site>/**` (`write`, the caller's email from their IMS token) to the org's DA permissions sheet. Only for a demo the caller requested: the repo `scdemos/<site>` that `/standalone` created (topic `customer-demo`, description ending `(requested by <email>)`); never the template. Needs `GITHUB_PROVISION_TOKEN`. Appends at the end of the sheet and re-reads to check (if two writes overlap, the last one wins); rows already there aren't duplicated |
 | CloneIt worker | `POST …/` | Readiness ping (the technical account's token never leaves the worker) |
-| CloneIt worker | `POST …/cloneprocess` | **Helix + DA Admin** clone calls — worker adds the technical account's token and forwards to allowlisted paths only (`/config/{org}/sites/…` and `/code|preview|live|job|status/{org}/{site}/…` on Helix; `/list|config|copy|source/{org}/…` on DA). The browser never stores an API token for those requests. |
+| CloneIt worker | `POST …/cloneprocess` | **Helix + DA Admin** clone calls — worker adds the technical account's token and forwards to allowlisted paths only (`/config/{org}/sites/…` and `/code|preview|live|job|status/{org}/{site}/…` on Helix; `/list|copy|source/{org}/…` and site configs `/config/{org}/{site}` on DA; never the org config `/config/{org}/`, which holds the permissions sheet). The browser never stores an API token for those requests. |
 
 ## Authentication
 

@@ -1,7 +1,9 @@
 // Offline tests (no network): node workers/cloneit_token/index.test.mjs
 import { Buffer } from 'node:buffer';
 import process from 'node:process';
-import worker, { verifyUser, provisionStandalone, isAllowedProxyPath, originMatches } from './index.js';
+import worker, {
+  verifyUser, provisionStandalone, isAllowedProxyPath, originMatches, grantDemoPermissions, addPermissionRows,
+} from './index.js';
 let pass = 0; let fail = 0;
 const ok = (name, cond, extra = '') => { (cond ? pass++ : fail++); console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${cond ? '' : ` ${extra}`}`); };
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -38,6 +40,10 @@ ok('legacy allowlist excludes bulk', !isAllowedProxyPath('helix', '/preview/scde
 ok('deny org config', !isAllowedProxyPath('helix', '/config/scdemos.json', 'scdemos'));
 ok('deny other org', !isAllowedProxyPath('helix', '/preview/other/acme/main/*', 'scdemos'));
 ok('deny traversal', !isAllowedProxyPath('da', '/source/scdemos/../x', 'scdemos'));
+ok('allow site DA config', isAllowedProxyPath('da', '/config/scdemos/acme', 'scdemos') && isAllowedProxyPath('da', '/config/scdemos/acme/', 'scdemos'));
+ok('deny org DA config (permissions sheet)', !isAllowedProxyPath('da', '/config/scdemos/', 'scdemos') && !isAllowedProxyPath('da', '/config/scdemos', 'scdemos'));
+ok('deny DA config below a site', !isAllowedProxyPath('da', '/config/scdemos/acme/x', 'scdemos'));
+ok('legacy also denies org DA config', !isAllowedProxyPath('da', '/config/scdemos/', 'scdemos', true));
 
 // provisionStandalone with a fake GitHub
 function fakeGh({ member = true, exists = false, readyAfter = 1, installs = [{ id: 77, app_slug: 'aem-code-sync', account: { login: 'scdemos' } }], addStatus = 204, topics = ['customer-demo'] } = {}) {
@@ -85,4 +91,95 @@ try { await provisionStandalone({ site: 'acme', email: 'a@adobe.com' }, { ORG: '
   ok('origin wildcard other host', !originMatches('https://custdemo--demo--scdemos.preview.da.live.evil.com', env));
   ok('origin wildcard other repo', !originMatches('https://custdemo--other--scdemos.preview.da.live', env));
   ok('origin empty', !originMatches('', env)); }
+
+// permissions: fake DA org config (other sheets and rows) + fake GitHub repo (ownership proof)
+function fakeAdmin({ requester = 'sc@adobe.com', topics = ['customer-demo'], repoStatus = 200, loseWrites = 0, failWrite = false } = {}) {
+  let org = {
+    ':names': ['data', 'permissions'], ':version': 3, ':type': 'multi-sheet',
+    data: { total: 1, limit: 1, offset: 0, data: [{ key: 'k', value: 'v' }], ':colWidths': [1, 2] },
+    permissions: { total: 1, limit: 1, offset: 0, data: [{ path: 'CONFIG', groups: 'ORG', actions: 'read', comments: '' }], ':colWidths': [1, 2, 3, 4] },
+  };
+  const writes = []; let lost = loseWrites;
+  const adminFetch = async (kind, path, init = {}) => {
+    if ((init.method || 'GET') === 'GET') {
+      return Response.json(org);
+    }
+    if (failWrite) return new Response('', { status: 403 });
+    const next = JSON.parse(init.body.get('config')); writes.push(next);
+    if (lost > 0) { lost -= 1; return new Response('', { status: 200 }); } // another clone overwrote it
+    org = next; return new Response('', { status: 200 });
+  };
+  const gh = async (path) => {
+    if (repoStatus !== 200) return { ok: false, status: repoStatus, json: {} };
+    if (path.endsWith('/topics')) return { ok: true, status: 200, json: { names: topics } };
+    return { ok: true, status: 200, json: { description: `Customer demo: acme (requested by ${requester})` } };
+  };
+  return { deps: { adminFetch, gh }, writes, org: () => org };
+}
+const penv = { ORG: 'scdemos', TEMPLATE_REPO: 'scdemos/demo' };
+{ const a = fakeAdmin();
+  const r = await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait);
+  const rows = a.org().permissions.data;
+  ok('grant adds CONFIG + ** rows at the end', rows.length === 3 && rows[1].path === '/acme/CONFIG' && rows[2].path === '/acme/**'
+    && rows.slice(1).every((x) => x.groups === 'sc@adobe.com' && x.actions === 'write'), JSON.stringify(rows));
+  ok('grant keeps other rows and sheets', rows[0].path === 'CONFIG' && a.org().data.data[0].key === 'k' && a.org()[':names'].length === 2);
+  ok('grant updates totals', a.org().permissions.total === 3 && a.org().permissions.limit === 3);
+  ok('grant reports added', r.added.join() === '/acme/CONFIG,/acme/**');
+  const again = await grantDemoPermissions({ site: 'acme', email: 'SC@adobe.com' }, penv, a.deps, nowait);
+  ok('second run adds nothing', again.added.length === 0 && a.writes.length === 1 && a.org().permissions.data.length === 3); }
+{ const a = fakeAdmin({ loseWrites: 1 });
+  await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait);
+  ok('lost update is written again', a.writes.length === 2 && a.org().permissions.data.length === 3); }
+{ const a = fakeAdmin({ loseWrites: 2 });
+  await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait);
+  ok('third write that sticks is confirmed', a.writes.length === 3 && a.org().permissions.data.length === 3); }
+{ const a = fakeAdmin({ loseWrites: 3 });
+  try { await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait); ok('never sticks → not confirmed', false); } catch (e) { ok('never sticks → not confirmed', e.message === 'org_config_write_not_confirmed' && a.writes.length === 3); } }
+const denied = async (name, opts, site, email, msg) => {
+  const a = fakeAdmin(opts);
+  try { await grantDemoPermissions({ site, email }, penv, a.deps, nowait); ok(name, false); } catch (e) { ok(name, e.message === msg && a.writes.length === 0, e.message); }
+};
+await denied('someone else\'s demo → denied', { requester: 'other@adobe.com' }, 'acme', 'sc@adobe.com', 'not_demo_requester');
+await denied('repo not made by CloneIt → denied', { topics: [] }, 'acme', 'sc@adobe.com', 'not_a_cloneit_demo');
+await denied('template site → denied', {}, 'demo', 'sc@adobe.com', 'site_name_is_template');
+await denied('missing repo → denied', { repoStatus: 404 }, 'acme', 'sc@adobe.com', 'site_not_found');
+await denied('bad site name → denied', {}, '../demo', 'sc@adobe.com', 'invalid_site_name');
+await denied('email suffix trick → denied', { requester: 'xsc@adobe.com' }, 'acme', 'sc@adobe.com', 'not_demo_requester');
+{ const a = fakeAdmin({ failWrite: true });
+  try { await grantDemoPermissions({ site: 'acme', email: 'sc@adobe.com' }, penv, a.deps, nowait); ok('write failure surfaces', false); } catch (e) { ok('write failure surfaces', e.message === 'org_config_write_failed_403'); } }
+try { addPermissionRows({ data: {} }, []); ok('no permissions sheet → error', false); } catch (e) { ok('no permissions sheet → error', e.message === 'org_config_has_no_permissions_sheet'); }
+ok('existing row with several emails counts', addPermissionRows({ permissions: { data: [{ path: '/acme/**', groups: 'x@adobe.com, sc@adobe.com', actions: 'write' }] } },
+  [{ path: '/acme/**', groups: 'sc@adobe.com', actions: 'write' }]).config === null);
+
+// router: /permissions needs a user, and uses the token's email even if the body names someone else
+ok('permissions requires user', (await worker.fetch(req(null, '/permissions'), strict)).status === 401);
+const routeFetch = (requester) => async (u, init = {}) => {
+  const url = String(u);
+  if (url.includes('/ims/token/v3')) return Response.json({ access_token: 'tech', expires_in: 3600 });
+  if (url.includes('validate_token')) return Response.json({ valid: true });
+  if (url.includes('/ims/profile')) return Response.json({ email: 'sc@adobe.com' });
+  if (url.endsWith('/repos/scdemos/acme/topics')) return Response.json({ names: ['customer-demo'] });
+  if (url.endsWith('/repos/scdemos/acme')) return Response.json({ description: `Customer demo: acme (requested by ${requester})` });
+  if (url.endsWith('/config/scdemos/') && init.method === 'POST') { globalThis.lastOrg = JSON.parse(init.body.get('config')); return new Response('', { status: 200 }); }
+  if (url.endsWith('/config/scdemos/')) return Response.json(globalThis.lastOrg || { permissions: { data: [] } });
+  // a forged AEM site config naming the caller as admin must not matter
+  if (url.includes('/config/scdemos/sites/acme.json')) return Response.json({ code: { owner: 'scdemos', repo: 'acme' }, access: { admin: { role: { admin: ['sc@adobe.com'] } } } });
+  return new Response('', { status: 404 });
+};
+const permReq = (n, body) => new Request('https://w.test/permissions', { method: 'POST', headers: { Origin: 'https://x.test', Authorization: `Bearer ${tok('darkalley', n)}` }, body: JSON.stringify(body) });
+const genv = { ...strict, GITHUB_PROVISION_TOKEN: 'gh' };
+// the 500 ms wait after a write is real here: skip it by stubbing setTimeout
+const realTimeout = globalThis.setTimeout;
+globalThis.setTimeout = (fn) => realTimeout(fn, 0);
+{ globalThis.fetch = routeFetch('sc@adobe.com'); globalThis.lastOrg = null;
+  const r = await worker.fetch(permReq(9, { site: 'acme', email: 'attacker@adobe.com' }), genv);
+  const j = await r.json();
+  ok('route grants the token user', r.status === 200 && j.email === 'sc@adobe.com' && globalThis.lastOrg.permissions.data.every((x) => x.groups === 'sc@adobe.com'), JSON.stringify(j)); }
+{ globalThis.fetch = routeFetch('owner@adobe.com'); globalThis.lastOrg = null;
+  const r = await worker.fetch(permReq(10, { site: 'acme' }), genv);
+  ok('forged site config does not grant someone else\'s demo', r.status === 403 && globalThis.lastOrg === null); }
+{ globalThis.fetch = routeFetch('sc@adobe.com');
+  ok('route needs the GitHub token', (await worker.fetch(permReq(11, { site: 'acme' }), strict)).status === 501); }
+globalThis.setTimeout = realTimeout;
+globalThis.fetch = realFetch;
 console.log(`\n${pass} pass, ${fail} fail`); process.exit(fail ? 1 : 0);
