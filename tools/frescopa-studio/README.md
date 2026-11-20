@@ -10,6 +10,10 @@ https://da.live/app/scdemos/demo/tools/frescopa-studio/frescopa-studio#/scdemos/
 
 Studio is hosted in `scdemos/demo`; only the part after `#` changes. Studio reads and saves the document with the author's own DA login, so it works for any site they can edit.
 
+Opened with only the site after `#` (DA's **Apps** page always opens apps that way, whatever path the `apps` sheet holds), Studio opens the document in `?doc=` (e.g. `…/frescopa-studio?doc=/en/app/experience` in the `apps` sheet), or `/en/app/experience` without it. The document menu in the toolbar lists the documents in the same folder; pick one to open it.
+
+**403:** the author's DA login can't read the site's content. Add them (or their IMS group) to a row in the org's DA `permissions` sheet that covers the site, like `/demo/+**`, and check they signed in with that organization.
+
 - **As you type:** changes save to DA, and the app on the right shows them straight away.
 - **Preview:** updates the document's preview content (what `…?preview` apps read).
 - **Publish:** previews, then publishes.
@@ -17,7 +21,7 @@ Studio is hosted in `scdemos/demo`; only the part after `#` changes. Studio read
 - **Channels:** opens the site's DA config, where the `channels` sheet says which apps show which schema. Add a row there to show a new schema or app experience in Studio.
 - **Choose:** fields the schema marks as fragments get a button that opens the [AEM Apps fragment picker](https://github.com/adobe-rnd/aem-apps/tree/main/tools/plugins/fragments).
 
-To open another document, change the part after `#` and reload: DA doesn't reload apps when only the `#` changes.
+To open another document, pick it in the document menu, or change the part after `#` and reload: DA doesn't reload apps when only the `#` changes.
 
 DA's own form editor (`Open in DA`) opens the same document, because both use DA's structured content SDK.
 

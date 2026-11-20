@@ -30,6 +30,8 @@ const DEVICES = {
   car: { width: 1280, height: 480 },
 };
 const FRAME = 20; // the device's border, both sides
+// opened without a document (DA's Apps page always sends just #/org/site): start here
+const DEFAULT_DOCUMENT = '/en/app/experience';
 const LOCAL = window.location.hostname === 'localhost';
 
 const TEXT = {
@@ -47,6 +49,7 @@ const TEXT = {
   noDocument: 'Add the document to the address after #, like #/scdemos/demo/en/app/experience',
   notFound: (path) => `${path} isn’t in DA. Create it with DA’s form editor first.`,
   loadFailed: (status) => `Couldn’t load the document (${status}).`,
+  noAccess: 'Your account can’t read this site’s content in DA (403). Ask a site admin to add you to the site’s DA permissions, and check you signed in with the right organization.',
   noSchemaName: 'This document doesn’t name a schema. Open it in DA’s form editor and pick one.',
   schemaFailed: (name, status) => `Couldn’t read the "${name}" schema (${status}).`,
   noSchema: (name) => `The "${name}" schema isn’t in DA. Add it with the Schema Editor app.`,
@@ -66,10 +69,15 @@ const { context, token, actions } = await DA_SDK;
 const { daFetch } = actions;
 // reads from the DA admin API, always fresh (DA's responses allow the browser to reuse them)
 const readDA = (path) => daFetch(`${DA_ADMIN}${path}`, { cache: 'no-store' });
-// the document, from the address as DA's form editor writes it: #/{org}/{site}/en/app/experience
-const [, org = '', site = '', ...rest] = (context.hash || window.location.hash)
+// the document, from the address as DA's form editor writes it: #/{org}/{site}/en/app/experience.
+// Studio's own address first: Open changes it, while DA keeps the address Studio was opened with.
+const [, org = '', site = '', ...rest] = (window.location.hash || context.hash || '')
   .replace(/^#/, '').replace(/\.html$/, '').split('/');
-const DOCUMENT = `/${rest.join('/')}`;
+// no path after # (DA's Apps page): ?doc= from the apps sheet, like other DA apps' settings
+const DOCUMENT = rest.filter(Boolean).length ? `/${rest.join('/')}`
+  : new URLSearchParams(window.location.search).get('doc') || DEFAULT_DOCUMENT;
+const documentHash = (path) => `#/${org}/${site}${path}`;
+if (!rest.filter(Boolean).length) window.history.replaceState(null, '', documentHash(DOCUMENT));
 const NAME = /^[a-z0-9][a-z0-9-]*$/; // an org, site or schema name
 // a plain path in this site: no "." or ".." segments, encoding or query that could reach elsewhere
 const SITE_PATH = /^(\/[a-z0-9][a-z0-9_-]*)+$/;
@@ -105,6 +113,7 @@ async function loadSchema(name) {
 async function loadDocument() {
   const resp = await readDA(`/source/${org}/${site}${DOCUMENT}.html`);
   if (resp.status === 404) throw new Error(TEXT.notFound(DOCUMENT));
+  if (resp.status === 403) throw new Error(TEXT.noAccess);
   if (!resp.ok) throw new Error(TEXT.loadFailed(resp.status));
   const { json, error } = convertHtmlToJson({ html: await resp.text() });
   if (error) throw new Error(error);
@@ -163,6 +172,43 @@ function chooseFragment(title) {
 
     document.body.append(dialog);
     dialog.showModal();
+  });
+}
+
+/**
+ * The documents next to this one, in a select like Channel and Device: picking one opens it.
+ * Studio reloads on its own address; DA keeps the address it opened Studio with.
+ */
+// resolves true once this document's edits are saved; set when the form is ready
+let savedBeforeLeaving = () => Promise.resolve(true);
+
+async function showDocuments() {
+  const select = document.getElementById('document');
+  const folder = DOCUMENT.slice(0, DOCUMENT.lastIndexOf('/'));
+  const resp = await readDA(`/list/${org}/${site}${folder}`);
+  if (!resp.ok) return;
+  const prefix = `/${org}/${site}`;
+  const paths = (await resp.json())
+    .filter((item) => item.ext === 'html')
+    .map((item) => item.path.slice(prefix.length).replace(/\.html$/, ''))
+    .filter((path) => SITE_PATH.test(path))
+    .sort();
+  if (!paths.includes(DOCUMENT)) paths.unshift(DOCUMENT);
+  if (paths.length < 2) return;
+  select.replaceChildren(...paths.map((path) => new Option(path, path, false, path === DOCUMENT)));
+  select.hidden = false;
+  select.addEventListener('change', async () => {
+    const next = select.value;
+    select.disabled = true;
+    // an edit still saving would be lost on reload: wait for it, stay here if it fails
+    if (!await savedBeforeLeaving()) {
+      select.value = DOCUMENT;
+      select.disabled = false;
+      setStatus(TEXT.saveFailed);
+      return;
+    }
+    window.location.hash = documentHash(next);
+    window.location.reload();
   });
 }
 
@@ -425,6 +471,8 @@ async function init() {
     setStatus(TEXT.noDocument);
     return;
   }
+  // the other documents work even when this one can't be loaded: pick another one
+  showDocuments().catch(() => {});
   setStatus(TEXT.loading);
   document.getElementById('open-in-da').href = `https://da.live/form#/${org}/${site}${DOCUMENT}`;
   // the site config, where the channels sheet says which apps show which schema
@@ -483,6 +531,7 @@ async function init() {
     known = await lastEdited();
     if (!checkErrors()) setStatus(TEXT.notPreviewed);
   });
+  savedBeforeLeaving = () => save.done();
   // Someone changed the document in DA (e.g. DA's form editor) while Studio was in the
   // background: reload it rather than overwrite their changes with the next save.
   // Editing waits for the check, so nothing typed meanwhile is saved over their changes.
