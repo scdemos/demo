@@ -41,9 +41,11 @@ async function dynamicBlocks(main) {
   await run(main);
 }
 
-// Experiments, audiences and campaigns (plugins/experimentation). The simulation UI only
-// loads outside production: localhost and *.page previews.
+// Experiments, audiences and campaigns (plugins/experimentation). Authors create and simulate
+// experiments in Experience Workspace's Experimentation panel (scripts/sidekick.js), so the
+// plugin's own simulation panel stays off: it would open on top of it on every ?experiment= link.
 const EXPERIMENTATION_CONFIG = {
+  simulationUI: false,
   isProd: () => {
     const { hostname } = window.location;
     return hostname !== 'localhost' && !hostname.endsWith('.page');
