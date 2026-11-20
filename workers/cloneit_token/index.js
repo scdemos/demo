@@ -2,6 +2,7 @@
 //   POST /whoami        → verified caller { email, standalone }
 //   POST /cloneprocess  → allow-listed Admin API (admin.hlx.page) / DA (admin.da.live) proxy, technical account
 //   POST /standalone    → create scdemos/<site> from the template repo, add it to AEM Code Sync, make the requester admin
+//   POST /permissions   → give the requester write on /<site>/CONFIG and /<site>/** in the org's DA permissions sheet
 //   POST /              → readiness ping (never returns a token)
 // New routes require the caller's own Adobe IMS access token (Authorization: Bearer …, as provided by the
 // DA SDK), validated against IMS and restricted to ALLOWED_EMAIL_DOMAINS. CORS origin checks are a browser
@@ -88,7 +89,11 @@ export function isAllowedProxyPath(kind, path, org, legacy = false) {
     return new RegExp(`^/config/${esc}/sites/`).test(path)
       || (!legacy && new RegExp(`^/(code|preview|live|job|status)/${esc}/[a-z0-9-]+/`).test(path));
   }
-  if (kind === 'da') return new RegExp(`^/(list|config|copy|source)/${esc}/`).test(path);
+  if (kind === 'da') {
+    // site configs only: the org config (/config/<org>/) holds the permissions sheet, which only /permissions writes
+    if (path.startsWith('/config/')) return new RegExp(`^/config/${esc}/[a-z0-9-]+/?$`).test(path);
+    return new RegExp(`^/(list|copy|source)/${esc}/`).test(path);
+  }
   return false;
 }
 
@@ -317,6 +322,88 @@ export async function provisionStandalone({ site, githubUser, email, resume }, e
   };
 }
 
+/* ---------- permissions: the requester can edit their own demo's content and config ---------- */
+
+const sameEmail = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+
+/** Rows for the requester: the site's config and everything in its folder. */
+export function permissionRows(site, email) {
+  return [
+    { path: `/${site}/CONFIG`, groups: email, actions: 'write', comments: `CloneIt: ${email} owns this demo` },
+    { path: `/${site}/**`, groups: email, actions: 'write', comments: `CloneIt: ${email} owns this demo` },
+  ];
+}
+
+/** Appends the rows missing from the org config's permissions sheet; returns { config, added } (config null when nothing to add). */
+export function addPermissionRows(orgConfig, rows) {
+  const sheet = orgConfig?.permissions;
+  if (!Array.isArray(sheet?.data)) throw Object.assign(new Error('org_config_has_no_permissions_sheet'), { status: 502 });
+  const has = (r) => sheet.data.some((x) => x.path === r.path && x.actions === r.actions
+    && String(x.groups || '').split(',').some((g) => sameEmail(g, r.groups)));
+  const added = rows.filter((r) => !has(r));
+  if (!added.length) return { config: null, added };
+  const data = [...sheet.data, ...added];
+  return {
+    config: { ...orgConfig, permissions: { ...sheet, data, total: data.length, limit: data.length } },
+    added,
+  };
+}
+
+/**
+ * Proves the caller owns the demo with evidence only this worker writes: /standalone creates
+ * scdemos/<site> tagged customer-demo, with "(requested by <email>)" from the verified IMS token in its
+ * description. (The AEM site config isn't proof: /cloneprocess lets signed-in users write it.)
+ * The template repo is never granted.
+ */
+export async function assertOwnsDemo(site, email, env, gh) {
+  const org = env.ORG || DEFAULT_ORG;
+  const tRepo = (env.TEMPLATE_REPO || `${org}/demo`).split('/')[1];
+  const fail = (msg, status = 403) => Object.assign(new Error(msg), { status });
+  if (!SITE_RE.test(site || '') || site.length > 50) throw fail('invalid_site_name', 400);
+  if (site === tRepo) throw fail('site_name_is_template', 400);
+  const repo = await gh(`/repos/${org}/${site}`);
+  if (repo.status === 404) throw fail('site_not_found', 404);
+  if (!repo.ok) throw fail(`repo_read_failed_${repo.status}`, 502);
+  const topics = await gh(`/repos/${org}/${site}/topics`);
+  if (!(topics.json?.names || []).includes('customer-demo')) throw fail('not_a_cloneit_demo');
+  const requester = /\(requested by ([^()\s]+)\)$/.exec(String(repo.json?.description || '').trim())?.[1];
+  if (!requester || !sameEmail(requester, email)) throw fail('not_demo_requester');
+}
+
+/** Reads the org config, appends the requester's rows, writes it back and checks they stuck (retries lost updates). */
+export async function grantDemoPermissions({ site, email }, env, { adminFetch, gh }, wait = sleep) {
+  const org = env.ORG || DEFAULT_ORG;
+  await assertOwnsDemo(site, email, env, gh);
+  const rows = permissionRows(site, email);
+  const path = `/config/${org}/`;
+  let addedRows = [];
+  // append our rows at the end and re-read to check they're there (if two writes overlap, the last one wins)
+  // up to 3 writes, each checked by the next read
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const res = await adminFetch('da', path);
+    if (!res.ok) throw Object.assign(new Error(`org_config_read_failed_${res.status}`), { status: 502 });
+    const { config, added } = addPermissionRows(await res.json(), rows);
+    if (!config) return { site, email, rows: rows.map((r) => r.path), added: addedRows.map((r) => r.path) };
+    if (attempt === 3) break;
+    if (!addedRows.length) addedRows = added;
+    const form = new FormData();
+    form.append('config', JSON.stringify(config));
+    const put = await adminFetch('da', path, { method: 'POST', body: form });
+    if (!put.ok) throw Object.assign(new Error(`org_config_write_failed_${put.status}`), { status: 502 });
+    await wait(500);
+  }
+  throw Object.assign(new Error('org_config_write_not_confirmed'), { status: 502 });
+}
+
+/** Technical-account fetch against the Admin API or DA. */
+function techFetch(env) {
+  return async (kind, path, init = {}) => {
+    const bearer = `Bearer ${await generateToken(env)}`;
+    const headers = kind === 'helix' ? { Authorization: bearer, 'x-content-source-authorization': bearer } : { Authorization: bearer };
+    return fetch(`${kind === 'helix' ? HELIX_ORIGIN : DA_ORIGIN}${path}`, { ...init, headers });
+  };
+}
+
 /* ---------- router ---------- */
 
 export default {
@@ -362,6 +449,17 @@ export default {
           email: user.email,
           resume: body.resume === true,
         }, env, githubClient(env));
+        return jsonResponse(cors, result);
+      }
+      if (pathname === '/permissions') {
+        const body = await request.json().catch(() => ({}));
+        // the email always comes from the verified IMS token, never from the request
+        if (!env.GITHUB_PROVISION_TOKEN) return workerErr(cors, 'standalone_not_configured', 501);
+        const result = await grantDemoPermissions(
+          { site: String(body.site || '').toLowerCase(), email: user.email },
+          env,
+          { adminFetch: techFetch(env), gh: githubClient(env) },
+        );
         return jsonResponse(cors, result);
       }
       if (pathname === '/') {

@@ -229,6 +229,7 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     codeSynced = true,
     publish = null,
     copyFailed = [],
+    permissions = null,
   } = options;
   const baselineSite = baselineSiteOpt || '—';
   const {
@@ -273,6 +274,11 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   } else if (publish) {
     const failed = publish.failed?.length ? `, ${publish.failed.length} not published (see below)` : '';
     extra.push([`Previewed and published ${publish.published} pages and assets${escapeHtml(failed)}`, `Published ${publish.published}${failed}`]);
+  }
+  if (permissions?.error) {
+    extra.push([`<strong>Edit access not added</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin for write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>`, `Edit access not added: ${permissions.error}`]);
+  } else if (permissions) {
+    extra.push([`You can edit the demo's content and config in DA (<code>${escapeHtml(permissions.email)}</code>: write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>)`, `Edit access in DA for ${permissions.email}: /${siteName}/CONFIG and /${siteName}/**`]);
   }
   extra.forEach(([, plain]) => plainLines.push(plain));
   const extraHtml = extra.map(([html]) => `<li>${html}</li>`).join('');
@@ -1059,6 +1065,16 @@ async function cloneSite(siteName, opts = {}) {
       publish = { error: pubErr.message || String(pubErr) };
     }
 
+    // write access for the requester to the demo's DA content and config (org permissions sheet)
+    setProgress(true, 99, 'Giving you edit access in DA…', null, 'Permissions', '');
+    let permissions = null;
+    try {
+      permissions = await workerPost('permissions', { site: siteName });
+    } catch (permErr) {
+      console.warn('Permissions not added:', permErr);
+      permissions = { error: permErr.message || String(permErr) };
+    }
+
     await recordInRegistry({
       date: new Date().toISOString(),
       site: siteName,
@@ -1080,6 +1096,7 @@ async function cloneSite(siteName, opts = {}) {
       publish,
       customerSite,
       copyFailed,
+      permissions,
     });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
