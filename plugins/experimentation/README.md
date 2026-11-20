@@ -4,171 +4,203 @@ The AEM Experimentation plugin helps you quickly set up experimentation and segm
 It is currently available to customers in collaboration with AEM Engineering via co-innovation VIP Projects. 
 To implement experimentation or personalization use-cases, please reach out to the AEM Engineering team in the Slack channel dedicated to your project.
 
+> **Note:** We are adding new support for the contextual experimentation rail UI. This is still under development. Feel free to reach out if you have any questions via email: aem-contextual-experimentation@adobe.com.
+
 ## Features
 
 The AEM Experimentation plugin supports:
-- :lock: privacy-first, as it doesn't use any, nor persists any, end-user data that could lead to their identification. No end-user opt-in nor cookie consent is required when using the default configuration that uses [AEM Edge Delivery Services Real User Monitoring](https://github.com/adobe/helix-rum-js/).*
 - :busts_in_silhouette: serving different content variations to different audiences, including custom audience definitions for your project that can be either resolved directly in-browser or against a trusted backend API.
-- :money_with_wings: serving different content variations based on marketing campaigns you are running, so that you can easily track email and/or social campaigns.
+- :money_with_wings: serving different content variations based on marketing campaigns you are running, so that you can easily track email and/or social campaigns
 - :chart_with_upwards_trend: running A/B test experiments on a set of variants to measure and improve the conversion on your site. This works particularly with our :chart: [RUM conversion tracking plugin](https://github.com/adobe/franklin-rum-conversion).
-- :rocket: easy simulation of each experience and basic reporting leveraging in-page overlays.
-
-\* Bringing additional marketing technology such as visitor-based analytics or personalization to a project will cancel this privacy-first principle.
+- :shield: privacy-compliant experimentation with built-in consent management support for GDPR, CCPA, and other privacy regulations
+- :rocket: easy simulation of each experience and basic reporting leveraging in-page overlays
 
 ## Installation
 
-:warning: If you are instrumenting a new site, please switch to [v2](https://github.com/adobe/aem-experimentation/tree/v2).
-
 Add the plugin to your AEM project by running:
+
 ```sh
-git subtree add --squash --prefix plugins/experimentation git@github.com:adobe/aem-experimentation.git main
+git subtree add --squash --prefix plugins/experimentation git@github.com:adobe/aem-experimentation.git v2
 ```
 
-If you later want to pull the latest changes and update your local copy of the plugin
+If you later want to pull the latest changes and update your local copy of the plugin:
+
 ```sh
-git subtree pull --squash --prefix plugins/experimentation git@github.com:adobe/aem-experimentation.git main
+git subtree pull --squash --prefix plugins/experimentation git@github.com:adobe/aem-experimentation.git v2
 ```
 
 If you prefer using `https` links you'd replace `git@github.com:adobe/aem-experimentation.git` in the above commands by `https://github.com/adobe/aem-experimentation.git`.
 
-If the `subtree pull` command is failing with an error like:
-```
-fatal: can't squash-merge: 'plugins/experimentation' was never added
-```
-you can just delete the folder and re-add the plugin via the `git subtree add` command above.
-
 ## Project instrumentation
 
-### On top of a regular boilerplate project
+### Key Files to Add or Modify
 
-Typically, you'd know you don't have the plugin system if you don't see a reference to `window.hlx.plugins` in your `scripts.js`. In that case, you can still manually instrument this plugin in your project by falling back to a more manual instrumentation. To properly connect and configure the plugin for your project, you'll need to edit your `scripts.js` in your AEM project and add the following:
+1. **plugins/experimentation** - Add this folder containing the experimentation engine plugins (see Installation section above)
+2. **scripts/experiment-loader.js** - Add this script to handle experiment loading
+3. **scripts/scripts.js** - Modify this script with the configuration
 
-1. at the start of the file:
-    ```js
-    const AUDIENCES = {
-      mobile: () => window.innerWidth < 600,
-      desktop: () => window.innerWidth >= 600,
-      // define your custom audiences here as needed
-    };
+### Step 1: Create `scripts/experiment-loader.js`
 
-    /**
-     * Gets all the metadata elements that are in the given scope.
-     * @param {String} scope The scope/prefix for the metadata
-     * @returns an array of HTMLElement nodes that match the given scope
-     */
-    export function getAllMetadata(scope) {
-      return [...document.head.querySelectorAll(`meta[property^="${scope}:"],meta[name^="${scope}-"]`)]
-        .reduce((res, meta) => {
-          const id = toClassName(meta.name
-            ? meta.name.substring(scope.length + 1)
-            : meta.getAttribute('property').split(':')[1]);
-          res[id] = meta.getAttribute('content');
-          return res;
-        }, {});
-    }
-    ```
-2. if this is the first plugin you add to your project, you'll also need to add:
-    ```js
-    // Define an execution context
-    const pluginContext = {
-      getAllMetadata,
-      getMetadata,
-      loadCSS,
-      loadScript,
-      sampleRUM,
-      toCamelCase,
-      toClassName,
-    };
-    ```
-    And make sure to import any missing/undefined methods from `aem.js`/`lib-franklin.js` at the very top of the file:
-    ```js
-    import {
-      ...
-      getMetadata,
-      loadScript,
-      toCamelCase,
-      toClassName,
-    } from './aem.js';
-    ```
-3. Early in the `loadEager` method you'll need to add:
-    ```js
-    async function loadEager(doc) {
-      …
-      // Add below snippet early in the eager phase
-      if (getMetadata('experiment')
-        || Object.keys(getAllMetadata('campaign')).length
-        || Object.keys(getAllMetadata('audience')).length) {
-        // eslint-disable-next-line import/no-relative-packages
-        const { loadEager: runEager } = await import('../plugins/experimentation/src/index.js');
-        await runEager(document, { audiences: AUDIENCES }, pluginContext);
-      }
-      …
-    }
-    ```
-    This needs to be done as early as possible since this will be blocking the eager phase and impacting your LCP, so we want this to execute as soon as possible.
-4. Finally at the end of the `loadLazy` method you'll have to add:
-    ```js
-    async function loadLazy(doc) {
-      …
-      // Add below snippet at the end of the lazy phase
-      if ((getMetadata('experiment')
-        || Object.keys(getAllMetadata('campaign')).length
-        || Object.keys(getAllMetadata('audience')).length)) {
-        // eslint-disable-next-line import/no-relative-packages
-        const { loadLazy: runLazy } = await import('../plugins/experimentation/src/index.js');
-        await runLazy(document, { audiences: AUDIENCES }, pluginContext);
-      }
-    }
-    ```
-    This is mostly used for the authoring overlay, and as such isn't essential to the page rendering, so having it at the end of the lazy phase is good enough.
+Create a new file `scripts/experiment-loader.js` with the following content:
 
-### On top of the plugin system (deprecated)
-
-The easiest way to add the plugin is if your project is set up with the plugin system extension in the boilerplate.
-You'll know you have it if `window.hlx.plugins` is defined on your page.
-
-If you don't have it, you can follow the proposal in https://github.com/adobe/aem-lib/pull/23 and https://github.com/adobe/aem-boilerplate/pull/275 and apply the changes to your `aem.js`/`lib-franklin.js` and `scripts.js`.
-
-Once you have confirmed this, you'll need to edit your `scripts.js` in your AEM project and add the following at the start of the file:
 ```js
-const AUDIENCES = {
-  mobile: () => window.innerWidth < 600,
-  desktop: () => window.innerWidth >= 600,
-  // define your custom audiences here as needed
-};
+/**
+ * Checks if experimentation is enabled.
+ * @returns {boolean} True if experimentation is enabled, false otherwise.
+ */
+const isExperimentationEnabled = () => document.head.querySelector('[name^="experiment"],[name^="campaign-"],[name^="audience-"],[property^="campaign:"],[property^="audience:"]')
+  || [...document.querySelectorAll('.section-metadata div')].some((d) => d.textContent.match(/Experiment|Campaign|Audience/i));
 
-window.hlx.plugins.add('experimentation', {
-  condition: () => getMetadata('experiment')
-    || Object.keys(getAllMetadata('campaign')).length
-    || Object.keys(getAllMetadata('audience')).length,
-  options: { audiences: AUDIENCES },
-  url: '/plugins/experimentation/src/index.js',
-});
+/**
+ * Loads the experimentation module (eager).
+ * @param {Document} document The document object.
+ * @param {Object} config The experimentation configuration.
+ * @returns {Promise<void>} A promise that resolves when the experimentation module is loaded.
+ */
+export async function runExperimentation(document, config) {
+  if (!isExperimentationEnabled()) {
+    window.addEventListener('message', async (event) => {
+      if (event.data?.type === 'hlx:experimentation-get-config') {
+        event.source.postMessage({
+          type: 'hlx:experimentation-config',
+          config: { experiments: [], audiences: [], campaigns: [] },
+          source: 'no-experiments'
+        }, '*');
+      }
+    });
+    return null;
+  }
+
+  try {
+    const { loadEager } = await import(
+      '../plugins/experimentation/src/index.js'
+    );
+    return loadEager(document, config);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to load experimentation module (eager):', error);
+    return null;
+  }
+}
+
+/**
+ * Loads the experimentation simulation UI (lazy).
+ * The simulation panel is an authoring aid, so this is a no-op in production —
+ * the coarse check below avoids even fetching the plugin there, and the plugin
+ * re-checks authoritatively before showing anything.
+ * @param {Document} document The document object.
+ * @param {Object} config The experimentation configuration.
+ * @returns {Promise<void>} A promise that resolves when the simulation UI is loaded.
+ */
+export async function runExperimentationLazy(document, config) {
+  const { host, hostname, origin } = window.location;
+  const isPreview = hostname === 'localhost'
+    || hostname.endsWith('.page')
+    || (typeof config.isProd === 'function' && !config.isProd())
+    || (config.prodHost && ![host, hostname, origin].includes(config.prodHost));
+  if (!isPreview) {
+    return null;
+  }
+
+  try {
+    const { loadLazy } = await import(
+      '../plugins/experimentation/src/index.js'
+    );
+    return loadLazy(document, config);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to load experimentation module (lazy):', error);
+    return null;
+  }
+}
+
 ```
+
+> **Note:** Add the following line to your `head.html` to preload the experiment loader script:
+> ```html
+> <link rel="modulepreload" href="/scripts/experiment-loader.js" />
+> ```
+
+### Step 2: Update `scripts/scripts.js`
+
+Add the following import and configuration at the top of your `scripts/scripts.js`:
+
+```js
+import {
+  runExperimentation,
+  runExperimentationLazy,
+} from './experiment-loader.js';
+
+const experimentationConfig = {
+  prodHost: 'www.mysite.com', // add your prodHost here, otherwise we will show mock data
+  audiences: {
+    mobile: () => window.innerWidth < 600,
+    desktop: () => window.innerWidth >= 600,
+    // define your custom audiences here as needed
+  },
+};
+```
+
+Then, add the following line early in your `loadEager()` function:
+
+```js
+async function loadEager(doc) {
+  // ... existing code ...
+  await runExperimentation(doc, experimentationConfig);
+  // ... rest of your code ...
+}
+```
+
+And add the following line to your `loadLazy()` function to enable the simulation
+panel (see [Enabling the simulation panel](#enabling-the-simulation-panel-aem-sidekick) below):
+
+```js
+async function loadLazy(doc) {
+  // ... existing code ...
+  await runExperimentationLazy(doc, experimentationConfig);
+  // ... rest of your code ...
+}
+```
+
+### Increasing sampling rate for low traffic pages
+
+When running experiments during short periods (i.e. a few days or 2 weeks) or on low-traffic pages (<100K page views a month), it is unlikely that you'll reach statistical significance on your tests with the default RUM sampling. For those use cases, we recommend adjusting the sampling rate for the pages in question to 1 out of 10 instead of the default 1 out of 100 visits.
+
+Edit your html `<head>` and set configure the RUM sampling like:
+```html
+<meta name="experiment" content="...">
+...
+<!-- insert this script tag before loading aem.js or lib-franklin.js -->
+<script>
+  window.RUM_SAMPLING_RATE = document.head.querySelector('[name^="experiment"],[name^="campaign-"],[name^="audience-"]')
+    || [...document.querySelectorAll('.section-metadata div')].some((d) => d.textContent.match(/Experiment|Campaign|Audience/i))
+    ? 10
+    : 100;
+</script>
+<script type="module" src="/scripts/aem.js"></script>
+<script type="module" src="/scripts/scripts.js"></script>
+```
+
+Then double-check your `aem.js` file around line 20 and look for:
+```js
+const weight = new URLSearchParams(window.location.search).get('rum') === 'on' ? 1 : defaultSamplingRate;
+```
+
+If this is not present, please apply the following changes to the file: https://github.com/adobe/helix-rum-js/pull/159/files#diff-bfe9874d239014961b1ae4e89875a6155667db834a410aaaa2ebe3cf89820556
 
 ### Custom options
 
-There are various aspects of the plugin that you can configure via options you are passing to the 2 main methods above (`runEager`/`runLazy`).
+There are various aspects of the plugin that you can configure via the `experimentationConfig` object.
 You have already seen the `audiences` option in the examples above, but here is the full list we support:
 
 ```js
-runEager.call(document, {
-  // Overrides the base path if the plugin was installed in a sub-directory
-  basePath: '',
-
+const experimentationConfig = {
   // Lets you configure the prod environment.
   // (prod environments do not get the pill overlay)
-  prodHost: 'www.my-website.com',
+  prodHost: 'www.mysite.com',
   // if you have several, or need more complex logic to toggle pill overlay, you can use
-  isProd: () => window.location.hostname.endsWith('hlx.page')
-    || window.location.hostname === ('localhost'),
-
-  /* Generic properties */
-  // RUM sampling rate on regular AEM pages is 1 out of 100 page views
-  // but we increase this by default for audiences, campaigns and experiments
-  // to 1 out of 10 page views so we can collect metrics faster of the relative
-  // short durations of those campaigns/experiments
-  rumSamplingRate: 10,
+  isProd: () => !window.location.hostname.endsWith('hlx.page')
+    && window.location.hostname !== ('localhost'),
 
   // the storage type used to persist data between page views
   // (for instance to remember what variant in an experiment the user was served)
@@ -187,9 +219,24 @@ runEager.call(document, {
 
   /* Experimentation related properties */
   // See more details on the dedicated Experiments page linked below
-  experimentsMetaTag: 'experiment',
+  experimentsMetaTagPrefix: 'experiment',
   experimentsQueryParameter: 'experiment',
-}, pluginContext);
+
+  /* Fragment experiment needs redecoration */
+  // See more details below
+  decorationFunction: (el) => {
+    /* handle custom decoration here, for example: */
+    buildBlock(el);
+    decorateBlock(el);
+  },
+
+  /* Which simulation UI to wire up in preview/dev (see the section below) */
+  // - 'auto' (default): wire up the AEM Sidekick panel if/when the Sidekick is present
+  // - 'sidekick': same as 'auto', but explicit
+  // - 'universal-editor': the panel is delivered as a UE extension, so stay out of the way
+  // - false: do not load any simulation UI
+  simulationUI: 'auto',
+};
 ```
 
 For detailed implementation instructions on the different features, please read the dedicated pages we have on those topics:
@@ -197,21 +244,327 @@ For detailed implementation instructions on the different features, please read 
 - [Campaigns](/documentation/campaigns.md)
 - [Experiments](/documentation/experiments.md)
 
+**Cases of passing `decorationFunction`**
+Fragment replacement is handled by async observer, which may execute before or after default decoration complete. So, you need to provide a decoration method to redecorate. There are several common cases:
+1. Have a selector for an element inside a block and the block needs to be redecorated => sample code above
+2. Have a `.block` selector and  need to redecorate => switch block status to `"loading"` and call `loadBlock(el)`
+3. Have a `.section` selector and need to redecorate => call `decorateBlocks(el)`
+4. Have a `main` selector and need to redecorate => call `decorateMain(el)`
+
+### Enabling the simulation panel (AEM Sidekick)
+
+Starting with v2, the plugin no longer injects its own in-page overlay to simulate and switch
+between experiment variants. That panel now ships as a micro-frontend (MFE) that Adobe's
+[AEM Sidekick browser extension](https://chromewebstore.google.com/detail/aem-sidekick/igkmdomcgoebiipaifhmpfjhbjccggml)
+opens on demand.
+
+The plugin loads and toggles that panel for you from `loadLazy()` — you do **not** need to copy any
+listener script into your project or add anything to `head.html`. Make sure you've wired
+`runExperimentationLazy` into your `scripts.js` `loadLazy()` as shown in
+[Step 2](#step-2-update-scriptsscriptsjs) above. The panel only loads in preview/development
+environments, never in production, and only when the Sidekick is present (see the `simulationUI`
+option to change this — for example in the Universal Editor, where the panel is delivered as a UE
+extension instead).
+
+> **Note on performance and preview timing.** The panel's UI and MFE loader live in a separate
+> `simulation.js` chunk that `loadLazy` pulls in via a dynamic `import()` **only** in
+> preview/development, so production pages never download or parse any simulation code. The small,
+> UI-less `postMessage` handshake the panel talks over is the one exception: it's registered eagerly
+> (preview-only, from `loadEager`) so that a Sidekick bookmarklet that injects the panel early in page
+> load still finds a listener. Bumping the plugin therefore keeps the preview handshake working
+> exactly as before — no migration needed — while still keeping the heavy panel UI off the production
+> path.
+
+The one thing the plugin can't do for you is register the Sidekick toolbar button, since that lives
+in your project's Sidekick config, not in page code. Add the following plugin entry to
+`tools/sidekick/config.json` in your project (a copy also lives at
+[`documentation/sidekick/config.json`](./documentation/sidekick/config.json)):
+
+```json
+{
+  "plugins": [
+    {
+      "id": "aem-experimentation",
+      "titleI18n": {
+        "en": "Experimentation"
+      },
+      "environments": [
+        "preview"
+      ],
+      "includePaths": [
+        "**.docx**"
+      ],
+      "event": "aem-experimentation-sidekick"
+    }
+  ]
+}
+```
+
+> **Note:** if your project has been migrated to AEM's unified ("helix5") config format — for
+> instance via [Experience Workspace](https://docs.da.live/about/early-access/experience-workspace) —
+> committing this file alone is not enough. Sidekick reads its config from your persisted site config
+> (`https://admin.hlx.page/config/{org}/sites/{site}.json`), not a live read of
+> `tools/sidekick/config.json` off the code bus, so you need to merge a matching `sidekick.plugins`
+> array into that persisted config directly. Note also that this admin API's verbs are inverted from
+> typical REST conventions: **`PUT`** only *creates* a config that doesn't exist yet (and fails with
+> `config already exists` if one is already there) — **`POST`** is what updates an existing config.
+
+Once the button is registered and `runExperimentationLazy` is wired up, clicking the
+"Experimentation" button in Sidekick opens the panel. A shared simulation link
+(`?experiment=<experiment-id>/<variant-name>`) also opens the panel automatically on page load.
+
 ## Extensibility & integrations
 
 The experimentation plugin exposes APIs that allow you to integrate with analytics platforms and other 3rd-party libraries.
+The plugin exposes experiment data through two mechanisms:
+1. **Events** - React immediately when experiments are applied (V2 only)
+2. **Global Objects** - Access complete experiment details after page load
 
 ### Available APIs
 
-#### Global Objects
+#### Consent Management
 
-Access experiment data through global JavaScript objects:
+The plugin provides consent management APIs for privacy compliance. Experiments can be configured to require user consent before running.
+
+**APIs:**
 
 ```javascript
-// Current implementation
+import { 
+  isUserConsentGiven,
+  updateUserConsent
+} from './plugins/experimentation/src/index.js';
+
+// Check if user has consented to experimentation
+const hasConsent = isUserConsentGiven();
+
+// Integrate this with your consent management platform events to track the user's choice
+updateUserConsent(true);  // or false to revoke consent
+```
+
+**Requiring consent for an experiment:**
+
+Add the `Experiment Requires Consent` metadata property:
+
+| Metadata              |                                                              |
+|-----------------------|--------------------------------------------------------------|
+| Experiment            | Hero Test                                                    |
+| Experiment Variants   | /variant-1, /variant-2                                       |
+| Experiment Requires Consent | true                                                   |
+
+**Implementation:**
+
+You can integrate consent management in two ways:
+
+1. **In your `experiment-loader.js`** (recommended) - keeps all experimentation code together
+2. **In your `scripts.js`** - if you need consent for other purposes beyond experimentation
+
+<details>
+<summary>Recommended: Integrate in experiment-loader.js</summary>
+
+```javascript
+// experiment-loader.js
+import {
+  updateUserConsent,
+  isUserConsentGiven,
+} from '../plugins/experimentation/src/index.js';
+
+/**
+ * Initialize consent management
+ * Choose ONE of the setup functions based on your CMP (Consent Management Platform)
+ * 
+ * IMPORTANT: These are example implementations. Please:
+ * 1. Verify the consent categories match your OneTrust/Cookiebot configuration
+ * 2. Test thoroughly in your environment
+ * 3. Consult with your legal/privacy team about consent requirements
+ */
+function initConsent() {
+  // OPTION 1: OneTrust
+  function setupOneTrustConsent() {
+    // Step 1: Bridge OneTrust's callback to dispatch a custom event
+    window.OptanonWrapper = function() {
+      const activeGroups = window.OnetrustActiveGroups || '';
+      const groups = activeGroups.split(',').filter(g => g);
+      window.dispatchEvent(new CustomEvent('consent.onetrust', { 
+        detail: groups 
+      }));
+    };
+    
+    // Step 2: Listen for the custom event
+    function consentEventHandler(ev) {
+      const groups = ev.detail;
+      const hasConsent = groups.includes('C0003') // Functional Cookies
+        || groups.includes('C0004'); // Targeting Cookies
+      updateUserConsent(hasConsent);
+    }
+    window.addEventListener('consent.onetrust', consentEventHandler);
+  }
+
+  // OPTION 2: Cookiebot
+  function setupCookiebotConsent() {
+    function handleCookiebotConsent() {
+      const preferences = window.Cookiebot?.consent?.preferences || false;
+      const marketing = window.Cookiebot?.consent?.marketing || false;
+      updateUserConsent(preferences || marketing);
+    }
+    window.addEventListener('CookiebotOnConsentReady', handleCookiebotConsent);
+    window.addEventListener('CookiebotOnAccept', handleCookiebotConsent);
+  }
+
+  // OPTION 3: Custom Consent Banner
+  function setupCustomConsent() {
+    document.addEventListener('consent-updated', (event) => {
+      updateUserConsent(event.detail.experimentation);
+    });
+  }
+
+  // Choose ONE:
+  setupOneTrustConsent();     // or setupCookiebotConsent() or setupCustomConsent()
+}
+
+export async function runExperimentation(document, config) {
+  if (!isExperimentationEnabled()) {
+    return null;
+  }
+
+  // Initialize consent BEFORE loading experimentation
+  initConsent();
+
+  const { loadEager } = await import('../plugins/experimentation/src/index.js');
+  return loadEager(document, config);
+}
+
+// Export consent functions for use elsewhere if needed
+export { updateUserConsent, isUserConsentGiven };
+```
+
+Your `scripts.js` stays clean - no consent code needed there!
+
+</details>
+
+<details>
+<summary>Integrate in scripts.js</summary>
+
+```javascript
+// scripts.js
+import {
+  updateUserConsent,
+  isUserConsentGiven,
+} from '../plugins/experimentation/src/index.js';
+
+import { runExperimentation } from './experiment-loader.js';
+
+// Setup consent (choose ONE based on your CMP)
+function setupOneTrustConsent() {
+  // Step 1: Bridge OneTrust's callback to dispatch a custom event
+  window.OptanonWrapper = function() {
+    const activeGroups = window.OnetrustActiveGroups || '';
+    const groups = activeGroups.split(',').filter(g => g);
+    window.dispatchEvent(new CustomEvent('consent.onetrust', { 
+      detail: groups 
+    }));
+  };
+  
+  // Step 2: Listen for the custom event
+  function consentEventHandler(ev) {
+    const groups = ev.detail;
+    const hasConsent = groups.includes('C0003') // Functional Cookies
+      || groups.includes('C0004'); // Targeting Cookies
+    updateUserConsent(hasConsent);
+  }
+  window.addEventListener('consent.onetrust', consentEventHandler);
+}
+
+async function loadEager(doc) {
+  document.documentElement.lang = 'en';
+  decorateTemplateAndTheme();
+
+  // Initialize consent BEFORE running experiments
+  setupOneTrustConsent();
+
+  await runExperimentation(doc, experimentationConfig);
+  
+  // ... rest of your code
+}
+```
+
+</details>
+
+For detailed usage instructions and more examples, see the [Experiments documentation](/documentation/experiments.md#consent-based-experiments).
+
+#### Events
+
+Listen for the `aem:experimentation` event to react when experiments, campaigns, or audiences are applied:
+
+```javascript
+document.addEventListener('aem:experimentation', (event) => {
+  console.log(event.detail);
+});
+```
+
+The event details will contain one of 3 possible sets of properties:
+
+- **For experiments:**
+```javascript
+{
+  type: 'experiment',
+  element: DOMElement, // the DOM element that was modified
+  experiment: 'experiment-name', // the experiment name
+  variant: 'variant-name' // the variant name that was served
+}
+```
+
+- **For campaigns:**
+```javascript
+{
+  type: 'campaign',
+  element: DOMElement, // the DOM element that was modified
+  campaign: 'campaign-name' // the campaign that was resolved
+}
+```
+
+- **For audiences:**
+```javascript
+{
+  type: 'audience',
+  element: DOMElement, // the DOM element that was modified
+  audience: 'audience-name' // the audience that was resolved
+}
+```
+
+#### Global Objects
+
+You can leverage the following global JS objects:
+
+```javascript
+// All experiments (page, section, fragment levels)  
+const allExperiments = window.hlx.experiments;
+
+// All audiences (page, section, fragment levels)
+const allAudiences = window.hlx.audiences;
+
+// All campaigns (page, section, fragment levels)
+const allCampaigns = window.hlx.campaigns;
+
+// backward compatibility with V1
 const experiment = window.hlx.experiment;
 const audience = window.hlx.audience;
 const campaign = window.hlx.campaign;
+```
+
+- **Array Structure:**
+
+`window.hlx.experiments`, `window.hlx.audiences`, and `window.hlx.campaigns` are each an array of objects containing:
+
+```javascript
+[
+  {
+    type: 'page', // one of: page, section, fragment
+    el: DOMElement, // the DOM element that was modified
+    servedExperience: '/variant-url', // the URL for the content that was inlined (if any)
+    config: { /* see Complete Reference section below */ }
+  }
+  // ... more objects for section/fragment level modifications
+]
 ```
 
 ### Integration Examples
@@ -220,20 +573,121 @@ const campaign = window.hlx.campaign;
 
 For Adobe Analytics, Target, and Adobe Journey Optimizer integration:
 
+- **Event-driven approach:**
 ```javascript
-// Check if experiment is running
+document.addEventListener('aem:experimentation', (event) => {
+  if (event.detail.type === 'experiment') {
+    const { experiment, variant } = event.detail;
+    
+    // Choose your Adobe integration method below
+  }
+});
+```
+
+<details>
+<summary>Option 1: Adobe Client Data Layer (works with all Adobe products via Tags)</summary>
+
+```javascript
+document.addEventListener('aem:experimentation', (event) => {
+  if (event.detail.type === 'experiment') {
+    const { experiment, variant } = event.detail;
+    
+    window.adobeDataLayer = window.adobeDataLayer || [];
+    window.adobeDataLayer.push({
+      event: 'experiment-applied',
+      experiment: {
+        id: experiment,
+        variant: variant
+      }
+    });
+  }
+});
+```
+
+</details>
+
+<details>
+<summary>Option 2: Web SDK with XDM (direct AEP + Analytics integration)</summary>
+
+```javascript
+document.addEventListener('aem:experimentation', (event) => {
+  if (event.detail.type === 'experiment') {
+    const { experiment, variant } = event.detail;
+    
+    if (window.alloy) {
+      alloy("sendEvent", {
+        xdm: {
+          eventType: "decisioning.propositionDisplay",
+          timestamp: new Date().toISOString(),
+          _experience: {
+            decisioning: {
+              propositions: [{
+                id: experiment,
+                scope: "page",
+                items: [{
+                  id: variant,
+                  schema: "https://ns.adobe.com/personalization/default-content-item"
+                }]
+              }],
+              propositionEventType: {
+                display: 1
+              }
+            }
+          }
+        },
+        data: {
+          __adobe: {
+            analytics: {
+              eVar1: experiment,
+              eVar2: variant,
+              events: "event1"
+            }
+          }
+        }
+      });
+    }
+  }
+});
+```
+
+</details>
+
+- **Global object approach:**
+```javascript
 if (window.hlx.experiment) {
-  // Option 1: Adobe Client Data Layer (works with all Adobe products via Tags)
+  const { id, selectedVariant } = window.hlx.experiment;
+  
+  // Choose your Adobe integration method below
+}
+```
+
+<details>
+<summary>Option 1: Adobe Client Data Layer (works with all Adobe products via Tags)</summary>
+
+```javascript
+if (window.hlx.experiment) {
+  const { id, selectedVariant } = window.hlx.experiment;
+  
   window.adobeDataLayer = window.adobeDataLayer || [];
   window.adobeDataLayer.push({
     event: 'experiment-applied',
     experiment: {
-      id: window.hlx.experiment.id,
-      variant: window.hlx.experiment.selectedVariant
+      id: id,
+      variant: selectedVariant
     }
   });
+}
+```
+
+</details>
+
+<details>
+<summary>Option 2: Web SDK with XDM (direct AEP + Analytics integration)</summary>
+
+```javascript
+if (window.hlx.experiment) {
+  const { id, selectedVariant } = window.hlx.experiment;
   
-  // Option 2: Modern Web SDK integration (AEP + Analytics)
   if (window.alloy) {
     alloy("sendEvent", {
       xdm: {
@@ -242,10 +696,10 @@ if (window.hlx.experiment) {
         _experience: {
           decisioning: {
             propositions: [{
-              id: window.hlx.experiment.id,
+              id: id,
               scope: "page",
               items: [{
-                id: window.hlx.experiment.selectedVariant,
+                id: selectedVariant,
                 schema: "https://ns.adobe.com/personalization/default-content-item"
               }]
             }],
@@ -258,15 +712,10 @@ if (window.hlx.experiment) {
       data: {
         __adobe: {
           analytics: {
-            eVar1: window.hlx.experiment.id,
-            eVar2: window.hlx.experiment.selectedVariant,
+            eVar1: id,
+            eVar2: selectedVariant,
             events: "event1"
           }
-        },
-        experiment: {
-          id: window.hlx.experiment.id,
-          variant: window.hlx.experiment.selectedVariant,
-          timestamp: Date.now()
         }
       }
     });
@@ -274,12 +723,27 @@ if (window.hlx.experiment) {
 }
 ```
 
-> **Choose your approach**: 
-> - **Option 1**: Works with all Adobe products via Tags (simplest)
-> - **Option 2**: Direct Web SDK with full AEP + Analytics integration
+</details>
 
 #### Google Tag Manager / Google Analytics
 
+- **Event-driven integration (recommended):**
+```javascript
+document.addEventListener('aem:experimentation', (event) => {
+  if (event.detail.type === 'experiment') {
+    const { experiment, variant } = event.detail;
+    
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'experiment_view',
+      experiment_id: experiment,
+      experiment_variant: variant
+    });
+  }
+});
+```
+
+- **Global object access:**
 ```javascript
 if (window.hlx.experiment) {
   window.dataLayer = window.dataLayer || [];
@@ -293,6 +757,19 @@ if (window.hlx.experiment) {
 
 #### Tealium
 
+- **Event-driven integration (recommended):**
+```javascript
+document.addEventListener('aem:experimentation', (event) => {
+  if (event.detail.type === 'experiment') {
+    const { experiment, variant } = event.detail;
+    
+    window.utag_data = window.utag_data || {};
+    window.utag_data.cms_experiment = `${experiment}:${variant}`;
+  }
+});
+```
+
+- **Global object access:**
 ```javascript
 // Example from UPS implementation
 if (window.hlx.experiment) {
@@ -322,6 +799,7 @@ Here's the complete experiment config structure available in `window.hlx.experim
   variantNames: ["control", "challenger-1"],
   audiences: ["mobile", "desktop"],
   resolvedAudiences: ["mobile"],
+  requiresConsent: true, // whether this experiment requires user consent
   run: true,
   variants: {
     control: { percentageSplit: "0.5", pages: ["/current"], label: "Control" },
