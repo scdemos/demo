@@ -381,7 +381,11 @@
   }
 }
 
-/* nothing below the box until something is searched */
-.search.tabs.is-idle .search-ai-panel {
+/* before a search, Tabs lists every page and shows no AI answer */
+.search.tabs.is-idle .search-ai-panel-results {
+  display: block;
+}
+
+.search.tabs.is-idle .search-ai-panel-answer {
   display: none;
 }
