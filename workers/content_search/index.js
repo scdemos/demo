@@ -1,6 +1,6 @@
 /*
  * Natural-language search over the site's query index, with the same POST /search and
- * POST /gensearch contract as the Content AI proxy that blocks/search-ai calls.
+ * POST /gensearch contract as the Content AI proxy that the search block (blocks/search/search-ai.js) calls.
  * Pointing the block's `base-url` at this worker or at a Content AI proxy is the only change.
  *
  * /search    ranks pages by meaning (Workers AI embeddings of title, description and
@@ -57,8 +57,19 @@ function sourcesFrom(env) {
   return sources;
 }
 
+// Named scopes a block picks with its content-source row (contentSource.name), e.g.
+// SCOPES = "frescopa=/en/" searches only /en/ pages and never the product docs.
+// Format: name=prefix|prefix;name=prefix. No name: every source, docs as fallback.
+export function scopesFrom(value) {
+  return Object.fromEntries(String(value || '').split(';').map((entry) => {
+    const [name, paths = ''] = entry.split('=');
+    return [name.trim().toLowerCase(), paths.split('|').map((p) => p.trim()).filter(Boolean)];
+  }).filter(([name, paths]) => name && paths.length));
+}
+
 function settings(env) {
   return {
+    scopes: scopesFrom(env.SCOPES),
     prefix: `/${String(env.PATH_PREFIX || '').replace(/^\/+|\/+$/g, '')}`,
     sources: sourcesFrom(env),
     embeddingModel: env.EMBEDDING_MODEL || '@cf/baai/bge-base-en-v1.5',
@@ -294,7 +305,7 @@ function cosine(a, b) {
 const terms = (text) => text.toLowerCase().split(/[^a-z0-9]+/)
   .filter((t) => t.length > 2 && !STOPWORDS.has(t));
 
-async function rank(env, cfg, text) {
+async function rank(env, cfg, text, scope) {
   const { pages, vectors } = await loadIndex(env, cfg);
   if (!pages.length) return [];
   const [queryVector] = await embed(env, cfg, [`${QUERY_INSTRUCTION}${text}`]);
@@ -307,6 +318,7 @@ async function rank(env, cfg, text) {
       return { page, score: cosine(queryVector, vectors[i]) + boost };
     })
     .filter((r) => r.score >= cfg.minScore)
+    .filter((r) => !scope || (r.page.site && scope.some((p) => r.page.path.startsWith(p))))
     .sort((a, b) => b.score - a.score);
   // other sources (product docs) only when nothing on the site matches
   const onSite = ranked.filter((r) => r.page.site);
@@ -365,6 +377,14 @@ async function readQuery(request) {
   return { body, text };
 }
 
+// The scope named by contentSource.name; no name, or a name that isn't a scope (a Content AI
+// source name), searches everything.
+function scopeOf(body, cfg) {
+  const raw = body?.contentSource?.name;
+  const name = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
+  return name && Object.hasOwn(cfg.scopes, name) ? cfg.scopes[name] : null;
+}
+
 const metadata = (page) => ({
   url: page.url,
   title: page.title,
@@ -377,7 +397,7 @@ async function search(request, env, cfg) {
   const pagination = body?.queryOptions?.pagination || {};
   const limit = Math.min(Math.max(parseInt(pagination.limit, 10) || 10, 1), MAX_LIMIT);
   const offset = Math.max(parseInt(pagination.cursor, 10) || 0, 0);
-  const ranked = await rank(env, cfg, text);
+  const ranked = await rank(env, cfg, text, scopeOf(body, cfg));
   const next = offset + limit;
   return {
     totalResults: ranked.length,
@@ -418,8 +438,8 @@ function answerMessages(text, sources, texts) {
 }
 
 async function gensearch(request, env, cfg) {
-  const { text } = await readQuery(request);
-  const sources = (await rank(env, cfg, text)).slice(0, ANSWER_SOURCES);
+  const { body, text } = await readQuery(request);
+  const sources = (await rank(env, cfg, text, scopeOf(body, cfg))).slice(0, ANSWER_SOURCES);
   if (!sources.length) return { query: text, result: '', hits: [] };
   const texts = await Promise.all(sources.slice(0, TEXT_SOURCES).map(({ page }) => pageText(page)));
   let out;

@@ -1,4 +1,16 @@
-import { readBlockConfig, toClassName } from '../../scripts/aem.js';
+/*
+ * Search over the site's query index.
+ *
+ * Variants (in the block name, e.g. "Search (AI)"):
+ *   none  keyword search with optional filters and sort
+ *   ai    natural-language search that answers with AI (search-ai.js)
+ *   tabs  one search box, with keyword "Results" and an "AI answer" tab
+ *
+ * Keyword rows: view (cards | list), keywords, excluded-keywords, searchbar (enabled |
+ * disabled); any other row is a filter group whose value lists its options.
+ * AI rows: see search-ai.js. Any key of LABELS overrides that text.
+ */
+import { loadCSS, readBlockConfig, toClassName } from '../../scripts/aem.js';
 import {
   createTag,
   fetchQueryIndexPage,
@@ -13,10 +25,33 @@ import {
 const PAGE_SIZE = 15;
 const FETCH_LIMIT = 500;
 const RESERVED_CONFIG_KEYS = ['view', 'keywords', 'excluded-keywords', 'searchbar'];
+// short words such as "how", "do", "I" don't have to match in a natural-language query
+const MIN_TERM_LENGTH = 3;
 
-function parseFilterGroupsFromConfig(config) {
+export const LABELS = {
+  placeholder: 'Search',
+  'search-button': 'Search',
+  filters: 'Filters',
+  'filter-results': 'Filter results',
+  'sort-by': 'Sort by',
+  sort: 'Sort',
+  relevance: 'Best match',
+  newest: 'Newest',
+  oldest: 'Oldest',
+  'no-matches': 'No matching results.',
+  'load-more': 'Load More',
+  loading: 'Loading...',
+  'status-query': 'Showing {shown} of {total} results for "{query}".',
+  'status-filters': 'Showing {shown} of {total} for {count} selected filters.',
+  'status-filter': 'Showing {shown} of {total} for 1 selected filter.',
+  'status-all': 'Showing all {total} results.',
+};
+
+const fill = (text, values) => text.replace(/\{(\w+)\}/g, (m, k) => (k in values ? values[k] : m));
+
+function parseFilterGroupsFromConfig(config, reserved) {
   return Object.entries(config)
-    .filter(([key]) => !RESERVED_CONFIG_KEYS.includes(key))
+    .filter(([key]) => !reserved.includes(key))
     .map(([key, value]) => {
       const options = String(value || '')
         .split(',')
@@ -73,14 +108,28 @@ function matchesExcluded(row, excluded) {
   return excluded.some((k) => rowKeywords.some((rk) => rk === k || rk.includes(k)));
 }
 
-function matchesQuery(row, query) {
-  if (!query) return true;
-  const text = [row.title, row.description, row.path, getArticleKeywords(row)]
+function rowText(row) {
+  return [row.title, row.description, row.path, getArticleKeywords(row)]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
+}
+
+function matchesQuery(row, query) {
+  if (!query) return true;
+  const text = rowText(row);
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   return terms.every((term) => text.includes(term));
+}
+
+// For questions: how many of the query's words a row contains.
+function queryScore(row, query) {
+  const text = rowText(row);
+  const terms = [...new Set(query.toLowerCase().split(/[^\p{L}\p{N}]+/u))]
+    .filter((t) => t.length >= MIN_TERM_LENGTH);
+  if (!terms.length) return matchesQuery(row, query) ? 1 : 0;
+  const hits = terms.filter((t) => text.includes(t)).length;
+  return hits >= Math.ceil(terms.length / 2) ? hits : 0;
 }
 
 function isMatch(row, keywords, excluded) {
@@ -151,12 +200,17 @@ function sortByDate(rows, order) {
   return out;
 }
 
-function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId) {
+function sortOptions(label, loose) {
+  return [...(loose ? ['relevance'] : []), 'newest', 'oldest']
+    .map((value) => createTag('option', { value }, label(value)));
+}
+
+function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId, label, loose) {
   const panelId = `${idPrefix}-filters-panel`;
   const aside = createTag('aside', {
     class: 'search-filters',
     role: 'region',
-    'aria-label': 'Filter results',
+    'aria-label': label('filter-results'),
   });
 
   const toggle = createTag('button', {
@@ -164,7 +218,7 @@ function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId) {
     class: 'search-filters-toggle',
     'aria-expanded': 'false',
     'aria-controls': panelId,
-  }, 'Filters');
+  }, label('filters'));
   aside.append(toggle);
 
   const panel = createTag('div', {
@@ -173,12 +227,9 @@ function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId) {
   });
 
   const sortWrap = createTag('div', { class: 'search-filters-sort' });
-  sortWrap.append(createTag('label', { for: sortSelectId }, 'Sort by'));
+  sortWrap.append(createTag('label', { for: sortSelectId }, label('sort-by')));
   const select = createTag('select', { id: sortSelectId, name: 'search-sort', 'aria-controls': listId });
-  select.append(
-    createTag('option', { value: 'newest' }, 'Newest'),
-    createTag('option', { value: 'oldest' }, 'Oldest'),
-  );
+  select.append(...sortOptions(label, loose));
   sortWrap.append(select);
   panel.append(sortWrap);
 
@@ -236,15 +287,30 @@ function updateFilterCounts(block, filterGroups, rows) {
   });
 }
 
-export default async function decorate(block) {
-  const config = readBlockConfig(block);
+/**
+ * Keyword search rendered into `root`.
+ * @param {Element} root
+ * @param {object} config block config
+ * @param {object} options
+ *   form: show its own search bar (when the searchbar row is enabled)
+ *   loose: rank rows by how many query words they contain, for natural-language questions
+ *   reserved: more config keys that are not filters
+ *   label: text lookup
+ * @returns {Promise<{search: (query: string) => Promise<void>}>}
+ */
+export async function keywordSearch(root, config, {
+  form: ownForm = true, loose = false, reserved = [], label = (key) => config[key] || LABELS[key],
+} = {}) {
   const viewVal = Array.isArray(config.view) ? config.view[0] : config.view;
   const view = String(viewVal || 'cards').trim().toLowerCase() === 'list' ? 'list' : 'cards';
   const keywords = parseKeywords(config.keywords || '');
   const excluded = parseKeywords(config['excluded-keywords'] || '');
   const searchBarEnabled = String(config.searchbar || '').trim().toLowerCase() === 'enabled';
   const initialQuery = (new URLSearchParams(window.location.search).get('q') || '').trim();
-  const filterGroups = parseFilterGroupsFromConfig(config);
+  const filterGroups = parseFilterGroupsFromConfig(
+    config,
+    [...RESERVED_CONFIG_KEYS, ...Object.keys(LABELS), ...reserved],
+  );
 
   const state = {
     offset: 0,
@@ -253,11 +319,10 @@ export default async function decorate(block) {
     pathSet: new Set(),
     displayCount: PAGE_SIZE,
     query: initialQuery,
-    sort: 'newest',
+    sort: loose ? 'relevance' : 'newest',
     loading: false,
   };
 
-  block.textContent = '';
   const listId = `search-list-${Date.now()}`;
   const idPrefix = `search-${Date.now()}`;
   const sortSelectId = `search-sort-${Date.now()}`;
@@ -266,35 +331,45 @@ export default async function decorate(block) {
   const resultsWrap = createTag('div', { class: 'search-results-wrap' });
   const status = createTag('p', { class: 'search-status', role: 'status', 'aria-live': 'polite' });
   const list = createTag('ul', { class: `search-results search-results-${view}`, id: listId });
-  const empty = createTag('p', { class: 'search-empty', hidden: true }, 'No matching results.');
+  const empty = createTag('p', { class: 'search-empty', hidden: true }, label('no-matches'));
   const loadMore = createTag('button', {
     type: 'button',
     class: 'search-load-more search-load-more-hidden button secondary',
-  }, 'Load More');
+  }, label('load-more'));
   resultsWrap.append(status, list, loadMore, empty);
 
   async function render() {
     state.loading = true;
     loadMore.disabled = true;
-    loadMore.textContent = 'Loading...';
+    loadMore.textContent = label('loading');
 
     try {
       const needed = state.displayCount;
       await fetchMatchingRows(state, keywords, excluded, state.query, needed);
 
-      const sortBy = block.querySelector('select[name="search-sort"]')?.value || state.sort;
+      const sortBy = root.querySelector('select[name="search-sort"]')?.value || state.sort;
       state.sort = sortBy;
 
-      let filtered = state.rows.filter((row) => matchesQuery(row, state.query));
+      const scores = new Map();
+      const inQuery = (row) => {
+        if (!loose || !state.query) return matchesQuery(row, state.query);
+        if (!scores.has(row)) scores.set(row, queryScore(row, state.query));
+        return scores.get(row) > 0;
+      };
+      let filtered = state.rows.filter(inQuery);
       if (filterGroups.length > 0) {
-        const selectedByGroup = getSelectedByGroupFromBlock(block, filterGroups);
+        const selectedByGroup = getSelectedByGroupFromBlock(root, filterGroups);
         const matchesFilter = (row) => rowMatchesFilterGroups(row, selectedByGroup, filterGroups);
+        const queryRows = filtered;
         filtered = filtered.filter(matchesFilter);
-        const queryRows = state.rows.filter((row) => matchesQuery(row, state.query));
-        updateFilterCounts(block, filterGroups, queryRows);
+        updateFilterCounts(root, filterGroups, queryRows);
       }
 
-      const sorted = sortByDate(filtered, state.sort);
+      let sorted = sortByDate(filtered, state.sort === 'oldest' ? 'oldest' : 'newest');
+      // best match first, newest first among equal matches (sort is stable)
+      if (state.sort === 'relevance' && scores.size) {
+        sorted = sorted.sort((a, b) => scores.get(b) - scores.get(a));
+      }
       const visible = sorted.slice(0, state.displayCount);
 
       list.textContent = '';
@@ -306,17 +381,16 @@ export default async function decorate(block) {
         status.hidden = false;
         const n = visible.length;
         const total = filtered.length;
-        status.textContent = `Showing ${n} of ${total} results for "${state.query}".`;
+        status.textContent = fill(label('status-query'), { shown: n, total, query: state.query });
       } else if (filterGroups.length > 0) {
         const selectedCount = filterGroups.reduce((sum, g) => {
-          const selected = getSelectedByGroupFromBlock(block, filterGroups).get(g.key) || [];
+          const selected = getSelectedByGroupFromBlock(root, filterGroups).get(g.key) || [];
           return sum + selected.length;
         }, 0);
         status.hidden = false;
-        const filterLabel = selectedCount > 1 ? 'filters' : 'filter';
-        status.textContent = selectedCount
-          ? `Showing ${visible.length} of ${filtered.length} for ${selectedCount} selected ${filterLabel}.`
-          : `Showing all ${filtered.length} results.`;
+        const values = { shown: visible.length, total: filtered.length, count: selectedCount };
+        if (!selectedCount) status.textContent = fill(label('status-all'), values);
+        else status.textContent = fill(label(selectedCount > 1 ? 'status-filters' : 'status-filter'), values);
       } else {
         status.hidden = true;
         status.textContent = '';
@@ -329,40 +403,47 @@ export default async function decorate(block) {
       loadMore.classList.toggle('search-load-more-hidden', !showLoadMore);
     } finally {
       loadMore.disabled = false;
-      loadMore.textContent = 'Load More';
+      loadMore.textContent = label('load-more');
       state.loading = false;
     }
   }
 
-  if (searchBarEnabled) {
-    const form = createTag('form', { class: 'search-query-form', role: 'search', 'aria-label': 'Search content' });
+  async function search(query) {
+    state.query = String(query || '').trim();
+    state.displayCount = PAGE_SIZE;
+    await render();
+  }
+
+  if (ownForm && searchBarEnabled) {
+    const form = createTag('form', { class: 'search-query-form', role: 'search', 'aria-label': label('placeholder') });
     const input = createTag('input', {
       type: 'search',
       name: 'q',
       value: state.query,
-      placeholder: 'Search',
-      'aria-label': 'Search',
+      placeholder: label('placeholder'),
+      'aria-label': label('placeholder'),
     });
-    form.append(input, createTag('button', { type: 'submit', class: 'button primary' }, 'Search'));
+    form.append(input, createTag('button', { type: 'submit', class: 'button primary' }, label('search-button')));
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      state.query = input.value.trim();
-      state.offset = 0;
-      state.hasMore = true;
-      state.rows = [];
-      state.pathSet = new Set();
-      state.displayCount = PAGE_SIZE;
       const url = new URL(window.location.href);
-      if (state.query) url.searchParams.set('q', state.query);
+      if (input.value.trim()) url.searchParams.set('q', input.value.trim());
       else url.searchParams.delete('q');
       window.history.replaceState({}, '', url);
-      await render();
+      await search(input.value);
     });
     controls.append(form);
   }
 
   if (filterGroups.length > 0) {
-    const { aside, sortSelect } = buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId);
+    const { aside, sortSelect } = buildFilterSidebar(
+      filterGroups,
+      listId,
+      idPrefix,
+      sortSelectId,
+      label,
+      loose,
+    );
     sortSelect.addEventListener('change', () => {
       state.sort = sortSelect.value;
       render();
@@ -370,20 +451,17 @@ export default async function decorate(block) {
     aside.addEventListener('change', () => render());
     const layout = createTag('div', { class: 'search-layout' });
     layout.append(aside, resultsWrap);
-    block.append(controls, layout);
+    root.append(controls, layout);
   } else {
-    const sortLabel = createTag('label', { class: 'search-sort-label', for: sortSelectId }, 'Sort');
-    const sortSelect = createTag('select', { id: sortSelectId, name: 'search-sort' }, [
-      createTag('option', { value: 'newest' }, 'Newest'),
-      createTag('option', { value: 'oldest' }, 'Oldest'),
-    ]);
+    const sortLabel = createTag('label', { class: 'search-sort-label', for: sortSelectId }, label('sort'));
+    const sortSelect = createTag('select', { id: sortSelectId, name: 'search-sort' }, sortOptions(label, loose));
     sortLabel.append(sortSelect);
     sortSelect.addEventListener('change', () => {
       state.sort = sortSelect.value;
       render();
     });
     controls.append(sortLabel);
-    block.append(controls, resultsWrap);
+    root.append(controls, resultsWrap);
   }
 
   loadMore.addEventListener('click', async () => {
@@ -393,4 +471,21 @@ export default async function decorate(block) {
   });
 
   await render();
+  return { search };
+}
+
+/** @param {Element} block */
+export default async function decorate(block) {
+  const config = readBlockConfig(block);
+  const label = (key) => config[key] || LABELS[key];
+  block.textContent = '';
+  if (block.classList.contains('ai') || block.classList.contains('tabs')) {
+    const [{ default: decorateAi }] = await Promise.all([
+      import('./search-ai.js'),
+      loadCSS(`${window.hlx.codeBasePath}/blocks/search/search-ai.css`),
+    ]);
+    await decorateAi(block, config, { keywordSearch, tabs: block.classList.contains('tabs') });
+    return;
+  }
+  await keywordSearch(block, config, { label });
 }

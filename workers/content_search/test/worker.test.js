@@ -1,7 +1,7 @@
 import {
   describe, it, expect, vi, beforeEach, afterEach,
 } from 'vitest';
-import worker, { resetIndexCache, pagesFromIndex } from '../index.js';
+import worker, { resetIndexCache, pagesFromIndex, scopesFrom } from '../index.js';
 
 const SITE = 'https://demo.bbird.live';
 
@@ -133,7 +133,7 @@ function post(path, body, origin = SITE) {
   });
 }
 
-// The request the search-ai block sends to /search.
+// The request the search block sends to /search.
 const searchBody = (text, pagination = { limit: 10 }) => ({
   contentSource: { name: 'demo', type: 'AEM_PUBLISH' },
   query: {
@@ -507,5 +507,43 @@ describe('/gensearch', () => {
     });
     const res = await worker.fetch(post('/gensearch', { query: 'clone' }), env);
     expect(res.status).toBe(502);
+  });
+});
+
+describe('scopes (contentSource.name)', () => {
+  beforeEach(() => {
+    mockIndex(INDEX, DOCS);
+    env = {
+      ...ENV_VARS, ...DOCS_VARS, SCOPES: 'frescopa=/en/', AI: mockAi(),
+    };
+  });
+  const scoped = (text, name) => ({ ...searchBody(text), contentSource: { name, type: 'AEM_PUBLISH' } });
+
+  it('parses name=prefix|prefix pairs', () => {
+    expect(scopesFrom('frescopa=/en/; Docs=/demo-docs/|/fr/;bad;=x')).toEqual({
+      frescopa: ['/en/'],
+      docs: ['/demo-docs/', '/fr/'],
+    });
+  });
+
+  it('searches only the scope\'s pages', async () => {
+    const json = await (await worker.fetch(post('/search', scoped('coffee and clone', 'frescopa')), env)).json();
+    expect(json.results.map((r) => r.id)).toEqual(['/en/coffee']);
+    const all = await (await worker.fetch(post('/search', scoped('coffee and clone', 'demo')), env)).json();
+    expect(all.results.map((r) => r.id)).toContain('/demo-docs/usecases/how-to-clone-demo-site');
+  });
+
+  it('never falls back to the product docs in a scope', async () => {
+    const json = await (await worker.fetch(post('/search', scoped('quantum physics', 'Frescopa')), env)).json();
+    expect(json.results).toEqual([]);
+  });
+
+  it('answers from the scope\'s pages only', async () => {
+    env.AI = mockAi({ answer: `See [Our coffee](${SITE}/en/coffee).` });
+    const res = await worker.fetch(post('/gensearch', { query: 'coffee and clone', contentSource: { name: 'frescopa' } }), env);
+    const json = await res.json();
+    expect(json.hits.map((h) => h.id)).toEqual(['/en/coffee']);
+    const prompt = env.AI.calls.find((c) => c.model === ENV_VARS.ANSWER_MODEL).input.messages[1].content;
+    expect(prompt).not.toContain('/demo-docs/');
   });
 });

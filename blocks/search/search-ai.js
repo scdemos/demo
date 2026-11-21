@@ -1,21 +1,18 @@
 /*
- * Content AI search: natural-language search with an AI answer.
- * Based on https://github.com/Apoorv-R98/search-ai-block (Apache-2.0).
+ * AI modes of the search block: "Search (AI)" answers a question with AI and lists the pages
+ * it used; "Search (Tabs)" puts the keyword results and the AI answer in tabs under one box.
+ * Based on https://github.com/Apoorv-R98/content-ai-search-block (Apache-2.0).
  *
- * The block calls a backend at `base-url` with the Content AI proxy contract:
- *   POST {base-url}/search     ranked pages
+ * The answer comes from `base-url` with the Content AI proxy contract:
  *   POST {base-url}/gensearch  generated answer + the pages it used
  * That is either a Content AI proxy or workers/content_search (query index + Workers AI).
  *
- * Variants: default shows "Results" and "AI answer" tabs; `answer` shows only the AI answer
- * with its source pages as cards.
- * Config rows: base-url, content-source, content-source-type, placeholder, results-size,
- * results-layout (cards | list), disclaimer, suggestions (link to a sheet with `label` and
- * optional `query` columns), suggestions-count; any key of LABELS overrides that text.
- * A `?q=` URL parameter runs a search when the page opens.
+ * Rows: base-url, content-source, content-source-type, placeholder, disclaimer,
+ * suggestions (link to a sheet with `label` and optional `query` columns), suggestions-count;
+ * any key of LABELS overrides that text. A `?q=` URL parameter runs a search when the page opens.
  */
-import { readBlockConfig } from '../../scripts/aem.js';
 import { createTag } from '../../scripts/shared.js';
+import { LABELS as KEYWORD_LABELS } from './search.js';
 
 const LABELS = {
   placeholder: 'Ask anything…',
@@ -24,41 +21,26 @@ const LABELS = {
   'results-tab': 'Results',
   'answer-tab': 'AI answer',
   'answer-title': 'AI answer',
-  searching: 'Searching…',
   generating: 'Writing an answer…',
   sources: 'Sources',
-  'no-results': 'No results found. Try other words.',
   'no-answer': 'No answer found for that. Try other words or one of the suggestions.',
   error: 'Something went wrong. Please try again.',
   retry: 'Try again',
-  'load-more': 'Load more results',
-  layout: 'Results layout',
-  cards: 'Cards',
-  list: 'List',
   'suggestions-label': 'Try',
   'search-mode': 'Search mode',
 };
 
-const MAX_RESULTS_SIZE = 50;
-const LOADING_DISPLAY_DELAY = 300;
-// Hybrid query: the full-text weight shrinks as questions get longer, so natural-language
-// questions rely mostly on the semantic match.
-const VECTOR_NUM_CANDIDATES = 50;
-const RESULT_FIELDS = [
-  'text', 'source', 'title', 'name', 'metadata.url', 'metadata.source', 'metadata.title',
-  'metadata.description', 'metadata.image', 'metadata.meta.image',
+const CONFIG_KEYS = [
+  'base-url', 'content-source', 'content-source-type', 'disclaimer', 'suggestions', 'suggestions-count',
 ];
+
+const LOADING_DISPLAY_DELAY = 300;
 const EXCERPT_LENGTH = 160;
 const MIN_EXCERPT_LINE = 40;
 const SKIP_ANCHORS = ['#main-content', '#main', '#content', '#maincontent', '#skip-to-content'];
 const DOCUMENT_EXT = /\.(pdf|docx?|pptx?|xlsx?)$/i;
 
 /* ---- backend ---- */
-
-function fulltextBoost(query) {
-  const tokens = query.trim().split(/\s+/).length;
-  return tokens > 1 ? 1 / (5 * tokens) : 1;
-}
 
 async function post(url, body) {
   const resp = await fetch(url, {
@@ -68,28 +50,6 @@ async function post(url, body) {
   });
   if (!resp.ok) throw new Error(`${url}: ${resp.status}`);
   return resp.json();
-}
-
-function fetchResults(cfg, text, cursor) {
-  return post(`${cfg.baseUrl}/search`, {
-    contentSource: cfg.contentSource,
-    query: {
-      type: 'composite',
-      operator: 'OR',
-      queries: [
-        { type: 'vector', text, options: { numCandidates: VECTOR_NUM_CANDIDATES, boost: 1 } },
-        {
-          type: 'fulltext',
-          text,
-          options: { boost: fulltextBoost(text), operator: 'AND', matchStrategy: 'COMBINED_FIELDS' },
-        },
-      ],
-    },
-    queryOptions: {
-      resultFields: { includes: RESULT_FIELDS },
-      pagination: { limit: cfg.resultsSize, ...(cursor ? { cursor } : {}) },
-    },
-  });
 }
 
 function fetchAnswer(cfg, query) {
@@ -267,22 +227,21 @@ async function loadSuggestions(href, count) {
   }
 }
 
-/** @param {Element} block */
-export default function decorate(block) {
-  const config = readBlockConfig(block);
-  const label = (key) => config[key] || LABELS[key];
-  const answerOnly = block.classList.contains('answer');
+/**
+ * @param {Element} block emptied search block
+ * @param {object} config block config
+ * @param {object} options keywordSearch: keyword search factory; tabs: show both in tabs
+ */
+export default async function decorate(block, config, { keywordSearch, tabs: withTabs }) {
+  const label = (key) => config[key] || LABELS[key] || KEYWORD_LABELS[key];
   const cfg = {
     baseUrl: String(config['base-url'] || '').replace(/\/+$/, ''),
     contentSource: {
       name: config['content-source'] || '',
       type: config['content-source-type'] || 'AEM_PUBLISH',
     },
-    resultsSize: Math.min(parseInt(config['results-size'], 10) || 10, MAX_RESULTS_SIZE),
   };
-  let layout = config['results-layout'] === 'list' ? 'list' : 'cards';
-  const uid = `search-ai-${Math.random().toString(36).slice(2, 8)}`;
-  block.textContent = '';
+  const uid = `search-${Math.random().toString(36).slice(2, 8)}`;
 
   /* search box */
   const form = createTag('form', { class: 'search-ai-form', role: 'search' });
@@ -322,26 +281,11 @@ export default function decorate(block) {
   answerError.append(createTag('p', {}, label('error')), retry);
   answerPanel.append(answerStatus, answer, answerError);
 
-  /* results panel */
-  const resultsPanel = createTag('div', { class: 'search-ai-panel search-ai-panel-results', id: `${uid}-results` });
-  const resultsStatus = status(label('searching'));
-  const resultsWrap = createTag('div', { class: 'search-ai-results-wrap', hidden: '' });
-  const toolbar = createTag('div', { class: 'search-ai-toolbar', role: 'group', 'aria-label': label('layout') });
-  const cardsBtn = createTag('button', { type: 'button', class: 'search-ai-layout', 'data-layout': 'cards' }, label('cards'));
-  const listBtn = createTag('button', { type: 'button', class: 'search-ai-layout', 'data-layout': 'list' }, label('list'));
-  toolbar.append(cardsBtn, listBtn);
-  const results = createTag('ul', { class: 'search-ai-results' });
-  const empty = createTag('p', { class: 'search-ai-empty', hidden: '' });
-  const loadMore = createTag('button', { type: 'button', class: 'button secondary search-ai-more', hidden: '' }, label('load-more'));
-  const moreError = createTag('p', { class: 'search-ai-more-error', role: 'alert', hidden: '' }, label('error'));
-  resultsWrap.append(toolbar, results, empty, moreError, loadMore);
-  resultsPanel.append(resultsStatus, resultsWrap);
-
-  /* tabs (default variant) */
+  /* tabs: keyword results + AI answer */
   let tabs;
-  if (answerOnly) {
-    block.append(answerPanel);
-  } else {
+  let keyword;
+  if (withTabs) {
+    const resultsPanel = createTag('div', { class: 'search-ai-panel search-ai-panel-results', id: `${uid}-results` });
     tabs = createTag('div', { class: 'search-ai-tabs', role: 'tablist', 'aria-label': label('search-mode'), hidden: '' });
     [[resultsPanel, 'results-tab'], [answerPanel, 'answer-tab']].forEach(([panel, key], i) => {
       const tab = createTag('button', {
@@ -359,62 +303,26 @@ export default function decorate(block) {
       tabs.append(tab);
     });
     block.append(tabs, resultsPanel, answerPanel);
+    try {
+      keyword = await keywordSearch(resultsPanel, config, {
+        form: false,
+        loose: true,
+        reserved: [...CONFIG_KEYS, ...Object.keys(LABELS)],
+        label,
+      });
+    } catch {
+      // the AI answer still works without the query index
+      resultsPanel.textContent = '';
+      resultsPanel.append(createTag('p', { class: 'search-ai-error' }, label('error')));
+    }
+  } else {
+    block.append(answerPanel);
   }
   block.classList.add('is-idle');
 
   /* state */
   let query = '';
-  let items = [];
-  let cursor = null;
-  let resultsRun = 0;
   let answerRun = 0;
-
-  const showLayout = () => {
-    block.dataset.layout = layout;
-    [cardsBtn, listBtn].forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layout === layout)));
-  };
-
-  function renderResults() {
-    results.textContent = '';
-    items.forEach((item) => results.append(renderCard(item, 'search-ai-result')));
-    empty.hidden = items.length > 0;
-    moreError.hidden = true;
-    loadMore.hidden = !cursor;
-    resultsWrap.hidden = false;
-  }
-
-  function addResults(data) {
-    const seen = new Set(items.map(identity));
-    (data?.results || []).forEach((r) => {
-      const item = toItem(r.data?.metadata, r.data);
-      const id = identity(item);
-      if (item.title && !seen.has(id)) {
-        seen.add(id);
-        items.push(item);
-      }
-    });
-    cursor = data?.cursor && data.results?.length ? data.cursor : null;
-  }
-
-  async function runResults(text) {
-    resultsRun += 1;
-    const run = resultsRun;
-    items = [];
-    cursor = null;
-    resultsWrap.hidden = true;
-    resultsStatus.hidden = false;
-    try {
-      const data = await fetchResults(cfg, text);
-      if (run !== resultsRun) return;
-      addResults(data);
-      empty.textContent = label('no-results');
-    } catch {
-      if (run !== resultsRun) return;
-      empty.textContent = label('error');
-    }
-    resultsStatus.hidden = true;
-    renderResults();
-  }
 
   async function runAnswer(text) {
     answerRun += 1;
@@ -457,24 +365,24 @@ export default function decorate(block) {
   }
 
   function reset() {
-    resultsRun += 1;
     answerRun += 1;
     query = '';
     block.classList.add('is-idle');
     if (tabs) tabs.hidden = true;
-    [answer, answerError, answerStatus, resultsWrap, resultsStatus].forEach((el) => { el.hidden = true; });
+    if (keyword) keyword.search('');
+    [answer, answerError, answerStatus].forEach((el) => { el.hidden = true; });
   }
 
   function run(text) {
     query = text.trim();
-    if (!query || !cfg.baseUrl) {
+    if (!query) {
       reset();
       return;
     }
     block.classList.remove('is-idle');
     if (tabs) tabs.hidden = false;
-    runAnswer(query);
-    if (!answerOnly) runResults(query);
+    if (keyword) keyword.search(query);
+    if (cfg.baseUrl) runAnswer(query);
   }
 
   /* events */
@@ -493,25 +401,6 @@ export default function decorate(block) {
     input.focus();
   });
   retry.addEventListener('click', () => runAnswer(query));
-  [cardsBtn, listBtn].forEach((b) => b.addEventListener('click', () => {
-    layout = b.dataset.layout;
-    showLayout();
-  }));
-  loadMore.addEventListener('click', async () => {
-    const run = resultsRun;
-    loadMore.disabled = true;
-    try {
-      const data = await fetchResults(cfg, query, cursor);
-      if (run === resultsRun) {
-        addResults(data);
-        renderResults();
-      }
-    } catch {
-      // keep the cursor so the same page can be tried again
-      if (run === resultsRun) moreError.hidden = false;
-    }
-    loadMore.disabled = false;
-  });
   if (tabs) {
     const tabButtons = [...tabs.children];
     const select = (tab) => {
@@ -533,7 +422,6 @@ export default function decorate(block) {
       });
     });
   }
-  showLayout();
 
   const initial = new URLSearchParams(window.location.search).get('q');
   if (initial) {
