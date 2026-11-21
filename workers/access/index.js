@@ -136,7 +136,8 @@ export async function addToTeam(githubUser, env, gh) {
   const res = await gh(`/orgs/${org}/teams/${team}/memberships/${encodeURIComponent(user.json.login)}`, {
     method: 'PUT', body: JSON.stringify({ role: 'member' }),
   });
-  if (!res.ok) throw fail(`github_team_add_failed_${res.status}`, 502);
+  // GitHub explains refusals (scope, SSO, 2FA, invitation limits): pass its message on
+  if (!res.ok) throw fail(`github_team_add_failed_${res.status}${res.json?.message ? `: ${res.json.message}` : ''}`, 502);
   return { login: user.json.login, state: res.json?.state || 'active' };
 }
 
