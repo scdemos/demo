@@ -30,7 +30,7 @@ export default {
   'product-grid': { validate: productGrid },
   quiz: {},
   'related-articles': { variants: ['bento'], validate: relatedArticles },
-  search: { validate: search },
+  search: { variants: ['ai', 'tabs'], validate: search },
   'social-share': {},
   table: { variants: ['no-header', 'striped', 'bordered'] },
   tabs: { validate: tabs },
