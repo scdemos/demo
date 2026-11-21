@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Demo access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Get access to the scdemos demo site and CloneIt">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/tools/access/access.css">
+    <script src="/tools/access/access.js" type="module"></script>
+  </head>
+  <body>
+    <main class="access">
+      <h1>Get demo access</h1>
+      <p class="access-lead">The scdemos demo site (Frescopa) is the shared base for Edge Delivery Services demos. Sign up once and you get:</p>
+      <ul class="access-gets">
+        <li><strong>Experience Workspace:</strong> write access to the demo site, its block library and apps (group <code>da-demosite-authors</code> in the CAS Hub organization)</li>
+        <li><strong>GitHub:</strong> <code>SC-Team</code> in the scdemos organization, so CloneIt can create demo repositories for you</li>
+        <li><strong>Your own demos:</strong> each demo you create with CloneIt gets its own repository and folder, and you can edit its content and configuration</li>
+      </ul>
+
+      <p class="access-status" id="status" role="status">Checking your Adobe sign-in…</p>
+
+      <form class="access-form" id="form" hidden>
+        <p>Signed in as <strong id="who"></strong></p>
+        <label for="github-user">GitHub username</label>
+        <input id="github-user" name="githubUser" autocomplete="username" required
+          pattern="[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}"
+          placeholder="e.g. octocat" aria-describedby="github-help">
+        <p class="access-help" id="github-help">You're added to the scdemos <code>SC-Team</code> on GitHub, so CloneIt can create demo repos for you. GitHub emails you an invitation if you aren't in scdemos yet: accept it.</p>
+        <button type="submit" id="submit">Request access</button>
+      </form>
+
+      <section class="access-result" id="result" hidden aria-live="polite">
+        <h2 id="result-title"></h2>
+        <ul id="result-steps"></ul>
+        <div id="result-next"></div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+* { box-sizing: border-box; }
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #1d1d1f;
+  background: #f5f5f7;
+}
+
+.access {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 24px;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+h2 {
+  margin: 24px 0 8px;
+  font-size: 20px;
+}
+
+.access-lead {
+  margin: 0 0 24px;
+  color: #515154;
+}
+
+.access-status {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.access-status.error {
+  background: #fdecea;
+  color: #8a1c12;
+}
+
+.access-form {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.access-form label { font-weight: 600; }
+
+.access-form input {
+  padding: 10px 12px;
+  border: 1px solid #c7c7cc;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.access-gets {
+  margin: 0 0 24px;
+  padding-left: 20px;
+}
+
+.access-gets li {
+  margin: 6px 0;
+}
+
+.access-help {
+  margin: 0;
+  font-size: 14px;
+  color: #515154;
+}
+
+.access-form button {
+  justify-self: start;
+  margin-top: 8px;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 20px;
+  background: #1473e6;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.access-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.access-result ul { padding-left: 20px; }
+.access-result li { margin: 6px 0; }
+.access-result .fail { color: #8a1c12; }
+
+code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+}

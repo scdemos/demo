@@ -1,0 +1,14 @@
+name: Deploy Access Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/access/**'
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-worker.yaml
+    secrets: inherit
+    with:
+      working-directory: workers/access
