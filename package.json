@@ -26,7 +26,10 @@
     "tail:cloneit-token": "wrangler tail --config ./workers/cloneit_token/wrangler.toml",
     "dev:access": "wrangler dev --config ./workers/access/wrangler.toml",
     "deploy:access": "wrangler deploy --config ./workers/access/wrangler.toml",
-    "tail:access": "wrangler tail --config ./workers/access/wrangler.toml"
+    "tail:access": "wrangler tail --config ./workers/access/wrangler.toml",
+    "dev:content-search": "wrangler dev --config ./workers/content_search/wrangler.toml",
+    "deploy:content-search": "wrangler deploy --config ./workers/content_search/wrangler.toml",
+    "tail:content-search": "wrangler tail --config ./workers/content_search/wrangler.toml"
   },
   "repository": {
     "type": "git",
