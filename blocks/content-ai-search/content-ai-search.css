@@ -34,7 +34,7 @@
 
 .content-ai-search .content-ai-search-field:focus-within {
   border-color: var(--color-focus);
-  box-shadow: var(--focus-ring);
+  box-shadow: var(--shadow-2), 0 0 0 1px var(--color-focus);
 }
 
 .content-ai-search .content-ai-search-input {
@@ -49,8 +49,10 @@
   font-size: var(--step-1);
 }
 
-.content-ai-search .content-ai-search-input:focus {
+.content-ai-search .content-ai-search-input:focus,
+.content-ai-search .content-ai-search-input:focus-visible {
   outline: none;
+  box-shadow: none;
 }
 
 .content-ai-search .content-ai-search-input::placeholder {
