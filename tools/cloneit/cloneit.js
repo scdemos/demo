@@ -400,6 +400,12 @@ function showResult(success, siteName, errorMessage, options = {}) {
     errorCard.style.display = 'block';
     const msgEl = document.getElementById('result-error-message');
     if (msgEl) msgEl.textContent = (errorMessage || 'An unknown error occurred');
+    // not in the demo's GitHub group: point to the Access App in a modal that stays until closed
+    if (options.signUp) {
+      const modal = document.getElementById('signup-modal');
+      modal?.classList.remove('hidden');
+      modal?.querySelector('.modal-cta')?.focus();
+    }
   }
 }
 
@@ -860,7 +866,10 @@ async function provisionRepo(siteName, githubUser) {
       }
     }
     if (e.status === 403 && /github_user_not_in/.test(e.message)) {
-      throw new Error(`GitHub user "${githubUser}" isn't a member of scdemos. Check the spelling, or ask an scdemos admin to add you.`);
+      throw Object.assign(
+        new Error(`GitHub user "${githubUser}" isn't in the demo's GitHub group yet. Sign up with the Access App first.`),
+        { signUp: true },
+      );
     }
     throw e;
   }
@@ -1096,7 +1105,7 @@ async function cloneSite(siteName, opts = {}) {
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
     console.error('Clone failed:', error);
-    showResult(false, siteName, error.message);
+    showResult(false, siteName, error.message, { signUp: !!error.signUp });
     showToast(error.message, 'error');
   } finally {
     setButtonLoading(false);
@@ -1198,6 +1207,29 @@ function setupEventListeners() {
   if (bulkModal) {
     bulkModal.addEventListener('click', (e) => {
       if (e.target === bulkModal) bulkModal.classList.add('hidden');
+    });
+  }
+
+  const signupModal = document.getElementById('signup-modal');
+  if (signupModal) {
+    // closed with its button, a click outside or Escape: focus goes back to the site name field
+    const closeSignup = () => {
+      signupModal.classList.add('hidden');
+      document.getElementById('site-name-input')?.focus();
+    };
+    signupModal.querySelector('.modal-close')?.addEventListener('click', closeSignup);
+    signupModal.addEventListener('click', (e) => {
+      if (e.target === signupModal) closeSignup();
+    });
+    signupModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSignup();
+      // keep Tab inside the dialog: it has two controls, the close button and the link
+      if (e.key === 'Tab') {
+        const items = [...signupModal.querySelectorAll('.modal-close, .modal-cta')];
+        const i = items.indexOf(document.activeElement);
+        e.preventDefault();
+        items[(i + (e.shiftKey ? items.length - 1 : 1)) % items.length]?.focus();
+      }
     });
   }
 

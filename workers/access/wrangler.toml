@@ -18,6 +18,7 @@ IMS_CLIENT_IDS = "darkalley"
 # Emails on these domains get access right away; anyone else is added to REQUESTS_SHEET for review.
 AUTO_DOMAINS = "adobe.com"
 GITHUB_ORG = "scdemos"
+# the demo's GitHub group (team slug); CloneIt requires it too
 GITHUB_TEAM = "sc-team"
 # CAS Hub
 ADMIN_ORG_ID = "138A07885EE042D20A495CFA@AdobeOrg"

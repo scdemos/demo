@@ -243,11 +243,11 @@ export async function provisionStandalone({ site, githubUser, email, resume }, e
 
   // the SC must belong to the team (or the org, when no team is configured)
   {
-    const m = env.SC_TEAM
-      ? await gh(`/orgs/${org}/teams/${env.SC_TEAM}/memberships/${githubUser}`)
+    const m = env.GITHUB_TEAM
+      ? await gh(`/orgs/${org}/teams/${env.GITHUB_TEAM}/memberships/${githubUser}`)
       : await gh(`/orgs/${org}/members/${githubUser}`);
-    const ok = env.SC_TEAM ? m.ok && m.json?.state === 'active' : m.status === 204;
-    if (!ok) throw fail(`github_user_not_in_${env.SC_TEAM ? `team_${env.SC_TEAM}` : `org_${org}`}`, 403);
+    const ok = env.GITHUB_TEAM ? m.ok && m.json?.state === 'active' : m.status === 204;
+    if (!ok) throw fail(`github_user_not_in_${env.GITHUB_TEAM ? `team_${env.GITHUB_TEAM}` : `org_${org}`}`, 403);
     steps.push('membership verified');
   }
 
@@ -302,9 +302,9 @@ export async function provisionStandalone({ site, githubUser, email, resume }, e
   steps.push(codeSync.added ? 'added to AEM Code Sync' : `AEM Code Sync not added (${codeSync.reason})`);
 
   // access for the SC: team push and/or the user as maintainer
-  if (env.SC_TEAM) {
-    const t = await gh(`/orgs/${org}/teams/${env.SC_TEAM}/repos/${org}/${site}`, { method: 'PUT', body: JSON.stringify({ permission: 'push' }) });
-    steps.push(t.ok || t.status === 204 ? `team ${env.SC_TEAM}: push` : `team access failed (${t.status})`);
+  if (env.GITHUB_TEAM) {
+    const t = await gh(`/orgs/${org}/teams/${env.GITHUB_TEAM}/repos/${org}/${site}`, { method: 'PUT', body: JSON.stringify({ permission: 'push' }) });
+    steps.push(t.ok || t.status === 204 ? `team ${env.GITHUB_TEAM}: push` : `team access failed (${t.status})`);
   }
   if (githubUser) {
     const c = await gh(`/repos/${org}/${site}/collaborators/${githubUser}`, { method: 'PUT', body: JSON.stringify({ permission: 'admin' }) });
@@ -459,7 +459,7 @@ export default {
 
     try {
       if (pathname === '/whoami') {
-        return jsonResponse(cors, { email: user.email, standalone: !!env.GITHUB_PROVISION_TOKEN, team: env.SC_TEAM || null });
+        return jsonResponse(cors, { email: user.email, standalone: !!env.GITHUB_PROVISION_TOKEN, team: env.GITHUB_TEAM || null });
       }
       if (pathname === '/cloneprocess') return await proxyToAdmin(request, env, cors);
       if (pathname === '/standalone') {

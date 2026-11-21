@@ -20,7 +20,7 @@ The worker validates it with IMS and takes the email and name from the profile, 
 
 Emails on `AUTO_DOMAINS` (`adobe.com`):
 
-1. **GitHub:** checks the user exists and adds them to `GITHUB_TEAM` (`sc-team`) in `GITHUB_ORG` (`scdemos`).
+1. **GitHub:** checks the user exists and adds them to `GITHUB_TEAM` (`sc-team`, the demo's GitHub group) in `GITHUB_ORG` (`scdemos`).
    People who aren't in the org yet get an invitation email (`state: pending`).
 2. **Admin Console** (User Management API, `ADMIN_ORG_ID` = CAS Hub): creates the user as a Federated ID
    (kept if it exists) and adds them to `ADMIN_GROUP` (`da-demosite-authors`). That group has write on

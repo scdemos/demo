@@ -64,12 +64,12 @@ function fakeGh({ member = true, exists = false, readyAfter = 1, installs = [{ i
 }
 const nowait = async () => {};
 { const { gh, calls } = fakeGh({ readyAfter: 3 });
-  const r = await provisionStandalone({ site: 'acme', githubUser: 'sc-user', email: 'sc@adobe.com' }, { ORG: 'scdemos', SC_TEAM: 'scs' }, gh, nowait);
+  const r = await provisionStandalone({ site: 'acme', githubUser: 'sc-user', email: 'sc@adobe.com' }, { ORG: 'scdemos', GITHUB_TEAM: 'scs' }, gh, nowait);
   ok('standalone happy path', r.codeSync.added && r.codeSync.installationId === 77 && r.repo === 'acme');
   ok('adds repo 9 to install 77', calls.includes('PUT /user/installations/77/repositories/9'));
   ok('requester admin + team access', calls.some((c) => c.startsWith('PUT /orgs/scdemos/teams/scs/repos/')) && calls.some((c) => c.includes('/collaborators/sc-user'))); }
 { const { gh } = fakeGh({ member: false });
-  try { await provisionStandalone({ site: 'acme', githubUser: 'x', email: 'a@adobe.com' }, { ORG: 'scdemos', SC_TEAM: 'scs' }, gh, nowait); ok('non-member rejected', false); } catch (e) { ok('non-member rejected', e.status === 403); } }
+  try { await provisionStandalone({ site: 'acme', githubUser: 'x', email: 'a@adobe.com' }, { ORG: 'scdemos', GITHUB_TEAM: 'scs' }, gh, nowait); ok('non-member rejected', false); } catch (e) { ok('non-member rejected', e.status === 403); } }
 { const { gh, calls } = fakeGh({ exists: true });
   try { await provisionStandalone({ site: 'acme', githubUser: 'sc-user', email: 'a@adobe.com' }, { ORG: 'scdemos' }, gh, nowait); ok('existing repo → 409', false); } catch (e) { ok('existing repo → 409', e.status === 409 && !calls.some((c) => c.includes('/generate'))); } }
 { const { gh, calls } = fakeGh({ exists: true });
