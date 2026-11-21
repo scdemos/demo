@@ -18,6 +18,7 @@ const MESSAGES = {
 const say = (code) => MESSAGES[code] || code;
 
 const $ = (id) => document.getElementById(id);
+
 let imsToken = '';
 
 function setStatus(text, error = false) {
@@ -71,7 +72,7 @@ function showResult(r) {
         steps.append(s.ok
           ? li(s.state === 'pending'
             ? `GitHub: invitation to scdemos sent to ${s.login}. Accept it in the email or at github.com/scdemos.`
-            : `GitHub: ${s.login} is on SC-Team.`)
+            : `GitHub: ${s.login} added to the demo's GitHub group.`)
           : li(`GitHub: not added (${say(s.error)})`, false));
       }
       if (s.step === 'adminConsole') {
