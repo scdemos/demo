@@ -18,6 +18,7 @@ const MESSAGES = {
 const say = (code) => MESSAGES[code] || code;
 
 const $ = (id) => document.getElementById(id);
+
 let imsToken = '';
 
 function setStatus(text, error = false) {

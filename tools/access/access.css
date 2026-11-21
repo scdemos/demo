@@ -1,102 +1,141 @@
-* { box-sizing: border-box; }
-
-[hidden] {
-  display: none !important;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #1d1d1f;
-  background: #f5f5f7;
-}
-
+/* Demo access app: site tokens come from /styles/styles.css */
 .access {
   max-width: 640px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 48px 24px;
 }
 
-h1 {
-  margin: 0 0 8px;
-  font-size: 28px;
-}
-
-h2 {
-  margin: 24px 0 8px;
-  font-size: 20px;
+.access h1 {
+  margin: 0 0 12px;
 }
 
 .access-lead {
-  margin: 0 0 24px;
-  color: #515154;
-}
-
-.access-status {
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: #fff;
-}
-
-.access-status.error {
-  background: #fdecea;
-  color: #8a1c12;
-}
-
-.access-form {
-  display: grid;
-  gap: 8px;
-  padding: 20px;
-  border-radius: 12px;
-  background: #fff;
-}
-
-.access-form label { font-weight: 600; }
-
-.access-form input {
-  padding: 10px 12px;
-  border: 1px solid #c7c7cc;
-  border-radius: 8px;
-  font: inherit;
+  margin: 0 0 8px;
 }
 
 .access-gets {
-  margin: 0 0 24px;
+  margin: 0 0 32px;
   padding-left: 20px;
 }
 
 .access-gets li {
-  margin: 6px 0;
+  margin: 8px 0;
+}
+
+.access-status {
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  background: var(--color-surface-sunken);
+}
+
+.access-status.error {
+  background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
+  border: 2px solid var(--color-danger);
+  font-weight: 600;
+}
+
+/* the card: same look as the site's sign-up form */
+.access-form,
+.access-result {
+  display: grid;
+  gap: 8px;
+  padding: 32px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.access-form h2,
+.access-result h2 {
+  margin: 0 0 8px;
+  font-size: var(--step-2);
+  text-align: center;
+}
+
+.access-who {
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.access-form label {
+  margin-top: 8px;
+  font-size: var(--step-n1);
+  font-weight: 600;
+}
+
+.access-form label::after {
+  content: ' *';
+  color: var(--color-danger);
+}
+
+.access-form input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--step-n1);
+}
+
+.access-form input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+  border-color: var(--color-focus);
 }
 
 .access-help {
   margin: 0;
-  font-size: 14px;
-  color: #515154;
+  font-size: var(--step-n1);
+  color: var(--color-text-muted);
 }
 
 .access-form button {
-  justify-self: start;
-  margin-top: 8px;
-  padding: 10px 20px;
+  justify-self: center;
+  min-width: 180px;
+  margin-top: 16px;
+  padding: 14px 32px;
   border: 0;
-  border-radius: 20px;
-  background: #1473e6;
-  color: #fff;
+  border-radius: 6px;
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+}
+
+.access-form button:hover,
+.access-form button:focus-visible {
+  background: var(--color-accent-fill-hover);
+}
+
+.access-form button:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .access-form button:disabled {
   opacity: 0.6;
   cursor: wait;
 }
-.access-result ul { padding-left: 20px; }
-.access-result li { margin: 6px 0; }
-.access-result .fail { color: #8a1c12; }
 
-code {
-  font-family: ui-monospace, monospace;
-  font-size: 0.9em;
+.access-result {
+  margin-top: 24px;
+  border: 2px solid var(--color-success);
+}
+
+.access-result ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.access-result li {
+  margin: 8px 0;
+}
+
+.access-result .fail {
+  color: var(--color-danger);
 }
