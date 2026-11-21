@@ -1,29 +1,29 @@
 /* CloneIt — dashboard UI */
 
 :root {
-  --bg-deep: #f1f5f9;
+  --bg-deep: #f2f3f7;
   --bg-panel: #fff;
   --bg-elevated: #fff;
   --bg-card: #fff;
   --bg-input: #fff;
-  --border: rgb(15 23 42 / 10%);
-  --border-strong: rgb(15 23 42 / 16%);
-  --text: #0f172a;
-  --text-muted: #475569;
-  --text-dim: #64748b;
-  --accent: #0d9488;
-  --accent-dim: rgb(13 148 136 / 12%);
-  --violet: #6366f1;
-  --cta-from: #0f766e;
-  --cta-to: #14b8a6;
-  --success: #059669;
-  --danger: #e11d48;
+  --border: rgb(21 19 37 / 10%);
+  --border-strong: rgb(21 19 37 / 16%);
+  --text: #151325;
+  --text-muted: #565b6b;
+  --text-dim: #565b6b;
+  --accent: #d6300d;
+  --accent-dim: rgb(214 48 13 / 12%);
+  --violet: #322e4b;
+  --cta-from: #b0240a;
+  --cta-to: #ff4f1a;
+  --success: #12805a;
+  --danger: #b4231a;
   --radius: 14px;
   --radius-lg: 18px;
   --font: 'Plus Jakarta Sans', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
-  --shadow: 0 4px 24px rgb(15 23 42 / 8%);
-  --shadow-lg: 0 24px 48px rgb(15 23 42 / 12%);
+  --shadow: 0 4px 24px rgb(21 19 37 / 8%);
+  --shadow-lg: 0 24px 48px rgb(21 19 37 / 12%);
   --cloneit-shell-max: 980px;
   --cloneit-content-max: 680px;
   --cloneit-gutter: clamp(1rem, 3.5vw, 1.75rem);
@@ -62,8 +62,8 @@ body.cloneit-app {
   position: absolute;
   inset: -1px;
   background-image:
-    linear-gradient(rgb(15 23 42 / 6%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(15 23 42 / 6%) 1px, transparent 1px);
+    linear-gradient(rgb(21 19 37 / 6%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(21 19 37 / 6%) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 15%, transparent 70%);
 }
@@ -75,9 +75,9 @@ body.cloneit-app {
   top: -20%;
   left: -10%;
   background:
-    radial-gradient(ellipse at 20% 20%, rgb(13 148 136 / 14%) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 30%, rgb(99 102 241 / 12%) 0%, transparent 45%),
-    radial-gradient(ellipse at 50% 100%, rgb(14 165 233 / 10%) 0%, transparent 55%);
+    radial-gradient(ellipse at 20% 20%, rgb(214 48 13 / 14%) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 30%, rgb(50 46 75 / 12%) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 100%, rgb(255 122 69 / 10%) 0%, transparent 55%);
 }
 
 .skip-link {
@@ -117,7 +117,7 @@ body.cloneit-app {
 
 .cloneit-aside {
   padding: 1.75rem var(--cloneit-gutter) 2rem;
-  background: linear-gradient(180deg, #fff 0%, #f8fafc 45%, #f1f5f9 100%);
+  background: linear-gradient(180deg, #fff 0%, #f8f9fb 45%, #f2f3f7 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -182,9 +182,9 @@ body.cloneit-app {
   font-size: 0.7rem;
   padding: 1px 5px;
   border-radius: 4px;
-  background: #f1f5f9;
+  background: #f2f3f7;
   border: 1px solid var(--border);
-  color: #334155;
+  color: #322e4b;
 }
 
 .cloneit-aside-meta {
@@ -204,13 +204,13 @@ body.cloneit-app {
   text-transform: uppercase;
   padding: 0.35rem 0.6rem;
   border-radius: 999px;
-  background: rgb(13 148 136 / 10%);
-  border: 1px solid rgb(13 148 136 / 22%);
-  color: #0f766e;
+  background: rgb(214 48 13 / 10%);
+  border: 1px solid rgb(214 48 13 / 22%);
+  color: #b0240a;
 }
 
 .cloneit-pill-muted {
-  background: #f1f5f9;
+  background: #f2f3f7;
   border-color: var(--border);
   color: var(--text-dim);
 }
@@ -224,7 +224,7 @@ body.cloneit-app {
   width: 100%;
   padding: 1.25rem var(--cloneit-gutter) 2.5rem;
   box-sizing: border-box;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(180deg, #f8f9fb 0%, #f2f3f7 100%);
 }
 
 .cloneit-toolbar {
@@ -277,7 +277,7 @@ body.cloneit-app {
 }
 
 .help-btn:hover {
-  background: #f8fafc;
+  background: #f8f9fb;
   border-color: var(--border-strong);
   color: var(--text);
 }
@@ -359,15 +359,15 @@ body.cloneit-app {
   height: 2px;
   margin-top: 14px;
   border-radius: 1px;
-  background: linear-gradient(90deg, rgb(15 23 42 / 12%), rgb(15 23 42 / 8%));
+  background: linear-gradient(90deg, rgb(21 19 37 / 12%), rgb(21 19 37 / 8%));
   transition: background 0.25s;
 }
 
 .cloneit-steps[data-step="1"] [data-step-index="1"] .cloneit-steps-num {
-  background: linear-gradient(135deg, rgb(13 148 136 / 20%), rgb(99 102 241 / 14%));
-  border-color: rgb(13 148 136 / 4%);
+  background: linear-gradient(135deg, rgb(214 48 13 / 20%), rgb(50 46 75 / 14%));
+  border-color: rgb(214 48 13 / 4%);
   color: var(--text);
-  box-shadow: 0 0 0 1px rgb(13 148 136 / 25%);
+  box-shadow: 0 0 0 1px rgb(214 48 13 / 25%);
 }
 
 .cloneit-steps[data-step="1"] [data-step-index="1"] .cloneit-steps-text {
@@ -385,22 +385,22 @@ body.cloneit-app {
 .cloneit-steps[data-step="2"] [data-step-index="1"] .cloneit-steps-text,
 .cloneit-steps[data-step="3"] [data-step-index="1"] .cloneit-steps-text,
 .cloneit-steps[data-step="3"] [data-step-index="2"] .cloneit-steps-text {
-  color: #0f766e;
+  color: #b0240a;
 }
 
 .cloneit-steps[data-step="3"] .cloneit-steps-line {
-  background: linear-gradient(90deg, rgb(13 148 136 / 45%), rgb(13 148 136 / 18%));
+  background: linear-gradient(90deg, rgb(214 48 13 / 45%), rgb(214 48 13 / 18%));
 }
 
 .cloneit-steps[data-step="2"] .cloneit-steps-line:first-of-type {
-  background: linear-gradient(90deg, rgb(13 148 136 / 45%), rgb(13 148 136 / 18%));
+  background: linear-gradient(90deg, rgb(214 48 13 / 45%), rgb(214 48 13 / 18%));
 }
 
 .cloneit-steps[data-step="2"] [data-step-index="2"] .cloneit-steps-num {
-  background: linear-gradient(135deg, rgb(13 148 136 / 20%), rgb(99 102 241 / 14%));
-  border-color: rgb(13 148 136 / 40%);
+  background: linear-gradient(135deg, rgb(214 48 13 / 20%), rgb(50 46 75 / 14%));
+  border-color: rgb(214 48 13 / 40%);
   color: var(--text);
-  box-shadow: 0 0 0 1px rgb(13 148 136 / 25%);
+  box-shadow: 0 0 0 1px rgb(214 48 13 / 25%);
 }
 
 .cloneit-steps[data-step="2"] [data-step-index="2"] .cloneit-steps-text {
@@ -408,10 +408,10 @@ body.cloneit-app {
 }
 
 .cloneit-steps[data-step="3"] [data-step-index="3"] .cloneit-steps-num {
-  background: linear-gradient(135deg, rgb(13 148 136 / 20%), rgb(99 102 241 / 14%));
-  border-color: rgb(13 148 136 / 40%);
+  background: linear-gradient(135deg, rgb(214 48 13 / 20%), rgb(50 46 75 / 14%));
+  border-color: rgb(214 48 13 / 40%);
   color: var(--text);
-  box-shadow: 0 0 0 1px rgb(13 148 136 / 25%);
+  box-shadow: 0 0 0 1px rgb(214 48 13 / 25%);
 }
 
 .cloneit-steps[data-step="3"] [data-step-index="3"] .cloneit-steps-text {
@@ -439,7 +439,7 @@ body.cloneit-app {
 }
 
 .cloneit-canvas[data-step="3"] .result-section .surface-card {
-  box-shadow: 0 6px 28px rgb(15 23 42 / 8%);
+  box-shadow: 0 6px 28px rgb(21 19 37 / 8%);
 }
 
 .surface-card-head {
@@ -466,20 +466,20 @@ body.cloneit-app {
 }
 
 .surface-card-progress {
-  border-color: rgb(13 148 136 / 22%);
-  background: linear-gradient(165deg, rgb(13 148 136 / 8%) 0%, #fff 100%);
+  border-color: rgb(214 48 13 / 22%);
+  background: linear-gradient(165deg, rgb(214 48 13 / 8%) 0%, #fff 100%);
 }
 
 .cloneit-canvas[data-step="2"] .surface-card-progress {
-  box-shadow: 0 6px 28px rgb(13 148 136 / 12%);
+  box-shadow: 0 6px 28px rgb(214 48 13 / 12%);
 }
 
 .surface-card-success {
-  border-color: rgb(5 150 105 / 25%);
+  border-color: rgb(18 128 90 / 25%);
 }
 
 .surface-card-danger {
-  border-color: rgb(251 113 133 / 28%);
+  border-color: rgb(180 35 26 / 28%);
 }
 
 .card-title {
@@ -542,8 +542,8 @@ body.cloneit-app {
 }
 
 .input-wrap:focus-within {
-  border-color: rgb(13 148 136 / 45%);
-  box-shadow: 0 0 0 3px rgb(13 148 136 / 14%);
+  border-color: rgb(214 48 13 / 45%);
+  box-shadow: 0 0 0 3px rgb(214 48 13 / 14%);
 }
 
 .input-affix {
@@ -553,7 +553,7 @@ body.cloneit-app {
   font-family: var(--mono);
   font-size: 0.75rem;
   color: var(--text-dim);
-  background: #f1f5f9;
+  background: #f2f3f7;
   border-right: 1px solid var(--border);
   white-space: nowrap;
 }
@@ -657,15 +657,15 @@ body.cloneit-app {
 
 .cloneit-baseline-select:focus {
   outline: none;
-  border-color: rgb(13 148 136 / 45%);
-  box-shadow: 0 0 0 3px rgb(13 148 136 / 14%);
+  border-color: rgb(214 48 13 / 45%);
+  box-shadow: 0 0 0 3px rgb(214 48 13 / 14%);
 }
 
 .preview-panel {
   margin-top: 0.85rem;
   padding: 0.75rem 1rem;
   border-radius: 10px;
-  background: #f8fafc;
+  background: #f8f9fb;
   border: 1px solid var(--border);
 }
 
@@ -694,7 +694,7 @@ body.cloneit-app {
   font-size: 0.65rem;
   line-height: 1.5;
   word-break: break-all;
-  color: #334155;
+  color: #322e4b;
 }
 
 /* Buttons */
@@ -731,7 +731,7 @@ body.cloneit-app {
 .btn-primary {
   background: linear-gradient(135deg, var(--cta-from) 0%, var(--cta-to) 100%);
   color: #fff;
-  box-shadow: 0 4px 20px rgb(13 148 136 / 28%);
+  box-shadow: 0 4px 20px rgb(214 48 13 / 28%);
 }
 
 .btn-primary:focus-visible {
@@ -741,7 +741,7 @@ body.cloneit-app {
 
 .btn-primary:not(:disabled):hover {
   filter: brightness(1.06);
-  box-shadow: 0 8px 28px rgb(13 148 136 / 35%);
+  box-shadow: 0 8px 28px rgb(214 48 13 / 35%);
 }
 
 .btn-secondary {
@@ -756,8 +756,8 @@ body.cloneit-app {
 }
 
 .btn-secondary:not(:disabled):hover {
-  background: #f8fafc;
-  border-color: rgb(15 23 42 / 22%);
+  background: #f8f9fb;
+  border-color: rgb(21 19 37 / 22%);
 }
 
 .btn-bulk {
@@ -839,7 +839,7 @@ body.cloneit-app {
 
 .progress-bar-wrap {
   height: 8px;
-  background: #e2e8f0;
+  background: #e6e8ee;
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 1rem;
@@ -848,11 +848,11 @@ body.cloneit-app {
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #0f766e, #14b8a6, #6366f1);
+  background: linear-gradient(90deg, #b0240a, #ff4f1a, #322e4b);
   background-size: 200% 100%;
   animation: shimmer 2s ease infinite;
   transition: width 0.35s ease;
-  box-shadow: 0 0 12px rgb(13 148 136 / 35%);
+  box-shadow: 0 0 12px rgb(214 48 13 / 35%);
 }
 
 @keyframes shimmer {
@@ -886,7 +886,7 @@ body.cloneit-app {
 
 .progress-file-item {
   padding: 3px 0;
-  border-bottom: 1px solid rgb(15 23 42 / 6%);
+  border-bottom: 1px solid rgb(21 19 37 / 6%);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -920,13 +920,13 @@ body.cloneit-app {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: linear-gradient(135deg, rgb(52 211 153 / 20%), rgb(34 211 238 / 15%));
-  border: 1px solid rgb(52 211 153 / 25%);
+  background: linear-gradient(135deg, rgb(18 128 90 / 20%), rgb(255 122 69 / 15%));
+  border: 1px solid rgb(18 128 90 / 25%);
 }
 
 .result-hero-error .result-hero-icon {
-  background: linear-gradient(135deg, rgb(251 113 133 / 18%), rgb(248 113 113 / 10%));
-  border-color: rgb(251 113 133 / 30%);
+  background: linear-gradient(135deg, rgb(180 35 26 / 18%), rgb(248 113 113 / 10%));
+  border-color: rgb(180 35 26 / 30%);
 }
 
 .result-icon {
@@ -993,9 +993,9 @@ body.cloneit-app {
   font-size: 0.75rem;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #f1f5f9;
+  background: #f2f3f7;
   border: 1px solid var(--border);
-  color: #334155;
+  color: #322e4b;
 }
 
 .result-summary-warn {
@@ -1015,7 +1015,7 @@ body.cloneit-app {
   margin-bottom: 1.25rem;
   padding: 1rem 1.1rem;
   border-radius: var(--radius);
-  background: #f8fafc;
+  background: #f8f9fb;
   border: 1px solid var(--border);
 }
 
@@ -1026,7 +1026,7 @@ body.cloneit-app {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.15rem 1.25rem 1.25rem;
-  background: linear-gradient(180deg, rgb(248 250 252 / 90%) 0%, #fff 100%);
+  background: linear-gradient(180deg, rgb(248 249 251 / 90%) 0%, #fff 100%);
   box-sizing: border-box;
 }
 
@@ -1065,8 +1065,8 @@ body.cloneit-app {
 }
 
 .result-details-copy-btn:hover {
-  background: #f8fafc;
-  border-color: rgb(13 148 136 / 35%);
+  background: #f8f9fb;
+  border-color: rgb(214 48 13 / 35%);
   color: var(--accent);
 }
 
@@ -1112,8 +1112,8 @@ body.cloneit-app {
 }
 
 .result-detail-link:hover {
-  border-color: rgb(13 148 136 / 35%);
-  background: rgb(13 148 136 / 5%);
+  border-color: rgb(214 48 13 / 35%);
+  background: rgb(214 48 13 / 5%);
   transform: translateY(-1px);
 }
 
@@ -1143,7 +1143,7 @@ body.cloneit-app {
   font-family: var(--mono);
   overflow-wrap: anywhere;
   word-break: normal;
-  color: #0f766e;
+  color: #b0240a;
   line-height: 1.45;
 }
 
@@ -1308,7 +1308,7 @@ body.cloneit-app {
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
-  background: rgb(15 23 42 / 45%);
+  background: rgb(21 19 37 / 45%);
   backdrop-filter: blur(10px);
 }
 
@@ -1348,7 +1348,7 @@ body.cloneit-app {
   gap: 1rem;
   padding: 1.1rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background: #f8fafc;
+  background: #f8f9fb;
 }
 
 .modal-header h2 {
@@ -1373,7 +1373,7 @@ body.cloneit-app {
 }
 
 .modal-close:hover {
-  background: #e2e8f0;
+  background: #e6e8ee;
   color: var(--text);
 }
 
@@ -1449,7 +1449,7 @@ body.cloneit-app {
   font-size: 0.75rem;
   padding: 2px 6px;
   border-radius: 4px;
-  background: #f1f5f9;
+  background: #f2f3f7;
   border: 1px solid var(--border);
 }
 
@@ -1521,7 +1521,7 @@ body.cloneit-app {
 }
 
 .toast-close:hover {
-  background: #f1f5f9;
+  background: #f2f3f7;
   color: var(--text);
 }
 
@@ -1630,8 +1630,8 @@ body.cloneit-app {
   padding: 10px 12px;
   overflow-x: auto;
   border-radius: 8px;
-  background: rgb(15 23 42 / 90%);
-  color: #e2e8f0;
+  background: rgb(21 19 37 / 90%);
+  color: #e6e8ee;
   font-family: var(--mono);
   font-size: 0.8125rem;
   white-space: pre-wrap;
@@ -1641,7 +1641,7 @@ body.cloneit-app {
   margin: 0 0 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgb(225 29 72 / 8%);
+  background: rgb(180 35 26 / 8%);
   color: var(--danger);
   font-size: 0.875rem;
 }
