@@ -35,21 +35,17 @@ CloneIt then gives each demo's requester write on `/<site>/CONFIG` and `/<site>/
 
 ## Setup
 
-Merging to `main` deploys the worker (`.github/workflows/deploy-access.yaml`, with the repo's existing
-`CLOUDFLARE_API_TOKEN`). Its own secrets live in Cloudflare, not in GitHub; set them once:
+Merging to `main` deploys the worker (`.github/workflows/deploy-access.yaml`). The workflow also sets the
+worker's secrets in Cloudflare from these **GitHub repository secrets** (Settings › Secrets and variables › Actions):
 
-```bash
-wrangler secret put UMAPI_CLIENT_ID --config workers/access/wrangler.toml
-wrangler secret put UMAPI_CLIENT_SECRET --config workers/access/wrangler.toml
-wrangler secret put GITHUB_TEAM_TOKEN --config workers/access/wrangler.toml
-```
+| Repository secret | Worker secret | What |
+|---|---|---|
+| `UMAPI_CLIENT_ID` | `UMAPI_CLIENT_ID` | Client ID of the Developer Console project in CAS Hub with the User Management API (OAuth server-to-server) |
+| `UMAPI_CLIENT_SECRET` | `UMAPI_CLIENT_SECRET` | Its client secret. Its technical account also needs write on `REQUESTS_SHEET` in DA |
+| `ACCESS_GITHUB_TEAM_TOKEN` | `GITHUB_TEAM_TOKEN` | Fine-grained token, resource owner scdemos, organization permission Members: Read and write (or classic `admin:org`) |
 
-(`npm run deploy:access` deploys by hand.)
-
-- `UMAPI_*`: a Developer Console project in CAS Hub with the User Management API (OAuth server-to-server).
-  Its technical account also needs write on `REQUESTS_SHEET` in DA.
-- `GITHUB_TEAM_TOKEN`: token of an scdemos org owner or `sc-team` maintainer with `admin:org`
-  (authorize SSO if the org enforces it).
+The existing `CLOUDFLARE_API_TOKEN` secret deploys it. After changing a secret, run the workflow again
+(Actions › Deploy Access Worker › Run workflow).
 
 ## Tests
 
