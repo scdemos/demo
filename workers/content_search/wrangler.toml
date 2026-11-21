@@ -3,7 +3,7 @@ main = "index.js"
 compatibility_date = "2026-03-13"
 account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
 
-# Natural-language search over the query index for blocks/content-ai-search
+# Natural-language search over the query index for blocks/search-ai
 # (same /search and /gensearch contract as the Content AI proxy).
 routes = [
    { pattern = "demo.bbird.live/content-search/*", zone_name = "bbird.live" },

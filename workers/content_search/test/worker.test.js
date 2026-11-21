@@ -133,7 +133,7 @@ function post(path, body, origin = SITE) {
   });
 }
 
-// The request the content-ai-search block sends to /search.
+// The request the search-ai block sends to /search.
 const searchBody = (text, pagination = { limit: 10 }) => ({
   contentSource: { name: 'demo', type: 'AEM_PUBLISH' },
   query: {

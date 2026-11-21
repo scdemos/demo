@@ -1,6 +1,6 @@
 /*
  * Content AI search: natural-language search with an AI answer.
- * Based on https://github.com/Apoorv-R98/content-ai-search-block (Apache-2.0).
+ * Based on https://github.com/Apoorv-R98/search-ai-block (Apache-2.0).
  *
  * The block calls a backend at `base-url` with the Content AI proxy contract:
  *   POST {base-url}/search     ranked pages
@@ -243,8 +243,8 @@ function renderCard(item, cls) {
 }
 
 function status(text) {
-  const el = createTag('div', { class: 'content-ai-search-status', role: 'status', hidden: '' });
-  el.append(createTag('span', { class: 'content-ai-search-spinner', 'aria-hidden': 'true' }), createTag('span', {}, text));
+  const el = createTag('div', { class: 'search-ai-status', role: 'status', hidden: '' });
+  el.append(createTag('span', { class: 'search-ai-spinner', 'aria-hidden': 'true' }), createTag('span', {}, text));
   return el;
 }
 
@@ -281,59 +281,59 @@ export default function decorate(block) {
     resultsSize: Math.min(parseInt(config['results-size'], 10) || 10, MAX_RESULTS_SIZE),
   };
   let layout = config['results-layout'] === 'list' ? 'list' : 'cards';
-  const uid = `content-ai-search-${Math.random().toString(36).slice(2, 8)}`;
+  const uid = `search-ai-${Math.random().toString(36).slice(2, 8)}`;
   block.textContent = '';
 
   /* search box */
-  const form = createTag('form', { class: 'content-ai-search-form', role: 'search' });
-  const field = createTag('div', { class: 'content-ai-search-field' });
+  const form = createTag('form', { class: 'search-ai-form', role: 'search' });
+  const field = createTag('div', { class: 'search-ai-field' });
   const input = createTag('input', {
     type: 'search',
     name: 'q',
-    class: 'content-ai-search-input',
+    class: 'search-ai-input',
     placeholder: label('placeholder'),
     'aria-label': label('placeholder'),
     autocomplete: 'off',
     enterkeyhint: 'search',
   });
   const clear = createTag('button', {
-    type: 'button', class: 'content-ai-search-clear', 'aria-label': label('clear'), hidden: '',
+    type: 'button', class: 'search-ai-clear', 'aria-label': label('clear'), hidden: '',
   });
-  const submit = createTag('button', { type: 'submit', class: 'content-ai-search-submit' }, label('submit'));
+  const submit = createTag('button', { type: 'submit', class: 'search-ai-submit' }, label('submit'));
   field.append(input, clear, submit);
   form.append(field);
   block.append(form);
 
-  const suggestions = createTag('div', { class: 'content-ai-search-suggestions', hidden: '' });
+  const suggestions = createTag('div', { class: 'search-ai-suggestions', hidden: '' });
   block.append(suggestions);
 
   /* answer panel */
-  const answerPanel = createTag('div', { class: 'content-ai-search-panel content-ai-search-panel-answer', id: `${uid}-answer` });
+  const answerPanel = createTag('div', { class: 'search-ai-panel search-ai-panel-answer', id: `${uid}-answer` });
   const answerStatus = status(label('generating'));
-  const answer = createTag('div', { class: 'content-ai-search-answer', hidden: '' });
-  const answerHead = createTag('p', { class: 'content-ai-search-answer-title' }, label('answer-title'));
-  const answerText = createTag('div', { class: 'content-ai-search-answer-text', 'aria-live': 'polite' });
-  const sourcesLabel = createTag('p', { class: 'content-ai-search-sources-label' }, label('sources'));
-  const sources = createTag('ul', { class: 'content-ai-search-sources' });
+  const answer = createTag('div', { class: 'search-ai-answer', hidden: '' });
+  const answerHead = createTag('p', { class: 'search-ai-answer-title' }, label('answer-title'));
+  const answerText = createTag('div', { class: 'search-ai-answer-text', 'aria-live': 'polite' });
+  const sourcesLabel = createTag('p', { class: 'search-ai-sources-label' }, label('sources'));
+  const sources = createTag('ul', { class: 'search-ai-sources' });
   answer.append(answerHead, answerText, sourcesLabel, sources);
-  if (config.disclaimer) answer.append(createTag('p', { class: 'content-ai-search-disclaimer' }, config.disclaimer));
-  const answerError = createTag('div', { class: 'content-ai-search-error', hidden: '' });
+  if (config.disclaimer) answer.append(createTag('p', { class: 'search-ai-disclaimer' }, config.disclaimer));
+  const answerError = createTag('div', { class: 'search-ai-error', hidden: '' });
   const retry = createTag('button', { type: 'button', class: 'button secondary' }, label('retry'));
   answerError.append(createTag('p', {}, label('error')), retry);
   answerPanel.append(answerStatus, answer, answerError);
 
   /* results panel */
-  const resultsPanel = createTag('div', { class: 'content-ai-search-panel content-ai-search-panel-results', id: `${uid}-results` });
+  const resultsPanel = createTag('div', { class: 'search-ai-panel search-ai-panel-results', id: `${uid}-results` });
   const resultsStatus = status(label('searching'));
-  const resultsWrap = createTag('div', { class: 'content-ai-search-results-wrap', hidden: '' });
-  const toolbar = createTag('div', { class: 'content-ai-search-toolbar', role: 'group', 'aria-label': label('layout') });
-  const cardsBtn = createTag('button', { type: 'button', class: 'content-ai-search-layout', 'data-layout': 'cards' }, label('cards'));
-  const listBtn = createTag('button', { type: 'button', class: 'content-ai-search-layout', 'data-layout': 'list' }, label('list'));
+  const resultsWrap = createTag('div', { class: 'search-ai-results-wrap', hidden: '' });
+  const toolbar = createTag('div', { class: 'search-ai-toolbar', role: 'group', 'aria-label': label('layout') });
+  const cardsBtn = createTag('button', { type: 'button', class: 'search-ai-layout', 'data-layout': 'cards' }, label('cards'));
+  const listBtn = createTag('button', { type: 'button', class: 'search-ai-layout', 'data-layout': 'list' }, label('list'));
   toolbar.append(cardsBtn, listBtn);
-  const results = createTag('ul', { class: 'content-ai-search-results' });
-  const empty = createTag('p', { class: 'content-ai-search-empty', hidden: '' });
-  const loadMore = createTag('button', { type: 'button', class: 'button secondary content-ai-search-more', hidden: '' }, label('load-more'));
-  const moreError = createTag('p', { class: 'content-ai-search-more-error', role: 'alert', hidden: '' }, label('error'));
+  const results = createTag('ul', { class: 'search-ai-results' });
+  const empty = createTag('p', { class: 'search-ai-empty', hidden: '' });
+  const loadMore = createTag('button', { type: 'button', class: 'button secondary search-ai-more', hidden: '' }, label('load-more'));
+  const moreError = createTag('p', { class: 'search-ai-more-error', role: 'alert', hidden: '' }, label('error'));
   resultsWrap.append(toolbar, results, empty, moreError, loadMore);
   resultsPanel.append(resultsStatus, resultsWrap);
 
@@ -342,13 +342,13 @@ export default function decorate(block) {
   if (answerOnly) {
     block.append(answerPanel);
   } else {
-    tabs = createTag('div', { class: 'content-ai-search-tabs', role: 'tablist', 'aria-label': label('search-mode'), hidden: '' });
+    tabs = createTag('div', { class: 'search-ai-tabs', role: 'tablist', 'aria-label': label('search-mode'), hidden: '' });
     [[resultsPanel, 'results-tab'], [answerPanel, 'answer-tab']].forEach(([panel, key], i) => {
       const tab = createTag('button', {
         type: 'button',
         role: 'tab',
         id: `${panel.id}-tab`,
-        class: 'content-ai-search-tab',
+        class: 'search-ai-tab',
         'aria-controls': panel.id,
         'aria-selected': i === 0 ? 'true' : 'false',
         tabindex: i === 0 ? '0' : '-1',
@@ -376,7 +376,7 @@ export default function decorate(block) {
 
   function renderResults() {
     results.textContent = '';
-    items.forEach((item) => results.append(renderCard(item, 'content-ai-search-result')));
+    items.forEach((item) => results.append(renderCard(item, 'search-ai-result')));
     empty.hidden = items.length > 0;
     moreError.hidden = true;
     loadMore.hidden = !cursor;
@@ -450,7 +450,7 @@ export default function decorate(block) {
     const result = String(data?.result || '').trim();
     answerText.innerHTML = result ? renderAnswer(result) : `<p>${escapeHtml(label('no-answer'))}</p>`;
     sources.textContent = '';
-    hits.forEach((item) => sources.append(renderCard(item, 'content-ai-search-source')));
+    hits.forEach((item) => sources.append(renderCard(item, 'search-ai-source')));
     sourcesLabel.hidden = !hits.length;
     answer.classList.toggle('is-empty', !result);
     answer.hidden = false;
@@ -554,7 +554,7 @@ export default function decorate(block) {
       }
       const list = createTag('ul');
       pills.forEach((pill) => {
-        const button = createTag('button', { type: 'button', class: 'content-ai-search-pill' }, pill.label);
+        const button = createTag('button', { type: 'button', class: 'search-ai-pill' }, pill.label);
         button.addEventListener('click', () => {
           input.value = pill.query;
           clear.hidden = false;
@@ -562,7 +562,7 @@ export default function decorate(block) {
         });
         list.append(createTag('li', {}, button));
       });
-      suggestions.append(createTag('span', { class: 'content-ai-search-suggestions-label' }, label('suggestions-label')), list);
+      suggestions.append(createTag('span', { class: 'search-ai-suggestions-label' }, label('suggestions-label')), list);
     });
   }
 }

@@ -1,6 +1,6 @@
 /*
  * Natural-language search over the site's query index, with the same POST /search and
- * POST /gensearch contract as the Content AI proxy that blocks/content-ai-search calls.
+ * POST /gensearch contract as the Content AI proxy that blocks/search-ai calls.
  * Pointing the block's `base-url` at this worker or at a Content AI proxy is the only change.
  *
  * /search    ranks pages by meaning (Workers AI embeddings of title, description and
