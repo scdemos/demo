@@ -368,7 +368,10 @@ export default async function decorate(block, config, { keywordSearch, tabs: wit
     answerRun += 1;
     query = '';
     block.classList.add('is-idle');
-    if (tabs) tabs.hidden = true;
+    if (tabs) {
+      tabs.hidden = true;
+      tabs.firstElementChild.click();
+    }
     if (keyword) keyword.search('');
     [answer, answerError, answerStatus].forEach((el) => { el.hidden = true; });
   }
