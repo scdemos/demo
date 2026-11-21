@@ -18,11 +18,15 @@ SITE_URL = "https://demo.bbird.live"
 CONTENT_ORIGIN = "https://main--demo--scdemos.aem.live"
 # Pages to search (path prefixes) and pages to leave out (exact paths, or prefixes ending in /).
 INCLUDE_PATHS = "/demo-docs/,/en/"
-EXCLUDE_PATHS = "/demo-docs/nav,/demo-docs/footer,/demo-docs/demo-slides/,/demo-docs/media/,/en/nav,/en/footer,/en/search"
+EXCLUDE_PATHS = "/demo-docs/nav,/demo-docs/footer,/demo-docs/demo-slides/,/demo-docs/media/,/en/nav,/en/footer,/en/search,/en/studio,/en/studio/"
+# Fallback source: product documentation, searched only when no site page matches.
+DOCS_ORIGIN = "https://www.aem.live"
+DOCS_INCLUDE_PATHS = "/docs/,/developer/"
+DOCS_LABEL = "AEM product documentation"
 EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5"
 ANSWER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 # Pages scoring below this (cosine similarity plus a small word-match boost) are not returned.
-MIN_SCORE = "0.6"
+MIN_SCORE = "0.65"
 ALLOWED_ORIGINS = "https://demo.bbird.live,https://main--demo--scdemos.aem.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.preview.da.live,http://localhost:3000,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live,https://*--demo--scdemos.preview.da.live"
 
 [observability.logs]

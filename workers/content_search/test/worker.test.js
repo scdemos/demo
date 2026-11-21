@@ -1,7 +1,7 @@
 import {
   describe, it, expect, vi, beforeEach, afterEach,
 } from 'vitest';
-import worker, { resetIndexCache } from '../index.js';
+import worker, { resetIndexCache, pagesFromIndex } from '../index.js';
 
 const SITE = 'https://demo.bbird.live';
 
@@ -78,15 +78,43 @@ const PAGE_TEXT = {
   '/demo-docs/usecases/how-to-add-new-users': '<div><h1>How to add new users</h1><p>Send the user to <a href="/x">Get demo access</a>.</p><script>alert(1)</script></div>',
 };
 
+const DOCS_TEXT = {
+  '/docs/personalization': '<div><h1>Personalization</h1><p>Use Adobe Target with Edge Delivery.</p></div>',
+  '/docs/quantum-cdn': '<div><h1>Quantum CDN</h1><p>Point the quantum CDN at your origin.</p></div>',
+};
+const DOCS = [
+  row('/docs/personalization', {
+    title: 'Personalization with Edge Delivery',
+    description: 'Personalize pages with Adobe Target.',
+    deprecation: '',
+  }),
+  row('/docs/quantum-cdn', {
+    title: 'Quantum CDN setup',
+    description: 'Configure the quantum physics CDN.',
+    deprecation: '',
+  }),
+  row('/docs/scheduling', { title: 'Scheduling', description: 'Clone and schedule.', deprecation: 'Use something else.' }),
+  row('/blog/clone-news', { title: 'Clone news', description: 'Blog about clone.' }),
+];
+const DOCS_VARS = {
+  DOCS_ORIGIN: 'https://www.aem.live',
+  DOCS_INCLUDE_PATHS: '/docs/,/developer/',
+  DOCS_LABEL: 'AEM product documentation',
+};
+
 let indexFetches;
-function mockIndex(rows = INDEX) {
+function mockIndex(rows = INDEX, docsRows = []) {
   indexFetches = [];
   vi.stubGlobal('fetch', vi.fn(async (url) => {
     indexFetches.push(String(url));
+    const { host } = new URL(url);
     if (String(url).endsWith('.plain.html')) {
       const path = new URL(url).pathname.replace(/\.plain\.html$/, '');
-      const page = PAGE_TEXT[path];
+      const page = (host === 'www.aem.live' ? DOCS_TEXT : PAGE_TEXT)[path];
       return page ? new Response(page, { headers: { 'Content-Type': 'text/html' } }) : new Response('', { status: 404 });
+    }
+    if (host === 'www.aem.live') {
+      return new Response(JSON.stringify({ data: docsRows }), { headers: { 'Content-Type': 'application/json' } });
     }
     const params = new URL(url).searchParams;
     const offset = Number(params.get('offset')) || 0;
@@ -278,6 +306,119 @@ describe('/search', () => {
     expect(indexFetches).toHaveLength(1);
     const pageEmbeds = env.AI.calls.filter((c) => c.input.text?.length > 1);
     expect(pageEmbeds).toHaveLength(1);
+  });
+});
+
+describe('product documentation source', () => {
+  beforeEach(() => {
+    mockIndex(INDEX, DOCS);
+    env = { ...ENV_VARS, ...DOCS_VARS, AI: mockAi() };
+  });
+
+  it('reads current docs pages under the included paths, with their own URLs', () => {
+    const pages = pagesFromIndex(DOCS, {
+      siteUrl: 'https://www.aem.live', origin: 'https://www.aem.live', include: ['/docs/'], exclude: [], site: false,
+    });
+    expect(pages.map((p) => p.id)).toEqual(['https://www.aem.live/docs/personalization', 'https://www.aem.live/docs/quantum-cdn']);
+  });
+
+  it('searches the docs only when no site page matches', async () => {
+    const docs = await (await worker.fetch(post('/search', searchBody('quantum physics')), env)).json();
+    expect(docs.results.map((r) => r.id)).toEqual(['https://www.aem.live/docs/quantum-cdn']);
+    expect(docs.results[0].data.metadata.url).toBe('https://www.aem.live/docs/quantum-cdn');
+    const site = await (await worker.fetch(post('/search', searchBody('personalization')), env)).json();
+    expect(site.results.map((r) => r.id)).toEqual(['/demo-docs/usecases/how-to-use-deliver-personalized-experiences']);
+  });
+
+  it('keeps searching the site when the docs index is down, and reuses docs it already has', async () => {
+    const down = () => vi.stubGlobal('fetch', vi.fn(async (url) => {
+      if (new URL(url).host === 'www.aem.live') return new Response('down', { status: 503 });
+      return new Response(JSON.stringify({ data: INDEX }), { headers: { 'Content-Type': 'application/json' } });
+    }));
+    down();
+    const cold = await worker.fetch(post('/search', searchBody('clone')), env);
+    expect(cold.status).toBe(200);
+    expect((await cold.json()).results[0].id).toBe('/demo-docs/usecases/how-to-clone-demo-site');
+
+    resetIndexCache();
+    mockIndex(INDEX, DOCS);
+    await worker.fetch(post('/search', searchBody('quantum physics')), env);
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 10 * 60 * 1000);
+    down();
+    const json = await (await worker.fetch(post('/search', searchBody('quantum physics')), env)).json();
+    vi.useRealTimers();
+    expect(json.results.map((r) => r.id)).toEqual(['https://www.aem.live/docs/quantum-cdn']);
+  });
+
+  it('does not wait for a docs index that hangs', async () => {
+    env.DOCS_TIMEOUT_MS = '50';
+    vi.stubGlobal('fetch', vi.fn((url, init) => {
+      if (new URL(url).host === 'www.aem.live') {
+        return new Promise((resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+        });
+      }
+      return Promise.resolve(new Response(JSON.stringify({ data: INDEX }), { headers: { 'Content-Type': 'application/json' } }));
+    }));
+    const res = await worker.fetch(post('/search', searchBody('clone')), env);
+    expect(res.status).toBe(200);
+    expect((await res.json()).results[0].id).toBe('/demo-docs/usecases/how-to-clone-demo-site');
+  }, 2000);
+
+  it('answers without the text of a docs page that hangs', async () => {
+    env.DOCS_TIMEOUT_MS = '50';
+    mockIndex(INDEX, DOCS);
+    const indexFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn((url, init) => {
+      if (String(url).startsWith('https://www.aem.live/docs/') && String(url).endsWith('.plain.html')) {
+        return new Promise((resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+        });
+      }
+      return indexFetch(url, init);
+    }));
+    const res = await worker.fetch(post('/gensearch', { query: 'quantum physics' }), env);
+    expect(res.status).toBe(200);
+  }, 2000);
+
+  it('keeps site search working when embedding the docs fails', async () => {
+    const run = env.AI.run;
+    env.AI.run = vi.fn(async (model, input) => {
+      if (Array.isArray(input.text) && input.text.some((t) => t.includes('Quantum'))) throw new Error('embed failed');
+      return run(model, input);
+    });
+    const res = await worker.fetch(post('/search', searchBody('clone')), env);
+    expect(res.status).toBe(200);
+    expect((await res.json()).results[0].id).toBe('/demo-docs/usecases/how-to-clone-demo-site');
+  });
+
+  it('only tells the model about product documentation when the sources are docs', async () => {
+    await worker.fetch(post('/gensearch', { query: 'personalization' }), env);
+    const chat = env.AI.calls.find((c) => c.model === ENV_VARS.ANSWER_MODEL);
+    expect(chat.input.messages.map((m) => m.content).join('\n')).not.toContain('product documentation');
+  });
+
+  it('does not wait for a docs embedding that hangs', async () => {
+    env.DOCS_TIMEOUT_MS = '50';
+    const run = env.AI.run;
+    env.AI.run = vi.fn((model, input) => {
+      if (Array.isArray(input.text) && input.text.some((t) => t.includes('Quantum'))) return new Promise(() => {});
+      return run(model, input);
+    });
+    const [a, b] = await Promise.all(['clone', 'access'].map((q) => worker.fetch(post('/search', searchBody(q)), env)));
+    expect([a.status, b.status]).toEqual([200, 200]);
+  }, 2000);
+
+  it('labels docs sources for the answer model and reads their text from aem.live', async () => {
+    env.AI = mockAi({ answer: 'See [Quantum CDN setup](https://www.aem.live/docs/quantum-cdn).' });
+    const json = await (await worker.fetch(post('/gensearch', { query: 'quantum physics' }), env)).json();
+    const chat = env.AI.calls.find((c) => c.model === ENV_VARS.ANSWER_MODEL);
+    const prompt = chat.input.messages.map((m) => m.content).join('\n');
+    expect(prompt).toContain('From: AEM product documentation');
+    expect(prompt).toContain('From the product documentation:');
+    expect(prompt).toContain('Point the quantum CDN at your origin.');
+    expect(json.hits.map((h) => h.id)).toEqual(['https://www.aem.live/docs/quantum-cdn']);
   });
 });
 

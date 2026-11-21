@@ -4,7 +4,8 @@
  * Pointing the block's `base-url` at this worker or at a Content AI proxy is the only change.
  *
  * /search    ranks pages by meaning (Workers AI embeddings of title, description and
- *            keywords) plus a small boost for literal word matches.
+ *            keywords) plus a small boost for literal word matches. Optional product
+ *            documentation (DOCS_* vars) is searched only when no site page matches.
  * /gensearch has a Workers AI model answer from the best matching pages (their index
  *            fields plus the text of the top few) and returns the pages it cites as hits.
  */
@@ -19,6 +20,7 @@ const FALLBACK_HITS = 3;
 // The answer model also reads the text of the best few pages, cut to this length each.
 const TEXT_SOURCES = 4;
 const MAX_PAGE_TEXT = 3000;
+const PAGE_TIMEOUT_MS = 5000;
 const KEYWORD_BOOST = 0.1;
 // bge models retrieve better when the query (not the passage) carries this instruction.
 const QUERY_INSTRUCTION = 'Represent this sentence for searching relevant passages: ';
@@ -26,16 +28,42 @@ const STOPWORDS = new Set('a an and are can do does for from how i in is it me m
 
 const list = (value) => String(value || '').split(',').map((v) => v.trim()).filter(Boolean);
 
+const trim = (url) => String(url).replace(/\/+$/, '');
+
+// The site itself, plus optional product documentation (another EDS site's query index)
+// that is used only when nothing on the site matches.
+function sourcesFrom(env) {
+  const siteUrl = trim(env.SITE_URL || 'https://demo.bbird.live');
+  const sources = [{
+    siteUrl,
+    origin: trim(env.CONTENT_ORIGIN || 'https://main--demo--scdemos.aem.live'),
+    include: list(env.INCLUDE_PATHS || '/'),
+    exclude: list(env.EXCLUDE_PATHS),
+    label: '',
+    site: true,
+  }];
+  if (env.DOCS_ORIGIN) {
+    const docs = trim(env.DOCS_ORIGIN);
+    sources.push({
+      siteUrl: docs,
+      origin: docs,
+      include: list(env.DOCS_INCLUDE_PATHS || '/'),
+      exclude: list(env.DOCS_EXCLUDE_PATHS),
+      timeoutMs: Number(env.DOCS_TIMEOUT_MS) || 5000,
+      label: env.DOCS_LABEL || new URL(docs).hostname,
+      site: false,
+    });
+  }
+  return sources;
+}
+
 function settings(env) {
   return {
     prefix: `/${String(env.PATH_PREFIX || '').replace(/^\/+|\/+$/g, '')}`,
-    siteUrl: String(env.SITE_URL || 'https://demo.bbird.live').replace(/\/+$/, ''),
-    origin: String(env.CONTENT_ORIGIN || 'https://main--demo--scdemos.aem.live').replace(/\/+$/, ''),
-    include: list(env.INCLUDE_PATHS || '/'),
-    exclude: list(env.EXCLUDE_PATHS),
+    sources: sourcesFrom(env),
     embeddingModel: env.EMBEDDING_MODEL || '@cf/baai/bge-base-en-v1.5',
     answerModel: env.ANSWER_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-    minScore: env.MIN_SCORE !== undefined ? Number(env.MIN_SCORE) : 0.6,
+    minScore: env.MIN_SCORE !== undefined ? Number(env.MIN_SCORE) : 0.65,
   };
 }
 
@@ -87,29 +115,41 @@ function pageImage(image, siteUrl) {
   return absolute(image.replace(/width=\d+/, 'width=750'), siteUrl);
 }
 
-export function pagesFromIndex(rows, cfg) {
+export function pagesFromIndex(rows, source) {
   return rows
     .filter((r) => r.path && String(r.title || '').trim())
-    .filter((r) => cfg.include.some((p) => r.path.startsWith(p)))
-    .filter((r) => !cfg.exclude.some((p) => r.path === p || (p.endsWith('/') && r.path.startsWith(p))))
-    .map((r) => ({
-      path: r.path,
-      url: absolute(r.path, cfg.siteUrl),
-      title: String(r.title).trim(),
-      description: String(r.description || '').trim(),
-      keywords: keywordText(r.keywords),
-      image: pageImage(r.image, cfg.siteUrl),
-      lastModified: r.lastModified,
-    }));
+    .filter((r) => !String(r.deprecation || '').trim())
+    .filter((r) => source.include.some((p) => r.path.startsWith(p)))
+    .filter((r) => !source.exclude.some((p) => r.path === p || (p.endsWith('/') && r.path.startsWith(p))))
+    .map((r) => {
+      const url = absolute(r.path, source.siteUrl);
+      return {
+        // site pages keep their path as id; other sources use the full URL
+        id: source.site ? r.path : url,
+        path: r.path,
+        url,
+        origin: source.origin,
+        site: source.site,
+        timeoutMs: source.timeoutMs,
+        label: source.label,
+        title: String(r.title).trim(),
+        description: String(r.description || '').trim(),
+        keywords: keywordText(r.keywords),
+        image: pageImage(r.image, source.siteUrl),
+        lastModified: r.lastModified,
+      };
+    });
 }
 
-async function fetchIndex(cfg) {
+async function fetchIndex(source) {
   const rows = [];
   let offset = 0;
   let batch;
   do {
-    const resp = await fetch(`${cfg.origin}/query-index.json?offset=${offset}&limit=${INDEX_PAGE_SIZE}`, {
+    const resp = await fetch(`${source.origin}/query-index.json?offset=${offset}&limit=${INDEX_PAGE_SIZE}`, {
       cf: { cacheTtl: 300, cacheEverything: true },
+      // extra sources get a deadline (covers the body read too), so they can't hold up search
+      ...(source.timeoutMs ? { signal: AbortSignal.timeout(source.timeoutMs) } : {}),
     });
     if (!resp.ok) throw fail(`query index: ${resp.status}`, 502);
     batch = (await resp.json())?.data || [];
@@ -142,17 +182,53 @@ export function resetIndexCache() {
   textCache.clear();
 }
 
-async function refreshIndex(env, cfg) {
-  const now = Date.now();
-  const pages = pagesFromIndex(await fetchIndex(cfg), cfg);
-  const version = pages.map((p) => `${p.path}@${p.lastModified}`).join('|');
-  if (indexCache?.version === version) {
-    indexCache.at = now;
-    return indexCache;
+const pageKey = (p) => `${p.url}@${p.lastModified}`;
+
+// One source's pages and vectors. Unchanged pages keep their vectors; only new or
+// changed pages are embedded.
+async function loadSource(env, cfg, source) {
+  const pages = pagesFromIndex(await fetchIndex(source), source);
+  const known = new Map((indexCache?.pages || []).map((p, i) => [pageKey(p), indexCache.vectors[i]]));
+  const missing = pages.filter((p) => !known.has(pageKey(p)));
+  if (missing.length) {
+    const fresh = await embed(env, cfg, missing.map(passage));
+    missing.forEach((p, i) => known.set(pageKey(p), fresh[i]));
   }
-  const vectors = pages.length ? await embed(env, cfg, pages.map(passage)) : [];
+  return { pages, vectors: pages.map((p) => known.get(pageKey(p))) };
+}
+
+async function refreshIndex(env, cfg) {
+  const parts = await Promise.all(cfg.sources.map(async (source) => {
+    try {
+      if (source.site) return await loadSource(env, cfg, source);
+      // an extra source gets one deadline for fetching and embedding, so it can't hold up search
+      let timer;
+      const deadline = new Promise((resolve, reject) => {
+        timer = setTimeout(() => reject(new Error('source timed out')), source.timeoutMs);
+      });
+      try {
+        return await Promise.race([loadSource(env, cfg, source), deadline]);
+      } finally {
+        clearTimeout(timer);
+      }
+    } catch (error) {
+      // the site must load; an extra source that fails keeps what it had, if anything
+      if (source.site) throw error;
+      const pages = [];
+      const vectors = [];
+      (indexCache?.pages || []).forEach((p, i) => {
+        if (p.origin === source.origin) {
+          pages.push(p);
+          vectors.push(indexCache.vectors[i]);
+        }
+      });
+      return { pages, vectors };
+    }
+  }));
   indexCache = {
-    at: now, version, pages, vectors,
+    at: Date.now(),
+    pages: parts.flatMap((part) => part.pages),
+    vectors: parts.flatMap((part) => part.vectors),
   };
   return indexCache;
 }
@@ -183,12 +259,15 @@ export function htmlToText(html) {
 }
 
 // Body text of a page (cached per page version); empty when it can't be read.
-async function pageText(cfg, page) {
-  const key = `${page.path}@${page.lastModified}`;
+async function pageText(page) {
+  const key = `${page.url}@${page.lastModified}`;
   if (textCache.has(key)) return textCache.get(key);
   const path = page.path.endsWith('/') ? `${page.path}index` : page.path;
   try {
-    const resp = await fetch(`${cfg.origin}${path}.plain.html`, { cf: { cacheTtl: 300, cacheEverything: true } });
+    const resp = await fetch(`${page.origin}${path}.plain.html`, {
+      cf: { cacheTtl: 300, cacheEverything: true },
+      signal: AbortSignal.timeout(page.timeoutMs || PAGE_TIMEOUT_MS),
+    });
     if (!resp.ok) return '';
     const text = htmlToText(await resp.text()).slice(0, MAX_PAGE_TEXT);
     textCache.set(key, text); // only successful reads, so a failed read is tried again
@@ -220,7 +299,7 @@ async function rank(env, cfg, text) {
   if (!pages.length) return [];
   const [queryVector] = await embed(env, cfg, [`${QUERY_INSTRUCTION}${text}`]);
   const words = terms(text);
-  return pages
+  const ranked = pages
     .map((page, i) => {
       const haystack = passage(page).toLowerCase();
       const found = words.filter((w) => haystack.includes(w)).length;
@@ -229,6 +308,9 @@ async function rank(env, cfg, text) {
     })
     .filter((r) => r.score >= cfg.minScore)
     .sort((a, b) => b.score - a.score);
+  // other sources (product docs) only when nothing on the site matches
+  const onSite = ranked.filter((r) => r.page.site);
+  return onSite.length ? onSite : ranked;
 }
 
 /* ---- request handling ---- */
@@ -301,7 +383,7 @@ async function search(request, env, cfg) {
     totalResults: ranked.length,
     cursor: next < ranked.length ? String(next) : null,
     results: ranked.slice(offset, next).map(({ page, score }) => ({
-      id: page.path,
+      id: page.id,
       score: Math.round(score * 1000) / 1000,
       data: { source: page.url, title: page.title, metadata: metadata(page) },
     })),
@@ -309,9 +391,12 @@ async function search(request, env, cfg) {
 }
 
 function answerMessages(text, sources, texts) {
+  // sources are either all site pages or, when nothing on the site matched, all docs
+  const docs = !sources[0]?.page.site;
   const context = sources.map(({ page }, i) => [
     `[${i + 1}] ${page.title}`,
     `URL: ${page.url}`,
+    page.label && `From: ${page.label}`,
     page.description && `Summary: ${page.description}`,
     page.keywords && `Topics: ${page.keywords}`,
     texts[i] && `Page text:\n${texts[i]}`,
@@ -320,7 +405,10 @@ function answerMessages(text, sources, texts) {
     {
       role: 'system',
       content: 'You answer questions about a demo website and its documentation. '
-        + 'Use only the numbered sources. Answer in two to four short sentences, or a short '
+        + 'Use only the numbered sources. '
+        + (docs ? 'These sources are general product documentation, not the demo site: start the '
+          + 'answer with "From the product documentation:". ' : '')
+        + 'Answer in two to four short sentences, or a short '
         + 'bullet list for steps. Link every page you rely on as a Markdown link [title](URL), '
         + 'copying the URL exactly. If the sources do not answer the question, say so in one '
         + 'sentence and link the closest source. Do not invent pages, links or features.',
@@ -333,7 +421,7 @@ async function gensearch(request, env, cfg) {
   const { text } = await readQuery(request);
   const sources = (await rank(env, cfg, text)).slice(0, ANSWER_SOURCES);
   if (!sources.length) return { query: text, result: '', hits: [] };
-  const texts = await Promise.all(sources.slice(0, TEXT_SOURCES).map(({ page }) => pageText(cfg, page)));
+  const texts = await Promise.all(sources.slice(0, TEXT_SOURCES).map(({ page }) => pageText(page)));
   let out;
   try {
     out = await env.AI.run(cfg.answerModel, {
@@ -350,7 +438,7 @@ async function gensearch(request, env, cfg) {
   const linked = new Set([...result.matchAll(/\]\((https?:\/\/[^\s)]+)\)/g)].map((m) => m[1]));
   const cited = sources.filter(({ page }) => linked.has(page.url));
   const hits = (cited.length ? cited : sources.slice(0, FALLBACK_HITS))
-    .map(({ page }) => ({ id: page.path, metadata: metadata(page) }));
+    .map(({ page }) => ({ id: page.id, metadata: metadata(page) }));
   return { query: text, result, hits };
 }
 
