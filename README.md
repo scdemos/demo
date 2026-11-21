@@ -33,7 +33,7 @@ The agent then:
 
 **One-time admin setup:** set the CloneIt worker secrets (`ADOBE_CLIENT_ID`, `ADOBE_CLIENT_SECRET`, and
 `GITHUB_PROVISION_TOKEN`, required to create demos: a classic PAT of an `scdemos` org owner or bot with the `repo` and
-`read:org` scopes, plus `admin:org` only when `SC_TEAM` is set) and optionally `SC_TEAM` in `workers/cloneit_token/wrangler.toml`. See [`tools/cloneit/README.md`](tools/cloneit/README.md).
+`read:org` scopes, plus `admin:org` only when `GITHUB_TEAM` is set) and optionally `GITHUB_TEAM` in `workers/cloneit_token/wrangler.toml`. See [`tools/cloneit/README.md`](tools/cloneit/README.md).
 The issue-based [provisioning workflow](.github/workflows/provision-demo.yaml) remains as a fallback (`DEMO_PROVISION_TOKEN`).
 
 **SC guide:** [`.skills/customer-demo/SC-QUICKSTART.md`](.skills/customer-demo/SC-QUICKSTART.md), a one-pager on running a demo build well.

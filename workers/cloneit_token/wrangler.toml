@@ -18,11 +18,12 @@ ALLOWED_EMAIL_DOMAINS = "adobe.com"
 IMS_CLIENT_IDS = "darkalley"
 # Standalone lane: template repo; the requesting SC (GitHub username) becomes repo admin.
 TEMPLATE_REPO = "scdemos/demo"
-# SC_TEAM = "solution-consultants"   # optional team slug: requester must be in it, and it gets push on new repos;
-#                                     # when unset, scdemos org membership is required and only the requester (admin) gets access
+# The demo's GitHub group (team slug): the requester must be in it (people join through the access app,
+# da.live/app/scdemos/demo/tools/access/access), and it gets push on new repos. When unset, scdemos org membership is enough.
+GITHUB_TEAM = "sc-team"
 CODE_SYNC_INSTALLATION_ID = "180300339"   # AEM Code Sync on scdemos (org settings → GitHub Apps); auto-discovered when unset
 # Secrets (wrangler secret put …): ADOBE_CLIENT_ID, ADOBE_CLIENT_SECRET, GITHUB_PROVISION_TOKEN
-#   GITHUB_PROVISION_TOKEN: classic PAT of an scdemos org OWNER/bot (scopes: repo, read:org; + admin:org only with SC_TEAM;
+#   GITHUB_PROVISION_TOKEN: classic PAT of an scdemos org OWNER/bot (scopes: repo, read:org; + admin:org only with GITHUB_TEAM;
 #   authorize for SSO if enforced). Without it the
 #   standalone lane is disabled and only repoless clones are offered.
 

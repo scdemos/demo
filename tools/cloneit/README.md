@@ -83,7 +83,7 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 | AEM Admin | `POST /preview|live/scdemos/{site}/main/*`, `GET /job/…/details` | Bulk preview + publish of every copied path |
 | DA Admin | `GET/POST /source/scdemos/demo-registry/demos.json` | Registry row (best effort) |
 | CloneIt worker | `POST …/whoami` | Verifies the signed-in user; tells the UI whether demo creation is enabled |
-| CloneIt worker | `POST …/standalone` | Own repo: create `scdemos/<site>` from `TEMPLATE_REPO`, add it to the AEM Code Sync installation (auto-discovered), make the requester's GitHub user admin, grant `SC_TEAM` push (if set) |
+| CloneIt worker | `POST …/standalone` | Own repo: create `scdemos/<site>` from `TEMPLATE_REPO`, add it to the AEM Code Sync installation (auto-discovered), make the requester's GitHub user admin, grant `GITHUB_TEAM` push (if set) |
 | CloneIt worker | `POST …/permissions` | Appends `/<site>/CONFIG` and `/<site>/**` (`write`, the caller's email from their IMS token) to the org's DA permissions sheet, and adds the email to the existing `write` rows for `CONFIG` and `/<template>/+**` (skipped when those rows don't exist). Only for a demo the caller requested: the repo `scdemos/<site>` that `/standalone` created (topic `customer-demo`, description ending `(requested by <email>)`); never the template. Needs `GITHUB_PROVISION_TOKEN`. Appends at the end of the sheet and re-reads to check (if two writes overlap, the last one wins); rows already there aren't duplicated |
 | CloneIt worker | `POST …/` | Readiness ping (the technical account's token never leaves the worker) |
 | CloneIt worker | `POST …/cloneprocess` | **Helix + DA Admin** clone calls — worker adds the technical account's token and forwards to allowlisted paths only (`/config/{org}/sites/…` and `/code|preview|live|job|status/{org}/{site}/…` on Helix; `/list|copy|source/{org}/…` and site configs `/config/{org}/{site}` on DA; never the org config `/config/{org}/`, which holds the permissions sheet). The browser never stores an API token for those requests. |
@@ -100,7 +100,7 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
   check is a browser convenience, not authentication (it can be spoofed outside a browser).
 - **What the worker uses:** a technical account (OAuth **client_credentials**: `ADOBE_CLIENT_ID`,
   `ADOBE_CLIENT_SECRET`) for Admin/DA calls, and `GITHUB_PROVISION_TOKEN` (classic PAT of an `scdemos`
-  org owner/bot; scopes `repo`, `read:org`, plus `admin:org` only when `SC_TEAM` is set) to create demo repos. Adding a repo to the AEM Code Sync
+  org owner/bot; scopes `repo`, `read:org`, plus `admin:org` only when `GITHUB_TEAM` is set) to create demo repos. Adding a repo to the AEM Code Sync
   installation requires that user token; the installation id is discovered automatically.
   Without `GITHUB_PROVISION_TOKEN`, CloneIt says demo creation isn't enabled yet.
 - The browser reads the user's IMS token with **DA_SDK** (`https://da.live/nx/utils/sdk.js`); nothing else is stored.
@@ -112,7 +112,7 @@ wrangler secret put ADOBE_CLIENT_ID --config workers/cloneit_token/wrangler.toml
 wrangler secret put ADOBE_CLIENT_SECRET --config workers/cloneit_token/wrangler.toml
 wrangler secret put GITHUB_PROVISION_TOKEN --config workers/cloneit_token/wrangler.toml   # required to create demos
 ```
-Optionally set `SC_TEAM` in `wrangler.toml`: that team must contain the requester and gets push on every new demo repo
+`GITHUB_TEAM` in `wrangler.toml` (`sc-team`) is the demo's GitHub group: the requester must be in it (people join through the access app) and it gets push on every new demo repo
 (without it, `scdemos` org membership is checked and only the requester gets access, as admin). The technical account must keep a role on new sites:
 CloneIt copies `scdemos/demo`'s `@techacct.adobe.com` role entries into each new site config.
 
