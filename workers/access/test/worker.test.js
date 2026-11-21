@@ -42,7 +42,7 @@ function fakeServices({
     if (u.includes('/ims/profile')) return Response.json({ email, first_name: 'Sam', last_name: 'Chen' });
     if (u.includes('/ims/token/v3')) return Response.json({ access_token: 'tech', expires_in: 3600 });
     if (u.startsWith('https://api.github.com/users/')) return ghUser ? Response.json({ login: 'Sam-C' }) : new Response('{}', { status: 404 });
-    if (u.includes('/teams/sc-team/memberships/')) return new Response(JSON.stringify({ state: 'pending' }), { status: teamStatus });
+    if (u.includes('/teams/sc-team/memberships/')) return new Response(JSON.stringify(teamStatus === 200 ? { state: 'pending' } : { message: 'Resource not accessible by personal access token' }), { status: teamStatus });
     if (u.includes('usermanagement.adobe.io')) return Response.json(umapi);
     if (u.includes('admin.da.live/source/') && method === 'GET') return Response.json(sheet);
     if (u.includes('admin.da.live/source/') && method === 'PUT') { if (lost > 0) { lost -= 1; return new Response('', { status: 200 }); } sheet = JSON.parse(await init.body.get('data').text()); return new Response('', { status: 200 }); }
@@ -117,6 +117,13 @@ describe('grantAccess', () => {
     expect(cmd.do[0].createFederatedID).toMatchObject({ email: 'sc@adobe.com', firstname: 'Sam', lastname: 'Chen', option: 'ignoreIfAlreadyExists' });
     expect(cmd.do[1]).toEqual({ add: { group: ['da-demosite-authors'] } });
     expect(svc.calls.some((c) => c.url.includes('admin.da.live'))).toBe(false);
+  });
+
+  it('passes on why GitHub refused', async () => {
+    const svc = fakeServices({ teamStatus: 403 });
+    const r = await grantAccess(user, 'sam-c', env, svc.fetchImpl);
+    expect(r.steps[0]).toEqual({ step: 'github', ok: false, error: 'github_team_add_failed_403: Resource not accessible by personal access token' });
+    expect(r.steps[1].ok).toBe(true);
   });
 
   it('reports each failing step without hiding the other', async () => {
