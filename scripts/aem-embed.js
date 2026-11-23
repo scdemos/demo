@@ -100,6 +100,10 @@ export class AEMEmbed extends HTMLElement {
     main.innerHTML = htmlText;
 
     const scriptsModule = await import(`${origin}${window.hlx.codeBasePath}/scripts/scripts.js`);
+    // product pages: the embedded page has only the authored part; the product itself is loaded here
+    if (scriptsModule.buildProductPage) {
+      await scriptsModule.buildProductPage(main, new URL(this.getAttribute('url'), origin));
+    }
     if (scriptsModule.decorateMain) {
       await scriptsModule.decorateMain(main, true);
     }

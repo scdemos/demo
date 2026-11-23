@@ -726,15 +726,19 @@ async function collectAllFilePaths(basePath, files, baselineSite) {
 /**
  * Copied pages and sheets keep absolute links to the template's DA content (images in /media/, hidden
  * per-page asset folders, …). That content needs a sign-in, so the new site's preview can't load it:
- * point every such link at the new site's copy instead.
+ * point every such link at the new site's copy instead. Absolute links to the template's aem.page, aem.live
+ * and aem.network hosts are pointed at the new site's too.
  */
 async function rewriteBaselineContentRefs(sourcePath, newSiteName, baselineSite) {
   const response = await cloneitProcessFetch('da', Paths.daSource(newSiteName, sourcePath));
   if (!response.ok) return;
   const original = await response.text();
-  const from = `https://content.da.live/${ORG}/${baselineSite}/`;
-  if (!original.includes(from)) return;
-  const rewritten = original.split(from).join(`https://content.da.live/${ORG}/${newSiteName}/`);
+  // DA content links, and absolute links to the template's own hosts (e.g. a catalog reading
+  // https://main--demo--scdemos.aem.network/en/products/index.json), so the demo uses its own
+  const rewritten = original
+    .split(`https://content.da.live/${ORG}/${baselineSite}/`).join(`https://content.da.live/${ORG}/${newSiteName}/`)
+    .replace(new RegExp(`(//[a-z0-9-]+--)${baselineSite}(--${ORG}\\.aem\\.(?:page|live|network)\\b)`, 'g'), `$1${newSiteName}$2`);
+  if (rewritten === original) return;
   await createDaSource(newSiteName, sourcePath, rewritten);
 }
 

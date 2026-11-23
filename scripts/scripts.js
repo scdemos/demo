@@ -168,6 +168,8 @@ function inlineColorIcons(scope) {
   const icons = scope.querySelectorAll('.icon.icon-logo img[src$=".svg"]');
   icons.forEach(async (img) => {
     try {
+      // only the site's own icons are inlined: an SVG from elsewhere could carry script
+      if (new URL(img.src).origin !== window.location.origin) return;
       const resp = await fetch(img.src);
       if (!resp.ok) return;
       const text = await resp.text();
@@ -550,6 +552,109 @@ export function startMartech(consent, personalization) {
   return ready;
 }
 
+/**
+ * Product pages (/en/products/<id>). Edge Commerce renders them on aem.network and production hosts:
+ * a first section with the name, price and images, then the product's description (a product-detail
+ * block) and any page authored at the same path. That first section is folded into the block. Other
+ * hosts (aem.page, aem.live, DA previews, the app) serve only the authored page, so the product is
+ * loaded and the same block built here. See scripts/products.js.
+ */
+// Product descriptions come from Edge Commerce or the products sheet: only plain content markup is kept
+const SAFE_TAGS = new Set(['DIV', 'P', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'B', 'I',
+  'U', 'S', 'SUB', 'SUP', 'BR', 'HR', 'SPAN', 'A', 'PICTURE', 'SOURCE', 'IMG', 'TABLE', 'THEAD', 'TBODY', 'TR',
+  'TH', 'TD', 'BLOCKQUOTE', 'CODE', 'PRE']);
+const SAFE_ATTRS = new Set(['class', 'href', 'src', 'srcset', 'alt', 'title', 'width', 'height', 'type', 'media',
+  'colspan', 'rowspan']);
+const URL_ATTRS = new Set(['href', 'src', 'srcset']);
+const safeUrl = (value) => !value.includes('\\') && /^(https?:\/\/|\/(?![/])|\.\/|#|mailto:|tel:)/i.test(value.trim());
+
+function safeFragment(html) {
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html;
+  // children before parents, so removing an element never skips one
+  [...tpl.content.querySelectorAll('*')].reverse().forEach((el) => {
+    if (!SAFE_TAGS.has(el.tagName)) {
+      el.remove();
+      return;
+    }
+    // the description is one product-detail block: any other class could turn markup into another
+    // block (a fragment, an icon) that loads content from elsewhere
+    if (el.hasAttribute('class')) {
+      if (el.classList.contains('product-detail')) el.setAttribute('class', 'product-detail');
+      else el.removeAttribute('class');
+    }
+    [...el.attributes].forEach(({ name, value }) => {
+      const urls = name === 'srcset' ? value.split(',').map((part) => part.trim().split(/\s+/)[0] || '') : [value];
+      const keep = SAFE_ATTRS.has(name) && (!URL_ATTRS.has(name) || urls.every(safeUrl));
+      if (!keep) el.removeAttribute(name);
+    });
+  });
+  return tpl.content;
+}
+
+function productPicture({ url, label }) {
+  const picture = document.createElement('picture');
+  const src = (params) => {
+    const u = new URL(url);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    return u.href;
+  };
+  const source = document.createElement('source');
+  source.type = 'image/webp';
+  source.srcset = src({ width: 750, format: 'webply', optimize: 'medium' });
+  const img = document.createElement('img');
+  img.src = src({ width: 750, format: 'jpg', optimize: 'medium' });
+  img.alt = label || '';
+  picture.append(source, img);
+  return picture;
+}
+
+function foldProductHero(hero, block) {
+  const media = block.firstElementChild?.firstElementChild;
+  const h1 = hero.querySelector('h1');
+  if (media) hero.querySelectorAll('picture').forEach((picture) => media.append(picture));
+  const h2 = block.querySelector('h2');
+  if (h1 && h2) h2.replaceWith(h1);
+  hero.remove();
+}
+
+/**
+ * @param {Element} main
+ * @param {URL|Location} [page] the page's address; an embed (aem-embed) passes the embedded page's
+ */
+export async function buildProductPage(main, page = window.location) {
+  const { pathname } = page;
+  if (!/^\/[a-z]{2}\/products\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname)) return;
+  const block = main.querySelector(':scope > div > .product-detail');
+  const hero = main.querySelector(':scope > div:first-child');
+  if (page === window.location && document.head.querySelector('meta[name="sku"]')) {
+    if (block && hero?.querySelector(':scope > h1')) foldProductHero(hero, block);
+    // a buy panel also authored on the page at the product's path: the product's own one is shown
+    [...main.querySelectorAll(':scope > div > .product-detail')].slice(1).forEach((extra) => {
+      const section = extra.parentElement;
+      extra.remove();
+      if (!section.children.length) section.remove();
+    });
+    return;
+  }
+  if (block) return; // a product page authored in full
+  const { loadProduct } = await import('./products.js');
+  const product = await loadProduct(pathname, page);
+  if (!product) return;
+  const section = document.createElement('div');
+  section.append(safeFragment(product.description));
+  const built = section.querySelector('.product-detail');
+  if (!built) return;
+  built.dataset.page = pathname;
+  const top = document.createElement('div');
+  const h1 = document.createElement('h1');
+  h1.textContent = product.name;
+  top.append(h1, ...(product.images || []).map(productPicture));
+  main.prepend(top, section);
+  foldProductHero(top, built);
+  if (page === window.location && !document.title.trim()) document.title = product.name;
+}
+
 async function loadEager(doc) {
   document.documentElement.lang = getMarket().lang;
   decorateTemplateAndTheme();
@@ -565,6 +670,7 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     await runExperimentation(doc, EXPERIMENTATION_CONFIG);
+    await buildProductPage(main);
     decorateMain(main);
     // Re-decorate EDS block markup that a Target offer injects after decoration has
     // already run (e.g. a replaceHtml offer that brings in authored block HTML). Started
