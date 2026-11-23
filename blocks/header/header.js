@@ -36,6 +36,7 @@ const ICON_PATHS = {
   linkedin: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 10.5V16M8 7.8h.01M11.5 16v-5.5M11.5 13c0-1.5 1-2.6 2.4-2.6s2.1 1 2.1 2.6V16"/>',
   youtube: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="m10 9.2 5 2.8-5 2.8Z"/>',
   link: '<path d="M7 17 17 7M8 7h9v9"/>',
+  bag: '<path d="M5.5 8h13l-1 12.5h-11L5.5 8Z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/>',
   sparkle: '<path d="M12 3.5 13.9 9l5.6 2-5.6 2L12 18.5 10.1 13l-5.6-2 5.6-2Z"/><path d="M18.5 3v3M17 4.5h3"/>',
 };
 
@@ -423,6 +424,23 @@ export default async function decorate(block) {
           dismiss: labels['dont-show-again'] || "Don't show this again",
         },
       }));
+    } else if (/\/cart\/?$/.test(new URL(a.href, window.location.href).pathname)) {
+      /* a link to the cart page: the cart icon with its item count */
+      const cartLink = createTag('a', { class: 'header-icon-btn header-cart', href: authoredHref(a) });
+      cartLink.innerHTML = icon('bag');
+      const badge = createTag('span', { class: 'header-cart-count', 'aria-hidden': 'true' });
+      cartLink.append(badge);
+      actions.append(cartLink);
+      import('../../scripts/cart.js').then(({ cartCount, onCartChange }) => {
+        const sync = () => {
+          const n = cartCount();
+          badge.textContent = n ? String(n) : '';
+          badge.hidden = !n;
+          cartLink.setAttribute('aria-label', n ? `${label} (${n})` : label);
+        };
+        sync();
+        onCartChange(sync);
+      });
     } else if (a.querySelector('.icon-search') || /search/i.test(`${a.getAttribute('href')} ${label}`)) {
       const search = createTag('a', { class: 'header-icon-btn header-search', href: authoredHref(a), 'aria-label': label });
       search.innerHTML = icon('search');

@@ -7,7 +7,9 @@
 
 export const PRODUCTS_ROOT = '/en/products';
 export const PRODUCTS_SHEET = '/en/data/products.json';
-export const LABELS_SHEET = '/en/data/product-labels.json';
+// the words the shop shows (brand, rating format, plan labels, cart, checkout): the default market's
+// placeholders sheet (Key, Text). Other markets add their own, e.g. /de/placeholders.
+export const LABELS_SHEET = '/en/placeholders.json';
 export const INDEX_PATH = `${PRODUCTS_ROOT}/index.json`;
 export const COMMERCE_API = 'https://api.adobecommerce.live';
 // the catalog every demo shows: the main demo's
@@ -176,9 +178,12 @@ export function sheetRows(json) {
   return Array.isArray(json?.[first]?.data) ? json[first].data : [];
 }
 
-/** Labels from a key/value sheet. */
+/** Labels from a placeholders sheet: Key and Text columns (any case; Value also reads as Text). */
 export function sheetLabels(json) {
-  return Object.fromEntries(sheetRows(json).map((r) => [text(r.key), text(r.value)]).filter(([k]) => k));
+  return Object.fromEntries(sheetRows(json).map((r) => {
+    const row = Object.fromEntries(Object.entries(r).map(([k, v]) => [k.toLowerCase(), text(v)]));
+    return [row.key, row.text || row.value || ''];
+  }).filter(([k, v]) => k && v));
 }
 
 /* ---------- browser ---------- */

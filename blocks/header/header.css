@@ -389,6 +389,32 @@ header:has(> .header) {
   grid-area: 1 / 1;
 }
 
+/* Cart: the item count on the bag icon */
+.header .header-cart {
+  position: relative;
+}
+
+.header .header-cart-count {
+  position: absolute;
+  top: 0.2rem;
+  right: 0.1rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-fill);
+  color: var(--color-on-accent);
+  font-size: 0.7rem;
+  font-weight: var(--weight-bold);
+  line-height: 0.85rem;
+  text-align: center;
+}
+
+.header .header-cart-count[hidden] {
+  display: none;
+}
+
 /* What's new button: a dot while something new hasn't been dismissed */
 .header .header-news {
   position: relative;
