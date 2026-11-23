@@ -3,7 +3,7 @@
  * https://www.aem.live/developer/cmp-integration
  *
  * Shows the CookieConsent banner (plugins/cookieconsent, MIT), tells the page about the
- * visitor's choice with a `consent.update` event and loads consented.js (martech, Launch)
+ * visitor's choice with a `consent.update` event and loads consented.js (martech, Launch, GA/GTM)
  * once analytics is accepted. Banner text comes from scripts/consent/{lang}.json.
  *
  * `?consent=accept` or `?consent=decline` skips the banner for one page view.
@@ -22,12 +22,15 @@ const CATEGORIES = {
   necessary: { enabled: true, readOnly: true },
   analytics: {
     autoClear: {
-      cookies: [{ name: /^AMCVS?_/ }, { name: /^kndctr_/ }, { name: /^s_/ }, { name: /^demdex/ }],
+      cookies: [
+        { name: /^AMCVS?_/ }, { name: /^kndctr_/ }, { name: /^s_/ }, { name: /^demdex/ },
+        { name: /^_ga/ }, { name: /^_gid$/ },
+      ],
     },
   },
   targeting: {
     autoClear: {
-      cookies: [{ name: /^mbox/ }, { name: /^at_/ }],
+      cookies: [{ name: /^mbox/ }, { name: /^at_/ }, { name: /^_gcl_/ }],
     },
   },
 };
@@ -127,7 +130,8 @@ async function initConsent() {
     revision: CONSENT.revision,
     cookie: { name: CONSENT.cookie },
     guiOptions: {
-      consentModal: { layout: 'box', position: 'bottom right', equalWeightButtons: true },
+      // a bar across the bottom: the page stays usable without choosing
+      consentModal: { layout: 'bar inline', position: 'bottom', equalWeightButtons: true },
       preferencesModal: { layout: 'box', equalWeightButtons: true },
     },
     categories: CATEGORIES,
@@ -138,6 +142,8 @@ async function initConsent() {
     onConsent: () => applyConsent(current()),
     onChange: async ({ changedCategories }) => {
       const withdrawn = changedCategories.filter((c) => !CookieConsent.acceptedCategory(c));
+      // targeting needs analytics (see current()), so its cookies go with it
+      if (withdrawn.includes('analytics') && !withdrawn.includes('targeting')) withdrawn.push('targeting');
       try {
         await applyConsent(current());
       } catch { /* the withdrawal below must happen regardless */ }
@@ -155,6 +161,15 @@ async function initConsent() {
       window.location.reload();
     },
   });
+
+  // The bar covers the bottom of the page while it's open: room for it below the footer keeps
+  // everything reachable (consent.css pads the page by this height while the bar shows).
+  const bar = document.querySelector('#cc-main .cm');
+  if (bar) {
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--consent-bar-height', `${bar.offsetHeight}px`);
+    }).observe(bar);
+  }
 
   addPreferencesLink(config.text.preferencesLink, CookieConsent.showPreferences);
 }

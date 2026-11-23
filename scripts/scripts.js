@@ -504,6 +504,8 @@ function watchForTargetInjectedBlocks(main) {
 }
 
 let martechStarted = false;
+// a saved choice that accepts analytics, so loadLazy starts Google
+let gtmConsent = null;
 
 /** Whether martech (Web SDK, data layer, Launch) runs on this page view. */
 export function isMartechStarted() {
@@ -672,6 +674,8 @@ async function loadEager(doc) {
   const consent = IS_EDITOR ? null : getStoredConsent();
   const personalizationEnabled = !!getMetadata('target') && !!consent?.targeting;
   const martechLoadedPromise = consent?.analytics && startMartech(consent, personalizationEnabled);
+  // Google runs on the same choice, from loadLazy; see gtm-martech.js
+  if (consent?.analytics) gtmConsent = consent;
 
   const main = doc.querySelector('main');
   if (main) {
@@ -732,7 +736,15 @@ async function loadLazy(doc) {
   if (hash && element) element.scrollIntoView();
 
   loadFooter(footerEl);
-  if (martechStarted) await martechLazy();
+  // a failed Adobe phase must not stop Google or the rest of the page
+  if (martechStarted) await martechLazy().catch(() => {});
+  // GA4, then the lazy GTM containers; awaited on its own, after the sections
+  if (gtmConsent) {
+    try {
+      const gtm = await import('./gtm-martech.js');
+      if (await gtm.startGtm(gtmConsent)) await gtm.gtmLazy();
+    } catch { /* a failed tag must not stop the rest of the page */ }
+  }
 
   if (!IS_EDITOR && getMetadata('site-gate')) {
     loadCSS(`${window.hlx.codeBasePath}/styles/notices.css`);

@@ -1,6 +1,7 @@
 import {
   toCamelCase, toClassName, buildBlock, decorateBlock, loadBlock,
 } from '../../scripts/aem.js';
+import { trackEvent } from '../../scripts/shared.js';
 
 const DEFAULT_MESSAGES = {
   sending: 'Sending...',
@@ -307,9 +308,11 @@ async function handleSubmit(form, messages) {
     setStatus(messages.success, 'success');
     form.reset();
   };
+  const sent = () => trackEvent('generate_lead', { lead_source: 'form' });
 
   if (!form.dataset.action) {
     succeed();
+    sent();
     return;
   }
 
@@ -326,6 +329,7 @@ async function handleSubmit(form, messages) {
     const replaced = form.dataset.confirmation
       && await replaceWithThankYou(form, form.dataset.confirmation);
     if (!replaced) succeed();
+    sent();
   } catch (error) {
     setStatus(messages.error, 'error');
     console.error('form: submission failed', error);

@@ -1,5 +1,5 @@
 import { getMetadata, toClassName } from '../../scripts/aem.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent } from '../../scripts/shared.js';
 import { addSchema } from '../../scripts/schema.js';
 
 const CONFIG_KEYS = [
@@ -283,6 +283,7 @@ async function buildAddToCart(block, cfg, contentCell, page) {
     period: contentCell.querySelector('.product-detail-price small')?.textContent.trim() || '',
     image: img ? absoluteUrl(img.currentSrc || img.getAttribute('src')) : '',
   };
+  trackEvent('view_item', { ecommerce: cart.ecommerce([{ ...product, quantity: 1 }]) });
 
   const button = createTag('button', { type: 'button', class: 'button primary product-detail-add' }, labels['add-to-cart']);
   const status = createTag('p', { class: 'product-detail-added', role: 'status' });
