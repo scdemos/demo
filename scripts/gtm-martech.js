@@ -1,6 +1,6 @@
 /*
  * Google Analytics 4 and Google Tag Manager through the aem-gtm-martech plugin, phased like the
- * page: GA4 in the eager phase, the first GTM container in the lazy phase, third-party
+ * page: GA4, then the first GTM container in the lazy phase (after the sections), third-party
  * containers in the delayed phase. https://www.aem.live/developer/gtm-martech-integration
  *
  * Only imported for a visitor who accepted analytics (scripts.js for a saved choice,
@@ -9,14 +9,36 @@
 import GtmMartech from '../plugins/gtm-martech/src/index.js';
 import { onTrackEvent, trackEvent } from './shared.js';
 
-// GA4 measurement ID(s), loaded in the eager phase, and GTM containers by phase. With none of
+// GA4 measurement ID(s), loaded first, and GTM containers by phase. With none of
 // them, Google stays off.
-const TAGS = [];
+const TAGS = ['G-4JJTK5G07Z'];
 const CONTAINERS = {
   lazy: ['GTM-5MWZL5HH'],
   delayed: [],
 };
+const DATA_LAYER = 'gtmDataLayer';
 const CONFIGURED = TAGS.length > 0 || CONTAINERS.lazy.length > 0 || CONTAINERS.delayed.length > 0;
+
+// URL parameters GA4 may see: campaign attribution only. Others (e.g. the booking form's
+// email, phone and name prefill) can carry personal data.
+const KEEP_PARAMS = /^(utm_\w+|gclid|gbraid|wbraid|dclid)$/;
+
+/**
+ * A URL without its hash and without parameters that aren't in KEEP_PARAMS.
+ * @param {string} href
+ * @returns {string}
+ */
+function cleanUrl(href) {
+  if (!href) return '';
+  try {
+    const url = new URL(href);
+    [...url.searchParams.keys()].forEach((k) => { if (!KEEP_PARAMS.test(k)) url.searchParams.delete(k); });
+    url.hash = '';
+    return url.href;
+  } catch {
+    return '';
+  }
+}
 
 let gtm;
 const done = new Set();
@@ -58,7 +80,8 @@ export function googleConsent({ analytics, targeting }) {
 }
 
 /**
- * Sets up GA4 for a visitor who accepted analytics and loads it (eager phase).
+ * Sets up GA4 for a visitor who accepted analytics and loads it (scripts.js calls it in the lazy
+ * phase, so Google's library never competes with the first section).
  * Safe to call more than once.
  * @param {{analytics: boolean, targeting: boolean}} consent the visitor's choice
  * @returns {Promise<boolean>} whether Google runs on this page view
@@ -67,9 +90,17 @@ export async function startGtm(consent) {
   if (!CONFIGURED || !consent?.analytics) return false;
   allowed = true;
   if (!gtm) {
+    TAGS.forEach((id) => { window[`ga-disable-${id}`] = false; });
+    // Every GA4 hit gets the cleaned page and referrer URLs, queued ahead of the plugin's config
+    window[DATA_LAYER] = window[DATA_LAYER] || [];
+    (function () { window[DATA_LAYER].push(arguments); }('set', {
+      page_location: cleanUrl(window.location.href),
+      page_referrer: cleanUrl(document.referrer),
+    }));
     gtm = new GtmMartech({
       tags: TAGS,
       containers: CONTAINERS,
+      dataLayerInstanceName: DATA_LAYER,
     });
     // The plugin defaults consent to denied; the visitor already chose, so update it before
     // GA4 loads and sends the first page_view.
@@ -107,5 +138,7 @@ export const gtmDelayed = () => runPhase('delayed');
  */
 export function updateGtmConsent(consent) {
   allowed = !!consent.analytics;
+  // Google's own switch: stops GA4 (automatic events too) at once, before the page reloads
+  TAGS.forEach((id) => { window[`ga-disable-${id}`] = !allowed; });
   gtm?.updateUserConsent(googleConsent(consent));
 }

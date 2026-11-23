@@ -504,8 +504,8 @@ function watchForTargetInjectedBlocks(main) {
 }
 
 let martechStarted = false;
-// gtm-martech.js, imported for a visitor whose saved choice accepts analytics
-let gtmReady = null;
+// a saved choice that accepts analytics, so loadLazy starts Google
+let gtmConsent = null;
 
 /** Whether martech (Web SDK, data layer, Launch) runs on this page view. */
 export function isMartechStarted() {
@@ -674,13 +674,8 @@ async function loadEager(doc) {
   const consent = IS_EDITOR ? null : getStoredConsent();
   const personalizationEnabled = !!getMetadata('target') && !!consent?.targeting;
   const martechLoadedPromise = consent?.analytics && startMartech(consent, personalizationEnabled);
-  // Google (GA4 now, GTM containers in loadLazy) runs on the same choice; see gtm-martech.js.
-  // Started, not awaited, so it never holds up the eager phase.
-  if (consent?.analytics) {
-    gtmReady = import('./gtm-martech.js')
-      .then(async (gtm) => ((await gtm.startGtm(consent)) ? gtm : null))
-      .catch(() => null);
-  }
+  // Google runs on the same choice, from loadLazy; see gtm-martech.js
+  if (consent?.analytics) gtmConsent = consent;
 
   const main = doc.querySelector('main');
   if (main) {
@@ -741,9 +736,15 @@ async function loadLazy(doc) {
   if (hash && element) element.scrollIntoView();
 
   loadFooter(footerEl);
-  if (martechStarted) await martechLazy();
-  // awaited on its own: the plugin looks for loaded sections and blocks when it starts
-  if (gtmReady) await (await gtmReady)?.gtmLazy().catch(() => {});
+  // a failed Adobe phase must not stop Google or the rest of the page
+  if (martechStarted) await martechLazy().catch(() => {});
+  // GA4, then the lazy GTM containers; awaited on its own, after the sections
+  if (gtmConsent) {
+    try {
+      const gtm = await import('./gtm-martech.js');
+      if (await gtm.startGtm(gtmConsent)) await gtm.gtmLazy();
+    } catch { /* a failed tag must not stop the rest of the page */ }
+  }
 
   if (!IS_EDITOR && getMetadata('site-gate')) {
     loadCSS(`${window.hlx.codeBasePath}/styles/notices.css`);
