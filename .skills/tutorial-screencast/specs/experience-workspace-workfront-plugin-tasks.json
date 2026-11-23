@@ -1,0 +1,139 @@
+{
+  "slug": "experience-workspace-workfront-plugin-tasks",
+  "steps": [
+    {
+      "do": "openPage",
+      "path": "/en/index"
+    },
+    {
+      "do": "closeChat"
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "Experience Workspace · Workfront",
+      "title": "Workfront tasks right where you edit",
+      "items": [
+        "1 · Open Workfront beside the page",
+        "2 · Read the task and brief for this page",
+        "3 · Hand the brief to the assistant",
+        "4 · Post an update and complete the task",
+        "5 · The same view as a full-screen app"
+      ]
+    },
+    {
+      "do": "openPanel",
+      "name": "Workfront",
+      "n": 1,
+      "caption": "**Panels** › **Workfront** opens next to the page"
+    },
+    {
+      "do": "framePoint",
+      "frame": "workfront",
+      "n": 1,
+      "hold": 1800,
+      "caption": "**This page** lists the Workfront work linked to this page",
+      "text": "This page"
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Task: Write hero copy",
+      "exact": false,
+      "n": 2,
+      "caption": "Open the task: status, owner, due date and priority"
+    },
+    {
+      "do": "framePoint",
+      "frame": "workfront",
+      "text": "Headline + 2 lines of supporting copy",
+      "exact": false,
+      "n": 2,
+      "hold": 2000,
+      "caption": "The **Brief** says what to write"
+    },
+    {
+      "do": "framePoint",
+      "frame": "workfront",
+      "text": "needs a punchier CTA",
+      "exact": false,
+      "n": 2,
+      "hold": 2000,
+      "caption": "The requester's note: the CTA needs more punch"
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Copy to chat",
+      "n": 3,
+      "hold": 1500,
+      "caption": "**Copy to chat** puts the brief and notes in the assistant's chat"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 2500,
+      "caption": "Ask the assistant to draft the new copy from the brief"
+    },
+    {
+      "do": "frameType",
+      "frame": "workfront",
+      "label": "New update",
+      "text": "New CTA drafted, ready for review.",
+      "n": 4,
+      "caption": "Back in Workfront, write an update for the requester"
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Post update",
+      "n": 4,
+      "hold": 1200,
+      "caption": "**Post update**: it shows in the task's notes"
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Mark complete",
+      "n": 4,
+      "hold": 600,
+      "caption": "**Mark complete**: the task is done at 100%"
+    },
+    {
+      "do": "framePoint",
+      "frame": "workfront",
+      "text": "Task completed (demo only)",
+      "exact": false,
+      "n": 4,
+      "hold": 2000,
+      "caption": "**Mark complete**: the task is done at 100%"
+    },
+    {
+      "do": "openApp",
+      "name": "Workfront",
+      "n": 5,
+      "caption": "The same view as an app: **Apps** › **Workfront**"
+    },
+    {
+      "do": "click",
+      "n": 5,
+      "hold": 2200,
+      "caption": "**All**: every project and task for the site, full screen",
+      "text": "All"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Workfront in Experience Workspace",
+      "title": "Plan in Workfront, do the work in the page",
+      "items": [
+        "Tasks and briefs linked to the page you edit",
+        "Updates and status changes without switching tools",
+        "Demo mode: sample data, nothing is written to Workfront"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "slug": "experience-workspace-structured-content-schema-form",
+  "steps": [
+    {
+      "do": "openSchema",
+      "schema": "frescopa-app"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace \u00b7 Structured content",
+      "title": "From a schema to an authoring form",
+      "items": [
+        "1 \u00b7 Define the content in the Schema Editor",
+        "2 \u00b7 Authors get a form built from it",
+        "3 \u00b7 No block or code changes needed"
+      ]
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 2500,
+      "caption": "In the **Schema Editor**, pick the **Frescopa app** schema"
+    },
+    {
+      "do": "scroll",
+      "x": 740,
+      "y": 620,
+      "by": [
+        700,
+        700
+      ],
+      "n": 1,
+      "caption": "It lists every field: types, required fields and allowed values"
+    },
+    {
+      "do": "openForm",
+      "path": "/en/app/experience",
+      "n": 2,
+      "caption": "Documents in **/en/app** open in the form editor"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 2500,
+      "caption": "The form is built from the schema: labels, help text and dropdowns"
+    },
+    {
+      "do": "scroll",
+      "x": 540,
+      "y": 600,
+      "by": [
+        500,
+        500
+      ],
+      "n": 2,
+      "caption": "Authors fill in fields, so they can't break the app's structure"
+    },
+    {
+      "do": "pointAt",
+      "text": "Bottom tabs",
+      "n": 3,
+      "caption": "The **Outline** jumps between parts of the document",
+      "nth": 1,
+      "hold": 1800
+    },
+    {
+      "do": "endCard",
+      "kicker": "Structured content",
+      "title": "One schema, one form, valid content",
+      "items": [
+        "Schemas live in the Schema Editor (Apps)",
+        "editor.path in the config picks which folders use the form",
+        "Published documents are served as JSON"
+      ]
+    }
+  ]
+}

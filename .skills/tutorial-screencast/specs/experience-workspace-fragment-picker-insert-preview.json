@@ -1,0 +1,85 @@
+{
+  "slug": "experience-workspace-fragment-picker-insert-preview",
+  "page": "member-week-at-frescopa",
+  "steps": [
+    {
+      "do": "openFolder"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace \u00b7 Fragment Picker",
+      "title": "Reuse content with the Fragment Picker",
+      "items": [
+        "1 \u00b7 Open Panels \u203a Fragment Picker",
+        "2 \u00b7 Find and preview a fragment",
+        "3 \u00b7 Insert it and preview the page"
+      ]
+    },
+    {
+      "do": "createPage",
+      "n": 1,
+      "caption": "Create a page: **New** \u203a Page, name it, **Create**"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 1,
+      "caption": "Switch to **Content** view to write"
+    },
+    {
+      "do": "typeText",
+      "text": "Member Week at Frescopa",
+      "style": "h1",
+      "n": 1,
+      "caption": "Add a heading: type it, then **Paragraph** \u203a **Heading 1**"
+    },
+    {
+      "do": "openPlugin",
+      "name": "Fragment Picker",
+      "frame": "fragments",
+      "n": 2,
+      "caption": "Open **Panels** \u203a **Fragment Picker**"
+    },
+    {
+      "do": "pickFragment",
+      "search": "member",
+      "name": "member-week-dec39",
+      "n": 2,
+      "caption": "Search, click a fragment to preview it, then **Insert**"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 2200,
+      "caption": "The page now links to the fragment: one copy, used everywhere"
+    },
+    {
+      "do": "view",
+      "mode": "layout",
+      "n": 3,
+      "caption": "In **Layout** view the fragment shows as visitors will see it",
+      "hold": 2500
+    },
+    {
+      "do": "preview",
+      "n": 3,
+      "caption": "**Send** \u203a Preview \u203a **Update**"
+    },
+    {
+      "do": "wait",
+      "ms": 2500,
+      "caption": "The previewed page shows the campaign from the fragment"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Fragment Picker",
+      "title": "Write it once, reuse it on any page",
+      "items": [
+        "Edit the fragment and every page that uses it updates",
+        "Fragments live in /fragments, like any other document",
+        "Install the Fragment Picker from the Marketplace"
+      ]
+    }
+  ]
+}

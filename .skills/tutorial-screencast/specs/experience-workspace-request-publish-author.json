@@ -1,0 +1,67 @@
+{
+  "slug": "experience-workspace-request-publish-author",
+  "restoreAfterTest": [
+    "/en/stories/ten-cities-one-welcome.html"
+  ],
+  "steps": [
+    {
+      "do": "openPage",
+      "path": "/en/stories/ten-cities-one-welcome"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · Request Publish",
+      "title": "Ask for approval before you publish",
+      "items": [
+        "1 · Make your change",
+        "2 · Open Request Publish",
+        "3 · Describe the change and send the request"
+      ]
+    },
+    {
+      "do": "editText",
+      "where": "layout",
+      "in": "Toronto opens at",
+      "word": "7am",
+      "with": "6:30am",
+      "n": 1,
+      "caption": "Make your change: Toronto now opens at **6:30am** in winter"
+    },
+    {
+      "do": "openPlugin",
+      "name": "Request Publish",
+      "frame": "request-for-publish",
+      "n": 2,
+      "caption": "Open **Panels** › **Request Publish**"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 3000,
+      "caption": "The page, its preview link and the approver are filled in for you"
+    },
+    {
+      "do": "requestPublish",
+      "note": "Toronto House now opens at 6:30am in winter.",
+      "n": 3,
+      "caption": "Describe the change and click **Request Publish**"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 2800,
+      "caption": "The page is previewed and the approver gets an email to review it"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Request Publish",
+      "title": "Your change is waiting for approval",
+      "items": [
+        "Approvers come from the site's workflow rules",
+        "Track, resend or withdraw it in Manage Publish Requests",
+        "You get an email when it's approved or rejected"
+      ]
+    }
+  ]
+}

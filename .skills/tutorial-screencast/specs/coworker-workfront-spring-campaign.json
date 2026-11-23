@@ -1,0 +1,214 @@
+{
+  "slug": "coworker-workfront-spring-campaign",
+  "uploadFolder": "/demo-docs/media",
+  "headed": true,
+  "steps": [
+    {
+      "do": "openCoworker",
+      "url": "https://experience.adobe.com/#/@ccs/coworker/75205073054494925312"
+    },
+    {
+      "do": "coworkerClearChats",
+      "hidden": true
+    },
+    {
+      "do": "openCoworker",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4500,
+      "kicker": "Coworker · Workfront · Experience Workspace",
+      "title": "From a Workfront brief to a campaign page",
+      "items": [
+        "1 · Ask Coworker about your Workfront projects",
+        "2 · Have Coworker create the campaign page",
+        "3 · Open the Workfront task next to the page",
+        "4 · Send the brief to chat to write the page",
+        "5 · Request a review and complete the task"
+      ]
+    },
+    {
+      "do": "coworkerClick",
+      "name": "Chats",
+      "n": 1,
+      "caption": "In **Coworker**, open **Chats**"
+    },
+    {
+      "do": "coworkerClick",
+      "name": "New chat",
+      "n": 1,
+      "caption": "Start a **New chat**"
+    },
+    {
+      "do": "coworkerAsk",
+      "text": "list all projects i own please",
+      "n": 1,
+      "caption": "Ask which Workfront projects you own"
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 2800,
+      "caption": "Coworker reads them straight from **Workfront**"
+    },
+    {
+      "do": "coworkerAsk",
+      "text": "Create an empty landing page for Spring Campaign 2027 for the project in https://da.live/#/scdemos/demo/fragments/campaigns",
+      "n": 2,
+      "caption": "Ask Coworker to create the campaign's landing page"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 2800,
+      "caption": "Coworker creates **spring-campaign-2027** in the campaigns folder"
+    },
+    {
+      "do": "browse",
+      "path": "/fragments/campaigns",
+      "n": 3,
+      "caption": "In **Experience Workspace**, the page is in **fragments › campaigns**"
+    },
+    {
+      "do": "openItem",
+      "name": "spring-campaign-2027",
+      "n": 3,
+      "caption": "Open the new, empty landing page"
+    },
+    {
+      "do": "openPanel",
+      "name": "Workfront",
+      "n": 3,
+      "caption": "**Panels** › **Workfront**"
+    },
+    {
+      "do": "frameClick",
+      "hidden": true,
+      "frame": "workfront",
+      "role": "button",
+      "name": "Task: Write hero copy",
+      "exact": false
+    },
+    {
+      "do": "frameClick",
+      "hidden": true,
+      "frame": "workfront",
+      "role": "button",
+      "name": "Edit task"
+    },
+    {
+      "do": "frameFill",
+      "hidden": true,
+      "frame": "workfront",
+      "label": "Task name",
+      "text": "Spring Campaign 2027"
+    },
+    {
+      "do": "frameFill",
+      "hidden": true,
+      "frame": "workfront",
+      "label": "Brief",
+      "text": "CAMPAIGN BRIEF – Frescopa: Spring Campaign 2027\nGoal: Launch Frescopa's spring 2027 push around Frescopa Go — our new lightweight, pause-anytime plan ($19/mo) — using the fresh-start energy of spring to drive sign-ups from flexibility-seeking first-timers who've held off on a bigger commitment.\n\nBackground: Frescopa (demo site) is a premium lifestyle brand built on one idea — \"Everyday, elevated.\" Our plans range from Frescopa One ($49/mo, most complete) down to Flex and Duo. Frescopa Go is the newest and most flexible: lightweight, low-commitment, and pausable or switchable any month. Spring is the natural moment to introduce it — a season about fresh starts and low-stakes change — lowering the barrier to entry while keeping the Frescopa standard of care: member pricing, Care+ availability, and the freedom to upgrade whenever life changes.\n\nAudience: Flexibility-first prospects — people who've browsed plans but balked at a monthly commitment, plus lapsed trialists. They value freedom, low risk, and \"try before you commit\" over premium bells and whistles.\n\nKey message: \"Start fresh this spring. Switch anytime. Stay as long as it works for you.\" Supporting point: No lock-in — pause or switch any month, and upgrade to a fuller plan whenever you're ready. 60-day free returns and 24/7 real help included.\n\nTone: Warm, confident, pressure-free. Lean into spring's sense of renewal and ease — freedom, not FOMO. No hype.\n\nCall to action: Try Frescopa Go — $19/mo, cancel or pause anytime. (Secondary: Compare all plans.)\n\nDeliverables:\n\nLanding page – hero headline, short body copy (3 benefits), plan-comparison snippet (Go vs. Flex vs. One), one primary CTA, no hero image for first draft\nLaunch email – subject line, preheader, body copy, CTA\nSocial posts – 3 variants (LinkedIn, Instagram, X)\nTimeline: Content drafted by end of week 1, reviewed by end of week 2, live by end of week 3.\n\nOpen items (to be clarified):\n\n⚠ Confirm whether Care+ is included or add-on at the Go tier\n⚠ CTA destination — /en/collections vs. a dedicated /en/products/frescopa-go page not decided\n⚠ Pause/switch terms (max pause duration, re-activation) not finalized\n⚠ Legal sign-off on \"cancel anytime\" claim pending"
+    },
+    {
+      "do": "frameClick",
+      "hidden": true,
+      "frame": "workfront",
+      "role": "button",
+      "name": "Save changes"
+    },
+    {
+      "do": "wait",
+      "hidden": true,
+      "ms": 5000
+    },
+    {
+      "do": "frameClick",
+      "hidden": true,
+      "frame": "workfront",
+      "role": "button",
+      "name": "Task: Spring Campaign 2027",
+      "exact": false
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Task: Spring Campaign 2027",
+      "exact": false,
+      "n": 3,
+      "caption": "Open the **Spring Campaign 2027** task"
+    },
+    {
+      "do": "framePoint",
+      "frame": "workfront",
+      "text": "CAMPAIGN BRIEF – Frescopa: Spring Campaign 2027",
+      "exact": false,
+      "n": 3,
+      "hold": 2200,
+      "caption": "Its **Brief** says what the page needs"
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Copy to chat",
+      "n": 4,
+      "caption": "**Copy to chat** hands the task and brief to the assistant"
+    },
+    {
+      "do": "chatSend",
+      "answers": [
+        "Write it as drafted",
+        "/en/products/frescopa-go"
+      ],
+      "n": 4,
+      "caption": "Send it to the assistant, answering anything it asks",
+      "append": "Write the landing page copy on this page only."
+    },
+    {
+      "do": "scroll",
+      "by": [
+        420,
+        -420
+      ],
+      "x": 740,
+      "y": 520,
+      "n": 4,
+      "caption": "The landing page now has the campaign copy"
+    },
+    {
+      "do": "chatSend",
+      "text": "create a review & sign-off task for this page and assign it to a reviewer role",
+      "n": 5,
+      "caption": "Ask for a **review & sign-off** task in Workfront, assigned to a reviewer role"
+    },
+    {
+      "do": "frameClick",
+      "frame": "workfront",
+      "role": "button",
+      "name": "Mark complete",
+      "n": 5,
+      "caption": "Then **Mark complete** in Workfront"
+    },
+    {
+      "do": "caption",
+      "n": 5,
+      "hold": 2000,
+      "caption": "Brief, page and task stay connected"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Coworker · Workfront",
+      "title": "Brief to page, without leaving your tools",
+      "items": [
+        "Coworker reads and acts on your Workfront projects",
+        "The Workfront panel brings each task and brief to the page",
+        "Copy to chat turns the brief into a written page",
+        "A review & sign-off task goes back to Workfront"
+      ],
+      "hold": 3500
+    }
+  ]
+}

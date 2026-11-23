@@ -1,0 +1,33 @@
+{
+  "slug": "experience-workspace-request-publish-approver",
+  "steps": [
+    { "do": "openApp", "name": "Manage Publish Requests", "listOnly": true },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · Request Publish",
+      "title": "Review and approve a publish request",
+      "items": [
+        "1 · Open Manage Publish Requests",
+        "2 · Review the request",
+        "3 · Approve & Publish"
+      ]
+    },
+    { "do": "openApp", "name": "Manage Publish Requests", "n": 1, "caption": "In **Apps**, open **Manage Publish Requests**" },
+    { "do": "reviewRequest", "path": "/en/stories/ten-cities-one-welcome", "n": 2, "caption": "Pending requests wait in your inbox. Click **Review**" },
+    { "do": "caption", "n": 2, "hold": 3000, "caption": "Check the page, the author's note and the preview" },
+    { "do": "approvePublish", "path": "/en/stories/ten-cities-one-welcome", "n": 3, "caption": "Click **Approve & Publish**: the page goes live" },
+    { "do": "visit", "url": "https://demo.bbird.live/en/stories/ten-cities-one-welcome" },
+    { "do": "hover", "text": "Toronto opens at", "n": 3, "hold": 2500, "caption": "The change is live, and the author gets an email" },
+    {
+      "do": "endCard",
+      "kicker": "Request Publish",
+      "title": "Approved and published",
+      "items": [
+        "Approvers come from the site's workflow rules",
+        "Reject with a reason, and the author can resubmit",
+        "Approve & Publish All handles a full inbox"
+      ]
+    }
+  ]
+}

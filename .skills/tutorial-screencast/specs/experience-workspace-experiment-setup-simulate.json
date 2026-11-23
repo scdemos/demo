@@ -1,0 +1,170 @@
+{
+  "slug": "experience-workspace-experiment-setup-simulate",
+  "uploadFolder": "/demo-docs/media",
+  "restoreAfterTest": [
+    "/en/membership.html"
+  ],
+  "steps": [
+    {
+      "do": "openFolder",
+      "hidden": true
+    },
+    {
+      "do": "closeChat",
+      "hidden": true
+    },
+    {
+      "do": "visit",
+      "url": "https://main--demo--scdemos.aem.page/en/membership"
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "Experience Workspace · Experimentation",
+      "title": "Set up an A/B test without code",
+      "items": [
+        "1 · The page to test and its challenger",
+        "2 · Create the experiment in the Experimentation panel",
+        "3 · Save a draft and simulate each variant"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "Join Circle — free",
+      "n": 1,
+      "hold": 2200,
+      "caption": "The page to test: the membership page and its **Join Circle — free** button"
+    },
+    {
+      "do": "openPage",
+      "path": "/experiments/membership-cta/challenger-1",
+      "n": 1,
+      "hold": 1200,
+      "caption": "The challenger is a copy of the page in **/experiments/membership-cta**"
+    },
+    {
+      "do": "showBlock",
+      "block": "hero",
+      "n": 1,
+      "hold": 2500,
+      "caption": "Same page, one change: a savings-led headline and button"
+    },
+    {
+      "do": "visit",
+      "url": "https://main--demo--scdemos.aem.page/en/membership?daexperiment=1",
+      "n": 2,
+      "hold": 2500,
+      "caption": "On the page preview, open **Experimentation** from Sidekick"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Create new",
+      "n": 2,
+      "hold": 800,
+      "caption": "No experiment on this page yet: **Create new**"
+    },
+    {
+      "do": "frameType",
+      "frame": "nxver",
+      "label": "Enter experiment name",
+      "text": "membership-cta",
+      "n": 2,
+      "caption": "Name the experiment"
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "text": "Goal",
+      "n": 2,
+      "hold": 1800,
+      "caption": "Type and goal describe the test"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Details",
+      "nth": 1,
+      "n": 2,
+      "caption": "Open **variant-1**…"
+    },
+    {
+      "do": "frameType",
+      "frame": "nxver",
+      "label": "https://main--demo--scdemos.aem.page/experiments/",
+      "exact": false,
+      "nth": 1,
+      "text": "https://main--demo--scdemos.aem.page/experiments/membership-cta/challenger-1",
+      "n": 2,
+      "caption": "…and paste the challenger’s URL"
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "text": "50%",
+      "nth": 1,
+      "n": 2,
+      "hold": 2000,
+      "caption": "Traffic splits 50/50 by default; the slider changes it"
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "text": "Start date",
+      "n": 2,
+      "hold": 1800,
+      "caption": "Start and end dates are optional, to schedule the test"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Save draft",
+      "n": 3,
+      "hold": 7000,
+      "caption": "**Save draft** writes it to the page. Visitors don’t see it yet"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Simulate variant",
+      "nth": 1,
+      "n": 3,
+      "hold": 6000,
+      "caption": "**Simulate** the challenger: the preview shows the new headline"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Simulate variant",
+      "nth": 0,
+      "n": 3,
+      "hold": 5000,
+      "caption": "…and the control, to compare"
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Publish",
+      "n": 3,
+      "hold": 2500,
+      "caption": "When it looks right, **Publish** starts the test on the live site"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Experimentation",
+      "title": "A test in a few clicks",
+      "items": [
+        "Copy the page and change what you want to test",
+        "Experimentation › Create new: name, challenger URL, split, dates",
+        "Save draft, simulate, then Publish to start"
+      ],
+      "hold": 3500
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "slug": "edge-delivery-target-offers-live",
+  "uploadFolder": "/demo-docs/media",
+  "steps": [
+    {
+      "do": "signedOut",
+      "hidden": true
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/offers?at_preview_token=PBLzz6cLxIPgNEGIaPxTDw&at_preview_index=1_1&at_preview_listed_activities_only=true",
+      "fresh": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "Adobe Target · Edge Delivery Services",
+      "title": "Personalization on the live site",
+      "items": [
+        "1 · The hero test: control and challenger",
+        "2 · A welcome strip only new visitors get",
+        "3 · What a real visitor sees"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "Good things, better timing.",
+      "n": 1,
+      "hold": 2800,
+      "caption": "The control: the offers page’s regular hero, here through the A/B test’s **QA link**"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/offers?at_preview_token=PBLzz6cLxIPgNEGIaPxTDw&at_preview_index=1_2&at_preview_listed_activities_only=true",
+      "fresh": true,
+      "n": 1,
+      "caption": "Experience B’s QA link swaps in the offer authored in Experience Workspace"
+    },
+    {
+      "do": "pointAt",
+      "text": "Frescopa One, half price",
+      "n": 1,
+      "hold": 3200,
+      "caption": "**Frescopa One, half price for three months**: in place before the hero appears"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/offers?at_preview_token=PhGCeTJobHkF9IYw6qpF0g&at_preview_index=1_2&at_preview_listed_activities_only=true",
+      "fresh": true,
+      "n": 2
+    },
+    {
+      "do": "pointAt",
+      "text": "Welcome back",
+      "n": 2,
+      "hold": 3000,
+      "caption": "Returning visitors get the regular **Welcome back** strip"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/offers?at_preview_token=PhGCeTJobHkF9IYw6qpF0g&at_preview_index=1_1&at_preview_listed_activities_only=true",
+      "fresh": true,
+      "n": 2
+    },
+    {
+      "do": "pointAt",
+      "text": "New to Frescopa?",
+      "n": 2,
+      "hold": 3200,
+      "caption": "**New Visitors** get a Circle invitation instead"
+    },
+    {
+      "do": "signedOut",
+      "hidden": true
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/offers",
+      "fresh": true,
+      "n": 3,
+      "caption": "A real first visit, no QA link"
+    },
+    {
+      "do": "pointAt",
+      "text": "New to Frescopa?",
+      "n": 3,
+      "hold": 3000,
+      "caption": "As a new visitor this browser gets the welcome offer, and one of the two heroes"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Adobe Target",
+      "title": "Live for every visitor",
+      "items": [
+        "Target decides before the section shows",
+        "Default content if Target takes over a second",
+        "Results in Target’s reports for each activity"
+      ],
+      "hold": 3500
+    }
+  ]
+}

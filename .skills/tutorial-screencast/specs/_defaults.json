@@ -1,0 +1,10 @@
+{
+  "org": "scdemos",
+  "site": "demo",
+  "folder": "/drafts/{user}/tutorial-pages",
+  "uploadFolder": "/demo-docs/media",
+  "maxSeconds": 120,
+  "videoBase": "https://main--demo--scdemos.aem.page",
+  "siteOrigin": "https://demo.bbird.live",
+  "appUrl": "https://scdemos.github.io/frescopa-app/app/"
+}

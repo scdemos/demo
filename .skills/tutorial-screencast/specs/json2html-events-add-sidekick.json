@@ -1,0 +1,108 @@
+{
+  "slug": "json2html-events-add-sidekick",
+  "uploadFolder": "/demo-docs/media",
+  "sidekick": true,
+  "steps": [
+    {
+      "do": "visit",
+      "url": "https://main--demo--scdemos.aem.page/en/events/weekend-workshop-soho",
+      "hidden": true
+    },
+    {
+      "do": "sidekickSignIn",
+      "hidden": true
+    },
+    {
+      "do": "openFolder",
+      "hidden": true
+    },
+    {
+      "do": "closeChat",
+      "hidden": true
+    },
+    {
+      "do": "openSheet",
+      "path": "/en/data/events",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "json2html · AEM Sidekick",
+      "title": "A new row becomes a page",
+      "items": [
+        "1 · A new event in the sheet",
+        "2 · Preview its URL with the Sidekick",
+        "3 · Publish it"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "/en/events/weekend-workshop-capitol-hill",
+      "n": 1,
+      "hold": 3000,
+      "caption": "A new row: the weekend workshop comes to **Capitol Hill**, Seattle"
+    },
+    {
+      "do": "browse",
+      "path": "/en/events",
+      "n": 1,
+      "hold": 2500,
+      "caption": "There is no page for it in Experience Workspace"
+    },
+    {
+      "do": "visit",
+      "url": "https://main--demo--scdemos.aem.page/en/events/weekend-workshop-capitol-hill",
+      "n": 2,
+      "caption": "Open its URL on the preview site"
+    },
+    {
+      "do": "pointAt",
+      "text": "This page took",
+      "n": 2,
+      "hold": 2500,
+      "caption": "Nothing there yet: the page has never been previewed"
+    },
+    {
+      "do": "sidekickClick",
+      "name": "Update",
+      "until": "Frescopa House Capitol Hill",
+      "n": 2,
+      "caption": "Sidekick › **Update**: json2html renders the row into the page"
+    },
+    {
+      "do": "pointAt",
+      "text": "Frescopa House Capitol Hill",
+      "n": 2,
+      "hold": 3000,
+      "caption": "Generated from the sheet: House, address, date and booking link"
+    },
+    {
+      "do": "sidekickClick",
+      "name": "Publish",
+      "n": 3,
+      "caption": "**Publish** puts it live"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/events/weekend-workshop-capitol-hill",
+      "until": {
+        "url": "https://demo.bbird.live/en/events/weekend-workshop-capitol-hill",
+        "text": "Capitol Hill"
+      },
+      "n": 3,
+      "caption": "Live on the site, still without a page in Experience Workspace"
+    },
+    {
+      "do": "endCard",
+      "kicker": "json2html",
+      "title": "Add a row, preview, publish",
+      "items": [
+        "Authors maintain data, not pages",
+        "The Sidekick generates the page on preview",
+        "A feed can automate it with the Admin API"
+      ],
+      "hold": 3500
+    }
+  ]
+}
