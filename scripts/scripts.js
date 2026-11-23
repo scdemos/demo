@@ -557,7 +557,8 @@ export function startMartech(consent, personalization) {
  * a first section with the name, price and images, then the product's description (a product-detail
  * block) and any page authored at the same path. That first section is folded into the block. Other
  * hosts (aem.page, aem.live, DA previews, the app) serve only the authored page, so the product is
- * loaded and the same block built here. See scripts/products.js.
+ * loaded from Edge Commerce and the same block built here. Every demo shows the main demo's catalog.
+ * See scripts/products.js.
  */
 // Product descriptions come from Edge Commerce or the products sheet: only plain content markup is kept
 const SAFE_TAGS = new Set(['DIV', 'P', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'B', 'I',
@@ -637,10 +638,15 @@ export async function buildProductPage(main, page = window.location) {
     });
     return;
   }
-  if (block) return; // a product page authored in full
   const { loadProduct } = await import('./products.js');
-  const product = await loadProduct(pathname, page);
-  if (!product) return;
+  const product = await loadProduct(pathname);
+  if (!product) return; // not in the catalog: the page as authored
+  // the catalog's buy panel replaces one authored on the page, as on Edge Commerce pages
+  main.querySelectorAll(':scope > div > .product-detail').forEach((authored) => {
+    const parent = authored.parentElement;
+    authored.remove();
+    if (!parent.children.length) parent.remove();
+  });
   const section = document.createElement('div');
   section.append(safeFragment(product.description));
   const built = section.querySelector('.product-detail');

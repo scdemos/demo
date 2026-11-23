@@ -1,14 +1,17 @@
-// Products. The DA sheet /en/data/products.json is the product source (it stands in for a PIM): Sync
-// products in Demo Admin pushes its rows to Edge Commerce (the Product Bus), which renders a product page
-// for each at /en/products/<id> and keeps the /en/products/index.json index. Sites without Edge Commerce
-// (CloneIt demos, until Adobe sets one up for them) show the same catalog and product pages from the sheet.
-// This module is shared by the site and the CloneIt worker (workers/cloneit_token), which runs the sync.
+// Products. They live in Edge Commerce (the Product Bus), in the main demo's catalog, which every demo
+// shows: CloneIt demos read it too and don't manage products of their own. The main demo's DA sheet
+// /en/data/products.json is where they're edited (it stands in for a PIM): Sync products in Demo Admin
+// pushes it to Edge Commerce, which renders a page for each product at /en/products/<id> and keeps the
+// /en/products/index.json index. This module is shared by the site and the CloneIt worker
+// (workers/cloneit_token), which runs the sync.
 
 export const PRODUCTS_ROOT = '/en/products';
 export const PRODUCTS_SHEET = '/en/data/products.json';
 export const LABELS_SHEET = '/en/data/product-labels.json';
 export const INDEX_PATH = `${PRODUCTS_ROOT}/index.json`;
 export const COMMERCE_API = 'https://api.adobecommerce.live';
+// the catalog every demo shows: the main demo's
+export const CATALOG = { org: 'scdemos', site: 'demo', ref: 'main' };
 // public, read-only proxy of a site's product index (with CORS), for hosts Edge Commerce doesn't serve
 export const INDEX_PROXY = 'https://demo.bbird.live/cloneit/products';
 
@@ -38,7 +41,6 @@ const format = (tpl, values) => tpl.replace(/\{(\w+)\}/g, (m, k) => values[k] ??
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 /** Links a product can carry: a site path, https, mail or phone. Anything else (javascript:, data:, …) is dropped. */
 export const safeLink = (v) => !text(v).includes('\\') && /^(\/(?![/])|https:\/\/|mailto:|tel:|#)/i.test(text(v));
-const NAME_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** The product page of a row: its url column, when it is a page directly under /en/products. */
 export function productPath(row) {
@@ -181,29 +183,8 @@ export function sheetLabels(json) {
 
 /* ---------- browser ---------- */
 
-/**
- * Where this page's site lives: { org, site, ref, pipeline, preview }. pipeline is true on hosts that serve
- * Edge Commerce (aem.network and production domains in front of it), false on aem.live, aem.page,
- * DA previews and localhost. preview is true on aem.page, DA previews and localhost: they show the
- * products sheet as authored, before it's synced. Local development reads the template site.
- */
-export function siteOf(location = window.location) {
-  const m = /^([a-z0-9-]+)--([a-z0-9-]+)--([a-z0-9-]+)\.(aem\.(?:live|page|network)|preview\.da\.live)$/.exec(location.hostname);
-  if (m) {
-    return {
-      ref: m[1], site: m[2], org: m[3], pipeline: m[4] === 'aem.network', preview: !/^aem\.(live|network)$/.test(m[4]),
-    };
-  }
-  if (['localhost', '127.0.0.1'].includes(location.hostname)) {
-    return {
-      ref: 'main', site: 'demo', org: 'scdemos', pipeline: false, preview: true,
-    };
-  }
-  return { pipeline: true, preview: false };
-}
-
-/** Origin that serves the site's Edge Commerce pages and product media. */
-export function networkOrigin({ ref = 'main', site, org }) {
+/** Origin that serves the catalog's Edge Commerce pages, index and product media. */
+export function networkOrigin({ ref = 'main', site, org } = CATALOG) {
   return `https://${ref}--${site}--${org}.aem.network`;
 }
 
@@ -219,68 +200,38 @@ async function fetchJson(url) {
   }
 }
 
-/** Sheet rows shaped like index rows: path, and an absolute image. */
-async function sheetProducts(sheet = PRODUCTS_SHEET) {
-  const origin = codeOrigin();
-  const rows = sheetRows(await fetchJson(new URL(sheet, origin).href));
-  return rows.map((row) => ({
-    ...row,
-    path: productPath(row) || text(row.url),
-    image: row.image ? new URL(row.image, origin).href : '',
-  }));
-}
-
 /**
- * The catalog's products, in sheet order: from Edge Commerce's index when the site has one, otherwise from
- * the products sheet (and always on preview hosts, which show the sheet as authored). Each has path (link), image (absolute URL) and the sheet's other columns.
+ * The catalog's products, in the order of the products sheet. Each has path and url (its page), image
+ * (absolute URL) and the sheet's other columns. `index` is the index's path or URL (only its path is used);
+ * it's read from aem.network directly where the page is served from there, otherwise through the index
+ * proxy, which adds CORS.
  */
-export async function loadProducts({ index: source = INDEX_PATH, sheet = PRODUCTS_SHEET } = {}) {
-  const origin = codeOrigin();
-  const url = new URL(source, origin);
-  // an absolute source on a site host (aem.network, aem.live, aem.page) names its site; a path is this site's
-  const named = /\.aem\.(network|live|page)$/.test(url.hostname) ? siteOf(url) : null;
-  const here = siteOf(new URL(origin));
-  if (here.preview) return sheetProducts(sheet);
-  const where = named || here;
-  const index = url.pathname;
-  let read = '';
-  if (url.origin === origin && where.pipeline) read = url.href;
-  else if (where.site && NAME_RE.test(where.site) && NAME_RE.test(where.org)) read = `${INDEX_PROXY}/${where.org}/${where.site}${index}`;
-  const rows = read ? sheetRows(await fetchJson(read)) : [];
-  if (!rows.length) return sheetProducts(sheet);
-  const media = where.site ? networkOrigin(where) : origin;
-  return rows
+export async function loadProducts({ index: source = INDEX_PATH } = {}) {
+  // every demo reads the main demo's catalog: only the source's path matters (authors may link it on any host)
+  const network = networkOrigin();
+  const { pathname } = new URL(source, network);
+  const read = codeOrigin() === network ? `${network}${pathname}` : `${INDEX_PROXY}/${CATALOG.org}/${CATALOG.site}${pathname}`;
+  return sheetRows(await fetchJson(read))
     .map((row) => ({
       ...row,
       id: row.sku,
       url: row.path,
-      image: row.image ? new URL(row.image, `${media}${row.path.replace(/[^/]*$/, '')}`).href : '',
+      image: row.image ? new URL(row.image, `${network}${row.path.replace(/[^/]*$/, '')}`).href : '',
     }))
     .sort((a, b) => (Number(a.position) || 0) - (Number(b.position) || 0));
 }
 
 /**
- * The product at `path` for pages Edge Commerce didn't render: { name, description, images } from the
- * Edge Commerce API, or built from the products sheet when the site has no Edge Commerce product.
- * `page` is the page's address (an embedded page's when the site is embedded in another app).
+ * The product at `path`, for pages Edge Commerce didn't render (aem.page, aem.live, the app):
+ * { name, description, images } from the Edge Commerce API, or null.
  */
-export async function loadProduct(path, page = window.location) {
-  const where = siteOf(page);
-  const { origin } = page;
-  if (where.site && !where.preview) {
-    const json = await fetchJson(`${COMMERCE_API}/${where.org}/sites/${where.site}/catalog${path}.json`);
-    if (json?.description) {
-      const base = `${networkOrigin(where)}${path.replace(/[^/]*$/, '')}`;
-      return {
-        name: json.name,
-        description: json.description,
-        images: (json.images || []).map((img) => ({ ...img, url: new URL(img.url, base).href })),
-      };
-    }
-  }
-  const [rows, labels] = await Promise.all([
-    fetchJson(`${origin}${PRODUCTS_SHEET}`), fetchJson(`${origin}${LABELS_SHEET}`),
-  ]);
-  const { products } = toProducts(sheetRows(rows), sheetLabels(labels), { origin, contentOrigin: origin });
-  return products.find((p) => p.path === path) || null;
+export async function loadProduct(path) {
+  const json = await fetchJson(`${COMMERCE_API}/${CATALOG.org}/sites/${CATALOG.site}/catalog${path}.json`);
+  if (!json?.description) return null;
+  const base = `${networkOrigin()}${path.replace(/[^/]*$/, '')}`;
+  return {
+    name: json.name,
+    description: json.description,
+    images: (json.images || []).map((img) => ({ ...img, url: new URL(img.url, base).href })),
+  };
 }

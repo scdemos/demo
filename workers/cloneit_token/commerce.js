@@ -5,7 +5,7 @@
 //        removes products no longer in it, registers the index and creates an authored page for products
 //        that have none, so every host can open /en/products/<id>.
 // The Edge Commerce service token (COMMERCE_TOKEN secret) belongs to one site, COMMERCE_SITE (default the
-// template site): Edge Commerce sites are set up by Adobe one at a time, so clones show the sheet instead.
+// template site). Only that site manages products; CloneIt demos show its catalog and never write to it.
 
 import {
   INDEX_PATH, LABELS_SHEET, PRODUCTS_ROOT, PRODUCTS_SHEET, productPath, sheetLabels, sheetRows, toProducts,
@@ -107,31 +107,6 @@ export async function syncProducts({ site }, env, { adminFetch, commerce, fetchI
   const idx = await commerce(`/${org}/sites/${site}/index${INDEX_PATH}`, { method: 'POST' });
   if (!idx.ok && idx.status !== 409) throw fail(`index_register_failed_${idx.status}`, 502);
 
-  // products under /en/products that are no longer in the sheet, from the catalog itself (the public
-  // index is updated asynchronously, so it can miss a product written moments ago)
-  // a product is kept while its page or its id is still in the sheet, also when its row couldn't be synced
-  // this time (no title, a misspelled url), so a typo never deletes a product
-  const keep = new Set(rows.map(productPath).filter(Boolean));
-  const keepSkus = new Set(rows.map((r) => String(r.id || '').trim()).filter(Boolean));
-  const stale = [];
-  let cursor = '';
-  for (let page = 0; page < 100; page += 1) {
-    const list = await commerce(`/${org}/sites/${site}/catalog${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`);
-    if (!list.ok) throw fail(`catalog_list_failed_${list.status}`, 502);
-    const body = await list.json().catch(() => ({}));
-    (body.products || []).forEach(({ path, sku }) => {
-      if (path?.startsWith(`${PRODUCTS_ROOT}/`) && !keep.has(path) && !keepSkus.has(sku)) stale.push(path);
-    });
-    if (!body.truncated || !body.cursor) break;
-    cursor = body.cursor;
-  }
-  let removed = 0;
-  for (const path of stale) {
-    const resp = await commerce(`/${org}/sites/${site}/catalog${path}.json`, { method: 'DELETE' });
-    if (resp.ok || resp.status === 404) removed += 1;
-    else failed.push(path);
-  }
-
   // an authored page for each product, published, so aem.page, aem.live and the app can open it; pages
   // that exist are left as they are, and only published when they aren't live yet (e.g. a failed earlier run)
   let pages = 0;
@@ -152,6 +127,42 @@ export async function syncProducts({ site }, env, { adminFetch, commerce, fetchI
       const publish = preview.ok && await adminFetch('helix', `/live/${org}/${site}/main${product.path}`, { method: 'POST' });
       if (!publish?.ok) failed.push(product.path);
     } else if (!ready) failed.push(product.path);
+  }
+
+  // products under /en/products that are no longer in the sheet, from the catalog itself (the public
+  // index is updated asynchronously, so it can miss a product written moments ago)
+  // a product is kept while its page is in the sheet. A row that couldn't be synced (no title, a misspelled
+  // url) keeps the product with its id, and one whose new version didn't save or publish keeps its current
+  // one (e.g. a renamed page): a typo or a failed run never deletes a product
+  const keep = new Set(rows.map(productPath).filter(Boolean));
+  // rows not synced as written: no title, no product page, or a page another row already has
+  const synced = new Set(products.map((p) => `${p.sku} ${p.path}`));
+  const rejected = rows.filter((r) => {
+    const path = productPath(r);
+    return !path || !synced.has(`${String(r.id || '').trim() || path.split('/').pop()} ${path}`);
+  });
+  const keepSkus = new Set(rejected.map((r) => String(r.id || '').trim()).filter(Boolean));
+  products.filter((p) => failed.includes(p.path)).forEach((p) => keepSkus.add(p.sku));
+  // remove nothing this time when a product failed (its old version may be the one still shown) or a
+  // rejected row has no id to match its product by
+  const reconcile = !failed.length && rejected.every((r) => String(r.id || '').trim());
+  const stale = [];
+  let cursor = '';
+  for (let page = 0; reconcile && page < 100; page += 1) {
+    const list = await commerce(`/${org}/sites/${site}/catalog${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`);
+    if (!list.ok) throw fail(`catalog_list_failed_${list.status}`, 502);
+    const body = await list.json().catch(() => ({}));
+    (body.products || []).forEach(({ path, sku }) => {
+      if (path?.startsWith(`${PRODUCTS_ROOT}/`) && !keep.has(path) && !keepSkus.has(sku)) stale.push(path);
+    });
+    if (!body.truncated || !body.cursor) break;
+    cursor = body.cursor;
+  }
+  let removed = 0;
+  for (const path of stale) {
+    const resp = await commerce(`/${org}/sites/${site}/catalog${path}.json`, { method: 'DELETE' });
+    if (resp.ok || resp.status === 404) removed += 1;
+    else failed.push(path);
   }
 
   return {

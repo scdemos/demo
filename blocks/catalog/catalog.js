@@ -144,7 +144,7 @@ export default async function decorate(block) {
 
   let items = [];
   if (/\/products\/index\.json$/.test(cfg.source)) {
-    // the Edge Commerce product index; the products sheet when the site has none
+    // the Edge Commerce product index
     const { loadProducts } = await import('../../scripts/products.js');
     items = await loadProducts({ index: cfg.source });
   } else {

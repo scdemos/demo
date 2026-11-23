@@ -25,7 +25,7 @@ const ROWS = [
     id: 'flex', title: 'Flex', group: 'Plan', price: '29', priceLabel: '$29', period: '/mo', url: '/en/products/flex?plan=x',
   },
   { id: 'gift', title: 'Gift', group: 'Gift', url: '/en/offers#gift' },
-  { title: '', url: '/en/products/empty' },
+  { id: 'empty', title: '', url: '/en/products/empty' },
 ];
 const LABELS = { brand: 'Frescopa', rating: '{rating} out of 5 · {reviews} reviews', 'plans-label': 'Choose your plan' };
 
@@ -145,6 +145,30 @@ ok('misspelled url keeps its product (by id)', !calls.some((c) => c[1] === 'DELE
   && calls.some((c) => c[1] === 'DELETE' && c[2].includes('/en/products/old.json')));
 ok('duplicate page synced once', toProducts([ROWS[0], { ...ROWS[0], id: 'one-b', url: '/en/products/one?plan=b' }], LABELS, { origin: 'o', contentOrigin: 'https://c' }).products.length === 1);
 ok('backslash and protocol-relative actions dropped', !detailHtml({ ...ROWS[0], action: '/\\evil.example/x' }, [], LABELS).includes('evil'));
+
+// a renamed product page: the old one is removed
+calls = [];
+await syncProducts({ site: 'demo' }, env, deps({ calls, rows: [{ ...ROWS[0], url: '/en/products/one-new' }], existing: ['/en/products/one', '/en/products/old'] }));
+ok('renamed page: old product removed', calls.some((c) => c[1] === 'DELETE' && c[2].includes('/en/products/one.json')));
+
+calls = [];
+await syncProducts({ site: 'demo' }, env, deps({ calls, itemStatus: 400, rows: [{ ...ROWS[0], url: '/en/products/one-new' }], existing: ['/en/products/one', '/en/products/old'] }));
+ok('failed rename keeps the old product', !calls.some((c) => c[1] === 'DELETE' && c[2].includes('/en/products/one.json')));
+
+calls = [];
+await syncProducts({ site: 'demo' }, env, deps({ calls, previewStatus: 503, pages: [], live: [], rows: [{ ...ROWS[0], url: '/en/products/one-new' }], existing: ['/en/products/one'] }));
+ok('rename whose page failed to publish keeps the old product', !calls.some((c) => c[1] === 'DELETE'));
+calls = [];
+await syncProducts({ site: 'demo' }, env, deps({ calls, rows: [ROWS[1], { title: 'One', url: '/en/produts/one' }], existing: ['/en/products/one'] }));
+ok('rejected row without id: nothing removed', !calls.some((c) => c[1] === 'DELETE'));
+
+calls = [];
+await syncProducts({ site: 'demo' }, env, deps({ calls, rows: [ROWS[0], { ...ROWS[1], url: '/en/products/one' }], existing: ['/en/products/one', '/en/products/flex'] }));
+ok('duplicate-page row keeps its product', !calls.some((c) => c[1] === 'DELETE'));
+
+calls = [];
+await syncProducts({ site: 'demo' }, env, deps({ calls, previewStatus: 503, pages: [], live: [], rows: [{ title: 'One', url: '/en/products/one-new' }], existing: ['/en/products/one'] }));
+ok('failed run without ids: nothing removed', !calls.some((c) => c[1] === 'DELETE'));
 
 // a row that can't be synced (no title) keeps its product
 calls = [];
