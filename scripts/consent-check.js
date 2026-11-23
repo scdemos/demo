@@ -130,7 +130,8 @@ async function initConsent() {
     revision: CONSENT.revision,
     cookie: { name: CONSENT.cookie },
     guiOptions: {
-      consentModal: { layout: 'box', position: 'bottom right', equalWeightButtons: true },
+      // a bar across the bottom: the page stays usable without choosing
+      consentModal: { layout: 'bar inline', position: 'bottom', equalWeightButtons: true },
       preferencesModal: { layout: 'box', equalWeightButtons: true },
     },
     categories: CATEGORIES,
@@ -160,6 +161,15 @@ async function initConsent() {
       window.location.reload();
     },
   });
+
+  // The bar covers the bottom of the page while it's open: room for it below the footer keeps
+  // everything reachable (consent.css pads the page by this height while the bar shows).
+  const bar = document.querySelector('#cc-main .cm');
+  if (bar) {
+    new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--consent-bar-height', `${bar.offsetHeight}px`);
+    }).observe(bar);
+  }
 
   addPreferencesLink(config.text.preferencesLink, CookieConsent.showPreferences);
 }

@@ -44,6 +44,11 @@
   --cc-webkit-scrollbar-hover-bg: var(--color-text-muted);
 }
 
+/* while the consent bar is open, the page ends above it */
+html[class~="show--consent"] body {
+  padding-bottom: var(--consent-bar-height, 0);
+}
+
 /* "Cookie preferences" link added at the end of the footer when none is authored */
 footer .cookie-preferences {
   margin: 0;
