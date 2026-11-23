@@ -10,6 +10,9 @@ const SITE = 'demo';
 const ROOT = `/${ORG}/${SITE}`;
 const BACKUP = `${ROOT}/.backup`;
 const INFO = `${BACKUP}/backup-info.json`;
+// one row per backup, reset or demo delete; it stays put when the backup is replaced or restored
+const OPS = `${BACKUP}/demo-admin-operations.json`;
+const OPS_MAX = 200;
 // top-level folders the backup leaves out (and reset leaves alone)
 const SKIP = new Set(['drafts']);
 // pages and sheets are previewed and published; media is served from DA
@@ -134,17 +137,27 @@ function lock(on) {
   document.querySelectorAll('#tools button').forEach((b) => { b.disabled = on; });
 }
 
-async function run(logId, fn) {
+/**
+ * Runs an operation with its progress list and adds a row to the operations log. `fn(step, notes)` returns
+ * { result, comments } (default ok); `notes` collects what got done, so a stopped run still says how far it got.
+ */
+async function run(logId, fn, { action, target }) {
   if (busy) return;
   lock(true);
   const step = progress(logId);
+  const notes = [];
+  let row;
   try {
-    await fn(step);
+    const out = await fn(step, notes);
+    row = { result: out?.result || 'ok', comments: out?.comments ?? notes.filter(Boolean).join(' ') };
   } catch (e) {
     step(`Stopped: ${say(e.message)}`)(`Stopped: ${say(e.message)}`, 'fail');
-  } finally {
-    lock(false);
+    row = { result: 'stopped', comments: [...notes.filter(Boolean), `Stopped: ${say(e.message)}`].join(' ') };
   }
+  if (!await logOperation({ action, target, ...row })) {
+    step('Couldn\'t add this to the operations log')('Couldn\'t add this to the operations log', 'fail');
+  }
+  lock(false);
 }
 
 /* ---------- DA ---------- */
@@ -206,19 +219,38 @@ async function daDelete(path) {
 }
 
 /**
- * What to copy at the top of `path`: its folders and files (minus SKIP), plus the files in the hidden
- * `.<page>` folders where DA keeps the images of top-level pages. DA hides those folders from listings
- * and treats a dotted name as a single file, so their files are copied one by one.
+ * What to copy at the top of `path`: its folders and files (minus SKIP), plus the contents of the hidden
+ * folders: `.da` (product settings such as comments and translation) and the `.<page>` folders where DA
+ * keeps the images of top-level pages. DA hides those folders from listings and treats a dotted name as a
+ * single file, so their contents are copied item by item. The backup's own files (its details and the
+ * operations log) are never removed or restored.
  */
 async function topItems(path) {
   const items = (await daList(path)).filter((i) => i.ext || !SKIP.has(i.name));
-  const hidden = [];
+  const hidden = await daList(`${path}/.da`);
   for (const page of items.filter((i) => i.ext === 'html')) {
     hidden.push(...await daList(`${path}/.${page.name}`));
   }
-  return [...items, ...hidden];
+  return [...items, ...hidden].filter((i) => i.path !== OPS);
 }
 const rel = (path, root) => path.slice(root.length) || '/';
+const isHidden = (path, root) => rel(path, root).split('/').some((part) => part.startsWith('.'));
+
+/**
+ * Every file backup and reset handle under `root`, including `.da` and the hidden `.<page>` image folder
+ * of every page (DA hides those folders from listings, so each one is listed by name).
+ */
+async function allFiles(root) {
+  const files = await daWalk(root);
+  files.push(...await daWalk(`${root}/.da`, false));
+  const folders = files.filter((f) => f.ext === 'html')
+    .map((f) => `${f.path.slice(0, f.path.lastIndexOf('/'))}/.${f.name}`);
+  for (let i = 0; i < folders.length; i += 10) {
+    const found = await Promise.all(folders.slice(i, i + 10).map((folder) => daWalk(folder, false)));
+    files.push(...found.flat());
+  }
+  return files.filter((f) => f.path !== INFO && f.path !== OPS);
+}
 
 async function readBackupInfo() {
   const res = await da(`/source${INFO}`);
@@ -241,6 +273,43 @@ function showBackupInfo(info) {
   $('backup-info').textContent = info
     ? `Last backup: ${new Date(info.created).toLocaleString()} by ${info.by}, ${info.files} files.`
     : 'No backup yet.';
+}
+
+/**
+ * Adds a row to the top of the operations log. Writes are conditional on the version that was read
+ * (If-Match, or If-None-Match for a new log), so two admins logging at once can't overwrite each other:
+ * the one that loses re-reads and tries again.
+ */
+async function logOperation(row) {
+  const entry = {
+    date: new Date().toISOString(), by: email, action: row.action, target: row.target, result: row.result, comments: row.comments,
+  };
+  try {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      // start a new log only when there is none; any other read problem must not overwrite the history
+      const res = await da(`/source${OPS}`);
+      if (!res.ok && res.status !== 404) return false;
+      const sheet = res.ok ? await res.json() : { data: [] };
+      const etag = res.headers.get('ETag');
+      if (!Array.isArray(sheet?.data) || (res.ok && !etag)) return false;
+      const data = [entry, ...sheet.data].slice(0, OPS_MAX);
+      const form = new FormData();
+      form.append('data', new Blob([JSON.stringify({
+        total: data.length, limit: data.length, offset: 0, data, ':type': 'sheet',
+      })], { type: 'application/json' }));
+      const put = await da(`/source${OPS}`, {
+        method: 'POST',
+        body: form,
+        headers: res.ok ? { 'If-Match': etag } : { 'If-None-Match': '*' },
+      });
+      if (put.ok) return true;
+      if (put.status !== 412) return false;
+      await sleep(300 + Math.random() * 700);
+    }
+  } catch {
+    // fall through: the operation itself is done, only its log row is missing
+  }
+  return false;
 }
 
 /* ---------- preview and publish ---------- */
@@ -272,8 +341,9 @@ async function bulk(kind, body, update, label) {
       // the paths that failed, from the job's per-page results
       const dr = await helix(`${links.self.replace(HELIX, '')}/details`);
       const details = dr.ok ? await dr.json() : null;
-      const failed = (details?.data?.resources || []).filter((r) => r.status >= 400).map((r) => r.path);
-      return failed.length ? failed : body.paths;
+      const failed = (details?.data?.resources || []).filter((r) => r.status >= 400)
+        .map((r) => ({ path: r.path, status: r.status }));
+      return failed.length ? failed : body.paths.map((path) => ({ path, status: 0 }));
     }
   }
   throw new Error(`${label} is still running. Check again in a few minutes.`);
@@ -281,7 +351,7 @@ async function bulk(kind, body, update, label) {
 
 /**
  * Runs a bulk job over `paths` and retries the pages that failed once (failures are usually a page
- * timing out). Returns the paths that still failed.
+ * timing out). Returns { retried, failed }: the first failures with their status, the paths that still failed.
  */
 async function bulkPaths(kind, paths, update, label, extra = {}) {
   const run = async (list, text) => {
@@ -291,11 +361,20 @@ async function bulkPaths(kind, paths, update, label, extra = {}) {
     }
     return failed;
   };
-  const failed = await run(paths, label);
-  if (!failed.length) return [];
-  update(`${label}: retrying ${failed.length} pages`);
+  const retried = await run(paths, label);
+  if (!retried.length) return { retried, failed: [] };
+  update(`${label}: retrying ${retried.length} pages`);
   await sleep(5000);
-  return run(failed, `${label} (retry)`);
+  const failed = (await run(retried.map((f) => f.path), `${label} (retry)`)).map((f) => f.path);
+  return { retried, failed };
+}
+
+/** For the log: what was retried (with the first error status) and what still failed. */
+function retryComment(what, { retried, failed }) {
+  if (!retried.length) return '';
+  const list = retried.map((f) => `${f.path}${f.status ? ` (${f.status})` : ''}`).join(', ');
+  const outcome = failed.length ? `Still failing after the retry: ${failed.join(', ')}.` : 'All worked on the retry.';
+  return `${what} failed at first and was retried for ${list}. ${outcome}`;
 }
 
 /** Web path of a DA file: /en/index.html → /en/, /en/press.html → /en/press, sheets keep .json. */
@@ -306,7 +385,7 @@ function webPath(file) {
 
 /* ---------- backup ---------- */
 
-async function backup(step) {
+async function backup(step, notes) {
   let s = step('Reading the demo');
   const items = await topItems(ROOT);
   if (!items.length) throw new Error('The demo is empty, so there\'s nothing to back up.');
@@ -318,6 +397,7 @@ async function backup(step) {
     await daDelete(item.path);
   }
   s('Removed the previous backup', 'done');
+  notes.push('Removed the previous backup.');
 
   s = step('Copying');
   for (const item of items) {
@@ -327,16 +407,18 @@ async function backup(step) {
   s('Copied the demo', 'done');
 
   s = step('Checking the backup');
-  const copied = await daWalk(BACKUP, false);
+  const copied = [...await daWalk(BACKUP, false), ...await daWalk(`${BACKUP}/.da`, false)]
+    .filter((f) => f.path !== OPS);
   const info = { created: new Date().toISOString(), by: email, files: String(copied.length) };
   await writeBackupInfo(info);
   s(`Backup ready: ${copied.length} files`, 'done');
   showBackupInfo(info);
+  return { comments: `Backed up ${copied.length} files.` };
 }
 
 /* ---------- reset ---------- */
 
-async function reset(step) {
+async function reset(step, notes) {
   let s = step('Checking the backup');
   const info = await readBackupInfo();
   if (!info) throw new Error('no_backup');
@@ -344,18 +426,16 @@ async function reset(step) {
   if (!items.length) throw new Error('no_backup');
   s(`Backup from ${new Date(info.created).toLocaleString()}`, 'done');
 
-  // pages added since the backup: in the demo now, not in the backup (pages that were already
-  // live without a DA page before the backup, e.g. fragments used by Target offers, are left alone)
-  s = step('Listing the current pages');
-  const before = (await daWalk(ROOT)).filter((f) => PUBLISHABLE.has(f.ext)).map(webPath);
-  s(`${before.length} pages and sheets now`, 'done');
-
-  s = step('Removing the current demo');
-  for (const item of await topItems(ROOT)) {
-    s(`Removing ${rel(item.path, ROOT)}`);
-    await daDelete(item.path);
-  }
-  s('Removed the current demo', 'done');
+  // Copy the backup over the demo instead of deleting it first: a page that's overwritten keeps its
+  // document ID, so its comments (stored by ID in .da) stay attached. Then remove what the backup doesn't have.
+  s = step('Comparing the demo with the backup');
+  const current = await allFiles(ROOT);
+  const saved = new Set((await allFiles(BACKUP)).map((f) => rel(f.path, BACKUP)));
+  const extra = current.filter((f) => !saved.has(rel(f.path, ROOT)));
+  // pages added since the backup are taken offline later (pages that were live without a DA page
+  // before the backup, e.g. fragments used by Target offers, are left alone)
+  const before = current.filter((f) => PUBLISHABLE.has(f.ext) && !isHidden(f.path, ROOT)).map(webPath);
+  s(`${extra.length} files added since the backup`, 'done');
 
   s = step('Restoring');
   for (const item of items) {
@@ -363,6 +443,15 @@ async function reset(step) {
     await daCopy(item.path, `${ROOT}${rel(item.path, BACKUP)}`);
   }
   s('Restored the backup', 'done');
+  notes.push(`Restored the backup from ${info.created}.`);
+
+  s = step('Removing files added since the backup');
+  for (const file of extra) {
+    s(`Removing ${rel(file.path, ROOT)}`);
+    await daDelete(file.path);
+  }
+  s(extra.length ? `Removed ${extra.length} files` : 'Nothing to remove', 'done');
+  if (extra.length) notes.push(`Removed ${extra.length} files added since the backup: ${extra.map((f) => rel(f.path, ROOT)).join(', ')}.`);
 
   s = step('Listing pages');
   const pages = (await daWalk(ROOT)).filter((f) => PUBLISHABLE.has(f.ext)).map(webPath);
@@ -370,32 +459,37 @@ async function reset(step) {
 
   // keep going when some pages fail, so the rest of the demo is still published; report them at the end
   s = step('Previewing');
-  const previewFailed = await bulkPaths('preview', pages, s, 'Previewing');
-  s(`Previewed ${pages.length - previewFailed.length} of ${pages.length}`, previewFailed.length ? 'fail' : 'done');
+  const preview = await bulkPaths('preview', pages, s, 'Previewing');
+  s(`Previewed ${pages.length - preview.failed.length} of ${pages.length}`, preview.failed.length ? 'fail' : 'done');
+  notes.push(`Previewed ${pages.length - preview.failed.length} of ${pages.length} pages and sheets.`, retryComment('Preview', preview));
 
   s = step('Publishing');
-  const publishFailed = await bulkPaths('live', pages, s, 'Publishing');
-  s(`Published ${pages.length - publishFailed.length} of ${pages.length}`, publishFailed.length ? 'fail' : 'done');
-  const problems = [...new Set([...previewFailed, ...publishFailed])];
+  const publish = await bulkPaths('live', pages, s, 'Publishing');
+  s(`Published ${pages.length - publish.failed.length} of ${pages.length}`, publish.failed.length ? 'fail' : 'done');
+  notes.push(`Published ${pages.length - publish.failed.length} of ${pages.length} pages and sheets.`, retryComment('Publish', publish));
+  const problems = [...new Set([...preview.failed, ...publish.failed])];
 
   s = step('Unpublishing pages added since the backup');
   const restored = new Set(pages);
   const stale = before.filter((p) => !restored.has(p));
   let removalFailed = [];
   if (stale.length) {
-    removalFailed = [...new Set([
-      ...await bulkPaths('live', stale, s, 'Unpublishing added pages', { delete: true }),
-      ...await bulkPaths('preview', stale, s, 'Unpreviewing added pages', { delete: true }),
-    ])];
+    notes.push(`Pages added since the backup: ${stale.join(', ')}.`);
+    const unpublished = await bulkPaths('live', stale, s, 'Unpublishing added pages', { delete: true });
+    notes.push(retryComment('Unpublishing', unpublished));
+    const unpreviewed = await bulkPaths('preview', stale, s, 'Unpreviewing added pages', { delete: true });
+    notes.push(retryComment('Unpreviewing', unpreviewed));
+    removalFailed = [...new Set([...unpublished.failed, ...unpreviewed.failed])];
   }
   if (removalFailed.length) s(`Couldn't unpublish ${removalFailed.length} of ${stale.length} added pages`, 'fail');
   else s(stale.length ? `Unpublished ${stale.length} added pages` : 'No added pages', 'done');
-  const notes = [];
-  if (problems.length) notes.push(`These pages didn't preview or publish, even on retry: ${problems.join(', ')}. Publish them from Experience Workspace, or reset again.`);
+  const advice = [];
+  if (problems.length) advice.push(`These pages didn't preview or publish, even on retry: ${problems.join(', ')}. Publish them from Experience Workspace, or reset again.`);
   // their DA pages are gone, so another reset won't find them: name them
-  if (removalFailed.length) notes.push(`These added pages may still be online: ${removalFailed.join(', ')}. Unpublish them with Sidekick.`);
-  const end = notes.length ? `Reset finished with problems. ${notes.join(' ')}` : 'The demo matches the backup';
-  step(end)(end, notes.length ? 'fail' : 'done');
+  if (removalFailed.length) advice.push(`These added pages may still be online: ${removalFailed.join(', ')}. Unpublish them with Sidekick.`);
+  const end = advice.length ? `Reset finished with problems. ${advice.join(' ')}` : 'The demo matches the backup';
+  step(end)(end, problems.length || removalFailed.length ? 'fail' : 'done');
+  return { result: problems.length || removalFailed.length ? 'problems' : 'ok' };
 }
 
 /* ---------- CloneIt demos ---------- */
@@ -425,7 +519,7 @@ async function waitWorkerJob(site, job, update, label) {
   throw new Error(`${label} is still running. Try the delete again later.`);
 }
 
-async function deleteClone(site, step) {
+async function deleteClone(site, step, notes) {
   const call = (name, extra = {}) => worker('admin/delete', { site, step: name, ...extra });
 
   let s = step('Finding its pages');
@@ -440,11 +534,13 @@ async function deleteClone(site, step) {
       await waitWorkerJob(site, job, s, label);
     }
     s(`${label}: ${r.count || 0} pages`, 'done');
+    notes.push(`${label}: ${r.count || 0} pages.`);
   }
 
   s = step('Removing its permissions');
   const perms = await call('permissions');
   s(perms.removed?.length ? `Removed permissions for ${perms.removed.join(', ')}` : 'No permissions to remove', 'done');
+  notes.push(perms.removed?.length ? `Removed permissions for ${perms.removed.join(', ')}.` : 'No permissions to remove.');
 
   s = step('Deleting its content');
   let more = true;
@@ -453,14 +549,17 @@ async function deleteClone(site, step) {
   }
   if (more) throw new Error(`/${ORG}/${site} still has content. Try the delete again.`);
   s(`Deleted /${ORG}/${site}`, 'done');
+  notes.push('Deleted its content.');
 
   s = step('Deleting the site');
   await call('site');
   s('Deleted the site', 'done');
+  notes.push('Deleted the site.');
 
   s = step('Deleting the GitHub repo');
   await call('repo');
   s(`Deleted ${ORG}/${site}`, 'done');
+  notes.push('Deleted the GitHub repo.');
   step(`${site} is deleted`)(`${site} is deleted`, 'done');
 }
 
@@ -501,7 +600,7 @@ async function loadClones() {
           action: 'Delete demo',
         });
         if (!yes) return;
-        await run('clone-log', (step) => deleteClone(c.site, step));
+        await run('clone-log', (step, notes) => deleteClone(c.site, step, notes), { action: 'delete demo', target: c.site });
         loadClones();
       });
       tr.append(
@@ -551,7 +650,7 @@ $('backup').addEventListener('click', async () => {
     text: 'This replaces the previous backup.',
     action: 'Back up',
   });
-  if (yes) run('backup-log', backup);
+  if (yes) run('backup-log', backup, { action: 'backup', target: SITE });
 });
 
 $('reset').addEventListener('click', async () => {
@@ -563,7 +662,7 @@ $('reset').addEventListener('click', async () => {
     typed: SITE,
     action: 'Reset demo',
   });
-  if (yes) run('reset-log', reset);
+  if (yes) run('reset-log', reset, { action: 'reset', target: SITE });
 });
 
 init();
