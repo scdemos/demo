@@ -72,6 +72,80 @@
   display: block;
 }
 
+/* footer under the content, e.g. "Don't show this again" */
+.modal .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--gap-m);
+  padding-top: var(--gap-s);
+  border-top: var(--border);
+}
+
+.modal .modal-footer[hidden] {
+  display: none;
+}
+
+.modal .modal-dismiss {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-2xs);
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  cursor: pointer;
+}
+
+.modal .modal-dismiss input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.modal .modal-dismiss label {
+  cursor: pointer;
+}
+
+/* announcements (What's new): a narrower dialog with a smaller title */
+.modal.modal-announce .modal-dialog {
+  width: min(440px, calc(100vw - var(--gap-l)));
+  padding: var(--gap-m);
+}
+
+.modal.modal-announce .modal-close {
+  position: absolute;
+  top: var(--gap-s);
+  right: var(--gap-s);
+  width: 32px;
+  height: 32px;
+}
+
+.modal.modal-announce .modal-main .default-content-wrapper {
+  margin: 0;
+}
+
+.modal.modal-announce .modal-main .section > * + * {
+  margin-top: 0;
+}
+
+.modal.modal-announce .modal-main :is(h1, h2) {
+  margin: 0 0 var(--gap-s);
+  padding-right: var(--gap-l);
+  font-size: var(--step-1);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.modal.modal-announce .modal-footer {
+  margin-top: var(--gap-xs);
+  padding-top: 0;
+  border-top: 0;
+}
+
+.modal.modal-announce .modal-main .section {
+  padding-block: 0;
+}
+
 @media (width >= 600px) {
   .modal {
     padding: var(--gap-s);

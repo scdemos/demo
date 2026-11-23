@@ -2,6 +2,7 @@ import { createOptimizedPicture } from '../../scripts/aem.js';
 import { createTag } from '../../scripts/shared.js';
 
 const AUTOPLAY_MS = 7000;
+const DETACHED_TICKS = 3;
 
 function showSlide(block, index, { focus = false } = {}) {
   const slides = [...block.querySelectorAll('.carousel-slide')];
@@ -59,7 +60,20 @@ function startAutoplay(block) {
   let userPaused = false;
   const track = block.querySelector('.carousel-slides');
   const toggle = createTag('button', { type: 'button', class: 'carousel-toggle', 'aria-label': 'Pause slides' });
-  const advance = () => showSlide(block, Number(block.dataset.activeSlide) + 1);
+  // Content can be decorated before it is on the page (e.g. a dialog's carousel), so a
+  // carousel off the page is waited for, and dropped once it has left or never arrives.
+  let mounted = false;
+  let missed = 0;
+  const advance = () => {
+    if (!block.isConnected) {
+      missed += 1;
+      if (mounted || missed >= DETACHED_TICKS) clearInterval(timer);
+      return;
+    }
+    mounted = true;
+    missed = 0;
+    showSlide(block, Number(block.dataset.activeSlide) + 1);
+  };
   const stop = () => {
     clearInterval(timer);
     block.classList.add('paused');
@@ -119,7 +133,9 @@ function buildControls(block, count) {
 
 /**
  * Carousel: each row is a slide (image cell, content cell).
- * Variants: `autoplay` rotates slides with a progress indicator (pause button; also paused
+ * Variants: `whats-new` is a light, compact look for announcements in a dialog (the line above
+ * a slide's heading becomes its label); `autoplay` rotates slides with a progress indicator
+ * (pause button; also paused
  * on hover/focus).
  * @param {Element} block
  */
