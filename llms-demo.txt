@@ -1,51 +1,69 @@
-# FIRE
+# Frescopa
 
-> An educational platform for the FIRE (Financial Independence, Retire Early) movement, helping Canadians achieve financial independence through disciplined saving, intentional spending, and long-term investing.
+> Frescopa designs products, services and places around the way people live: subscription plans, care and concierge services, 120 Frescopa Houses in 38 markets, and Frescopa Circle, a free membership with member prices and Velo points.
 
-diyFIRE offers a rich content library, interactive tools, guided learning journeys, live events, and curated products for every stage of the financial independence journey. The platform's core belief: financial literacy remains one of the most overlooked skills in modern life, and the goal of FIRE is the freedom to pursue work and interests without financial pressure.
+Plans start at $19 a month with Frescopa Go, which you can pause or switch any month. Frescopa One, from $49 a month, adds Care+, priority Concierge, 3× Velo points and a 60-day guarantee. Household and business plans cost more. Frescopa Circle has more than 4 million members across three tiers: Circle, Circle Plus and Circle Signature. Chat support is available 24/7, and phone support every day from 7am to 11pm ET.
 
-## Getting Started
+## Start here
 
-- [Home](https://demo.bbird.live/): Platform overview and the diyFIRE philosophy
-- [Start Here](https://demo.bbird.live/start-here): 5-minute quiz generating a personalized FIRE plan
-- [New to Investing](https://demo.bbird.live/new-to-investing): Foundational resources for beginners
-- [Already Investing](https://demo.bbird.live/already-investing): Advanced content for those further along the path
-- [Guided Journey](https://demo.bbird.live/guided-journey): Structured, step-by-step learning path through financial independence
-- [About Us](https://demo.bbird.live/about-us): Team background and mission
+- [Home](https://demo.bbird.live/en/): What Frescopa offers and how Circle membership makes it better
+- [Your first 90 days with Frescopa](https://demo.bbird.live/en/guides/first-90-days): Set up in week one, make it yours in month one, review at day 90
+- [What's new](https://demo.bbird.live/en/whats-new): Product updates, new Frescopa Houses and account changes, newest first
 
-## Learn
+## Plans and products
 
-- [Learn Hub](https://demo.bbird.live/learn): Full content library organized by topic
-- [FIRE](https://demo.bbird.live/learn/fire): What FIRE is, its flavours, and how to pursue it
-- [TFSA](https://demo.bbird.live/learn/tfsa): Tax-Free Savings Account — rules, contribution room, and strategy
-- [RRSP](https://demo.bbird.live/learn/rrsp): Registered Retirement Savings Plan — deductions, withdrawals, and optimal use
-- [FHSA](https://demo.bbird.live/learn/fhsa): First Home Savings Account — Canada's newest registered account
-- [RESP](https://demo.bbird.live/learn/resp): Registered Education Savings Plan — saving for a child's education
-- [Investing](https://demo.bbird.live/learn/investing): ETFs, stocks, bonds, and investment strategy fundamentals
-- [Retirement](https://demo.bbird.live/learn/retirement): Retirement planning including CPP, OAS, and GIS
-- [Unregistered Accounts](https://demo.bbird.live/learn/unregistered-cash): Non-registered investment strategies
-- [TFSA vs RRSP vs FHSA](https://demo.bbird.live/learn/accounts/tfsa-vs-rrsp-vs-fhsa): Side-by-side account comparison guide
+- [Products & Services](https://demo.bbird.live/en/products): Compare plans, services and collections
+- [Shop all plans and collections](https://demo.bbird.live/en/collections): Filter by category or collection and sort by price
+- [Frescopa Go](https://demo.bbird.live/en/products/go): Lightweight and flexible, pause or switch any month
+- [Frescopa Flex](https://demo.bbird.live/en/products/flex): Everything you need to get started, nothing you don't
+- [Frescopa Duo](https://demo.bbird.live/en/products/duo): One plan for two, with shared benefits and a single bill
+- [Frescopa One](https://demo.bbird.live/en/products/frescopa-one): The most complete plan, with Care+, priority Concierge and 3× Velo points
+- [Signature Household](https://demo.bbird.live/en/products/signature-household): Up to five people, every benefit, one Concierge
+- [Horizon Plus](https://demo.bbird.live/en/products/horizon-plus): Built for travel, with cover in 38 markets
+- [Business Essentials](https://demo.bbird.live/en/products/business-essentials): For teams of 5–50, with a named account manager
+- [Business Signature](https://demo.bbird.live/en/products/business-signature): Volume pricing, priority service and custom reporting
+- [Care+ add-on](https://demo.bbird.live/en/products/care-plus): Repairs and replacements, usually in 48 hours
+- [Gift card](https://demo.bbird.live/en/products/gift-card): Any amount from $25, delivered instantly
+- [Circle gift](https://demo.bbird.live/en/products/circle-gift): A year of Circle Plus, wrapped and ready
 
-## Articles
+## Services
 
-- [Articles](https://demo.bbird.live/articles): Latest articles on personal finance, investing, and FIRE
+- [Frescopa Concierge](https://demo.bbird.live/en/services/concierge): One named specialist for anything complex, urgent or important
+- [Horizon Workshop](https://demo.bbird.live/en/products/horizon-workshop): Free 60-minute session at any Frescopa House
+- [Book a visit](https://demo.bbird.live/en/booking): Book a free setup session, workshop or member breakfast
 
-## Events
+## Membership
 
-- [Events](https://demo.bbird.live/events): Workshops, webinars, and community events
+- [Frescopa Circle](https://demo.bbird.live/en/membership): Join free and compare Circle, Circle Plus and Circle Signature
+- [Compare tier benefits](https://demo.bbird.live/en/membership/benefits): Velo points, member pricing, delivery, returns, events and Concierge by tier
+- [Velo points and rewards](https://demo.bbird.live/en/membership/rewards): How to earn points and redeem them from 500 points
+- [Circle Insider](https://demo.bbird.live/en/membership/insider): Members-only offers, early access and invitations
 
-## Tools & Calculators
+## Offers
 
-- [Savings Rate Calculator](https://demo.bbird.live/tools/savings-rate): Calculate and optimize your savings rate toward FIRE
-- [Compound Interest Calculator](https://demo.bbird.live/tools/compound-interest-calculator): Project investment growth over time
-- [Net Worth Tracker](https://demo.bbird.live/tools/net-worth): Track and visualize your net worth progress
+- [Current offers](https://demo.bbird.live/en/offers): Member Week, Frescopa One promotions, team pricing and referral rewards
+- [Member Week, Dec 3–9](https://demo.bbird.live/en/offers/member-week): Double Velo points, early access and member prices up to 30% off
 
-## Products
+## Frescopa Houses and events
 
-- [Books](https://demo.bbird.live/products/books): Curated personal finance reading list
-- [Courses](https://demo.bbird.live/products/courses): Structured learning programs
-- [Tools](https://demo.bbird.live/products/tools): Premium financial planning tools
+- [Find a Frescopa House](https://demo.bbird.live/en/locations): 120 Houses in 38 markets, with opening hours and services
+- [Experiences and events](https://demo.bbird.live/en/experiences): Workshops, talks and evenings at Frescopa Houses and online
+- [Events calendar](https://demo.bbird.live/en/events): Open houses, workshops and member evenings you can book
 
-## FAQs
+## Stories and press
 
-- [FAQs](https://demo.bbird.live/faqs): Frequently asked questions about FIRE and investing
+- [Frescopa Journal](https://demo.bbird.live/en/stories): Long reads from the people and places behind Frescopa
+- [Explore](https://demo.bbird.live/en/explore): Stories, practical guides and ideas
+- [What 4 million members taught us](https://demo.bbird.live/en/stories/what-4-million-members-taught-us): Ten years of Frescopa Circle in members' words
+- [Press releases](https://demo.bbird.live/en/press): New Houses, new plans and company news
+
+## Support
+
+- [Help centre](https://demo.bbird.live/en/support): Answers about plans, billing, orders, Velo points, bookings, privacy and accessibility
+- [Contact us](https://demo.bbird.live/en/support/contact): Chat 24/7, call 7am–11pm ET daily, visit or write
+- [Policies](https://demo.bbird.live/en/support/policies): Privacy, terms, returns, accessibility and cookies
+
+## Optional
+
+- [Frescopa in German](https://demo.bbird.live/de/): German-language home page
+- [Search](https://demo.bbird.live/en/search): Search stories, guides, products, events and member benefits
