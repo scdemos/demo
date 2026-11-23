@@ -8,5 +8,23 @@
 <script nonce="aem" src="/scripts/scripts.js" type="module"></script>
 <link rel="stylesheet" href="/styles/styles.css"/>
 <link rel="preload" as="script" crossorigin="anonymous" href="/plugins/martech/src/index.js" nonce="aem"/>
-<link rel="preload" as="script" crossorigin="anonymous" href="/plugins/martech/src/alloy.min.js" nonce="aem"/>
+<script nonce="aem">
+  /* Fetch eager-phase plugins at parse time, only on pages whose metadata uses them. */
+  (() => {
+    const { nonce } = document.currentScript;
+    const has = (selector) => document.head.querySelector(selector);
+    const preload = (href) => {
+      const link = document.createElement('link');
+      link.rel = 'modulepreload';
+      link.href = href;
+      link.nonce = nonce;
+      document.head.append(link);
+    };
+    if (has('meta[name="target"]')) preload('/plugins/martech/src/alloy.min.js');
+    if (has('[name^="experiment"],[name^="campaign-"],[name^="audience-"],[property^="campaign:"],[property^="audience:"]')) {
+      preload('/plugins/experimentation/src/index.js');
+    }
+    if (has('meta[name^="experiment"]')) preload('/plugins/experimentation/src/ued.js');
+  })();
+</script>
 <link rel="preconnect" href="https://data.bbird.live"/>
