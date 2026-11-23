@@ -3,7 +3,7 @@
   <head>
     <title>Demo admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="description" content="Back up and reset the demo site, and delete CloneIt demos">
+    <meta name="description" content="Back up and reset the demo site, sync its products, and delete CloneIt demos">
     <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="/styles/styles.css">
     <link rel="stylesheet" href="/styles/fonts.css">
@@ -16,7 +16,7 @@
       <p class="admin-status" id="status" role="status">Checking your Adobe sign-in…</p>
 
       <div id="tools" hidden>
-        <p class="admin-meta">Every backup, reset and delete is recorded in the <a href="https://da.live/sheet#/scdemos/demo/.backup/demo-admin-operations" target="_blank" rel="noopener">operations log</a>.</p>
+        <p class="admin-meta">Every backup, reset, product sync and delete is recorded in the <a href="https://da.live/sheet#/scdemos/demo/.backup/demo-admin-operations" target="_blank" rel="noopener">operations log</a>.</p>
         <section class="admin-card" aria-labelledby="backup-title">
           <h2 id="backup-title">Backup</h2>
           <p>Copies the demo to <code>/demo/.backup</code> and replaces the previous backup. Drafts aren't included.</p>
@@ -32,6 +32,12 @@
           <ol class="admin-log" id="reset-log" aria-live="polite" hidden></ol>
         </section>
 
+        <section class="admin-card" aria-labelledby="products-title">
+          <h2 id="products-title">Products</h2>
+          <p>Sends the <a href="https://da.live/sheet#/scdemos/demo/en/data/products" target="_blank" rel="noopener">products sheet</a> to Edge Commerce, which builds a page for each product and the catalog's index. Run it after changing the sheet. Products removed from the sheet are removed from Edge Commerce.</p>
+          <button type="button" id="sync">Sync products</button>
+          <ol class="admin-log" id="sync-log" aria-live="polite" hidden></ol>
+        </section>
         <section class="admin-card" aria-labelledby="clones-title">
           <h2 id="clones-title">CloneIt demos</h2>
           <p>Deleting a demo unpublishes and unpreviews its pages, removes its permissions and content, then deletes the site and its GitHub repo.</p>

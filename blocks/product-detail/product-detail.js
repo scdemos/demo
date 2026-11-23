@@ -24,7 +24,10 @@ function readConfig(block) {
     const key = toClassName(keyCell?.textContent || '');
     if (!valueCell || !CONFIG_KEYS.includes(key)) return;
     config[key] = key === 'plans'
-      ? [...valueCell.querySelectorAll('li')].map((li) => li.textContent.trim())
+      ? [...valueCell.querySelectorAll('li')].map((li) => ({
+        text: li.textContent.trim(),
+        href: li.querySelector('a')?.getAttribute('href') || '',
+      }))
       : valueCell.textContent.trim();
     row.remove();
   });
@@ -137,18 +140,53 @@ function decorateContent(cell) {
   });
 }
 
-function buildPlans(cfg, priceEl, uid) {
+function parsePlan({ text, href }) {
+  const [name, priceText = ''] = text.split(/\s+[—–|]\s+/);
+  const [, amount = priceText, period = ''] = priceText.match(/^(\S+?)(\/.*)?$/) || [];
+  return {
+    name, amount, period, href, value: toClassName(name),
+  };
+}
+
+function planLabel(tag, plan, attrs = {}) {
+  const el = createTag(tag, { class: 'product-detail-plan', ...attrs });
+  el.append(createTag('span', { class: 'product-detail-plan-name' }, plan.name));
+  if (plan.amount) {
+    el.append(createTag('span', { class: 'product-detail-plan-price' }, `${plan.amount}${plan.period}`));
+  }
+  return el;
+}
+
+/** Linked plans (each its own product page) become navigation; the current page is marked. */
+function buildPlanLinks(cfg, plans, page) {
+  const nav = createTag('nav', { class: 'product-detail-plans' });
+  const label = cfg['plans-label'] || '';
+  if (label) {
+    nav.setAttribute('aria-label', label);
+    nav.append(createTag('p', { class: 'product-detail-plans-label' }, label));
+  }
+  const ul = createTag('ul');
+  const here = page.replace(/\/$/, '');
+  plans.forEach((plan) => {
+    const current = new URL(plan.href, window.location.href).pathname.replace(/\/$/, '') === here;
+    const link = planLabel('a', plan, { href: plan.href });
+    if (current) link.setAttribute('aria-current', 'page');
+    const li = createTag('li');
+    li.append(link);
+    ul.append(li);
+  });
+  nav.append(ul);
+  return nav;
+}
+
+function buildPlans(cfg, priceEl, uid, page) {
   if (!cfg.plans?.length) return null;
+  const plans = cfg.plans.map(parsePlan);
+  if (plans.every((p) => p.href)) return buildPlanLinks(cfg, plans, page);
+
   const fieldset = createTag('fieldset', { class: 'product-detail-plans' });
   fieldset.append(createTag('legend', {}, cfg['plans-label'] || ''));
   const requested = toClassName(new URLSearchParams(window.location.search).get('plan') || '');
-  const plans = cfg.plans.map((entry) => {
-    const [name, priceText = ''] = entry.split(/\s+[—–|]\s+/);
-    const [, amount = priceText, period = ''] = priceText.match(/^(\S+?)(\/.*)?$/) || [];
-    return {
-      name, amount, period, value: toClassName(name),
-    };
-  });
   const selected = plans.find((p) => requested && p.value.includes(requested)) || plans[0];
 
   const apply = (plan) => {
@@ -165,18 +203,27 @@ function buildPlans(cfg, priceEl, uid) {
     });
     input.checked = plan === selected;
     input.addEventListener('change', () => apply(plan));
-    const label = createTag('label', { for: id, class: 'product-detail-plan' });
-    label.append(input, createTag('span', { class: 'product-detail-plan-name' }, plan.name));
-    if (plan.amount) {
-      label.append(createTag('span', { class: 'product-detail-plan-price' }, `${plan.amount}${plan.period}`));
-    }
+    const label = planLabel('label', plan, { for: id });
+    label.prepend(input);
     fieldset.append(label);
   });
   if (selected !== plans[0]) apply(selected);
   return fieldset;
 }
 
+/** True when the page already carries Product structured data (Edge Commerce renders its own). */
+function hasProductSchema() {
+  return [...document.querySelectorAll('script[type="application/ld+json"]')].some((s) => {
+    try {
+      return [JSON.parse(s.textContent)].flat().some((d) => d?.['@type'] === 'Product');
+    } catch (e) {
+      return false;
+    }
+  });
+}
+
 function buildSchema(block, cfg) {
+  if (hasProductSchema()) return;
   const name = block.querySelector('h1, h2')?.textContent.trim();
   if (!name) return;
   const img = block.querySelector('.product-detail-stage img');
@@ -218,14 +265,17 @@ export default function decorate(block) {
   if (!row) return;
   const cells = [...row.children];
   const mediaCell = cells.find((c) => c.querySelector('picture') && !c.querySelector('h1, h2'));
-  const contentCell = cells.find((c) => c !== mediaCell) || cells[0];
+  // the cell with the heading; a product without images can come with an empty media cell
+  const contentCell = cells.find((c) => c !== mediaCell && c.querySelector('h1, h2'))
+    || cells.find((c) => c !== mediaCell) || cells[0];
   const uid = `pdp-${Math.random().toString(36).slice(2, 7)}`;
 
   decorateContent(contentCell);
   contentCell.classList.add('product-detail-buy');
   const priceEl = contentCell.querySelector('.product-detail-price');
   if (priceEl) priceEl.setAttribute('aria-live', 'polite');
-  const plans = buildPlans(cfg, priceEl, uid);
+  // an embedded product page (aem-embed) carries its own address
+  const plans = buildPlans(cfg, priceEl, uid, block.dataset.page || window.location.pathname);
   if (plans) {
     const anchor = contentCell.querySelector('.product-detail-features, .button-group, .button-container');
     if (anchor) anchor.before(plans);

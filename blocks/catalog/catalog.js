@@ -143,14 +143,20 @@ export default async function decorate(block) {
   }
 
   let items = [];
-  try {
-    const resp = await fetch(cfg.source);
-    if (resp.ok) {
-      const json = await resp.json();
-      items = json.data || [];
+  if (/\/products\/index\.json$/.test(cfg.source)) {
+    // the Edge Commerce product index
+    const { loadProducts } = await import('../../scripts/products.js');
+    items = await loadProducts({ index: cfg.source });
+  } else {
+    try {
+      const resp = await fetch(cfg.source);
+      if (resp.ok) {
+        const json = await resp.json();
+        items = json.data || [];
+      }
+    } catch (e) {
+      items = [];
     }
-  } catch (e) {
-    items = [];
   }
   items = items.filter((item) => matches(item, cfg.match));
   if (cfg.limit) items = items.slice(0, cfg.limit);

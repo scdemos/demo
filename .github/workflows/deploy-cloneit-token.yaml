@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'workers/cloneit_token/**'
+      - 'scripts/products.js'
 
 jobs:
   deploy:

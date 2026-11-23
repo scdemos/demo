@@ -168,7 +168,16 @@
   border: 0;
 }
 
-.product-detail .product-detail-plans legend {
+.product-detail .product-detail-plans ul {
+  display: grid;
+  gap: var(--gap-3xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product-detail .product-detail-plans legend,
+.product-detail .product-detail-plans-label {
   margin-bottom: var(--gap-3xs);
   padding: 0;
   color: var(--color-text-strong);
@@ -186,6 +195,20 @@
   cursor: pointer;
 }
 
+.product-detail a.product-detail-plan {
+  text-decoration: none;
+}
+
+.product-detail a.product-detail-plan:hover {
+  border-color: var(--color-text-strong);
+}
+
+.product-detail a.product-detail-plan:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.product-detail .product-detail-plan[aria-current="page"],
 .product-detail .product-detail-plan:has(input:checked) {
   border-color: var(--color-text-strong);
   box-shadow: inset 0 0 0 1px var(--color-text-strong);
