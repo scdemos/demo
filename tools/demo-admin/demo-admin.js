@@ -32,18 +32,41 @@ function workerUrl() {
 }
 const WORKER = workerUrl();
 
+const TRY_AGAIN = 'Try again in a few minutes. If it keeps failing, report code';
 const MESSAGES = {
   sign_in_required: 'Open this page from da.live while signed in with your Adobe account.',
+  token_not_accepted: 'Open this page from da.live while signed in with your Adobe account.',
   token_invalid: 'Your Adobe sign-in expired. Reload the page.',
+  user_not_allowed: 'Only demo admins can use this page.',
   demo_admins_only: 'Only demo admins can use this page.',
   no_backup: 'There\'s no backup yet. Back up the demo first.',
-  site_is_protected: 'This site is protected and can\'t be deleted here.',
-  not_a_cloneit_demo: 'This isn\'t a CloneIt demo.',
-  content_source_not_the_demo_folder: 'This site shows another folder\'s content, so it isn\'t deleted here.',
-  code_not_the_demo_repo: 'This site doesn\'t run on its own repo, so it isn\'t deleted here.',
-  not_found: 'The CloneIt worker doesn\'t have the admin routes yet. They go live when the Demo Admin change is deployed.',
+  site_is_protected: 'This site is protected and can\'t be deleted.',
+  not_a_cloneit_demo: 'This site wasn\'t created with CloneIt, so it can\'t be deleted here.',
+  content_source_not_the_demo_folder: 'This site shares content with another site, so it can\'t be deleted here.',
+  code_not_the_demo_repo: 'This site isn\'t set up like a CloneIt demo, so it can\'t be deleted here.',
+  invalid_site_name: 'That isn\'t a valid demo name.',
 };
-const say = (code) => MESSAGES[code] || code;
+// errors without their own message, by prefix
+const KINDS = [
+  ['github_repo_delete', 'Couldn\'t delete the GitHub repo.'],
+  ['github_', 'Couldn\'t reach GitHub.'],
+  ['org_config_', 'Couldn\'t update the permissions.'],
+  ['content_delete', 'Couldn\'t delete the demo\'s content.'],
+  ['site_config', 'Couldn\'t update the site settings.'],
+  ['bulk_job', 'Couldn\'t start publishing changes.'],
+  ['scan_', 'Couldn\'t check the demo\'s pages.'],
+  ['job_read', 'Couldn\'t check the demo\'s pages.'],
+];
+/** A message an admin can act on; unexpected errors keep a short code to pass on. */
+function say(error) {
+  const code = String(error || '');
+  if (MESSAGES[code]) return MESSAGES[code];
+  const kind = KINDS.find(([prefix]) => code.startsWith(prefix));
+  if (kind) return `${kind[1]} ${TRY_AGAIN} ${code.split(':')[0]}.`;
+  // the app's own errors are already sentences
+  if (/\s/.test(code)) return code;
+  return `Something went wrong. ${TRY_AGAIN} ${code || 'unknown'}.`;
+}
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => { setTimeout(r, ms); });
 
@@ -220,7 +243,7 @@ function showBackupInfo(info) {
     : 'No backup yet.';
 }
 
-/* ---------- Admin API ---------- */
+/* ---------- preview and publish ---------- */
 
 function helix(path, init = {}) {
   return fetch(`${HELIX}${path}`, {
@@ -246,7 +269,7 @@ async function bulk(kind, body, update, label) {
     if (p) update(`${label}: ${p.processed} of ${p.total}`);
     if (job?.state === 'stopped') return job;
   }
-  throw new Error(`${label} is still running. Check it later in the Admin API jobs.`);
+  throw new Error(`${label} is still running. Check again in a few minutes.`);
 }
 
 async function bulkPaths(kind, paths, update, label, extra = {}) {
@@ -344,18 +367,19 @@ async function reset(step) {
   s = step('Unpublishing pages added since the backup');
   const restored = new Set(pages);
   const stale = before.filter((p) => !restored.has(p));
-  failed = 0;
+  let removalFailed = 0;
   if (stale.length) {
-    failed += await bulkPaths('live', stale, s, 'Unpublishing added pages', { delete: true });
-    failed += await bulkPaths('preview', stale, s, 'Unpreviewing added pages', { delete: true });
+    removalFailed += await bulkPaths('live', stale, s, 'Unpublishing added pages', { delete: true });
+    removalFailed += await bulkPaths('preview', stale, s, 'Unpreviewing added pages', { delete: true });
   }
-  problems += failed;
-  if (failed) s(`Couldn't unpublish ${failed} of ${stale.length} added pages`, 'fail');
+  if (removalFailed) s(`Couldn't unpublish ${removalFailed} of ${stale.length} added pages`, 'fail');
   else s(stale.length ? `Unpublished ${stale.length} added pages` : 'No added pages', 'done');
-  const end = problems
-    ? `Reset finished with ${problems} failed pages. Check them in the Admin API job details, or reset again.`
-    : 'The demo matches the backup';
-  step(end)(end, problems ? 'fail' : 'done');
+  const notes = [];
+  if (problems) notes.push('Some restored pages didn\'t preview or publish: reset again, or publish them from Experience Workspace.');
+  // their DA pages are gone, so another reset won't find them: name them
+  if (removalFailed) notes.push(`Some added pages may still be online. Unpublish them with Sidekick: ${stale.join(', ')}.`);
+  const end = notes.length ? `Reset finished with problems. ${notes.join(' ')}` : 'The demo matches the backup';
+  step(end)(end, notes.length ? 'fail' : 'done');
 }
 
 /* ---------- CloneIt demos ---------- */
@@ -367,7 +391,7 @@ async function worker(path, body = {}) {
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  if (!res.ok) throw new Error(data.error || `http_${res.status}`);
   return data;
 }
 
