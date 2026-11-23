@@ -41,6 +41,7 @@ const MESSAGES = {
   not_a_cloneit_demo: 'This isn\'t a CloneIt demo.',
   content_source_not_the_demo_folder: 'This site shows another folder\'s content, so it isn\'t deleted here.',
   code_not_the_demo_repo: 'This site doesn\'t run on its own repo, so it isn\'t deleted here.',
+  not_found: 'The CloneIt worker doesn\'t have the admin routes yet. They go live when the Demo Admin change is deployed.',
 };
 const say = (code) => MESSAGES[code] || code;
 const $ = (id) => document.getElementById(id);
