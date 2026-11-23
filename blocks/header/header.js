@@ -36,6 +36,7 @@ const ICON_PATHS = {
   linkedin: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 10.5V16M8 7.8h.01M11.5 16v-5.5M11.5 13c0-1.5 1-2.6 2.4-2.6s2.1 1 2.1 2.6V16"/>',
   youtube: '<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="m10 9.2 5 2.8-5 2.8Z"/>',
   link: '<path d="M7 17 17 7M8 7h9v9"/>',
+  sparkle: '<path d="M12 3.5 13.9 9l5.6 2-5.6 2L12 18.5 10.1 13l-5.6-2 5.6-2Z"/><path d="M18.5 3v3M17 4.5h3"/>',
 };
 
 export const LOGO_MARK = '<svg class="header-logo" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="9" fill="currentColor"/><path d="M11.5 23V9h10" stroke="var(--color-bg)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M11.5 16h7.5" stroke="var(--flame-500, #e8471c)" stroke-width="3.6" stroke-linecap="round"/></svg>';
@@ -401,6 +402,27 @@ export default async function decorate(block) {
     const label = a.textContent.trim();
     if (a.closest('strong')) {
       ctas.push(createTag('a', { class: 'button primary header-cta', href: authoredHref(a) }, label));
+    } else if (/\.json(\?|$)/.test(a.getAttribute('href') || '')) {
+      /* a link to a sheet is What's new: a button that opens its latest rows in a dialog */
+      const button = createTag('button', {
+        class: 'header-icon-btn header-news', type: 'button', 'aria-label': label, title: label,
+      });
+      button.innerHTML = icon('sparkle');
+      button.append(createTag('span', { class: 'header-news-dot', 'aria-hidden': 'true' }));
+      actions.append(button);
+      import('./whats-new.js').then(({ default: whatsNew }) => whatsNew(button, {
+        path: authoredHref(a),
+        labels: {
+          title: labels['whats-new-title'] || label,
+          count: labels['whats-new-count'],
+          link: labels['whats-new-link'] || 'See how',
+          moreLabel: labels['whats-new-more-label'] || '',
+          moreText: labels['whats-new-more'],
+          moreLink: labels['whats-new-more-link'],
+          moreCta: labels['whats-new-more-cta'] || labels['whats-new-link'] || 'See how',
+          dismiss: labels['dont-show-again'] || "Don't show this again",
+        },
+      }));
     } else if (a.querySelector('.icon-search') || /search/i.test(`${a.getAttribute('href')} ${label}`)) {
       const search = createTag('a', { class: 'header-icon-btn header-search', href: authoredHref(a), 'aria-label': label });
       search.innerHTML = icon('search');

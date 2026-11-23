@@ -389,6 +389,30 @@ header:has(> .header) {
   grid-area: 1 / 1;
 }
 
+/* What's new button: a dot while something new hasn't been dismissed */
+.header .header-news {
+  position: relative;
+}
+
+.header .header-news-dot {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-accent);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--duration-1) var(--ease-out), transform var(--duration-1) var(--ease-out);
+}
+
+.header .header-news.has-new .header-news-dot {
+  opacity: 1;
+  transform: none;
+}
+
 .header .header-theme .chrome-icon-sun,
 [data-theme='dark'] .header .header-theme .chrome-icon-moon,
 .header .header-menu .chrome-icon-close,

@@ -8,6 +8,7 @@ import dynamicBlocks from '../dynamic/index.js';
 
 const FRAGMENT_PREFIX = '/fragments/';
 let initialized = false;
+let openModal;
 
 function getFragmentPath(href = '') {
   try {
@@ -30,33 +31,50 @@ export function setupFragmentModal(el) {
 
   const closeBtn = createTag('button', { type: 'button', class: 'modal-close', 'aria-label': 'Close dialog' }, '×');
   const content = createTag('div', { class: 'modal-content' });
+  const footer = createTag('div', { class: 'modal-footer', hidden: '' });
   const dialog = createTag('div', {
     class: 'modal-dialog',
     role: 'dialog',
     'aria-modal': 'true',
     'aria-label': 'Dialog',
-  }, [closeBtn, content]);
+  }, [closeBtn, content, footer]);
   const backdrop = createTag('div', { class: 'modal-backdrop', 'aria-hidden': 'true' });
   const modalRoot = createTag('div', { class: 'modal', hidden: 'true' }, [backdrop, dialog]);
   body.append(modalRoot);
   let previousFocus = null;
+  let onClose = null;
 
   const close = () => {
+    if (modalRoot.hidden) return;
     modalRoot.hidden = true;
     content.replaceChildren();
+    if (onClose) onClose();
+    onClose = null;
+    footer.replaceChildren();
+    footer.hidden = true;
+    modalRoot.className = 'modal';
+    dialog.setAttribute('aria-label', 'Dialog');
     body.classList.remove('is-locked');
     if (previousFocus?.focus) previousFocus.focus();
   };
 
-  const open = async (path) => {
+  const open = async (source, options = {}) => {
     previousFocus = el.getRootNode().activeElement;
+    onClose = options.onClose || null;
+    if (options.className) modalRoot.classList.add(options.className);
+    if (options.label) dialog.setAttribute('aria-label', options.label);
+    if (options.footer) {
+      footer.replaceChildren(options.footer);
+      footer.hidden = false;
+    }
     modalRoot.hidden = false;
     body.classList.add('is-locked');
     content.textContent = 'Loading...';
     closeBtn.focus();
 
     try {
-      const fragment = await loadFragment(path);
+      // a fragment path, or content that is already decorated (e.g. built from a sheet)
+      const fragment = typeof source === 'string' ? await loadFragment(source) : source;
       if (fragment) {
         const main = createTag('main', { class: 'modal-main' });
         main.append(...fragment.childNodes);
@@ -71,6 +89,7 @@ export function setupFragmentModal(el) {
     }
   };
 
+  openModal = open;
   closeBtn.addEventListener('click', close);
   backdrop.addEventListener('click', close);
   eventRoot.addEventListener('keydown', (e) => {
@@ -88,6 +107,18 @@ export function setupFragmentModal(el) {
     e.preventDefault();
     open(path);
   });
+}
+
+/**
+ * Opens a fragment, or ready-made content, in the dialog from anywhere, e.g. a header button.
+ * @param {string|Element} source fragment path, or an element whose children are shown
+ * @param {object} [options]
+ *   footer: element shown under the content; onClose: called when the dialog closes;
+ *   className: extra class on the modal for this fragment; label: dialog name
+ */
+export async function openFragmentModal(source, options) {
+  setupFragmentModal(document.querySelector('main') || document.body);
+  await openModal(source, options);
 }
 
 export default function decorate(block) {
