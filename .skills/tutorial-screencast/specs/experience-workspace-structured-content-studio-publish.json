@@ -1,0 +1,89 @@
+{
+  "slug": "experience-workspace-structured-content-studio-publish",
+  "restoreAfterTest": [
+    "/en/app/experience.html"
+  ],
+  "steps": [
+    {
+      "do": "openStudio",
+      "path": "/en/app/experience"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · Structured content",
+      "title": "Edit once, update every channel",
+      "items": [
+        "1 · Edit the app's content in Frescopa Studio",
+        "2 · Publish",
+        "3 · The app and the JSON API update"
+      ]
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 2500,
+      "caption": "**Frescopa Studio**: the form on the left, the app on the right"
+    },
+    {
+      "do": "studioEdit",
+      "field": "/data/actions/0/label",
+      "value": "Book a visit",
+      "n": 1,
+      "caption": "Rename the first quick action to **Book a visit**"
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 2200,
+      "caption": "The app updates as you type, before anything is published"
+    },
+    {
+      "do": "studioPublish",
+      "path": "/en/app/experience",
+      "field": "/data/actions/0/label",
+      "value": "Book a visit",
+      "n": 2,
+      "caption": "Click **Publish**"
+    },
+    {
+      "do": "openUrl",
+      "url": "https://scdemos.github.io/frescopa-app/app/",
+      "n": 3,
+      "caption": "The live Frescopa app shows the new label",
+      "zoom": 0.8
+    },
+    {
+      "do": "pointAt",
+      "text": "Book a visit",
+      "n": 3,
+      "hold": 1800,
+      "caption": "The live Frescopa app shows the new label",
+      "role": "button"
+    },
+    {
+      "do": "openUrl",
+      "url": "https://da-sc.adobeaem.workers.dev/live/scdemos/demo/en/app/experience",
+      "n": 3,
+      "caption": "Any other channel reads the same content as JSON",
+      "zoom": 1.8
+    },
+    {
+      "do": "pointAt",
+      "text": "Book a visit",
+      "n": 3,
+      "hold": 2200,
+      "caption": "Any other channel reads the same content as JSON"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Structured content",
+      "title": "Edit once, update every channel",
+      "items": [
+        "Studio saves to Experience Workspace as you type",
+        "Publish updates the app and the JSON endpoint",
+        "Add channels in the site config's channels sheet"
+      ]
+    }
+  ]
+}

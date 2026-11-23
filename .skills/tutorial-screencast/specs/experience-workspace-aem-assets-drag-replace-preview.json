@@ -1,0 +1,102 @@
+{
+  "slug": "experience-workspace-aem-assets-drag-replace-preview",
+  "page": "harbor-lights-weekend",
+  "uploadFolder": "/demo-docs/media",
+  "steps": [
+    {
+      "do": "openFolder"
+    },
+    {
+      "do": "closeChat"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · AEM Assets",
+      "title": "Use images from AEM Assets",
+      "items": [
+        "1 · Content view: drag an asset from the AEM Assets panel",
+        "2 · Layout view: Replace image › AEM Assets",
+        "3 · Preview the page"
+      ]
+    },
+    {
+      "do": "createPage",
+      "n": 1,
+      "caption": "Create a page: **New** › Page, name it, **Create**"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 1,
+      "caption": "Switch to **Content** view"
+    },
+    {
+      "do": "typeText",
+      "text": "Harbor lights weekend",
+      "style": "h1",
+      "n": 1,
+      "caption": "Add a heading: **Paragraph** › **Heading 1**"
+    },
+    {
+      "do": "openPanel",
+      "name": "AEM Assets",
+      "n": 2,
+      "hold": 2500,
+      "caption": "Open **Panels** › **AEM Assets**: approved assets from AEM as a Cloud Service"
+    },
+    {
+      "do": "dragAsset",
+      "name": "image8.jpg",
+      "n": 2,
+      "caption": "Drag an asset into the document"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 2000,
+      "caption": "The asset is on the page: no download, no re-upload"
+    },
+    {
+      "do": "view",
+      "mode": "layout",
+      "n": 3,
+      "hold": 1500,
+      "caption": "Switch to **Layout** view to see the page as visitors will"
+    },
+    {
+      "do": "replaceImage",
+      "name": "image5.jpg",
+      "n": 3,
+      "caption": "Click the image › **Replace image** › **AEM Assets**, pick one, **Select**",
+      "holdDetails": 2600
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 1800,
+      "caption": "The new asset replaces the old one in place"
+    },
+    {
+      "do": "preview",
+      "n": 4,
+      "caption": "**Send** › Preview › **Update**"
+    },
+    {
+      "do": "wait",
+      "ms": 3000,
+      "caption": "The previewed page shows the AEM asset"
+    },
+    {
+      "do": "endCard",
+      "kicker": "AEM Assets",
+      "title": "Approved assets, right in the editor",
+      "items": [
+        "Content view: drag from Panels › AEM Assets",
+        "Layout view: Replace image › AEM Assets",
+        "Assets must be approved and published in AEM"
+      ],
+      "hold": 3500
+    }
+  ]
+}

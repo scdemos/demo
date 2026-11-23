@@ -49,6 +49,19 @@ The issue-based [provisioning workflow](.github/workflows/provision-demo.yaml) r
 - Bot-protected sites need browser scraping or EMA.
 - Expect very close, not pixel-perfect, fidelity on complex interactions.
 
+## Tutorial videos
+
+Record a short captioned MP4 of a real Experience Workspace task, upload it to `/demo-docs/media` and embed it
+in a demo-docs page, or build a new usecase page with its video. In Claude Code run `/tutorial <demo-docs page or "new usecase: …">`;
+other agents can load [`.skills/tutorial-screencast/SKILL.md`](.skills/tutorial-screencast/SKILL.md).
+
+- **Setup (once):** Node 20+, then `node .skills/tutorial-screencast/scripts/setup.mjs`. It installs Playwright,
+  Chromium and ffmpeg into `~/.cache/tutorial-screencast` (nothing in the repo) and checks your da.live sign-in;
+  add `--login` to sign in.
+- **Your drafts:** test and real-take pages go to `/drafts/<you>/tutorial-pages` (`TUTORIAL_USER`, else your OS user name).
+- **Specs:** every published tutorial has its spec in `.skills/tutorial-screencast/specs/`, so you can re-record one
+  when the UI changes. Recordings stay local in `out/` (git-ignored).
+
 ## Documentation
 
 Before using the aem-boilerplate, we recommand you to go through the documentation on https://www.aem.live/docs/ and more specifically:

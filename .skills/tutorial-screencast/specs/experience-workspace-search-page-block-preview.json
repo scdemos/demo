@@ -1,0 +1,135 @@
+{
+  "slug": "experience-workspace-search-page-block-preview",
+  "page": "search-frescopa",
+  "steps": [
+    {
+      "do": "openFolder"
+    },
+    {
+      "do": "titleCard",
+      "hold": 2800,
+      "kicker": "Experience Workspace · Search block",
+      "title": "Author a search page",
+      "items": [
+        "1 · Create a page and add the Search block",
+        "2 · Configure it with simple rows",
+        "3 · Preview and search",
+        "4 · Switch from list to cards"
+      ]
+    },
+    {
+      "do": "createPage",
+      "n": 1,
+      "caption": "Create a page: **New** › Page, name it, **Create**"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 1,
+      "caption": "Switch to **Content** view to write"
+    },
+    {
+      "do": "typeText",
+      "text": "Search Frescopa",
+      "style": "h1",
+      "n": 1,
+      "caption": "Add a heading: **Paragraph** › **Heading 1**"
+    },
+    {
+      "do": "addBlock",
+      "search": "search",
+      "name": "Search",
+      "n": 1,
+      "caption": "Open **Blocks**, search the Library and add **Search**"
+    },
+    {
+      "do": "hover",
+      "text": "list",
+      "n": 2,
+      "caption": "**view** list shows a list, **searchbar** enabled adds a search box"
+    },
+    {
+      "do": "hover",
+      "text": "noindex",
+      "n": 2,
+      "caption": "**excluded-keywords** leaves out pages tagged noindex"
+    },
+    {
+      "do": "hover",
+      "text": "Article, Event",
+      "n": 2,
+      "caption": "Any other row becomes a filter: **Category** and **Type**"
+    },
+    {
+      "do": "preview",
+      "n": 3,
+      "caption": "**Send** › Preview › **Update**"
+    },
+    {
+      "do": "pointAt",
+      "text": "Showing all",
+      "n": 3,
+      "caption": "Results come from the site's index, newest first"
+    },
+    {
+      "do": "fillField",
+      "label": "Search",
+      "role": "searchbox",
+      "text": "house",
+      "submit": true,
+      "n": 3,
+      "caption": "Search: every word must match a title, description, path or keyword",
+      "hold": 2600
+    },
+    {
+      "do": "openPage",
+      "created": true
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 4,
+      "caption": "Back in the editor, change **list** to **cards**"
+    },
+    {
+      "do": "editText",
+      "in": "list",
+      "word": "list",
+      "with": "cards",
+      "n": 4,
+      "caption": "Back in the editor, change **list** to **cards**"
+    },
+    {
+      "do": "preview",
+      "n": 4,
+      "caption": "**Send** › Preview › **Update** again"
+    },
+    {
+      "do": "visit",
+      "fresh": true,
+      "until": {
+        "text": "cards"
+      },
+      "n": 4,
+      "caption": "**Send** › Preview › **Update** again",
+      "created": true
+    },
+    {
+      "do": "pointAt",
+      "text": "Showing all",
+      "n": 4,
+      "caption": "The results now show as cards"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Search block",
+      "title": "A search page, configured by authors",
+      "items": [
+        "view · searchbar · keywords · excluded-keywords",
+        "Extra rows become filter groups",
+        "Results come from the site's query index"
+      ],
+      "hold": 3000
+    }
+  ]
+}

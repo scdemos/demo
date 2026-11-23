@@ -1,0 +1,99 @@
+{
+  "slug": "edge-delivery-structured-content-api-page-json",
+  "restoreAfterTest": [
+    "/en/stories/what-4-million-members-taught-us.html"
+  ],
+  "steps": [
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/stories/what-4-million-members-taught-us"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Edge Delivery Services · Structured Content API",
+      "title": "Any page, also as JSON",
+      "items": [
+        "1 · A page on the website",
+        "2 · The same page as JSON",
+        "3 · Edit and publish once: both update"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "Members shape what comes next",
+      "n": 1,
+      "hold": 1500,
+      "caption": "A story on the website, authored in Experience Workspace"
+    },
+    {
+      "do": "openUrl",
+      "url": "https://sc-api.adobeaem.workers.dev/live/scdemos/demo/en/stories/what-4-million-members-taught-us",
+      "zoom": 1.5,
+      "n": 2,
+      "caption": "The same page from the **Structured Content API**: /live/scdemos/demo/…"
+    },
+    {
+      "do": "pointAt",
+      "text": "Members shape what comes next",
+      "n": 2,
+      "hold": 2200,
+      "caption": "Metadata, sections and blocks, ready for any app or service"
+    },
+    {
+      "do": "openPage",
+      "path": "/en/stories/what-4-million-members-taught-us",
+      "n": 3,
+      "caption": "Open the page in Experience Workspace"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 3,
+      "caption": "Open the page in Experience Workspace"
+    },
+    {
+      "do": "editText",
+      "where": "content",
+      "in": "Members shape what comes next",
+      "word": "comes",
+      "with": "we build",
+      "n": 3,
+      "caption": "Change the heading to **Members shape what we build next**"
+    },
+    {
+      "do": "publish",
+      "n": 3,
+      "caption": "**Send** › **Preview & Publish** › **Publish**"
+    },
+    {
+      "do": "openUrl",
+      "url": "https://sc-api.adobeaem.workers.dev/live/scdemos/demo/en/stories/what-4-million-members-taught-us",
+      "zoom": 1.5,
+      "fresh": true,
+      "until": {
+        "url": "https://sc-api.adobeaem.workers.dev/live/scdemos/demo/en/stories/what-4-million-members-taught-us",
+        "text": "what we build next"
+      },
+      "n": 3,
+      "caption": "Reload the JSON: the change is there too"
+    },
+    {
+      "do": "pointAt",
+      "text": "what we build next",
+      "n": 3,
+      "hold": 2200,
+      "caption": "Reload the JSON: the change is there too"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Structured Content API",
+      "title": "One source, as HTML and as JSON",
+      "items": [
+        "/live/… for published pages, /preview/… for previewed ones",
+        "No separate JSON to author or maintain",
+        "Apps, search and partners read the same content"
+      ]
+    }
+  ]
+}

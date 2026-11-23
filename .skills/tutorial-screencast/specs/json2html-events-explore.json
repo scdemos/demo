@@ -1,0 +1,106 @@
+{
+  "slug": "json2html-events-explore",
+  "uploadFolder": "/demo-docs/media",
+  "steps": [
+    {
+      "do": "openFolder",
+      "hidden": true
+    },
+    {
+      "do": "closeChat",
+      "hidden": true
+    },
+    {
+      "do": "openSheet",
+      "path": "/en/data/events",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "json2html \u00b7 Edge Delivery Services",
+      "title": "One sheet, many pages",
+      "items": [
+        "1 \u00b7 The events sheet in Experience Workspace",
+        "2 \u00b7 An authored listing that reads it",
+        "3 \u00b7 Detail pages json2html generates"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "/en/events/weekend-workshop-soho",
+      "n": 1,
+      "hold": 3000,
+      "caption": "Each row is an event; the **path** column is the page it becomes"
+    },
+    {
+      "do": "pointAt",
+      "text": "Frescopa House SoHo",
+      "n": 1,
+      "hold": 2500,
+      "caption": "Title, House, address, date, price and image: all in the row"
+    },
+    {
+      "do": "openPage",
+      "path": "/en/events",
+      "n": 2,
+      "caption": "Open the **/en/events** page in Experience Workspace"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 2
+    },
+    {
+      "do": "pointAt",
+      "text": "/en/data/events.json",
+      "n": 2,
+      "hold": 3500,
+      "caption": "**/en/events** is an authored page: an **events** block whose **source** is the sheet"
+    },
+    {
+      "do": "browse",
+      "path": "/en/events",
+      "n": 3,
+      "hold": 3000,
+      "caption": "The **/en/events** folder holds no event pages, only the hand-built Open House"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/events",
+      "n": 4,
+      "caption": "On the site, the listing shows every row of the sheet"
+    },
+    {
+      "do": "pointAt",
+      "text": "Masterclass: plan your next big move",
+      "n": 4,
+      "hold": 2500,
+      "caption": "Every row is listed, with filters by city. Publish a row and it shows up"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/events/weekend-workshop-soho",
+      "n": 5,
+      "caption": "\u2026and every row has its own page"
+    },
+    {
+      "do": "pointAt",
+      "text": "Frescopa House SoHo",
+      "n": 5,
+      "hold": 3000,
+      "caption": "These pages come from **json2html**: one Mustache template filled with the row"
+    },
+    {
+      "do": "endCard",
+      "kicker": "json2html",
+      "title": "Data in, pages out",
+      "items": [
+        "One sheet authors already know",
+        "An authored listing reads it",
+        "json2html generates a page per row"
+      ],
+      "hold": 3500
+    }
+  ]
+}

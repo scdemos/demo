@@ -1,0 +1,99 @@
+{
+  "slug": "experience-workspace-target-offers-send",
+  "uploadFolder": "/demo-docs/media",
+  "steps": [
+    {
+      "do": "openFolder",
+      "hidden": true
+    },
+    {
+      "do": "closeChat",
+      "hidden": true
+    },
+    {
+      "do": "openPage",
+      "path": "/en/offers",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "Experience Workspace · Adobe Target",
+      "title": "Prepare a page and its offers for Target",
+      "items": [
+        "1 · Mark the sections Target may change",
+        "2 · Write each offer as a fragment",
+        "3 · Send it to Adobe Target"
+      ]
+    },
+    {
+      "do": "showBlock",
+      "block": "hero",
+      "n": 1,
+      "hold": 2500,
+      "caption": "The offers page: Target will test its hero and personalize a welcome strip"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 1,
+      "caption": "Switch to **Content** view"
+    },
+    {
+      "do": "pointAt",
+      "text": "offers-hero",
+      "n": 1,
+      "hold": 2800,
+      "caption": "Section metadata names the Target location: **mbox** offers-hero"
+    },
+    {
+      "do": "pointAt",
+      "text": "offers-welcome",
+      "n": 1,
+      "hold": 2800,
+      "caption": "The welcome strip gets its own location, **offers-welcome**"
+    },
+    {
+      "do": "pointAt",
+      "text": "Current Frescopa offers",
+      "n": 1,
+      "hold": 2500,
+      "caption": "At the top of the page metadata, **Target: on** turns personalization on"
+    },
+    {
+      "do": "openPage",
+      "path": "/fragments/offers/offers-hero-frescopa-one",
+      "n": 2,
+      "hold": 2500,
+      "caption": "The challenger hero is a fragment, written like any other page"
+    },
+    {
+      "do": "sendToTarget",
+      "n": 3,
+      "caption": "**Prepare** › **Send to Adobe Target** makes it a Target offer"
+    },
+    {
+      "do": "openPage",
+      "path": "/fragments/offers/offers-welcome-new-visitors",
+      "n": 2,
+      "hold": 2500,
+      "caption": "The welcome for first-time visitors is a fragment too"
+    },
+    {
+      "do": "sendToTarget",
+      "n": 3,
+      "caption": "Send it to Target the same way"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Adobe Target",
+      "title": "Authors own the content",
+      "items": [
+        "mbox rows mark what Target may change",
+        "Offers are fragments in Experience Workspace",
+        "Send to Adobe Target keeps them in sync"
+      ],
+      "hold": 3500
+    }
+  ]
+}

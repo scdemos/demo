@@ -1,0 +1,38 @@
+{
+  "slug": "experience-workspace-media-library-insert-preview",
+  "page": "frescopa-one-launch",
+  "steps": [
+    { "do": "openFolder" },
+    {
+      "do": "titleCard",
+      "hold": 3200,
+      "kicker": "Experience Workspace · Media Library",
+      "title": "Find and reuse images with the Media Library",
+      "items": [
+        "1 · Open Panels › Media Library",
+        "2 · Search, see where an image is used",
+        "3 · Insert it and preview the page"
+      ]
+    },
+    { "do": "createPage", "n": 1, "caption": "Create a page: **New** › Page, name it, **Create**" },
+    { "do": "view", "mode": "content", "n": 1, "caption": "Switch to **Content** view to write" },
+    { "do": "typeText", "text": "Frescopa One is here", "style": "h1", "n": 1, "caption": "Add a heading: **Paragraph** › **Heading 1**" },
+    { "do": "openPlugin", "name": "Media Library", "frame": "media-library", "n": 2, "caption": "Open **Panels** › **Media Library**: every image the site uses" },
+    { "do": "pickMedia", "search": "sun", "name": "com-sun.jpg", "metadata": true, "n": 2, "caption": "Search, open an image: **References** lists the pages using it, then **Metadata**" },
+    { "do": "caption", "n": 2, "hold": 1800, "caption": "**Insert** puts the same image on this page: no new upload" },
+    { "do": "view", "mode": "layout", "n": 3, "hold": 2200, "caption": "In **Layout** view the image shows as visitors will see it" },
+    { "do": "preview", "n": 3, "caption": "**Send** › Preview › **Update**" },
+    { "do": "wait", "ms": 2500, "caption": "The previewed page uses the existing image" },
+    {
+      "do": "endCard",
+      "kicker": "Media Library",
+      "title": "One image, reused across pages",
+      "items": [
+        "Search by name, or doc:/path and folder:/path",
+        "References show every page that uses an image",
+        "Insert reuses the image instead of uploading a copy"
+      ],
+      "hold": 3000
+    }
+  ]
+}

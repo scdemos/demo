@@ -1,0 +1,119 @@
+{
+  "slug": "experience-workspace-omnichannel-site-and-app",
+  "restoreAfterTest": [
+    "/en/app/experience.html",
+    "/fragments/campaigns/member-week-dec39.html"
+  ],
+  "steps": [
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · Omnichannel",
+      "title": "Author once, update the website and the app",
+      "items": [
+        "1 · Give the app the website's campaign",
+        "2 · Edit that campaign once",
+        "3 · Publish: both channels update"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "almost here",
+      "n": 1,
+      "hold": 1500,
+      "caption": "The website's home page shows the **Member Week** campaign"
+    },
+    {
+      "do": "openStudio",
+      "path": "/en/app/experience",
+      "n": 1,
+      "caption": "Open the app's content in **Frescopa Studio**"
+    },
+    {
+      "do": "studioEdit",
+      "field": "/data/featured",
+      "value": "/fragments/campaigns/member-week-dec39",
+      "shows": "almost here",
+      "n": 1,
+      "caption": "Set **Featured campaign** to the same Member Week fragment"
+    },
+    {
+      "do": "studioPublish",
+      "path": "/en/app/experience",
+      "field": "/data/featured",
+      "value": "/fragments/campaigns/member-week-dec39",
+      "n": 1,
+      "caption": "**Publish** the app content"
+    },
+    {
+      "do": "openPage",
+      "path": "/fragments/campaigns/member-week-dec39",
+      "n": 2,
+      "caption": "Open the campaign fragment in Experience Workspace"
+    },
+    {
+      "do": "editText",
+      "where": "layout",
+      "in": "almost here",
+      "word": "almost",
+      "with": "nearly",
+      "n": 2,
+      "caption": "Change the headline to **Member Week is nearly here.**"
+    },
+    {
+      "do": "publish",
+      "n": 3,
+      "caption": "**Send** › **Preview & Publish** › **Publish**, once"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/",
+      "fresh": true,
+      "until": {
+        "url": "https://demo.bbird.live/fragments/campaigns/member-week-dec39.plain.html",
+        "text": "nearly here"
+      },
+      "n": 3,
+      "caption": "The website shows the new headline"
+    },
+    {
+      "do": "pointAt",
+      "text": "nearly here",
+      "n": 3,
+      "hold": 1800,
+      "caption": "The website shows the new headline"
+    },
+    {
+      "do": "openUrl",
+      "url": "https://scdemos.github.io/frescopa-app/app/",
+      "fresh": true,
+      "until": {
+        "url": "https://main--demo--scdemos.aem.live/fragments/campaigns/member-week-dec39.plain.html",
+        "text": "nearly here"
+      },
+      "n": 3,
+      "caption": "…and so does the app, from the same fragment"
+    },
+    {
+      "do": "pointAt",
+      "text": "nearly here",
+      "n": 3,
+      "hold": 2200,
+      "caption": "…and so does the app, from the same fragment"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Omnichannel",
+      "title": "One source of truth in Experience Workspace",
+      "items": [
+        "The app reuses the website's fragments, offers and products",
+        "Structured content picks what each channel shows",
+        "Publish once, every channel updates"
+      ]
+    }
+  ]
+}
