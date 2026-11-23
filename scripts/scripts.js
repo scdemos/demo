@@ -504,6 +504,8 @@ function watchForTargetInjectedBlocks(main) {
 }
 
 let martechStarted = false;
+// gtm-martech.js, imported for a visitor whose saved choice accepts analytics
+let gtmReady = null;
 
 /** Whether martech (Web SDK, data layer, Launch) runs on this page view. */
 export function isMartechStarted() {
@@ -672,6 +674,13 @@ async function loadEager(doc) {
   const consent = IS_EDITOR ? null : getStoredConsent();
   const personalizationEnabled = !!getMetadata('target') && !!consent?.targeting;
   const martechLoadedPromise = consent?.analytics && startMartech(consent, personalizationEnabled);
+  // Google (GA4 now, GTM containers in loadLazy) runs on the same choice; see gtm-martech.js.
+  // Started, not awaited, so it never holds up the eager phase.
+  if (consent?.analytics) {
+    gtmReady = import('./gtm-martech.js')
+      .then(async (gtm) => ((await gtm.startGtm(consent)) ? gtm : null))
+      .catch(() => null);
+  }
 
   const main = doc.querySelector('main');
   if (main) {
@@ -733,6 +742,8 @@ async function loadLazy(doc) {
 
   loadFooter(footerEl);
   if (martechStarted) await martechLazy();
+  // awaited on its own: the plugin looks for loaded sections and blocks when it starts
+  if (gtmReady) await (await gtmReady)?.gtmLazy().catch(() => {});
 
   if (!IS_EDITOR && getMetadata('site-gate')) {
     loadCSS(`${window.hlx.codeBasePath}/styles/notices.css`);

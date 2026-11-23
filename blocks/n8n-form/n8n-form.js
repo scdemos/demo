@@ -10,6 +10,7 @@
  *   First row with 2+ cells: field definitions. Cells: Label | Name | Type | Required | Placeholder
  *   If no field rows are provided, defaults to Name + Email.
  */
+import { trackEvent } from '../../scripts/shared.js';
 
 /**
  * Creates a field wrapper element
@@ -154,6 +155,7 @@ async function handleSubmit(form, submitUrl, successText = {}, bearerToken = nul
 
     if (response.ok) {
       isSuccess = true;
+      trackEvent('generate_lead', { lead_source: 'n8n-form' });
       form.innerHTML = `
         <div class="success-message">
           <h3>${successTitle.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h3>

@@ -3,7 +3,7 @@
  * https://www.aem.live/developer/cmp-integration
  *
  * Shows the CookieConsent banner (plugins/cookieconsent, MIT), tells the page about the
- * visitor's choice with a `consent.update` event and loads consented.js (martech, Launch)
+ * visitor's choice with a `consent.update` event and loads consented.js (martech, Launch, GA/GTM)
  * once analytics is accepted. Banner text comes from scripts/consent/{lang}.json.
  *
  * `?consent=accept` or `?consent=decline` skips the banner for one page view.
@@ -22,12 +22,15 @@ const CATEGORIES = {
   necessary: { enabled: true, readOnly: true },
   analytics: {
     autoClear: {
-      cookies: [{ name: /^AMCVS?_/ }, { name: /^kndctr_/ }, { name: /^s_/ }, { name: /^demdex/ }],
+      cookies: [
+        { name: /^AMCVS?_/ }, { name: /^kndctr_/ }, { name: /^s_/ }, { name: /^demdex/ },
+        { name: /^_ga/ }, { name: /^_gid$/ },
+      ],
     },
   },
   targeting: {
     autoClear: {
-      cookies: [{ name: /^mbox/ }, { name: /^at_/ }],
+      cookies: [{ name: /^mbox/ }, { name: /^at_/ }, { name: /^_gcl_/ }],
     },
   },
 };
@@ -138,6 +141,8 @@ async function initConsent() {
     onConsent: () => applyConsent(current()),
     onChange: async ({ changedCategories }) => {
       const withdrawn = changedCategories.filter((c) => !CookieConsent.acceptedCategory(c));
+      // targeting needs analytics (see current()), so its cookies go with it
+      if (withdrawn.includes('analytics') && !withdrawn.includes('targeting')) withdrawn.push('targeting');
       try {
         await applyConsent(current());
       } catch { /* the withdrawal below must happen regardless */ }

@@ -1,4 +1,4 @@
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent } from '../../scripts/shared.js';
 
 function toBool(value) {
   return String(value || '').trim().toLowerCase() === 'true';
@@ -254,6 +254,7 @@ export default function decorate(block) {
       if (!config.doNotMarkLessonAsCompleted) {
         window.dispatchEvent(new CustomEvent('quiz:completed', { detail: { score, total } }));
       }
+      trackEvent('quiz_complete', { score, total });
     } else {
       completeBanner.textContent = `You scored ${score} of ${total} — review each question and try again.`;
       completeBanner.className = 'quiz-complete-banner is-retry';

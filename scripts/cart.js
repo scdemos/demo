@@ -3,7 +3,7 @@
 // creates the order in the main demo's Edge Commerce and posts it to Slack. Every demo, CloneIt
 // demos included, orders from that one catalog.
 import { LABELS_SHEET, sheetLabels } from './products.js';
-import { getMarket } from './shared.js';
+import { getMarket, trackEvent } from './shared.js';
 
 export const CART_PATH = '/en/cart';
 export const ORDERS_URL = 'https://demo.bbird.live/orders';
@@ -47,6 +47,21 @@ export const cartCount = () => read().reduce((n, i) => n + Number(i.quantity), 0
 
 export const cartTotal = (items = read()) => items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity), 0);
 
+/**
+ * GA4 ecommerce data for cart lines (or order items).
+ * @param {object[]} items lines with sku, name, price, quantity and currency
+ * @param {string} [currency] the order's currency, when the lines don't carry it
+ */
+export function ecommerce(items, currency = items[0]?.currency || 'USD') {
+  return {
+    currency,
+    value: Number(cartTotal(items).toFixed(2)),
+    items: items.map((i) => ({
+      item_id: i.sku, item_name: i.name, price: Number(i.price), quantity: Number(i.quantity),
+    })),
+  };
+}
+
 const newLineId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 /** Adds one of a product (or one more). False when the cart already holds MAX_QUANTITY of it. */
@@ -57,6 +72,7 @@ export function addToCart(product) {
   if (line) line.quantity = Number(line.quantity) + 1;
   else items.push({ ...product, quantity: 1, line: newLineId() });
   write(items);
+  trackEvent('add_to_cart', { ecommerce: ecommerce([{ ...product, quantity: 1 }]) });
   return true;
 }
 
@@ -141,6 +157,13 @@ export async function placeOrder({ customer, address, gotcha = '' }) {
   }
   if (!body.order) throw Object.assign(new Error('order_failed'), { code: 'order_failed' });
   const order = { ...body.order, customer };
+  trackEvent('purchase', {
+    ecommerce: {
+      ...ecommerce(order.items, order.currency),
+      transaction_id: order.id,
+      value: Number(order.total),
+    },
+  });
   // take out the lines that were ordered; anything added meanwhile (here or in another tab) stays
   const ordered = new Map(lines.map((i) => [i.line || i.sku, Number(i.quantity)]));
   write(read()

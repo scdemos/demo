@@ -1,8 +1,8 @@
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent } from '../../scripts/shared.js';
 import { PRODUCTS_ROOT } from '../../scripts/products.js';
 import {
   getCart, setQuantity, cartTotal, onCartChange, formatMoney, formatLabel, loadLabels, placeOrder,
-  lastOrder, MAX_QUANTITY,
+  lastOrder, MAX_QUANTITY, ecommerce,
 } from '../../scripts/cart.js';
 
 // checkout fields: [name, label key, autocomplete, extra attributes]
@@ -174,6 +174,10 @@ export default async function decorate(block) {
     block.querySelector('h2')?.focus();
   };
   const form = buildForm(labels, showConfirmation);
+  form.addEventListener('focusin', () => {
+    trackEvent('begin_checkout', { ecommerce: ecommerce(getCart()) });
+  }, { once: true });
+  let viewed = false;
 
   const render = () => {
     if (placed) return;
@@ -192,6 +196,10 @@ export default async function decorate(block) {
       const same = active.id && document.getElementById(active.id);
       const next = lines.children[Math.min(index, lines.children.length - 1)];
       (same || next?.querySelector('select'))?.focus();
+    }
+    if (!viewed) {
+      viewed = true;
+      trackEvent('view_cart', { ecommerce: ecommerce(items) });
     }
     total.replaceChildren(
       createTag('span', {}, labels['cart-total']),

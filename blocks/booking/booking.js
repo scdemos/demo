@@ -1,5 +1,5 @@
 import { toClassName } from '../../scripts/aem.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent } from '../../scripts/shared.js';
 
 const format = (str, vars) => str.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
 const stripNote = (text) => text.replace(/\s*\([^)]*\)\s*$/, '').trim();
@@ -358,6 +358,7 @@ export default async function decorate(block) {
     done.hidden = false;
     status.textContent = '';
     done.focus();
+    trackEvent('generate_lead', { lead_source: 'booking' });
   });
 
   prefill(form, block);

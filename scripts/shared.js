@@ -459,3 +459,31 @@ export function getStoredConsent() {
     return null;
   }
 }
+
+// Analytics events of this page view, kept so a tag manager that starts later (after the
+// visitor accepts the banner) still gets the ones that came before it.
+const MAX_TRACKED = 50;
+const trackedEvents = [];
+const trackListeners = new Set();
+
+/**
+ * Records an analytics event (GA4 event names and parameters, e.g. `add_to_cart` with an
+ * `ecommerce` object). Nothing leaves the page unless the visitor accepted analytics:
+ * gtm-martech.js only listens once they have.
+ * @param {string} event the event name
+ * @param {object} [params] the event's parameters
+ */
+export function trackEvent(event, params = {}) {
+  const entry = { event, ...params };
+  if (trackedEvents.length < MAX_TRACKED) trackedEvents.push(entry);
+  trackListeners.forEach((fn) => fn(entry));
+}
+
+/**
+ * Calls `fn` with each analytics event of this page view: those recorded so far, then new ones.
+ * @param {(entry: object) => void} fn
+ */
+export function onTrackEvent(fn) {
+  trackedEvents.forEach(fn);
+  trackListeners.add(fn);
+}
