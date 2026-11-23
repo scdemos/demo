@@ -3,6 +3,9 @@
 //   POST /cloneprocess  → allow-listed Admin API (admin.hlx.page) / DA (admin.da.live) proxy, technical account
 //   POST /standalone    → create scdemos/<site> from the template repo, add it to AEM Code Sync, make the requester admin
 //   POST /permissions   → give the requester write on /<site>/CONFIG and /<site>/** in the org's DA permissions sheet
+//   POST /admin/clones  → demo admins: the CloneIt demos (see admin.js)
+//   POST /admin/delete  → demo admins: one step of deleting a CloneIt demo { site, step, job }
+//   POST /admin/job     → demo admins: state of a bulk job a delete step started { site, topic, name }
 //   POST /              → readiness ping (never returns a token)
 // New routes require the caller's own Adobe IMS access token (Authorization: Bearer …, as provided by the
 // DA SDK), validated against IMS and restricted to ALLOWED_EMAIL_DOMAINS. CORS origin checks are a browser
@@ -10,6 +13,10 @@
 // LEGACY_COMPAT (default on): requests WITHOUT an Authorization header behave exactly like the previous
 // CloneIt worker (POST / returns the technical token, /cloneprocess limited to the old allowlist), so the
 // currently deployed CloneIt page keeps working. Set LEGACY_COMPAT = "false" once every page sends a token.
+
+import {
+  assertDemoAdmin, listClones, deleteCloneStep, jobState,
+} from './admin.js';
 
 const IMS_TOKEN_URL = 'https://ims-na1.adobelogin.com/ims/token/v3';
 const IMS_ORIGIN = 'https://ims-na1.adobelogin.com';
@@ -422,7 +429,7 @@ function techFetch(env) {
   return async (kind, path, init = {}) => {
     const bearer = `Bearer ${await generateToken(env)}`;
     const headers = kind === 'helix' ? { Authorization: bearer, 'x-content-source-authorization': bearer } : { Authorization: bearer };
-    return fetch(`${kind === 'helix' ? HELIX_ORIGIN : DA_ORIGIN}${path}`, { ...init, headers });
+    return fetch(`${kind === 'helix' ? HELIX_ORIGIN : DA_ORIGIN}${path}`, { ...init, headers: { ...(init.headers || {}), ...headers } });
   };
 }
 
@@ -483,6 +490,24 @@ export default {
           { adminFetch: techFetch(env), gh: githubClient(env) },
         );
         return jsonResponse(cors, result);
+      }
+      if (pathname.startsWith('/admin/')) {
+        if (!env.GITHUB_PROVISION_TOKEN) return workerErr(cors, 'standalone_not_configured', 501);
+        await assertDemoAdmin(request.headers.get('Authorization').slice(7).trim(), env);
+        const deps = { gh: githubClient(env), adminFetch: techFetch(env) };
+        const body = await request.json().catch(() => ({}));
+        const site = String(body.site || '').toLowerCase();
+        if (pathname === '/admin/clones') return jsonResponse(cors, { clones: await listClones(env, deps.gh) });
+        if (pathname === '/admin/job') {
+          return jsonResponse(cors, await jobState({ site, topic: String(body.topic || ''), name: String(body.name || '') }, env, deps));
+        }
+        if (pathname === '/admin/delete') {
+          const step = String(body.step || '');
+          const result = await deleteCloneStep({ site, step, job: body.job ? String(body.job) : '' }, env, deps);
+          console.log(JSON.stringify({ admin: user.email, site, step, result }));
+          return jsonResponse(cors, result);
+        }
+        return workerErr(cors, 'not_found', 404);
       }
       if (pathname === '/') {
         await generateToken(env); // proves the technical account works; the token never leaves the worker
