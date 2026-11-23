@@ -56,4 +56,15 @@
   .steps.horizontal .steps-list {
     grid-template-columns: repeat(var(--steps, 3), minmax(0, 1fr));
   }
+
+  /* a link on its own line sits at the bottom, so links line up across steps */
+  .steps.horizontal .steps-list > li {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .steps.horizontal .steps-list > li > p:last-child:has(> a:only-child) {
+    margin-top: auto;
+    padding-top: 0.5em;
+  }
 }
