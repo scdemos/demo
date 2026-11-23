@@ -48,9 +48,6 @@ const MESSAGES = {
   content_source_not_the_demo_folder: 'This site shares content with another site, so it can\'t be deleted here.',
   code_not_the_demo_repo: 'This site isn\'t set up like a CloneIt demo, so it can\'t be deleted here.',
   invalid_site_name: 'That isn\'t a valid demo name.',
-  commerce_not_configured: 'Edge Commerce isn\'t connected yet: the sync needs its service token.',
-  commerce_not_set_up_for_site: 'Edge Commerce isn\'t set up for this site.',
-  products_sheet_empty: 'The products sheet has no products.',
 };
 // errors without their own message, by prefix
 const KINDS = [
@@ -62,9 +59,6 @@ const KINDS = [
   ['bulk_job', 'Couldn\'t start publishing changes.'],
   ['scan_', 'Couldn\'t check the demo\'s pages.'],
   ['job_read', 'Couldn\'t check the demo\'s pages.'],
-  ['products_write', 'Edge Commerce didn\'t accept the products.'],
-  ['index_register', 'Couldn\'t set up the product index.'],
-  ['sheet_read', 'Couldn\'t read the products sheet.'],
 ];
 /** A message an admin can act on; unexpected errors keep a short code to pass on. */
 function say(error) {
@@ -628,29 +622,6 @@ async function loadClones() {
   }
 }
 
-/* ---------- products ---------- */
-
-async function syncProducts(step, notes) {
-  const s = step('Sending the products sheet to Edge Commerce');
-  const r = await worker('admin/products', { site: SITE });
-  const done = [`Synced ${r.written} of ${r.products} products.`];
-  if (r.removed) done.push(`Removed ${r.removed} no longer in the sheet.`);
-  if (r.pages) done.push(`Created ${r.pages} product pages.`);
-  s(done.join(' '), r.failed.length ? 'fail' : 'done');
-  notes.push(...done);
-  if (r.skipped.length) {
-    const msg = `Not synced, as their url isn't a page under /en/products: ${r.skipped.join(', ')}.`;
-    step(msg)(msg, 'fail');
-    notes.push(msg);
-  }
-  if (r.failed.length) {
-    const msg = `Didn't sync: ${r.failed.join(', ')}. Sync again to retry.`;
-    step(msg)(msg, 'fail');
-    notes.push(msg);
-  }
-  return { result: r.failed.length || r.skipped.length ? 'problems' : 'ok', comments: notes.join(' ') };
-}
-
 /* ---------- start ---------- */
 
 async function isDemoAdmin() {
@@ -695,10 +666,6 @@ $('reset').addEventListener('click', async () => {
     action: 'Reset demo',
   });
   if (yes) run('reset-log', reset, { action: 'reset', target: SITE });
-});
-
-$('sync').addEventListener('click', () => {
-  run('sync-log', syncProducts, { action: 'sync products', target: SITE });
 });
 
 init();
