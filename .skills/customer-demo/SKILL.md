@@ -494,14 +494,20 @@ index.html` shows the block table structure):
     page; use another real customer hero). Verify with `?experiment=<id>/challenger-1`.
   - Campaign: `Campaign-<name>: /campaigns/<name>/`. Use the **folder URL**: a DA doc named `index`
     is served at `/campaigns/<name>/`, not `/…/index`. Verify with `?campaign=<name>`.
-- **Site notices (consent + disclaimer), when the original has them:** recreate the customer's
-  cookie banner as the `consent` fragment (`/fragments/consent`: their text, their buttons as
-  `#accept` / `#reject` / `#settings` links, their categories as a list) and an entry disclaimer /
-  investor-type gate as the `site-gate` fragment (`/fragments/disclaimer`: their text, `#agree` /
-  `#cancel`). Switch them on in the metadata sheet (`consent`, `site-gate`). Verify in a fresh
-  browser profile: the banner shows, reject and accept persist after reload, and the gate blocks
-  until agreed. Choices drive Web SDK consent through the martech plugin; leave the base's
-  datastream as is.
+- **Cookie consent (always on, via the base):** every page shows the base's CookieConsent banner
+  (`scripts/consent-check.js`, opt-in, delayed phase). Martech, Launch and Target only run after
+  accept (`scripts/consented.js`). To use the customer's wording, edit the text in
+  `scripts/consent/{lang}.json` in the customer repo (title, description, buttons, category
+  descriptions, footer link label); add a file per market language. Don't change the categories
+  or the martech wiring, and leave the base's datastream as is. When the customer's footer has
+  a cookie settings link, author it as a link to `#cookie-preferences`; otherwise the banner adds
+  one at the end of the footer. Verify in a fresh browser profile: the banner shows, "Necessary
+  only" and "Accept all" both persist after reload, and no `adobedc.net` / `adobedtm.com` request
+  happens before accept.
+- **Disclaimer gate, when the original has one:** recreate an entry disclaimer / investor-type
+  gate as the `site-gate` fragment (`/fragments/disclaimer`: their text, `#agree` / `#cancel`)
+  and switch it on with `site-gate` in the metadata sheet. Verify in a fresh browser profile
+  that the gate blocks until agreed.
 - **Login (always on, via the base):** the header builds the login link and it **stays on
   `demo.bbird.live`** (the base login flow; never point it at the customer's IdP). Use the
   customer's wording: `login-label` / `logout-label` in the metadata sheet ("Log in", "Client
@@ -599,8 +605,9 @@ Fidelity tooling gotchas (learned in the pilot):
   correctly. When you change the check, run a negative test: restore the broken CSS
   locally and confirm the check fails.
 - Full-page screenshots of sites with scroll-reveal (`will-reveal`) or lazy sections must
-  scroll the whole page slowly first, or sections appear blank. Pre-seed the gate and consent
-  `localStorage` keys (`site-gate`, `site-consent`) to keep modals out of the shots.
+  scroll the whole page slowly first, or sections appear blank. Pre-seed the gate's
+  `localStorage` key (`site-gate`) and open pages with `?consent=decline` to keep modals out of
+  the shots.
 - Capture the demo from `localhost:3000` (`aem up`) after CSS changes. The `aem.live` CDN can
   serve stale CSS for a few minutes after a push.
 - Originals often split one visual heading into several elements or wrap body copy inside a
@@ -707,13 +714,13 @@ too (a speed fix must not break fidelity). Typical fixes:
   background; fonts have a metric-matched fallback (`size-adjust`).
 - **CLS:** fixed height for the header/rail, images with dimensions, fonts with fallback metrics,
   no content injected above the fold after load (banners overlay, they don't push).
-- **TBT:** third-party scripts (martech, chat, embeds) load in `delayed.js` or after consent, never
+- **TBT:** third-party scripts (martech, chat, embeds) load in `delayed.js` or `consented.js`, never
   in the eager or lazy phase; heavy blocks load their libraries on interaction.
 - **Accessibility:** contrast from the brand tokens (fix the token, not the instance); icon-only
   links and buttons get an `aria-label` (from the icon name or the original's label); heading
   order; form labels; alt text from the original.
 - **Best Practices:** no third-party cookies before consent (Web SDK / Target only after the
-  consent banner's accept, or in `delayed.js` with consent defaults), no console errors or
+  consent banner's accept, from `consented.js`), no console errors or
   DevTools issues, images at the right aspect ratio and resolution.
 Problems that come from the **base** (they show on `main--demo--scdemos.aem.live` too) are fixed in the
 demo repo and **ported back** (6b) so every future demo starts at 100. After 3 rounds a page still

@@ -405,3 +405,57 @@ export function loadStylesFor(el, href) {
     root.append(link);
   });
 }
+
+/**
+ * Cookie consent settings shared by the eager phase (scripts.js) and the consent banner
+ * (consent-check.js). Raise `revision` when the cookie policy changes: every visitor is
+ * asked again and earlier choices stop counting.
+ */
+export const CONSENT = {
+  cookie: 'cc_cookie',
+  revision: 1,
+  // ?consent=decline skips the banner for one page view; ?consent=accept only works on
+  // localhost and *.aem.page previews, so a link can never switch tracking on for a visitor
+  param: 'consent',
+};
+
+/**
+ * One-off consent override from the URL (`?consent=accept` or `?consent=decline`).
+ * @returns {{analytics: boolean, targeting: boolean}|null}
+ */
+export function getConsentOverride() {
+  const value = new URLSearchParams(window.location.search).get(CONSENT.param);
+  if (value === null) return null;
+  const { hostname } = window.location;
+  const isDev = hostname === 'localhost' || hostname.endsWith('.aem.page');
+  const granted = isDev && ['accept', 'true', '1', 'yes'].includes(value.toLowerCase());
+  if (!granted && !['decline', 'false', '0', 'no'].includes(value.toLowerCase())) return null;
+  return { analytics: granted, targeting: granted };
+}
+
+/**
+ * The visitor's saved consent choice, read straight from the banner's cookie so the eager
+ * phase can decide on martech without loading the banner. Null when the visitor hasn't
+ * chosen yet, or chose under an older policy revision.
+ * @returns {{analytics: boolean, targeting: boolean}|null}
+ */
+export function getStoredConsent() {
+  const override = getConsentOverride();
+  if (override) return override;
+  const raw = document.cookie.split('; ').find((c) => c.startsWith(`${CONSENT.cookie}=`));
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(decodeURIComponent(raw.slice(CONSENT.cookie.length + 1)));
+    // the same checks the banner makes, so martech never starts on a choice it wouldn't accept
+    const isDate = (d) => typeof d === 'string' && !Number.isNaN(Date.parse(d));
+    if (value.revision !== CONSENT.revision || !Array.isArray(value.categories)
+      || typeof value.consentId !== 'string' || !value.consentId
+      || !isDate(value.consentTimestamp) || !isDate(value.lastConsentTimestamp)) return null;
+    return {
+      analytics: value.categories.includes('analytics'),
+      targeting: value.categories.includes('targeting'),
+    };
+  } catch {
+    return null;
+  }
+}

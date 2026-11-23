@@ -47,7 +47,7 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 | Attach | Checks the site and starts `aem up` (**http://localhost:3000**). The base demo stays live until content starts | Nothing |
 | Discover + design | Renders every page of the customer site in a real browser and analyzes the design: full nav with dropdowns / mega menus / sub-navs, header layout, type, buttons, cards, widths, every section's layout and carousels. Writes a design brief and maps every line to a block, variant or section style; anything that doesn't map becomes a **new** construct (added to the block library) | Nothing. Watch on `http://localhost:3000` |
 | Build | Reskins the tokens and builds the header, footer and sections like the original. Then moves the base demo pages to DA **`drafts/demo-backup`** (unpublished; deleted once the migration passes, so DA stays clean), writes repeated sections once as fragments, and writes the **original pages with their real content** into DA | Nothing |
-| Features | The customer's cookie banner and disclaimer gate (if they have them), login with their wording (the flow stays on demo.bbird.live), gated content when they have a client/member area, templates for articles and events, interactive blocks (quiz, catalog, booking) where the original has a comparable tool, forms → shared endpoint, site search, walkthrough deck, block library. **No experiments or campaigns by default**: add them in DA when your story needs one | Nothing |
+| Features | The cookie banner (always on, opt-in) in the customer's wording, their disclaimer gate (if they have one), login with their wording (the flow stays on demo.bbird.live), gated content when they have a client/member area, templates for articles and events, interactive blocks (quiz, catalog, booking) where the original has a comparable tool, forms → shared endpoint, site search, walkthrough deck, block library. **No experiments or campaigns by default**: add them in DA when your story needs one | Nothing |
 | QA + final parity loop | Checks each page against the original, side by side on localhost: same pages, same words (invented copy fails), same header, same section layout and carousels, same look. Then `lint-content` → `doctor --strict` → strict `compare --final` (1440/390, dark OS) → Lighthouse → sign-off checklist, and loops back to fix what differs (up to 3 passes per page). The final step, `parity.mjs`, revisits **every page** against the original on localhost at desktop and phone size, fixes and re-tests until all pages pass; the agent only calls the migration done when it passes (and once more on the published site). Last, `lighthouse.mjs` scores every page on mobile and desktop: Performance, Accessibility and Best Practices must be **100** (SEO excluded: demos are noindex). A page that still differs is listed with its failing checks, and only **you** can waive a fidelity gap | Review the handoff; decide on any listed gap |
 | Commits | Commits to `scdemos/<slug>` under the OK you gave at the start. New generic variants are proposed for the base as a **PR from a separate branch**, checked to leave the base look unchanged | Say **yes once** at the start; approve or decline the base PR |
 
@@ -61,7 +61,8 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 2. Click the nav (including dropdowns), search for a customer term, use the carousels and forms.
 3. Open DA → a page → **Library**: blocks, templates, icons and tags show up.
 4. Read the ⚠️ list (e.g. a substituted font, mocked data) so nothing surprises you live.
-5. Rehearse with the walkthrough deck (`/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`).
+5. In a fresh browser window, click **Accept all** on the cookie banner once: analytics and Target only run after consent, so personalized content shows from the next page on.
+6. Rehearse with the walkthrough deck (`/tools/demo/demo.html?url=/tools/demo/<slug>-walkthrough.json`).
 
 ## Do / don't
 - **Do** let it run end to end; answer only the sign-in and commit-approval prompts. Point out misses in plain words ("hero should be a carousel", "footer needs the legal band").
@@ -79,6 +80,7 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 | Want the original demo pages back | During the run they're in DA under `drafts/demo-backup`; after a successful migration that copy is deleted. The base demo always stays at `da.live/#/scdemos/demo` |
 | Want an experiment or campaign | "Add an experiment on the home hero with a challenger from <page>" |
 | Run got interrupted | Paste the same prompt again: it resumes from `.customer-demo/run.json` and skips finished work |
+| Personalized content doesn't show | Accept the cookie banner (or reopen it from **Cookie preferences** in the footer) and reload. On `aem.page` previews, `?consent=accept` skips the banner for one page |
 | Search, forms or links broken | "Run doctor.mjs and fix all FAILs" |
 | Dark or odd colors on your laptop | "Check color-scheme and the base assumptions" |
 | Library panel empty | "Re-run the DA config migration (da-config.mjs) and the library phase" |
@@ -91,4 +93,4 @@ then **paste one prompt** into your AI tool. You approve commits once and do the
 **Feedback loop:** each run ends with a retro. When you hit something new, say so. The fix goes
 into the skill, a script check or the base, so the next SC doesn't hit it.
 
-<!-- docs-check: synced-with=b9815085bc6790f3 -->
+<!-- docs-check: synced-with=796e30d906bda26a -->

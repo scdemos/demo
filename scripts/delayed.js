@@ -1,6 +1,6 @@
-// Delayed functionality – martech, the global social share dock and the peek tab
+// Delayed functionality – the global social share dock and the peek tab
 import {
-  buildBlock, decorateBlock, getMetadata, loadBlock, loadScript,
+  buildBlock, decorateBlock, getMetadata, loadBlock,
 } from './aem.js';
 import { createTag, fetchFragment } from './shared.js';
 
@@ -78,16 +78,7 @@ async function injectPeekBlock() {
   await loadBlock(block);
 }
 
-async function loadCloudflareAnalytics() {
-  if (!window.location.hostname.includes('bbird.live')) return;
-  await loadScript('https://static.cloudflareinsights.com/beacon.min.js', {
-    defer: true,
-    'data-cf-beacon': '{"token": "6e52f24c204942e89f9b897c49e769d6"}',
-  });
-}
-
 async function init() {
-  await loadCloudflareAnalytics();
   await injectSocialShareBlock();
   await injectPeekBlock();
 }

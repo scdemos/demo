@@ -284,7 +284,7 @@
     "queryIndex": "query.yaml (site config) feeding related-articles, search, product-grid",
     "siteNotices": {
       "level": 8,
-      "use": "metadata site-gate: /fragments/<disclaimer> (modal with #agree/#cancel links; site-gate-exit for cancel) and consent: /fragments/<consent> (banner with #accept/#reject/#settings, optional category list). Choices persist in localStorage and drive Web SDK consent via martech updateUserConsent."
+      "use": "metadata site-gate: /fragments/<disclaimer> (modal with #agree/#cancel links; site-gate-exit for cancel). Cookie consent is always on: CookieConsent banner from scripts/consent-check.js (opt-in, delayed phase), text in scripts/consent/{lang}.json, choices in the cc_cookie cookie; martech/Launch start from scripts/consented.js only after accept. Links to #cookie-preferences reopen the choice."
     },
     "login": {
       "level": 0,
