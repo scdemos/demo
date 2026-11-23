@@ -19,9 +19,9 @@ import {
   toClassName,
 } from './aem.js';
 import {
-  initMartech, martechEager, martechLazy, martechDelayed,
+  initMartech, martechEager, martechLazy, updateUserConsent,
 } from '../plugins/martech/src/index.js';
-import { getMarket, isGatedPage } from './shared.js';
+import { getMarket, getStoredConsent, isGatedPage } from './shared.js';
 import { runExperimentation, runExperimentationLazy } from './experiment-loader.js';
 
 const { searchParams } = new URL(window.location.href);
@@ -501,19 +501,25 @@ function watchForTargetInjectedBlocks(main) {
   observer.observe(main, { childList: true, subtree: true });
 }
 
-async function loadEager(doc) {
-  document.documentElement.lang = getMarket().lang;
-  decorateTemplateAndTheme();
-  applyTheme();
+let martechStarted = false;
 
-  // Demo site: consent is assumed; wire a real CMP here when needed.
-  const personalizationEnabled = !!getMetadata('target');
+/** Whether martech (Web SDK, data layer, Launch) runs on this page view. */
+export function isMartechStarted() {
+  return martechStarted;
+}
 
-  const martechLoadedPromise = !IS_EDITOR && initMartech(
+/**
+ * Starts martech for a visitor who accepted analytics. Only call it once per page view.
+ * @param {{analytics: boolean, targeting: boolean}} consent the visitor's choice
+ * @param {boolean} personalization whether Target personalizes this page
+ * @returns {Promise<void>} resolves when Web SDK is set up
+ */
+export function startMartech(consent, personalization) {
+  martechStarted = true;
+  const ready = initMartech(
     {
       datastreamId: 'd73be188-bc37-4ede-a5da-8aa7cd1e343b',
       orgId: '138A07885EE042D20A495CFA@AdobeOrg',
-      defaultConsent: 'in',
       thirdPartyCookiesEnabled: false,
       // First-party Edge Network host (Adobe-managed certificate, CNAME to Adobe) so Adobe
       // cookies are set on bbird.live. Other hosts (aem.page/live) keep edge.adobedc.net,
@@ -526,7 +532,7 @@ async function loadEager(doc) {
       },
     },
     {
-      personalization: personalizationEnabled,
+      personalization,
       launchUrls: ['https://assets.adobedtm.com/ace20f3fb313/d4fa519d75cf/launch-452113bfea88.min.js'],
       // Decision scopes + selector mapping are auto-discovered from section-metadata
       // `mbox` rows (server-rendered as `data-mbox` attributes), so no hardcoded
@@ -534,6 +540,27 @@ async function loadEager(doc) {
       // "Working with Form-Based Activities".
     },
   );
+  // Web SDK starts with consent pending; this sets it before any event leaves the page.
+  updateUserConsent({
+    collect: consent.analytics,
+    personalize: consent.targeting,
+    marketing: consent.targeting,
+    share: false,
+  }).catch(() => { /* Web SDK reports its own errors */ });
+  return ready;
+}
+
+async function loadEager(doc) {
+  document.documentElement.lang = getMarket().lang;
+  decorateTemplateAndTheme();
+  applyTheme();
+
+  // Martech only runs with consent. A returning visitor who accepted analytics gets it here,
+  // so Target can personalize before the first paint; everyone else waits for the banner
+  // (consent-check.js), which starts martech from consented.js once they accept.
+  const consent = IS_EDITOR ? null : getStoredConsent();
+  const personalizationEnabled = !!getMetadata('target') && !!consent?.targeting;
+  const martechLoadedPromise = consent?.analytics && startMartech(consent, personalizationEnabled);
 
   const main = doc.querySelector('main');
   if (main) {
@@ -593,9 +620,9 @@ async function loadLazy(doc) {
   if (hash && element) element.scrollIntoView();
 
   loadFooter(footerEl);
-  if (!IS_EDITOR) await martechLazy();
+  if (martechStarted) await martechLazy();
 
-  if (!IS_EDITOR && (getMetadata('site-gate') || getMetadata('consent'))) {
+  if (!IS_EDITOR && getMetadata('site-gate')) {
     loadCSS(`${window.hlx.codeBasePath}/styles/notices.css`);
     import('./notices.js').then(({ default: loadSiteNotices }) => loadSiteNotices());
   }
@@ -644,7 +671,8 @@ function initSidekick() {
 
 function loadDelayed() {
   window.setTimeout(() => {
-    if (!IS_EDITOR) martechDelayed();
+    // consent banner; martech and other consent-dependent code load from consented.js
+    if (!IS_EDITOR) import('./consent-check.js');
     import('./delayed.js');
   }, 3000);
 }

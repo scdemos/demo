@@ -1,18 +1,13 @@
 /*
- * Site notices: an optional entry gate (e.g. a regulatory disclaimer) and a cookie consent banner.
- * Both are authored as fragments and switched on by metadata:
+ * Site notice: an optional entry gate (e.g. a regulatory disclaimer), authored as a fragment
+ * and switched on by metadata:
  *   site-gate: /fragments/disclaimer   -> modal with `#agree` / `#cancel` links
- *   consent:   /fragments/consent      -> banner with `#accept` / `#reject` / `#settings` links;
- *                                         an optional list in the fragment defines the categories
- *                                         (first item = strictly necessary, always on).
- * Consent choices are applied to Adobe Web SDK via the martech plugin and broadcast as a
- * `consent-change` event on window.
+ * The cookie consent banner is separate: scripts/consent-check.js.
  */
 import { getMetadata } from './aem.js';
 import { createTag } from './shared.js';
 import { loadFragment } from '../blocks/fragment/fragment.js';
 
-const CONSENT_KEY = 'site-consent';
 const GATE_KEY = 'site-gate';
 
 function read(key) {
@@ -46,19 +41,6 @@ async function fragmentContent(path) {
   return content;
 }
 
-async function applyConsent(consent) {
-  window.dispatchEvent(new CustomEvent('consent-change', { detail: consent }));
-  try {
-    const { updateUserConsent } = await import('../plugins/martech/src/index.js');
-    await updateUserConsent({
-      collect: consent.performance,
-      marketing: consent.targeting,
-      personalize: consent.targeting,
-      share: false,
-    });
-  } catch { /* martech not configured */ }
-}
-
 async function showGate(path) {
   if (read(GATE_KEY)?.path === path) return;
   const content = await fragmentContent(path);
@@ -87,79 +69,7 @@ async function showGate(path) {
   agree?.focus();
 }
 
-function buildSettings(categories, current, onSave) {
-  const dialog = createTag('dialog', { class: 'site-notice consent-settings', 'aria-label': 'Cookie settings' });
-  const list = createTag('ul', { class: 'consent-categories' });
-  const inputs = [];
-  categories.forEach(({ key, title, text }, i) => {
-    const id = `consent-${key}`;
-    const input = createTag('input', { type: 'checkbox', id, name: key });
-    input.checked = i === 0 || !!current?.[key];
-    input.disabled = i === 0;
-    inputs.push(input);
-    const label = createTag('label', { for: id }, [createTag('strong', {}, title), text ? createTag('span', {}, text) : null]);
-    list.append(createTag('li', {}, [input, label]));
-  });
-  const save = createTag('button', { type: 'button', class: 'site-notice-btn site-notice-accept' }, 'Save preferences');
-  const close = createTag('button', { type: 'button', class: 'site-notice-btn site-notice-settings' }, 'Close');
-  save.addEventListener('click', () => {
-    onSave(Object.fromEntries(inputs.map((input) => [input.name, input.checked])));
-    dialog.close();
-  });
-  close.addEventListener('click', () => dialog.close());
-  dialog.append(createTag('h2', {}, 'Cookie settings'), list, createTag('div', { class: 'site-notice-actions' }, [close, save]));
-  document.body.append(dialog);
-  return dialog;
-}
-
-async function showConsent(path) {
-  const stored = read(CONSENT_KEY);
-  if (stored) {
-    applyConsent(stored);
-    return;
-  }
-  const content = await fragmentContent(path);
-  if (!content) return;
-
-  const defaults = [
-    { key: 'necessary', title: 'Strictly necessary' },
-    { key: 'performance', title: 'Performance' },
-    { key: 'targeting', title: 'Targeting' },
-  ];
-  const authored = content.querySelector('ul');
-  const categories = authored
-    ? [...authored.children].map((li, i) => ({
-      key: defaults[i]?.key || `category${i}`,
-      title: li.querySelector('strong')?.textContent.trim() || li.textContent.trim(),
-      text: li.querySelector('strong') ? li.textContent.replace(li.querySelector('strong').textContent, '').trim() : '',
-    }))
-    : defaults;
-  authored?.remove();
-
-  const banner = createTag('section', { class: 'site-notice consent-banner', 'aria-label': 'Cookie consent', role: 'region' });
-  const { accept, reject, settings } = actionButtons(content, ['accept', 'reject', 'settings']);
-  banner.append(content, createTag('div', { class: 'site-notice-actions' }, [settings, reject, accept]));
-  document.body.append(banner);
-
-  let settingsDialog;
-  const decide = (choices) => {
-    const consent = Object.fromEntries(categories.map(({ key }, i) => [key, i === 0 || !!choices[key]]));
-    write(CONSENT_KEY, { ...consent, ts: Date.now() });
-    applyConsent(consent);
-    banner.remove();
-    settingsDialog?.remove();
-  };
-  accept?.addEventListener('click', () => decide(Object.fromEntries(categories.map(({ key }) => [key, true]))));
-  reject?.addEventListener('click', () => decide({}));
-  settings?.addEventListener('click', () => {
-    settingsDialog ??= buildSettings(categories, null, decide);
-    settingsDialog.showModal();
-  });
-}
-
 export default async function loadSiteNotices() {
   const gate = getMetadata('site-gate');
-  const consent = getMetadata('consent');
   if (gate) await showGate(gate);
-  if (consent) await showConsent(consent);
 }

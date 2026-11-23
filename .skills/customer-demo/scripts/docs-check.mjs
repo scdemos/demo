@@ -38,7 +38,7 @@ const problems = [];
 Object.entries(docs).forEach(([name, text]) => {
   const refs = new Set([...text.matchAll(/\b([a-z][a-z0-9-]*\.(?:mjs|js))\b/g)].map((m) => m[1]));
   refs.forEach((r) => {
-    if (/^(scripts|aem|delayed|form|header|footer|cards|search|index|shared|notices|eslint\.config)\.js$/.test(r)) return;
+    if (/^(scripts|aem|delayed|form|header|footer|cards|search|index|shared|notices|consent-check|consented|eslint\.config)\.js$/.test(r)) return;
     if (!scripts.includes(r) && !fs.existsSync(path.join(SKILL_DIR, 'scripts', r))) problems.push(`${name} mentions ${r}, which isn't in scripts/`);
   });
 });
