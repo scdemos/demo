@@ -267,19 +267,35 @@ async function bulk(kind, body, update, label) {
     const job = jr.ok ? await jr.json() : null;
     const p = job?.progress;
     if (p) update(`${label}: ${p.processed} of ${p.total}`);
-    if (job?.state === 'stopped') return job;
+    if (job?.state === 'stopped') {
+      if (!p?.failed) return [];
+      // the paths that failed, from the job's per-page results
+      const dr = await helix(`${links.self.replace(HELIX, '')}/details`);
+      const details = dr.ok ? await dr.json() : null;
+      const failed = (details?.data?.resources || []).filter((r) => r.status >= 400).map((r) => r.path);
+      return failed.length ? failed : body.paths;
+    }
   }
   throw new Error(`${label} is still running. Check again in a few minutes.`);
 }
 
+/**
+ * Runs a bulk job over `paths` and retries the pages that failed once (failures are usually a page
+ * timing out). Returns the paths that still failed.
+ */
 async function bulkPaths(kind, paths, update, label, extra = {}) {
-  let failed = 0;
-  for (let i = 0; i < paths.length; i += BULK_MAX) {
-    const chunk = paths.slice(i, i + BULK_MAX);
-    const job = await bulk(kind, { paths: chunk, ...extra }, update, label);
-    failed += job.progress?.failed || 0;
-  }
-  return failed;
+  const run = async (list, text) => {
+    const failed = [];
+    for (let i = 0; i < list.length; i += BULK_MAX) {
+      failed.push(...await bulk(kind, { paths: list.slice(i, i + BULK_MAX), ...extra }, update, text));
+    }
+    return failed;
+  };
+  const failed = await run(paths, label);
+  if (!failed.length) return [];
+  update(`${label}: retrying ${failed.length} pages`);
+  await sleep(5000);
+  return run(failed, `${label} (retry)`);
 }
 
 /** Web path of a DA file: /en/index.html → /en/, /en/press.html → /en/press, sheets keep .json. */
@@ -353,31 +369,31 @@ async function reset(step) {
   s(`${pages.length} pages and sheets`, 'done');
 
   // keep going when some pages fail, so the rest of the demo is still published; report them at the end
-  let problems = 0;
   s = step('Previewing');
-  let failed = await bulkPaths('preview', pages, s, 'Previewing');
-  problems += failed;
-  s(`Previewed ${pages.length - failed} of ${pages.length}`, failed ? 'fail' : 'done');
+  const previewFailed = await bulkPaths('preview', pages, s, 'Previewing');
+  s(`Previewed ${pages.length - previewFailed.length} of ${pages.length}`, previewFailed.length ? 'fail' : 'done');
 
   s = step('Publishing');
-  failed = await bulkPaths('live', pages, s, 'Publishing');
-  problems += failed;
-  s(`Published ${pages.length - failed} of ${pages.length}`, failed ? 'fail' : 'done');
+  const publishFailed = await bulkPaths('live', pages, s, 'Publishing');
+  s(`Published ${pages.length - publishFailed.length} of ${pages.length}`, publishFailed.length ? 'fail' : 'done');
+  const problems = [...new Set([...previewFailed, ...publishFailed])];
 
   s = step('Unpublishing pages added since the backup');
   const restored = new Set(pages);
   const stale = before.filter((p) => !restored.has(p));
-  let removalFailed = 0;
+  let removalFailed = [];
   if (stale.length) {
-    removalFailed += await bulkPaths('live', stale, s, 'Unpublishing added pages', { delete: true });
-    removalFailed += await bulkPaths('preview', stale, s, 'Unpreviewing added pages', { delete: true });
+    removalFailed = [...new Set([
+      ...await bulkPaths('live', stale, s, 'Unpublishing added pages', { delete: true }),
+      ...await bulkPaths('preview', stale, s, 'Unpreviewing added pages', { delete: true }),
+    ])];
   }
-  if (removalFailed) s(`Couldn't unpublish ${removalFailed} of ${stale.length} added pages`, 'fail');
+  if (removalFailed.length) s(`Couldn't unpublish ${removalFailed.length} of ${stale.length} added pages`, 'fail');
   else s(stale.length ? `Unpublished ${stale.length} added pages` : 'No added pages', 'done');
   const notes = [];
-  if (problems) notes.push('Some restored pages didn\'t preview or publish: reset again, or publish them from Experience Workspace.');
+  if (problems.length) notes.push(`These pages didn't preview or publish, even on retry: ${problems.join(', ')}. Publish them from Experience Workspace, or reset again.`);
   // their DA pages are gone, so another reset won't find them: name them
-  if (removalFailed) notes.push(`Some added pages may still be online. Unpublish them with Sidekick: ${stale.join(', ')}.`);
+  if (removalFailed.length) notes.push(`These added pages may still be online: ${removalFailed.join(', ')}. Unpublish them with Sidekick.`);
   const end = notes.length ? `Reset finished with problems. ${notes.join(' ')}` : 'The demo matches the backup';
   step(end)(end, notes.length ? 'fail' : 'done');
 }
