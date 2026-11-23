@@ -431,7 +431,10 @@ async function reset(step, notes) {
   s = step('Comparing the demo with the backup');
   const current = await allFiles(ROOT);
   const saved = new Set((await allFiles(BACKUP)).map((f) => rel(f.path, BACKUP)));
-  const extra = current.filter((f) => !saved.has(rel(f.path, ROOT)));
+  // backups made before .da was included have none: leave the demo's .da alone then
+  const hasDa = [...saved].some((path) => path.startsWith('/.da/'));
+  const extra = current.filter((f) => !saved.has(rel(f.path, ROOT))
+    && (hasDa || !rel(f.path, ROOT).startsWith('/.da/')));
   // pages added since the backup are taken offline later (pages that were live without a DA page
   // before the backup, e.g. fragments used by Target offers, are left alone)
   const before = current.filter((f) => PUBLISHABLE.has(f.ext) && !isHidden(f.path, ROOT)).map(webPath);
