@@ -232,3 +232,14 @@
   color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Add to cart: confirmation under the buttons */
+.product-detail .product-detail-added {
+  margin: var(--gap-2xs) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.product-detail .product-detail-added:empty {
+  display: none;
+}

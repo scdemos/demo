@@ -53,6 +53,8 @@ ok('no plans for a single product', !detailHtml(ROWS[2], [ROWS[2]], LABELS).incl
 ok('group label wins', detailHtml(ROWS[0], [ROWS[0], ROWS[1]], { ...LABELS, 'plan-label': 'Pick one' }).includes('Pick one'));
 ok('workbook rows', sheetRows({ ':names': ['products'], products: { data: [{ a: 1 }] } }).length === 1);
 ok('labels', sheetLabels({ data: [{ key: 'brand', value: 'X' }, { key: '', value: 'y' }] }).brand === 'X');
+ok('placeholder labels', sheetLabels({ data: [{ Key: 'brand', Text: 'Y' }, { Key: 'blank', Text: '' }] }).brand === 'Y');
+ok('placeholder blanks are left out', !('blank' in sheetLabels({ data: [{ Key: 'blank', Text: '' }] })));
 
 /* ---------- public index ---------- */
 
@@ -79,7 +81,7 @@ function deps({
   const adminFetch = async (kind, path, init = {}) => {
     calls.push([kind, init.method || 'GET', path]);
     if (path === '/source/scdemos/demo/en/data/products.json') return json({ data: rows });
-    if (path === '/source/scdemos/demo/en/data/product-labels.json') return json({ data: [{ key: 'brand', value: 'Frescopa' }] });
+    if (path === '/source/scdemos/demo/en/placeholders.json') return json({ data: [{ Key: 'brand', Text: 'Frescopa' }] });
     if (kind === 'da' && path.endsWith('.html') && (init.method || 'GET') === 'GET') {
       return new Response('', { status: pages.some((p) => path.endsWith(`${p}.html`)) ? 200 : 404 });
     }

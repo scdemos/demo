@@ -258,6 +258,57 @@ function buildSchema(block, cfg) {
   addSchema(schema);
 }
 
+/**
+ * Add to cart, for a product with a price, on the site itself (an embed in another app has no cart),
+ * when each plan on the page is a product of its own.
+ * The authored action stays as a secondary button next to it.
+ */
+async function buildAddToCart(block, cfg, contentCell, page) {
+  const price = Number.parseFloat(cfg.price);
+  if (!cfg.sku || !(price > 0) || block.getRootNode() instanceof ShadowRoot) return;
+  // plan options that aren't products of their own (an authored radio picker) have no catalog price
+  if (block.querySelector('fieldset.product-detail-plans')) return;
+  const cart = await import('../../scripts/cart.js');
+  const labels = await cart.loadLabels();
+  if (!labels['add-to-cart']) return;
+
+  const name = block.querySelector('h1, h2')?.textContent.trim() || cfg.sku;
+  const img = block.querySelector('.product-detail-stage img');
+  const product = {
+    sku: cfg.sku,
+    path: page.replace(/\/$/, ''),
+    name,
+    price: price.toFixed(2),
+    currency: cfg.currency || 'USD',
+    period: contentCell.querySelector('.product-detail-price small')?.textContent.trim() || '',
+    image: img ? absoluteUrl(img.currentSrc || img.getAttribute('src')) : '',
+  };
+
+  const button = createTag('button', { type: 'button', class: 'button primary product-detail-add' }, labels['add-to-cart']);
+  const status = createTag('p', { class: 'product-detail-added', role: 'status' });
+  button.addEventListener('click', () => {
+    const added = cart.addToCart(product);
+    status.textContent = '';
+    status.append(added ? labels['added-to-cart'] || '' : cart.formatLabel(labels['cart-limit'], { max: cart.MAX_QUANTITY }));
+    if (labels['view-cart']) {
+      status.append(' ', createTag('a', { href: cart.CART_PATH }, labels['view-cart']));
+    }
+  });
+
+  let group = contentCell.querySelector('.button-group');
+  const single = contentCell.querySelector('.button-container');
+  if (!group) {
+    group = createTag('div', { class: 'button-group' });
+    if (single) {
+      single.before(group);
+      group.append(single);
+    } else contentCell.append(group);
+  }
+  group.querySelectorAll('a.button.primary').forEach((a) => a.classList.replace('primary', 'secondary'));
+  group.prepend(button);
+  group.after(status);
+}
+
 /** @param {Element} block */
 export default function decorate(block) {
   const cfg = readConfig(block);
@@ -275,7 +326,8 @@ export default function decorate(block) {
   const priceEl = contentCell.querySelector('.product-detail-price');
   if (priceEl) priceEl.setAttribute('aria-live', 'polite');
   // an embedded product page (aem-embed) carries its own address
-  const plans = buildPlans(cfg, priceEl, uid, block.dataset.page || window.location.pathname);
+  const page = block.dataset.page || window.location.pathname;
+  const plans = buildPlans(cfg, priceEl, uid, page);
   if (plans) {
     const anchor = contentCell.querySelector('.product-detail-features, .button-group, .button-container');
     if (anchor) anchor.before(plans);
@@ -289,4 +341,5 @@ export default function decorate(block) {
   if (!mediaCell) block.classList.add('no-media');
 
   buildSchema(block, cfg);
+  buildAddToCart(block, cfg, contentCell, page);
 }
