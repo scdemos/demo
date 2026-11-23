@@ -515,6 +515,10 @@ async function loadEager(doc) {
       orgId: '138A07885EE042D20A495CFA@AdobeOrg',
       defaultConsent: 'in',
       thirdPartyCookiesEnabled: false,
+      // First-party Edge Network host (Adobe-managed certificate, CNAME to Adobe) so Adobe
+      // cookies are set on bbird.live. Other hosts (aem.page/live) keep edge.adobedc.net,
+      // where data.bbird.live would be third-party anyway.
+      ...(window.location.hostname === 'demo.bbird.live' && { edgeDomain: 'data.bbird.live' }),
       edgeConfigOverrides: {
         com_adobe_target: {
           propertyToken: '2375354b-3ff1-6d5d-1304-7c38fccd590b',
