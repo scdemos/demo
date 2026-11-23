@@ -6,7 +6,6 @@
 //   POST /admin/clones  → demo admins: the CloneIt demos (see admin.js)
 //   POST /admin/delete  → demo admins: one step of deleting a CloneIt demo { site, step, job }
 //   POST /admin/job     → demo admins: state of a bulk job a delete step started { site, topic, name }
-//   POST /admin/products → demo admins: Sync products, the products sheet to Edge Commerce { site } (see commerce.js)
 //   GET  /products/<org>/<site>/…/index.json → public: a site's Edge Commerce product index, with CORS
 //   POST /              → readiness ping (never returns a token)
 // New routes require the caller's own Adobe IMS access token (Authorization: Bearer …, as provided by the
@@ -19,7 +18,7 @@
 import {
   assertDemoAdmin, listClones, deleteCloneStep, jobState,
 } from './admin.js';
-import { commerceFetch, productIndex, syncProducts } from './commerce.js';
+import { productIndex } from './commerce.js';
 
 const IMS_TOKEN_URL = 'https://ims-na1.adobelogin.com/ims/token/v3';
 const IMS_ORIGIN = 'https://ims-na1.adobelogin.com';
@@ -509,11 +508,6 @@ export default {
           const step = String(body.step || '');
           const result = await deleteCloneStep({ site, step, job: body.job ? String(body.job) : '' }, env, deps);
           console.log(JSON.stringify({ admin: user.email, site, step, result }));
-          return jsonResponse(cors, result);
-        }
-        if (pathname === '/admin/products') {
-          const result = await syncProducts({ site }, env, { adminFetch: deps.adminFetch, commerce: commerceFetch(env) });
-          console.log(JSON.stringify({ admin: user.email, site, sync: result }));
           return jsonResponse(cors, result);
         }
         return workerErr(cors, 'not_found', 404);

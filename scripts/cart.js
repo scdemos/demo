@@ -93,8 +93,8 @@ export const formatLabel = (tpl, values) => text(tpl).replace(/\{(\w+)\}/g, (m, 
 
 let labelsPromise;
 /**
- * The shop's labels (key → text) from placeholders sheets (Key, Text), which also hold the labels
- * Sync products bakes into product pages. The market's sheet (/de/placeholders on /de/ pages) wins;
+ * The shop's labels (key → text) from placeholders sheets (Key, Text). The market's sheet
+ * (/de/placeholders on /de/ pages) wins;
  * keys it lacks come from the default /en/placeholders. The shop shows only where they have its text
  * (`add-to-cart`): a demo cloned before the shop existed has neither the text nor a cart page.
  */
