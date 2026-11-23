@@ -1,0 +1,127 @@
+{
+  "slug": "experience-workspace-experiment-live-split",
+  "uploadFolder": "/demo-docs/media",
+  "steps": [
+    {
+      "do": "openFolder",
+      "hidden": true
+    },
+    {
+      "do": "closeChat",
+      "hidden": true
+    },
+    {
+      "do": "visit",
+      "url": "https://main--demo--scdemos.aem.page/en/?experiment=home-hero/control&daexperiment=1"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · Experimentation",
+      "title": "An A/B test running on the live site",
+      "items": [
+        "1 · The test in the Experimentation panel",
+        "2 · Simulate each variant",
+        "3 · What visitors get on the live site"
+      ]
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "text": "home-hero",
+      "n": 1,
+      "hold": 2500,
+      "caption": "The home page runs the **home-hero** test: it’s Active"
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "text": "Overall conversion",
+      "n": 1,
+      "hold": 2200,
+      "caption": "An A/B test for overall conversion, split 50/50"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Simulate variant",
+      "nth": 0,
+      "n": 2,
+      "hold": 5000,
+      "caption": "**Simulate** the control: the seasonal hero"
+    },
+    {
+      "do": "frameClick",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Simulate variant",
+      "nth": 1,
+      "n": 2,
+      "hold": 5500,
+      "caption": "…and **challenger-1**: a membership-led hero"
+    },
+    {
+      "do": "openPage",
+      "path": "/experiments/home-hero/challenger-1",
+      "n": 2,
+      "hold": 1200,
+      "caption": "The challenger is an ordinary page in **/experiments/home-hero**"
+    },
+    {
+      "do": "showBlock",
+      "block": "hero",
+      "n": 2,
+      "hold": 2500,
+      "caption": "Authors edit it like any other page"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/",
+      "fresh": true,
+      "n": 3,
+      "hold": 3500,
+      "caption": "On the live site, each new visitor gets one of the two heroes and keeps it"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/?experiment=home-hero/challenger-1",
+      "n": 3,
+      "hold": 3500,
+      "caption": "To show one on purpose, add **?experiment=home-hero/challenger-1** (or **/control**)"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 2600,
+      "caption": "RUM records which hero each sampled visit saw, and whether it converted"
+    },
+    {
+      "do": "visit",
+      "url": "https://main--demo--scdemos.aem.page/en/?experiment=home-hero/control&daexperiment=1",
+      "n": 4,
+      "hold": 1500,
+      "caption": "Back in the panel…"
+    },
+    {
+      "do": "framePoint",
+      "frame": "nxver",
+      "role": "button",
+      "name": "Pause",
+      "n": 4,
+      "hold": 2500,
+      "caption": "**Pause** ends the test: everyone gets the control again"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Experimentation",
+      "title": "Test on the live site, measured with RUM",
+      "items": [
+        "Visitors are split at random and keep their variant",
+        "?experiment=<test>/<variant> shows one on purpose",
+        "Pause in the panel to stop the test"
+      ],
+      "hold": 3000
+    }
+  ]
+}

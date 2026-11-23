@@ -1,0 +1,101 @@
+{
+  "slug": "experience-workspace-gated-content-authoring-preview",
+  "page": "circle-members-story",
+  "steps": [
+    {
+      "do": "openFolder"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace \u00b7 Gated content",
+      "title": "Gate a story for signed-in members",
+      "items": [
+        "1 \u00b7 Create a page from the Story template",
+        "2 \u00b7 Mark the page as gated",
+        "3 \u00b7 Choose who sees each section",
+        "4 \u00b7 Preview as a visitor and as a member"
+      ]
+    },
+    {
+      "do": "createPage",
+      "n": 1,
+      "caption": "Click **New** \u203a Page, name it and click **Create**"
+    },
+    {
+      "do": "addTemplate",
+      "name": "Story",
+      "n": 1,
+      "caption": "Start from the **Story** template",
+      "hold": 400
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 2,
+      "caption": "Switch to **Content** view to edit the page's tables"
+    },
+    {
+      "do": "addRow",
+      "after": "article",
+      "cells": [
+        "gated",
+        "true"
+      ],
+      "n": 2,
+      "caption": "In **Metadata**, press Tab in the last cell and add **gated** = **true**"
+    },
+    {
+      "do": "addRow",
+      "after": "prose",
+      "cells": [
+        "view",
+        "logged-in"
+      ],
+      "n": 3,
+      "caption": "In the story section's **Section Metadata**, add **view** = **logged-in**"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 3000,
+      "caption": "**logged-out** sections show only to visitors. Sections without **view** are public"
+    },
+    {
+      "do": "preview",
+      "n": 4,
+      "caption": "**Send** \u203a Preview \u203a **Update** to preview the page"
+    },
+    {
+      "do": "hover",
+      "text": "Keep reading",
+      "n": 4,
+      "hold": 1800,
+      "caption": "As a visitor, the story is gone: **Keep reading** follows the cover"
+    },
+    {
+      "do": "previewAs",
+      "audience": "authenticated",
+      "n": 4,
+      "caption": "The **AUTH STATE** toggle previews the page as a signed-in member"
+    },
+    {
+      "do": "hover",
+      "text": "Start with something made by hand",
+      "n": 4,
+      "hold": 2200,
+      "caption": "As a member, the full story is back"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Gated content",
+      "title": "Members-only content, authored in Experience Workspace",
+      "items": [
+        "Metadata: gated = true",
+        "Section Metadata: view = logged-in or logged-out",
+        "Blocks: add the logged-in or logged-out variant",
+        "Tip: give visitors a sign-in teaser section"
+      ]
+    }
+  ]
+}

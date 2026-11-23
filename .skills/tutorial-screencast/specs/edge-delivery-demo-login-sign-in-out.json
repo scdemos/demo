@@ -1,0 +1,71 @@
+{
+  "slug": "edge-delivery-demo-login-sign-in-out",
+  "steps": [
+    {
+      "do": "signedOut"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Edge Delivery Services \u00b7 Demo login",
+      "title": "Sign in and out on the demo site",
+      "items": [
+        "1 \u00b7 Click Sign in",
+        "2 \u00b7 Enter a display name",
+        "3 \u00b7 The header follows the session"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "Sign in",
+      "role": "link",
+      "n": 1,
+      "hold": 1200,
+      "caption": "Visitors start signed out: the header shows **Sign in**"
+    },
+    {
+      "do": "signIn",
+      "text": "Sign in",
+      "name": "Alex Rivera",
+      "n": 2,
+      "caption": "**Sign in** opens the demo login: type a **Display name**, click **Continue**"
+    },
+    {
+      "do": "pointAt",
+      "text": "Logout",
+      "role": "link",
+      "n": 3,
+      "hold": 2200,
+      "caption": "Back on the same page, signed in: the header now shows **Logout**"
+    },
+    {
+      "do": "click",
+      "role": "link",
+      "name": "Logout",
+      "n": 3,
+      "caption": "**Logout** ends the session"
+    },
+    {
+      "do": "pointAt",
+      "text": "Sign in",
+      "role": "link",
+      "n": 3,
+      "hold": 2000,
+      "caption": "Signed out again: **Sign in** is back"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Demo login",
+      "title": "A real session flow on Edge Delivery Services",
+      "items": [
+        "A small Worker serves /auth/login, /auth/session and /auth/logout",
+        "The same session drives the gated content demo",
+        "A real site plugs in its own identity provider"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "slug": "edge-commerce-shop-catalog-to-order",
+  "steps": [
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/products"
+    },
+    {
+      "do": "titleCard",
+      "hold": 4200,
+      "kicker": "Edge Commerce · Product Bus",
+      "title": "From catalog to order on Edge Delivery",
+      "items": [
+        "1 · Products live in Edge Commerce",
+        "2 · Listings and product pages come from the catalog",
+        "3 · Shoppers add to cart and check out",
+        "4 · The order lands in Edge Commerce"
+      ]
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 3000,
+      "caption": "These products live in **Edge Commerce**, managed there and shown as configured for the site"
+    },
+    {
+      "do": "scroll",
+      "by": [
+        450
+      ],
+      "n": 1,
+      "hold": 900,
+      "caption": "A **Catalog** block lists them, straight from Edge Commerce"
+    },
+    {
+      "do": "pointAt",
+      "text": "Frescopa One",
+      "n": 2,
+      "hold": 1600,
+      "caption": "Every card links to the product's own page",
+      "role": "heading"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/products/frescopa-one",
+      "n": 2,
+      "caption": "Edge Commerce renders the product page: price, rating, plans and Product structured data"
+    },
+    {
+      "do": "pointAt",
+      "text": "Choose your plan",
+      "n": 2,
+      "hold": 2000,
+      "caption": "Plans in the same group become a picker, each one a product of its own"
+    },
+    {
+      "do": "click",
+      "text": "Add to cart",
+      "n": 3,
+      "caption": "Click **Add to cart**: the bag in the header counts it"
+    },
+    {
+      "do": "click",
+      "role": "link",
+      "name": "Frescopa Flex $29/mo",
+      "n": 3,
+      "caption": "Switch to **Frescopa Flex**…"
+    },
+    {
+      "do": "click",
+      "text": "Add to cart",
+      "n": 3,
+      "caption": "…and add it too"
+    },
+    {
+      "do": "click",
+      "text": "View cart",
+      "n": 3,
+      "caption": "Open the cart: quantities and the total, priced from the catalog"
+    },
+    {
+      "do": "fillField",
+      "label": "First name",
+      "text": "Alex",
+      "hidden": true
+    },
+    {
+      "do": "fillField",
+      "label": "Last name",
+      "text": "Rivera",
+      "hidden": true
+    },
+    {
+      "do": "fillField",
+      "label": "Email",
+      "text": "alex@example.com",
+      "hidden": true
+    },
+    {
+      "do": "fillField",
+      "label": "Street address",
+      "text": "200 King St W",
+      "hidden": true
+    },
+    {
+      "do": "fillField",
+      "label": "City",
+      "text": "San Francisco",
+      "hidden": true
+    },
+    {
+      "do": "fillField",
+      "label": "State (e.g. CA)",
+      "text": "CA",
+      "hidden": true
+    },
+    {
+      "do": "fillField",
+      "label": "ZIP code",
+      "text": "94105",
+      "hidden": true
+    },
+    {
+      "do": "pointAt",
+      "text": "Your details",
+      "n": 3,
+      "hold": 2200,
+      "caption": "Fill in your details: a guest checkout, no account needed"
+    },
+    {
+      "do": "click",
+      "text": "Place order",
+      "n": 4,
+      "caption": "**Place order** sends it to Edge Commerce, which checks every price against the catalog"
+    },
+    {
+      "do": "pointAt",
+      "text": "Your order is in",
+      "n": 4,
+      "hold": 2600,
+      "caption": "The order is created in Edge Commerce, and the team is notified"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Edge Commerce",
+      "title": "A storefront that stays Edge Delivery",
+      "items": [
+        "Catalog, product pages and index from Edge Commerce",
+        "Cart and checkout with server-checked prices",
+        "Lighthouse 100 on product pages, like any other page"
+      ]
+    }
+  ]
+}

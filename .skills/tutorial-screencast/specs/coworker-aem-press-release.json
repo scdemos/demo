@@ -1,0 +1,94 @@
+{
+  "slug": "coworker-aem-press-release",
+  "uploadFolder": "/demo-docs/media",
+  "headed": true,
+  "steps": [
+    {
+      "do": "openCoworker",
+      "url": "https://experience.adobe.com/#/@ccs/coworker/75205073054494925312",
+      "hidden": true
+    },
+    {
+      "do": "coworkerClearChats",
+      "hidden": true
+    },
+    {
+      "do": "openCoworker",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "Coworker \u00b7 AEM Content Fragments",
+      "title": "Write a press release with Coworker",
+      "items": [
+        "1 \u00b7 Brief Coworker in a chat",
+        "2 \u00b7 It writes the release as a Content Fragment in AEM",
+        "3 \u00b7 Check it in the Content Fragment editor"
+      ]
+    },
+    {
+      "do": "coworkerClick",
+      "name": "Chats",
+      "n": 1,
+      "caption": "In **Coworker**, open **Chats**"
+    },
+    {
+      "do": "coworkerClick",
+      "name": "New chat",
+      "n": 1,
+      "caption": "Start a **New chat**"
+    },
+    {
+      "do": "coworkerAsk",
+      "n": 1,
+      "typeDelay": 12,
+      "caption": "Brief it: model, folder, the facts, and what to write",
+      "text": "In AEM as a Cloud Service (author-p187853-e1977051), create a Content Fragment with the Press Release model in /content/dam/frescopa/press, named member-week-returns. Headline: \"Member Week returns December 3 to 9\". Release date: 2026-11-20. Dateline city: Chicago. Image: /content/dam/frescopa/press/images/member-week.jpg, alt text \"Illustration: an orange block between grey pillars\". Media contact: Frescopa Press Office, press@frescopa.example. Write the summary (one sentence) and the body (three short paragraphs, plain and warm, no hype): Frescopa Circle members get early access, double Velo points and member-only prices for a week; everyone else can join Circle free to take part. Show me the fragment before you create it."
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 4000,
+      "caption": "Coworker writes the summary and body, and shows the fragment before it creates anything"
+    },
+    {
+      "do": "coworkerAsk",
+      "n": 2,
+      "text": "create",
+      "typeDelay": 60,
+      "caption": "Looks right: **create** it"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 3500,
+      "caption": "The release is a Content Fragment in AEM, in the Frescopa press folder"
+    },
+    {
+      "do": "openCfEditor",
+      "path": "/content/dam/frescopa/press/member-week-returns",
+      "until": "Member Week returns",
+      "n": 3,
+      "caption": "Open it in the **Content Fragment editor**"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 4000,
+      "caption": "Every field of the **Press Release** model, filled in and ready to publish"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Coworker \u00b7 AEM",
+      "title": "From brief to Content Fragment",
+      "items": [
+        "Brief Coworker in plain words",
+        "It writes the release in your model",
+        "Next: publish it as a page with json2html"
+      ],
+      "hold": 3500
+    }
+  ],
+  "aemAuthor": "author-p187853-e1977051.adobeaemcloud.com"
+}

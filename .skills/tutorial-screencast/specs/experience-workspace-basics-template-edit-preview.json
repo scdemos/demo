@@ -1,0 +1,33 @@
+{
+  "slug": "experience-workspace-basics-template-edit-preview",
+  "page": "first-hour-story",
+  "steps": [
+    { "do": "openFolder" },
+    { "do": "titleCard", "kicker": "Experience Workspace", "title": "Build and preview a page in two minutes",
+      "items": ["1 · Create a page", "2 · Add a template", "3 · Edit in Layout, Content and Split view", "4 · Preview"] },
+
+    { "do": "createPage", "n": 1, "caption": "Open the folder for your page, click **New** › Page, name it and click **Create**" },
+    { "do": "view", "mode": "layout", "caption": "The editor opens in **Layout** view: the page the way visitors will see it", "hold": 2500 },
+
+    { "do": "openPanel", "name": "Templates", "n": 2, "caption": "Start from a template: open **Panels** › Templates" },
+    { "do": "addTemplate", "name": "Story", "n": 2, "caption": "Click **Add** next to **Story**" },
+    { "do": "scroll", "caption": "The template adds a hero, an image and body copy, styled with the site design" },
+
+    { "do": "editText", "where": "layout", "in": "The case for a slow morning", "word": "slow", "with": "quiet",
+      "n": 3, "caption": "Edit right on the page: double-click a word and type", "hold": 1200 },
+    { "do": "view", "mode": "content", "n": 3, "caption": "Switch to **Content** view to see the structure behind the page" },
+    { "do": "caption", "caption": "Each block is a table: its name sits in the header row, like **hero**", "hold": 1000 },
+    { "do": "editText", "where": "content", "in": "Living · 4 min read", "word": "Living", "with": "Weekend",
+      "n": 3, "caption": "You can edit here too. Change the eyebrow text…", "hold": 1200 },
+    { "do": "view", "mode": "split", "n": 3, "caption": "**Split view** shows Layout and Content side by side" },
+    { "do": "editText", "where": "content", "in": "Small rituals, better starts", "word": "Small", "with": "Tiny",
+      "caption": "Edit on the right and watch the page update on the left" },
+    { "do": "hover", "where": "layout", "text": "rituals, better starts", "hold": 2000 },
+
+    { "do": "preview", "n": 4, "caption": "Ready to share? Click **Send**, keep **Preview** selected and click **Update**" },
+    { "do": "caption", "caption": "Your page is on the preview site: **{previewHost}**", "hold": 1500 },
+    { "do": "scroll", "x": 720, "by": [600, 600, -1200] },
+    { "do": "endCard", "kicker": "That's it", "title": "Page created, edited and previewed",
+      "items": ["Templates: Panels › Templates › Add", "Views: Layout · Content · Split view", "Share: Send › Preview › Update"] }
+  ]
+}
