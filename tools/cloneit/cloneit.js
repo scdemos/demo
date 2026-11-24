@@ -143,12 +143,12 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
-/** Loads the DA SDK for the signed-in user's IMS token (the worker requires it on every call). */
 /** The site to clone: the site CloneIt is opened from when it's a template, else demo. */
 function templateSite(repo) {
   return TEMPLATE_SITES.includes(repo) ? repo : BASELINE_SITE;
 }
 
+/** Loads the DA SDK for the signed-in user's IMS token (the worker requires it on every call). */
 async function initDaSdk() {
   try {
     const { default: DA_SDK } = await import(DA_SDK_URL);
