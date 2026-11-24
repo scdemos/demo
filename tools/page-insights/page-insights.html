@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <title>Page insights</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="How a page and the whole site perform: views, conversions, clicks by block, top pages and traffic sources">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="/styles/fonts.css">
+    <link rel="stylesheet" href="/tools/page-insights/page-insights.css">
+    <script src="/tools/page-insights/page-insights.js" type="module"></script>
+  </head>
+  <body class="appear">
+    <main class="insights">
+      <div class="insights-head">
+        <div>
+          <h1>Page insights</h1>
+          <form class="insights-page" id="page-form">
+            <label for="page-path">Page</label>
+            <input id="page-path" name="path" autocomplete="off" spellcheck="false" placeholder="/en/products/duo">
+            <button type="submit">Show</button>
+            <a id="page-link" target="_blank" rel="noopener">Open page</a>
+          </form>
+        </div>
+        <fieldset class="insights-range" id="range">
+          <legend>Period</legend>
+          <label><input type="radio" name="days" value="7"> Last 7 days</label>
+          <label><input type="radio" name="days" value="30" checked> Last 30 days</label>
+        </fieldset>
+      </div>
+
+      <p class="insights-status" id="status" role="status">Checking your sign-in…</p>
+
+      <div id="sources" aria-live="polite"></div>
+      <div id="site" aria-live="polite"></div>
+    </main>
+  </body>
+</html>
