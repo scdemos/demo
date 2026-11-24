@@ -30,6 +30,7 @@ before a file or a DA path is touched.
 | `siteOrigin` | defaults | live site host for `visit`, `signedOut`, `signIn` (`https://demo.bbird.live`) |
 | `appUrl` | defaults | the site's app that `openUrl` may open (`https://scdemos.github.io/frescopa-app/app/`) |
 | `restoreAfterTest` | spec | live documents the spec edits (DA paths ending in `.html`); test takes back them up and put them back afterwards |
+| `consentBanner` | spec | `true`: the live site shows its cookie banner to the recording browser (it hides itself from browsers that report automation, so by default visits run without consent and send no analytics) |
 | `steps` | spec | the script, in order |
 
 Spec option `headed: true` records in a visible browser window: needed for experience.adobe.com (Coworker), whose sign-in lives in cookies that headless Chromium can't read on macOS.

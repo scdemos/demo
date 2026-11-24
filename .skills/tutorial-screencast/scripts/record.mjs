@@ -86,8 +86,10 @@ const rawRoot = path.join(SKILL, 'out', '.raw');
 if (spec.headed !== undefined && typeof spec.headed !== 'boolean') throw new Error('headed must be true or false');
 // `sidekick`: load the AEM Sidekick extension (always a visible browser).
 if (spec.sidekick !== undefined && typeof spec.sidekick !== 'boolean') throw new Error('sidekick must be true or false');
+// `consentBanner`: the live site shows its cookie banner (it hides from browsers that report automation).
+if (spec.consentBanner !== undefined && typeof spec.consentBanner !== 'boolean') throw new Error('consentBanner must be true or false');
 const rec = await startRecording({
-  rawDir: path.join(rawRoot, spec.slug), rawRoot, headless: !spec.headed, sidekick: !!spec.sidekick,
+  rawDir: path.join(rawRoot, spec.slug), rawRoot, headless: !spec.headed, sidekick: !!spec.sidekick, consentBanner: !!spec.consentBanner,
 });
 const run = { startedAt: rec.startedAt, pageName, test, noPreview: test && !flag('--preview') };
 const ctx = { page: rec.page, t: rec.t, spec, run };

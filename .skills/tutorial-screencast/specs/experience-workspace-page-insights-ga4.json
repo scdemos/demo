@@ -1,0 +1,104 @@
+{
+  "slug": "experience-workspace-page-insights-ga4",
+  "consentBanner": true,
+  "steps": [
+    {
+      "do": "signedOut"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/products",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 5000,
+      "kicker": "Edge Delivery \u00b7 Google Analytics 4",
+      "title": "See how your pages perform, without leaving the page",
+      "items": [
+        "1 \u00b7 A visitor accepts cookies and shops",
+        "2 \u00b7 The site's blocks send GA4 events through GTM",
+        "3 \u00b7 The author sees the page's numbers in Experience Workspace"
+      ]
+    },
+    {
+      "do": "click",
+      "text": "Accept all",
+      "n": 1,
+      "hold": 1500,
+      "caption": "A new visitor: the cookie bar sits at the bottom. **Accept all** turns on analytics"
+    },
+    {
+      "do": "scroll",
+      "by": [
+        400,
+        300
+      ],
+      "n": 1,
+      "caption": "Google loads only now, after the page has rendered: the site keeps its 100 Lighthouse score"
+    },
+    {
+      "do": "click",
+      "text": "Frescopa Duo",
+      "n": 2,
+      "hold": 1500,
+      "caption": "Seeing the product list and picking a product are GA4 events. Nobody tagged this page"
+    },
+    {
+      "do": "click",
+      "text": "Add to cart",
+      "n": 2,
+      "hold": 1800,
+      "caption": "**Add to cart**: the block sends the product, price and quantity"
+    },
+    {
+      "do": "openPage",
+      "path": "/en/products/duo",
+      "n": 3,
+      "caption": "The author opens the same page in Experience Workspace"
+    },
+    {
+      "do": "closeChat"
+    },
+    {
+      "do": "openPanel",
+      "name": "Page Insights - G4A",
+      "n": 3,
+      "caption": "**Panels** \u203a **Page Insights**: this page's numbers, next to the page"
+    },
+    {
+      "do": "framePoint",
+      "frame": "page-insights",
+      "text": "Views",
+      "n": 3,
+      "hold": 2200,
+      "caption": "Views, visitors and time on page for the last 30 days, against the 30 days before"
+    },
+    {
+      "do": "framePoint",
+      "frame": "page-insights",
+      "text": "Conversions",
+      "n": 3,
+      "hold": 2500,
+      "caption": "From product views to add to carts, checkouts and purchases"
+    },
+    {
+      "do": "framePoint",
+      "frame": "page-insights",
+      "text": "Where visitors came from",
+      "n": 3,
+      "hold": 2500,
+      "caption": "And where they came from: search, newsletter, social, campaigns"
+    },
+    {
+      "do": "endCard",
+      "kicker": "GA4 and GTM on Edge Delivery",
+      "title": "Marketers get their data. Pages stay fast. Authors see results",
+      "items": [
+        "Consent first: Google loads only after Accept, after the page renders",
+        "Blocks send the events: new pages are tracked when they're published",
+        "Results next to the page in Experience Workspace, no GA4 login needed"
+      ]
+    }
+  ]
+}
