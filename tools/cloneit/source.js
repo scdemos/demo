@@ -302,10 +302,11 @@ export function createSourceBusClient({
     /**
      * Details of a job, by the topic it reports (`preview`, `live-publish`). Throws when they
      * can't be read, or the job failed, was cancelled or expired: a stopped job only has a
-     * report of its paths when it ran.
+     * report of its paths when it ran. A 5xx is the API's hiccup, not the job's: no news yet.
      */
     async jobDetails(job) {
       const resp = await request(`jobs/${job.topic}/${job.name}/details`);
+      if (resp.status >= 500) return {};
       if (!resp.ok) throw new Error(`${job.topic} job: ${resp.status} ${resp.headers.get('x-error') || ''}`.trim());
       const details = await resp.json();
       if (details.error || ['cancelled', 'expired'].includes(details.state)) {
