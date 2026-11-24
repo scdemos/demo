@@ -1,7 +1,7 @@
 // Page insights worker: analytics for one page of the site, for the Page insights DA app.
-//   POST /page-insights/page {path, days: 7|28} → per analytics source: summary vs the days before,
+//   POST /page-insights/page {path, days: 7|30} → per analytics source: summary vs the days before,
 //        conversions, daily views, clicks by block and button, traffic sources
-//   POST /page-insights/live → per analytics source: events on the whole site in the last 30 minutes
+//   POST /page-insights/site {days: 7|30} → the same for the whole site, plus top pages and events
 // Callers are DA authors of SITE: their DA token (the DA SDK session of the app) must list the site in
 // DA. Every source (provider) answers in the same shape, so the app shows one section per source.
 import { ga4 } from './ga4.js';
@@ -9,7 +9,6 @@ import { ga4 } from './ga4.js';
 const DA_ADMIN = 'https://admin.da.live';
 const PROVIDERS = [ga4];
 const PAGE_TTL = 5 * 60 * 1000;
-const LIVE_TTL = 10 * 1000;
 const AUTH_TTL = 5 * 60 * 1000;
 // one segment of a site path: letters, digits and - _ . , not starting with a dot
 const SEGMENT_RE = /^[a-z0-9_-][a-z0-9._-]*$/i;
@@ -103,6 +102,9 @@ export function pagePath(value) {
   return path;
 }
 
+/** The report period: 7 or 30 days (30 unless 7 is asked for). */
+const periodOf = (body) => (Number(body.days) === 7 ? 7 : 30);
+
 async function cached(key, ttl, load, now = Date.now()) {
   const hit = reportCache.get(key);
   if (hit && hit.exp > now) return hit.value;
@@ -147,13 +149,15 @@ export async function handle(request, env, fetchImpl = fetch) {
       const parsed = await request.json().catch(() => null);
       const body = parsed && typeof parsed === 'object' ? parsed : {};
       const path = pagePath(body.path);
-      const days = Number(body.days) === 28 ? 28 : 7;
+      const days = periodOf(body);
       const sources = await cached(`page:${path}:${days}`, PAGE_TTL, () => fromSources(env, (p) => p.page(env, { path, days }, fetchImpl)));
       return json(headers, { path, days, sources });
     }
-    if (route === '/live') {
-      const sources = await cached('live', LIVE_TTL, () => fromSources(env, (p) => p.live(env, fetchImpl)));
-      return json(headers, { sources });
+    if (route === '/site') {
+      const parsed = await request.json().catch(() => null);
+      const days = periodOf(parsed && typeof parsed === 'object' ? parsed : {});
+      const sources = await cached(`site:${days}`, PAGE_TTL, () => fromSources(env, (p) => p.site(env, { days }, fetchImpl)));
+      return json(headers, { days, sources });
     }
     return json(headers, { error: 'not_found' }, 404);
   } catch (e) {

@@ -1,29 +1,30 @@
 # Page insights worker
 
-Analytics for one page of the site, for the Page insights DA app (`tools/page-insights`). Authors open a
-page in the app and see how it performs: views and visitors against the period before, conversions,
-daily views, which buttons visitors clicked in which block, and where they came from. A live panel
-shows the last 30 minutes on the whole site.
+Analytics for the Page insights DA app (`tools/page-insights`). Authors open a page in the app and see
+how it performs: views and visitors against the period before, conversions, daily views, which buttons
+visitors clicked in which block, and where they came from. Below it, the same for the whole site, with
+its most viewed pages and its events.
 
-- `POST /page-insights/page` `{ "path": "/en/products/duo", "days": 7 }` (7 or 28)
-- `POST /page-insights/live`
+- `POST /page-insights/page` `{ "path": "/en/products/duo", "days": 30 }` (7 or 30; 30 by default)
+- `POST /page-insights/site` `{ "days": 30 }` (7 or 30; 30 by default)
 
 Callers send their DA token (the app gets it from the DA SDK). The worker accepts DA tokens only
 (`IMS_CLIENT_IDS`) and checks that the token can list `SITE` in DA, so only the site's authors get data.
-Reports are aggregates; nothing about a single visitor is read or returned. Page reports are cached for
-5 minutes, the live view for 10 seconds.
+Reports are aggregates; nothing about a single visitor is read or returned. Page and site reports are
+cached for 5 minutes.
 
 ## Sources
 
 Every analytics source is a provider in `PROVIDERS` (`index.js`) with the same shape:
 
 ```js
-{ id, label, configured(env), page(env, { path, days }, fetch), live(env, fetch) }
+{ id, label, configured(env), page(env, { path, days }, fetch), site(env, { days }, fetch) }
 ```
 
 The response has one entry per source (`status`: `ok`, `not_configured` or `error`), and the app
 shows one section per source. `page()` returns `summary`, `conversions`, `trend`, `ctas` and
-`channels`, each `{ value }` or `{ error }`, so one failing section doesn't hide the others.
+`channels`; `site()` returns `summary`, `conversions`, `trend`, `pages`, `events` and `channels`. Each
+is `{ value }` or `{ error }`, so one failing section doesn't hide the others.
 
 Today: Google Analytics 4 (`ga4.js`). A second source, such as Adobe Analytics, is a new provider
 file returning the same shape, added to `PROVIDERS`.

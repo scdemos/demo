@@ -18,7 +18,7 @@ ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scde
 # IMS client ids whose user tokens are accepted (DA = darkalley).
 IMS_CLIENT_IDS = "darkalley"
 # GA4 property (Admin > Property details > Property ID: a number, not the G- measurement ID)
-GA4_PROPERTY_ID = ""
+GA4_PROPERTY_ID = "565648595"
 # The property's reporting time zone, for daily views
 PROPERTY_TIMEZONE = "America/Los_Angeles"
 # Secrets (wrangler secret put GA4_SERVICE_ACCOUNT --config workers/page_insights/wrangler.toml):

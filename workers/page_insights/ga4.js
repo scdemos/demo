@@ -130,21 +130,25 @@ const summaryOf = (row = {}) => ({
   engagementSeconds: row.userEngagementDuration || 0,
 });
 
-/**
- * Page report for one page path over the last `days` days, compared with the days before.
- * Sections fail on their own: a missing custom dimension only empties "what visitors clicked".
- */
-export async function pageReport(env, { path, days }, fetchImpl = fetch, now = Date.now()) {
-  const range = { startDate: `${days - 1}daysAgo`, endDate: 'today' };
-  const page = exact('pagePath', path);
-  const report = (body) => call(env, 'runReport', body, fetchImpl);
-  const section = (promise) => promise.then((value) => ({ value }), (error) => ({ error: error.message }));
+const section = (promise) => promise.then((value) => ({ value }), (error) => ({ error: error.message }));
 
-  const [summary, conversions, trend, ctas, channels] = await Promise.all([
-    section(report({
+/**
+ * The reports a page and the whole site share, over the last `days` days (`filter` limits them to
+ * a page). Sections fail on their own, so one missing piece doesn't hide the others.
+ */
+function sharedSections(env, { days, filter }, fetchImpl, now) {
+  const range = { startDate: `${days - 1}daysAgo`, endDate: 'today' };
+  const withFilter = (body) => {
+    if (!filter) return body;
+    return { ...body, dimensionFilter: body.dimensionFilter ? all(filter, body.dimensionFilter) : filter };
+  };
+  const report = (body) => call(env, 'runReport', withFilter(body), fetchImpl);
+  return {
+    range,
+    report,
+    summary: section(report({
       dateRanges: [{ ...range, name: 'current' }, { startDate: `${2 * days - 1}daysAgo`, endDate: `${days}daysAgo`, name: 'previous' }],
       metrics: SUMMARY_METRICS.map((name) => ({ name })),
-      dimensionFilter: page,
     }).then((r) => {
       const rows = rowsOf(r);
       return {
@@ -152,75 +156,85 @@ export async function pageReport(env, { path, days }, fetchImpl = fetch, now = D
         previous: summaryOf(rows.find((x) => x.dateRange === 'previous')),
       };
     })),
-    section(report({
-      dateRanges: [range],
-      dimensions: [{ name: 'eventName' }],
-      metrics: [{ name: 'eventCount' }],
-      dimensionFilter: all(page, { filter: { fieldName: 'eventName', inListFilter: { values: CONVERSIONS } } }),
-    }).then((r) => {
-      const counts = Object.fromEntries(rowsOf(r).map((x) => [x.eventName, x.eventCount]));
-      return CONVERSIONS.map((name) => ({ name, count: counts[name] || 0 }));
-    })),
-    section(report({
+    trend: section(report({
       dateRanges: [range],
       dimensions: [{ name: 'date' }],
       metrics: [{ name: 'screenPageViews' }],
-      dimensionFilter: page,
     }).then((r) => {
       const views = Object.fromEntries(rowsOf(r).map((x) => [x.date, x.screenPageViews]));
       return lastDays(days, env.PROPERTY_TIMEZONE || 'UTC', now).map((date) => ({ date, views: views[date] || 0 }));
     })),
-    section(report({
+    conversions: section(report({
       dateRanges: [range],
-      dimensions: [{ name: 'customEvent:block_name' }, { name: 'customEvent:link_text' }],
+      dimensions: [{ name: 'eventName' }],
       metrics: [{ name: 'eventCount' }],
-      dimensionFilter: all(page, exact('eventName', 'cta_click')),
-      orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
-      limit: 10,
-    }).then((r) => rowsOf(r).map((x) => ({
-      block: x['customEvent:block_name'], label: x['customEvent:link_text'], clicks: x.eventCount,
-    })))),
-    section(report({
+      dimensionFilter: { filter: { fieldName: 'eventName', inListFilter: { values: CONVERSIONS } } },
+    }).then((r) => {
+      const counts = Object.fromEntries(rowsOf(r).map((x) => [x.eventName, x.eventCount]));
+      return CONVERSIONS.map((name) => ({ name, count: counts[name] || 0 }));
+    })),
+    channels: section(report({
       dateRanges: [range],
       dimensions: [{ name: 'sessionSource' }, { name: 'sessionMedium' }],
       metrics: [{ name: 'sessions' }],
-      dimensionFilter: page,
       orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       limit: 8,
     }).then((r) => rowsOf(r).map((x) => ({
       source: x.sessionSource, medium: x.sessionMedium, sessions: x.sessions,
     })))),
-  ]);
-  return {
-    summary, conversions, trend, ctas, channels,
   };
 }
 
-/** The last 30 minutes on the whole site (the Realtime API can't filter by page). */
-export async function liveReport(env, fetchImpl = fetch) {
-  const minutes = 30;
-  const realtime = (body) => call(env, 'runRealtimeReport', {
-    minuteRanges: [{ startMinutesAgo: minutes - 1, endMinutesAgo: 0 }], ...body,
-  }, fetchImpl);
-  const [events, perMinute, users] = await Promise.all([
-    realtime({
-      dimensions: [{ name: 'eventName' }],
-      metrics: [{ name: 'eventCount' }],
-      orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
-    }),
-    realtime({ dimensions: [{ name: 'minutesAgo' }], metrics: [{ name: 'eventCount' }] }),
-    realtime({ metrics: [{ name: 'activeUsers' }] }),
-  ]);
-  const byMinute = Object.fromEntries(rowsOf(perMinute).map((x) => [Number(x.minutesAgo), x.eventCount]));
-  const eventRows = rowsOf(events).map((x) => ({ name: x.eventName, count: x.eventCount }));
-  return {
-    minutes,
-    users: rowsOf(users)[0]?.activeUsers || 0,
-    total: eventRows.reduce((sum, e) => sum + e.count, 0),
-    events: eventRows,
-    // oldest minute first
-    perMinute: Array.from({ length: minutes }, (_, i) => byMinute[minutes - 1 - i] || 0),
-  };
+const allSections = async (sections) => Object.fromEntries(await Promise.all(
+  Object.entries(sections).map(async ([name, promise]) => [name, await promise]),
+));
+
+/** One page over the last `days` days, compared with the days before, and what was clicked on it. */
+export async function pageReport(env, { path, days }, fetchImpl = fetch, now = Date.now()) {
+  // sign in first: without Google access no section can load, so the whole source fails
+  await googleToken(serviceAccount(env), fetchImpl);
+  const {
+    range, report, summary, trend, conversions, channels,
+  } = sharedSections(env, { days, filter: exact('pagePath', path) }, fetchImpl, now);
+  const ctas = section(report({
+    dateRanges: [range],
+    dimensions: [{ name: 'customEvent:block_name' }, { name: 'customEvent:link_text' }],
+    metrics: [{ name: 'eventCount' }],
+    dimensionFilter: exact('eventName', 'cta_click'),
+    orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+    limit: 10,
+  }).then((r) => rowsOf(r).map((x) => ({
+    block: x['customEvent:block_name'], label: x['customEvent:link_text'], clicks: x.eventCount,
+  }))));
+  return allSections({
+    summary, conversions, trend, ctas, channels,
+  });
+}
+
+/** The whole site over the last `days` days: the same numbers, plus its top pages and events. */
+export async function siteReport(env, { days }, fetchImpl = fetch, now = Date.now()) {
+  // sign in first: without Google access no section can load, so the whole source fails
+  await googleToken(serviceAccount(env), fetchImpl);
+  const {
+    range, report, summary, trend, conversions, channels,
+  } = sharedSections(env, { days }, fetchImpl, now);
+  const pages = section(report({
+    dateRanges: [range],
+    dimensions: [{ name: 'pagePath' }],
+    metrics: [{ name: 'screenPageViews' }, { name: 'activeUsers' }],
+    orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+    limit: 10,
+  }).then((r) => rowsOf(r).map((x) => ({ path: x.pagePath, views: x.screenPageViews, users: x.activeUsers }))));
+  const events = section(report({
+    dateRanges: [range],
+    dimensions: [{ name: 'eventName' }],
+    metrics: [{ name: 'eventCount' }],
+    orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
+    limit: 15,
+  }).then((r) => rowsOf(r).map((x) => ({ name: x.eventName, count: x.eventCount }))));
+  return allSections({
+    summary, conversions, trend, pages, events, channels,
+  });
 }
 
 export const ga4 = {
@@ -228,5 +242,5 @@ export const ga4 = {
   label: 'Google Analytics 4',
   configured: (env) => !!(env.GA4_PROPERTY_ID && serviceAccount(env)),
   page: pageReport,
-  live: liveReport,
+  site: siteReport,
 };

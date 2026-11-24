@@ -1,11 +1,10 @@
-// Page insights (opened from da.live): how one page of the site performs, from each analytics source
-// the page insights worker (workers/page_insights) is connected to. The page is the one after #,
+// Page insights (opened from da.live): how one page and the whole site perform, from each analytics
+// source the page insights worker (workers/page_insights) is connected to. The page is the one after #,
 // addressed as DA addresses documents (/org/site/en/products/duo).
 const DA_SDK_URL = 'https://da.live/nx/utils/sdk.js';
 const params = new URLSearchParams(window.location.search);
 // ?worker= is only honored for local testing
 const WORKER = params.get('worker')?.startsWith('http://localhost') ? params.get('worker') : 'https://demo.bbird.live/page-insights';
-const LIVE_EVERY = 15000;
 const DEFAULT_PAGE = '/en/';
 
 const MESSAGES = {
@@ -66,8 +65,9 @@ let token = '';
 let org = '';
 let site = '';
 let page = DEFAULT_PAGE;
-let days = 7;
+let days = 30;
 let pageRequest = 0;
+let siteRequest = 0;
 
 async function post(route, body = {}) {
   const res = await fetch(`${WORKER}/${route}`, {
@@ -100,6 +100,7 @@ function showPage() {
 
 // ---- small charts (inline SVG, with the numbers in their label) ----
 
+
 function bars(values, { label, height = 48 } = {}) {
   const max = Math.max(1, ...values);
   const w = 100 / values.length;
@@ -119,42 +120,6 @@ function bars(values, { label, height = 48 } = {}) {
     svg.append(rect);
   });
   return svg;
-}
-
-// ---- live ----
-
-function renderLive(sources) {
-  const host = $('live-sources');
-  host.replaceChildren(...sources.map((s) => {
-    if (s.status !== 'ok') return h('p', { class: 'insights-source-note' }, `${s.label}: ${say(s.status === 'error' ? s.error : s.status)}`);
-    const d = s.data;
-    return h(
-      'div',
-      { class: 'insights-live-source' },
-      h('p', { class: 'insights-live-total' }, h('strong', {}, nf.format(d.total)), ` events from ${nf.format(d.users)} ${d.users === 1 ? 'visitor' : 'visitors'} in the last ${d.minutes} minutes`, h('span', { class: 'insights-source-tag' }, s.label)),
-      bars(d.perMinute, { label: `Events per minute, oldest first: ${d.perMinute.join(', ')}` }),
-      d.events.length
-        ? h('ul', { class: 'insights-chips' }, d.events.map((e) => h('li', {}, eventLabel(e.name), ' ', h('strong', {}, nf.format(e.count)))))
-        : h('p', { class: 'insights-empty' }, 'No events in the last 30 minutes.'),
-    );
-  }));
-  $('live-note').textContent = `Whole site, updated every ${LIVE_EVERY / 1000} seconds. Click around the site and watch the numbers move.`;
-  $('live').hidden = false;
-}
-
-let liveTimer = 0;
-async function refreshLive() {
-  clearTimeout(liveTimer);
-  if (document.visibilityState === 'visible') {
-    try {
-      renderLive((await post('live')).sources);
-    } catch (e) {
-      $('live-sources').replaceChildren();
-      $('live-note').textContent = say(e.message);
-      $('live').hidden = false;
-    }
-  }
-  liveTimer = setTimeout(refreshLive, LIVE_EVERY);
 }
 
 // ---- page ----
@@ -198,9 +163,11 @@ function summaryCard({ current: c, previous: p }) {
   );
 }
 
-function conversionsCard(conversions, views) {
+const where = (scope) => (scope === 'site' ? 'on the site' : 'on this page');
+
+function conversionsCard(conversions, views, scope) {
   const hits = conversions.filter((x) => x.count > 0);
-  if (!hits.length) return h('p', { class: 'insights-empty' }, 'No conversions on this page in this period.');
+  if (!hits.length) return h('p', { class: 'insights-empty' }, `No conversions ${where(scope)} in this period.`);
   return h('ul', { class: 'insights-conversions' }, hits.map((x) => h(
     'li',
     {},
@@ -236,31 +203,53 @@ function ctasCard(ctas) {
   return table('Button clicks by block', ['Block', 'Button', 'Clicks'], ctas.map((x) => [x.block === 'default-content' ? 'Page text' : x.block, x.label || '–', nf.format(x.clicks)]));
 }
 
-function channelsCard(channels) {
-  if (!channels.length) return h('p', { class: 'insights-empty' }, 'No visits to this page in this period.');
+function channelsCard(channels, scope) {
+  if (!channels.length) return h('p', { class: 'insights-empty' }, `No visits ${scope === 'site' ? 'to the site' : 'to this page'} in this period.`);
   return table('Sessions by source', ['Source', 'Medium', 'Sessions'], channels.map((x) => [x.source, x.medium, nf.format(x.sessions)]));
+}
+
+function pagesCard(pages) {
+  if (!pages.length) return h('p', { class: 'insights-empty' }, 'No page views in this period.');
+  return table('Most viewed pages', ['Page', 'Visitors', 'Views'], pages.map((x) => [
+    h('a', { href: `#/${org}/${site}${x.path}`, 'data-page': x.path }, x.path),
+    nf.format(x.users),
+    nf.format(x.views),
+  ]));
+}
+
+function eventsCard(events) {
+  if (!events.length) return h('p', { class: 'insights-empty' }, 'No events in this period.');
+  return h('ul', { class: 'insights-chips' }, events.map((e) => h('li', {}, eventLabel(e.name), ' ', h('strong', {}, nf.format(e.count)))));
 }
 
 const part = (p, render) => (p.error ? sectionError(p) : render(p.value));
 
-function renderSource(s) {
-  const head = h('h2', {}, s.label);
+/** One analytics source's section: `scope` is 'page' or 'site'. */
+function renderSource(s, scope) {
+  const title = scope === 'site' ? `Whole site · ${s.label}` : s.label;
+  const head = h('h2', {}, title);
   if (s.status !== 'ok') return h('section', { class: 'insights-source' }, head, h('p', { class: 'insights-source-note' }, say(s.status === 'error' ? s.error : s.status)));
   const d = s.data;
   const views = d.summary.value?.current.views || 0;
+  const cards = scope === 'site'
+    ? [
+      card('Most viewed pages', part(d.pages, pagesCard)),
+      card('Events', part(d.events, eventsCard)),
+    ]
+    : [card('What visitors clicked', part(d.ctas, ctasCard))];
   return h(
     'section',
-    { class: 'insights-source' },
+    { class: `insights-source insights-for-${scope}` },
     head,
-    h('p', { class: 'insights-note' }, `Last ${days} days, compared with the ${days} days before. Google Analytics can take a few hours to process visits; the live view above shows the last 30 minutes.`),
+    h('p', { class: 'insights-note' }, `Last ${days} days, compared with the ${days} days before. Google Analytics can take a few hours to process new visits.`),
     part(d.summary, summaryCard),
     h(
       'div',
       { class: 'insights-grid' },
       card('Views per day', part(d.trend, trendCard)),
-      card('Conversions', part(d.conversions, (c) => conversionsCard(c, views))),
-      card('What visitors clicked', part(d.ctas, ctasCard)),
-      card('Where visitors came from', part(d.channels, channelsCard)),
+      card('Conversions', part(d.conversions, (c) => conversionsCard(c, views, scope))),
+      ...cards,
+      card('Where visitors came from', part(d.channels, (c) => channelsCard(c, scope))),
     ),
   );
 }
@@ -275,7 +264,7 @@ async function loadPage() {
     const data = await post('page', { path: page, days });
     if (mine !== pageRequest) return;
     setStatus('');
-    $('sources').replaceChildren(...data.sources.map(renderSource));
+    $('sources').replaceChildren(...data.sources.map((x) => renderSource(x, 'page')));
   } catch (e) {
     if (mine !== pageRequest) return;
     $('sources').replaceChildren();
@@ -283,6 +272,29 @@ async function loadPage() {
   } finally {
     if (mine === pageRequest) $('sources').removeAttribute('aria-busy');
   }
+}
+
+async function loadSite() {
+  siteRequest += 1;
+  const mine = siteRequest;
+  $('site').setAttribute('aria-busy', 'true');
+  try {
+    const data = await post('site', { days });
+    if (mine !== siteRequest) return;
+    $('site').replaceChildren(...data.sources.map((x) => renderSource(x, 'site')));
+  } catch (e) {
+    if (mine !== siteRequest) return;
+    $('site').replaceChildren(h('p', { class: 'insights-source-note' }, say(e.message)));
+  } finally {
+    if (mine === siteRequest) $('site').removeAttribute('aria-busy');
+  }
+}
+
+function showPath(path) {
+  page = path;
+  window.history.replaceState(null, '', `#/${org}/${site}${page}`);
+  loadPage();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function wire() {
@@ -294,16 +306,19 @@ function wire() {
       // a pasted page URL works too
       if (/^https?:\/\//.test(raw)) next = new URL(raw).pathname;
     } catch { /* checked by the worker */ }
-    page = toPagePath(next) || DEFAULT_PAGE;
-    window.history.replaceState(null, '', `#/${org}/${site}${page}`);
-    loadPage();
+    showPath(toPagePath(next) || DEFAULT_PAGE);
   });
   $('range').addEventListener('change', (e) => {
-    days = Number(e.target.value) === 28 ? 28 : 7;
+    days = Number(e.target.value) === 7 ? 7 : 30;
     loadPage();
+    loadSite();
   });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refreshLive();
+  // a page in "Most viewed pages" opens its insights here
+  $('site').addEventListener('click', (e) => {
+    const link = e.target.closest('a[data-page]');
+    if (!link) return;
+    e.preventDefault();
+    showPath(link.dataset.page);
   });
 }
 
@@ -324,8 +339,8 @@ async function init() {
     return;
   }
   wire();
-  await loadPage();
-  refreshLive();
+  loadPage();
+  loadSite();
 }
 
 init();

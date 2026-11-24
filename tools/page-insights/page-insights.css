@@ -114,7 +114,6 @@
   color: var(--color-text);
 }
 
-.insights-live,
 .insights-source {
   margin-bottom: 32px;
   padding: 24px;
@@ -123,38 +122,12 @@
   background: var(--color-surface);
 }
 
-.insights-live {
-  border-color: var(--color-accent);
-}
-
-.insights-live-total {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: baseline;
-  margin: 0 0 8px;
-}
-
-.insights-live-total strong {
-  font-size: var(--step-2);
-}
-
-.insights-source-tag {
-  margin-left: auto;
-  color: var(--color-text-muted);
-  font-size: var(--step-n2);
-}
-
 .insights-bars {
   display: block;
   width: 100%;
-  height: 48px;
+  height: 64px;
   margin: 8px 0;
   fill: var(--color-accent);
-}
-
-.insights-card .insights-bars {
-  height: 64px;
 }
 
 .insights-chips {
@@ -285,4 +258,13 @@
   .insights-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* the whole-site section sets itself apart from the page above it */
+.insights-for-site {
+  background: var(--color-surface-sunken);
+}
+
+.insights-for-site .insights-kpi {
+  background: var(--color-surface);
 }

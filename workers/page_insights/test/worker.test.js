@@ -60,12 +60,6 @@ function fakeServices({
       return new Response('[]', { status: daStatus, headers: daActions ? { 'X-da-actions': daActions } : {} });
     }
     if (u === 'https://oauth2.googleapis.com/token') return Response.json({ access_token: 'g-token', expires_in: 3600 });
-    if (u.endsWith(':runRealtimeReport')) {
-      const dim = body.dimensions?.[0]?.name;
-      if (dim === 'eventName') return Response.json(report(['eventName'], ['eventCount'], [[['page_view'], 7], [['add_to_cart'], 2]]));
-      if (dim === 'minutesAgo') return Response.json(report(['minutesAgo'], ['eventCount'], [[['00'], 4], [['03'], 5]]));
-      return Response.json(report([], ['activeUsers'], [[[], 3]]));
-    }
     if (u.endsWith(':runReport') && failing > 0) {
       failing -= 1;
       return Response.json({ error: { message: 'Exhausted property tokens' } }, { status: 429 });
@@ -78,7 +72,8 @@ function fakeServices({
           [['previous'], [100, 70, 30, 3000]],
         ]));
       }
-      if (dims[0] === 'eventName') return Response.json(report(dims, ['eventCount'], [[['add_to_cart'], 9], [['view_item'], 50]]));
+      if (dims[0] === 'eventName') return Response.json(report(dims, ['eventCount'], [[['view_item'], 50], [['add_to_cart'], 9]]));
+      if (dims[0] === 'pagePath') return Response.json(report(dims, ['screenPageViews', 'activeUsers'], [[['/en/'], [90, 60]], [['/en/products/duo'], [40, 30]]]));
       if (dims[0] === 'date') return Response.json(report(dims, ['screenPageViews'], [[[lastDays(7, 'UTC').at(-1)], 12]]));
       if (dims[0].startsWith('customEvent:')) {
         if (!customDims) return Response.json({ error: { message: 'Field customEvent:block_name is not a valid dimension.' } }, { status: 400 });
@@ -130,11 +125,11 @@ describe('requests', () => {
 
   it('rejects DA users who can only read the site', async () => {
     const readOnly = fakeServices({ daActions: '/demo=read' });
-    const res = await handle(req('live'), env, readOnly.fetchImpl);
+    const res = await handle(req('site'), env, readOnly.fetchImpl);
     expect(res.status).toBe(403);
     expect((await res.json()).error).toBe('not_an_author');
     const noAcl = fakeServices({ daActions: null });
-    expect((await handle(req('live'), env, noAcl.fetchImpl)).status).toBe(200);
+    expect((await handle(req('site'), env, noAcl.fetchImpl)).status).toBe(200);
   });
 
   it('rejects an expired token and stops trusting a cached one when it expires', async () => {
@@ -143,7 +138,7 @@ describe('requests', () => {
     const expired = `h.${b64({
       client_id: 'darkalley', created_at: String(Date.now() - 2000), expires_in: '1000', n,
     })}.s`;
-    expect((await (await handle(req('live', { token: expired }), env, fetchImpl)).json()).error).toBe('token_invalid');
+    expect((await (await handle(req('site', { token: expired }), env, fetchImpl)).json()).error).toBe('token_invalid');
     expect(calls.some((c) => c.url.includes('admin.da.live'))).toBe(false);
 
     const now = Date.now();
@@ -151,7 +146,7 @@ describe('requests', () => {
     const short = `h.${b64({
       client_id: 'darkalley', created_at: String(now), expires_in: '60000', n,
     })}.s`;
-    const request = () => new Request('https://demo.bbird.live/page-insights/live', { method: 'POST', headers: { Authorization: `Bearer ${short}` } });
+    const request = () => new Request('https://demo.bbird.live/page-insights/site', { method: 'POST', headers: { Authorization: `Bearer ${short}` } });
     await verifyAuthor(request(), env, fetchImpl, now);
     await expect(verifyAuthor(request(), env, fetchImpl, now + 61000)).rejects.toThrow('token_invalid');
   });
@@ -196,6 +191,9 @@ describe('page report', () => {
       },
     });
     expect(d.conversions.value).toEqual(CONVERSIONS.map((name) => ({ name, count: { add_to_cart: 9, view_item: 50 }[name] || 0 })));
+    // the conversions report keeps both the page and the event filter
+    const conv = calls.find((c) => c.body?.dimensions?.[0]?.name === 'eventName');
+    expect(conv.body.dimensionFilter.andGroup.expressions).toHaveLength(2);
     expect(d.trend.value).toHaveLength(7);
     expect(d.trend.value.at(-1).views).toBe(12);
     expect(d.trend.value[0].views).toBe(0);
@@ -218,12 +216,12 @@ describe('page report', () => {
 
   it('keeps the other sections when the custom dimensions aren\'t registered in GA4', async () => {
     const { fetchImpl } = fakeServices({ customDims: false });
-    const body = await (await handle(req('page', { body: { path: '/en/', days: 28 } }), env, fetchImpl)).json();
+    const body = await (await handle(req('page', { body: { path: '/en/', days: 30 } }), env, fetchImpl)).json();
     const d = body.sources[0].data;
-    expect(body.days).toBe(28);
+    expect(body.days).toBe(30);
     expect(d.ctas).toEqual({ error: 'custom_dimensions_missing' });
     expect(d.summary.value.current.views).toBe(120);
-    expect(d.trend.value).toHaveLength(28);
+    expect(d.trend.value).toHaveLength(30);
   });
 
   it('reports a source that isn\'t set up instead of calling it', async () => {
@@ -249,16 +247,29 @@ describe('page report', () => {
   });
 });
 
-describe('live report', () => {
-  it('returns the last 30 minutes, oldest minute first', async () => {
+describe('site report', () => {
+  it('returns the whole site for the last 30 days by default, with top pages and events', async () => {
+    const { fetchImpl, calls } = fakeServices();
+    const body = await (await handle(req('site'), env, fetchImpl)).json();
+    expect(body.days).toBe(30);
+    const d = body.sources[0].data;
+    expect(d.summary.value.current.views).toBe(120);
+    expect(d.trend.value).toHaveLength(30);
+    expect(d.pages.value).toEqual([{ path: '/en/', views: 90, users: 60 }, { path: '/en/products/duo', views: 40, users: 30 }]);
+    expect(d.events.value[0]).toEqual({ name: 'view_item', count: 50 });
+    expect(d.channels.value).toHaveLength(1);
+    const reports = calls.filter((c) => c.url.endsWith(':runReport'));
+    expect(reports).toHaveLength(6);
+    // nothing filtered by page, except the conversions report's own event filter
+    reports.forEach((c) => expect(JSON.stringify(c.body.dimensionFilter || {})).not.toContain('pagePath'));
+    expect(reports.find((c) => !c.body.dimensions).body.dateRanges[0]).toEqual({ startDate: '29daysAgo', endDate: 'today', name: 'current' });
+  });
+
+  it('accepts 7 days', async () => {
     const { fetchImpl } = fakeServices();
-    const body = await (await handle(req('live'), env, fetchImpl)).json();
-    const live = body.sources[0].data;
-    expect(live).toMatchObject({ minutes: 30, users: 3, total: 9 });
-    expect(live.events).toEqual([{ name: 'page_view', count: 7 }, { name: 'add_to_cart', count: 2 }]);
-    expect(live.perMinute).toHaveLength(30);
-    expect(live.perMinute.at(-1)).toBe(4);
-    expect(live.perMinute.at(-4)).toBe(5);
+    const body = await (await handle(req('site', { body: { days: 7 } }), env, fetchImpl)).json();
+    expect(body.days).toBe(7);
+    expect(body.sources[0].data.trend.value).toHaveLength(7);
   });
 });
 
@@ -286,7 +297,7 @@ describe('google', () => {
   it('reports a service account key that isn\'t a private key as a Google sign-in failure', async () => {
     const { fetchImpl } = fakeServices();
     const bad = { ...env, GA4_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'x@y', private_key: 'not a key' }) };
-    const body = await (await handle(req('live'), bad, fetchImpl)).json();
+    const body = await (await handle(req('site'), bad, fetchImpl)).json();
     expect(body.sources[0]).toMatchObject({ status: 'error', error: 'google_auth_failed' });
   });
 
