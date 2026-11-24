@@ -199,7 +199,15 @@ Most DA apps build `admin.da.live` URLs themselves, so on Helix 6 they see an em
 is da-nx's `nx2/utils/api.js` (`source.*`, `config.*`), which picks the source bus or the legacy store per
 site. Apps served from other origins detect Helix 6 themselves, as aem-apps#44 does. "Prepared" means a
 pushed branch with tests, rebased onto main on Nov 24 and live-checked on demo-hlx6 and a legacy DA site,
-not yet a PR.
+not yet a PR. On Nov 24 each branch also went through an adversarial review, and the fixes from it are
+pushed.
+
+- [ ] **Shared Helix 6 check (`isHlx6`)**: prepared ([da-nx/hlx6probe](https://github.com/adobe/da-nx/tree/hlx6probe)).
+  nx2's `isHlx6` keeps a failed ping until the page reloads and reads a 5xx as "legacy", so one bad ping
+  can send a Helix 6 site's reads and writes to `admin.da.live`. The branch retries a 429 or 503 twice and
+  doesn't keep a failed result. The schema editor, quick edit, translations and MSM fixes need it to
+  recover without a reload. It still can't tell overlay sites apart (see "Ping header also marks overlay
+  sites" above).
 
 - [ ] **Schema editor**: [adobe/da-nx#936](https://github.com/adobe/da-nx/pull/936) (open, in review).
   Shows "No schemas found" and saves to the legacy store.
@@ -229,8 +237,9 @@ not yet a PR.
   admin.hlx.page, which can't preview Helix 6 pages. The aem-apps branch also fixes two inbox gaps that
   came with [aem-apps#68](https://github.com/adobe-rnd/aem-apps/pull/68) and
   [aem-apps#73](https://github.com/adobe-rnd/aem-apps/pull/73). The worker's new setup routes
-  ([publish-requests-worker#41](https://github.com/cloudadoption/publish-requests-worker/pull/41)) still only
-  use `admin.da.live`; that's for Sagar to decide.
+  ([publish-requests-worker#41](https://github.com/cloudadoption/publish-requests-worker/pull/41)) only
+  use `admin.da.live`, so on Helix 6 the branch refuses them (501) instead of saving config the workflow
+  ignores. Whether setup should write `config/editor/da.json` instead is for Sagar to decide.
 
 - [ ] **EW chat (da-agent)**: prepared (da-agent `agnthlx6`, not pushed). The agent calls Helix 6 pages
   "empty", joins the wrong collab room and would write to the legacy store. Pushing any da-agent branch
