@@ -191,6 +191,14 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   source bus overlay looks like a Helix 6 site. The media library and request publish worker branches
   also read the site's content source; the shared `isHlx6` in da-nx doesn't yet. Not filed.
 
+- [ ] **A failed config lookup looks like "no site"**: when helix-admin can't load a site's config, for
+  example because the config service answers 5xx, it treats that like a site without config
+  ([config/utils.js#L33-L41](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/config/utils.js#L33-L41),
+  [index.js#L219-L224](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/index.js#L219-L224)).
+  The ping then answers 404 without the upgrade header, exactly as for a legacy DA site, so da.live can
+  take a Helix 6 site for legacy and save to `admin.da.live`. Only browsers that haven't opened the site
+  before are affected. Fix: answer 502 for a failed lookup. Found in the second review on Nov 24, not filed.
+
 ---
 
 ## Pending: DA apps that only talk to the legacy store
