@@ -183,35 +183,50 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 Most DA apps build `admin.da.live` URLs themselves, so on Helix 6 they see an empty site. The shared fix
 is da-nx's `nx2/utils/api.js` (`source.*`, `config.*`), which picks the source bus or the legacy store per
 site. Apps served from other origins detect Helix 6 themselves, as aem-apps#44 does. "Prepared" means a
-local branch with tests, live-checked on demo-hlx6, not yet a PR.
+pushed branch with tests, rebased onto main on Nov 24 and live-checked on demo-hlx6 and a legacy DA site,
+not yet a PR.
 
 - [ ] **Schema editor**: [adobe/da-nx#936](https://github.com/adobe/da-nx/pull/936) (open, in review).
   Shows "No schemas found" and saves to the legacy store.
 
-- [ ] **Quick edit**: prepared (da-nx `qehlx6`). The portal opens, but nothing becomes editable: it checks
-  `admin.da.live` for the page and gives up on the 404. Also hardcodes the collab room and image upload.
-  Small overlap with [adobe/da-nx#896](https://github.com/adobe/da-nx/pull/896).
+- [ ] **Quick edit**: prepared ([da-nx/qehlx6](https://github.com/adobe/da-nx/tree/qehlx6)). The portal
+  opens, but nothing becomes editable: it checks `admin.da.live` for the page and gives up on the 404. Also
+  hardcodes the collab room and image upload. Small overlaps with the open
+  [adobe/da-nx#896](https://github.com/adobe/da-nx/pull/896) and [adobe/da-nx#992](https://github.com/adobe/da-nx/pull/992):
+  whichever lands second needs a small rebase.
 
-- [ ] **Translations and rollouts**: prepared (da-nx `lochlx6`). Translate and rollout read
-  `.da/translate.json` from `admin.da.live` and would save projects there.
-  [adobe/da-nx#801](https://github.com/adobe/da-nx/pull/801) merged on Nov 4, so the branch no longer
-  waits on it, but it needs a rebase onto it (#801 moved the copy code the fix touches).
+- [ ] **Translations and rollouts**: prepared ([da-nx/lochlx6](https://github.com/adobe/da-nx/tree/lochlx6)).
+  Translate and rollout read `.da/translate.json` from `admin.da.live` and would save projects there. The
+  branch now sits on the copy engine from [adobe/da-nx#801](https://github.com/adobe/da-nx/pull/801) (merged
+  Nov 4) and hands it a fetch and a config loader that use the source bus on Helix 6. Still open: the
+  editor's Rollout panel builds its own copy engine and keeps versions on `admin.da.live`.
 
 - [ ] **Media library**: [adobe/da-nx#944](https://github.com/adobe/da-nx/pull/944) (open, in review).
   "Site not found" today. With the fix, validation, indexing and rebuild work; the Images view still
   needs the medialog (above). Merge order to agree with
   [adobe/da-nx#866](https://github.com/adobe/da-nx/pull/866).
 
-- [ ] **Request publish**: prepared for the worker (cloudadoption/publish-requests-worker `prhlx6`, v1 and
-  v2 API) and for the aem-apps plugins and inboxes (adobe-rnd/aem-apps `rfphlx6`). Today the worker reads
+- [ ] **Request publish**: prepared for the worker
+  ([publish-requests-worker/prhlx6](https://github.com/cloudadoption/publish-requests-worker/tree/prhlx6), v1
+  and v2 API) and for the aem-apps plugins and inboxes ([aem-apps/rfphlx6](https://github.com/adobe-rnd/aem-apps/tree/rfphlx6)).
+  Today the worker reads
   config, checks pages and keeps the requests sheet on `admin.da.live`, and the plugins preview through
-  admin.hlx.page, which can't preview Helix 6 pages.
+  admin.hlx.page, which can't preview Helix 6 pages. The aem-apps branch also fixes two inbox gaps that
+  came with [aem-apps#68](https://github.com/adobe-rnd/aem-apps/pull/68) and
+  [aem-apps#73](https://github.com/adobe-rnd/aem-apps/pull/73). The worker's new setup routes
+  ([publish-requests-worker#41](https://github.com/cloudadoption/publish-requests-worker/pull/41)) still only
+  use `admin.da.live`; that's for Sagar to decide.
 
-- [ ] **EW chat (da-agent)**: prepared (adobe-rnd/da-agent `agnthlx6`). The agent calls Helix 6 pages
-  "empty", joins the wrong collab room and would write to the legacy store.
+- [ ] **EW chat (da-agent)**: prepared (da-agent `agnthlx6`, not pushed). The agent calls Helix 6 pages
+  "empty", joins the wrong collab room and would write to the legacy store. Pushing any da-agent branch
+  redeploys `da-agent-ci`, and da-agent is to be removed "before Christmas"
+  ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795444687667769?thread_ts=1795429693.558869)).
 
-- [ ] **MSM panel (da-live)**: prepared on top of [adobe/da-live#1341](https://github.com/adobe/da-live/pull/1341)
-  (open), see also [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). The aem-apps MSM app
+- [ ] **MSM panel (da-live)**: prepared ([da-live/msmhlx6](https://github.com/adobe/da-live/tree/msmhlx6)) on
+  top of [adobe/da-live#1341](https://github.com/adobe/da-live/pull/1341) (open), see also
+  [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
+  export that merge from base imports, so #1341's merge is broken on main today; the branch now merges
+  through the public loc SDK. The aem-apps MSM app
   ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4) is DA-only too.
 
 - [ ] **Site apps (`da.live/apps#/...`)**: nothing prepared.
@@ -229,16 +244,16 @@ local branch with tests, live-checked on demo-hlx6, not yet a PR.
 Most of these came with main since Nov 17. They call `admin.da.live` and admin.hlx.page directly, or
 only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 
-- [ ] **Clone it**: prepared (`clonehx6`), but main reworked Clone it since
+- [ ] **Clone it**: redone on main's reworked Clone it
   ([#115](https://github.com/scdemos/demo/pull/115), [#128](https://github.com/scdemos/demo/pull/128),
   [#129](https://github.com/scdemos/demo/pull/129), [#132](https://github.com/scdemos/demo/pull/132),
-  [#133](https://github.com/scdemos/demo/pull/133)): it copies the whole site, gives the requester write on
-  the clone's DA content and config, and asks for the demo's GitHub team. `clonehx6` conflicts with main in
-  `tools/cloneit/cloneit.js`, its README and the worker's `wrangler.toml`, so it has to be redone on top.
-  On Helix 6 the write grant would become a site role. "Start clone" stays disabled on demo-hlx6 because
-  the worker's CORS allowlist only has demo's origins; past that, it lists and copies through `admin.da.live`
-  and creates the new site with a `content.da.live` source. Merging changes `workers/cloneit_token/**`,
-  which deploys the worker.
+  [#133](https://github.com/scdemos/demo/pull/133)) in [demo/clonehx6](https://github.com/scdemos/demo/tree/clonehx6).
+  Opened from demo-hlx6, it clones demo-hlx6: it creates the new site's config first, copies through the
+  source bus, previews and publishes through the Helix 6 API, and gives the requester the `admin` site role
+  instead of DA write. Today "Start clone" stays disabled on demo-hlx6 because the worker's CORS allowlist
+  only has demo's origins; the branch adds demo-hlx6's. Unit tests only past the first worker call: a real
+  clone needs the worker's credentials, and merging changes `workers/cloneit_token/**`, which deploys the
+  worker. Demo Admin still can't delete a Helix 6 clone (it only accepts `content.da.live` sources).
 
 - [ ] **Demo Admin** ([#142](https://github.com/scdemos/demo/pull/142), [#143](https://github.com/scdemos/demo/pull/143)):
   backs up and resets the demo and deletes CloneIt demos. It copies and deletes through `admin.da.live` and
