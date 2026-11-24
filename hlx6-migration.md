@@ -197,8 +197,9 @@ local branch with tests, live-checked on demo-hlx6, not yet a PR.
   [adobe/da-nx#801](https://github.com/adobe/da-nx/pull/801) merged on Nov 4, so the branch no longer
   waits on it, but it needs a rebase onto it (#801 moved the copy code the fix touches).
 
-- [ ] **Media library**: prepared (da-nx `mlhlx6`). "Site not found" today. With the fix, validation,
-  indexing and rebuild work; the Images view still needs the medialog (above). Merge order to agree with
+- [ ] **Media library**: [adobe/da-nx#944](https://github.com/adobe/da-nx/pull/944) (open, in review).
+  "Site not found" today. With the fix, validation, indexing and rebuild work; the Images view still
+  needs the medialog (above). Merge order to agree with
   [adobe/da-nx#866](https://github.com/adobe/da-nx/pull/866).
 
 - [ ] **Request publish**: prepared for the worker (cloudadoption/publish-requests-worker `prhlx6`, v1 and
