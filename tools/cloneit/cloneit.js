@@ -483,9 +483,10 @@ function handleBulkAction() {
   openBulkAppWithUrls(app.lastClonedSite, app.contentPaths);
 }
 
-async function siteExistsInAem(siteName) {
+/** The site config stored for a name; null when there is none. A config it can't read counts as one. */
+async function findSiteInAem(siteName) {
   const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
-  return response.ok;
+  return response.ok ? (await response.json().catch(() => ({}))) ?? {} : null;
 }
 
 async function folderExistsInDa(siteName) {
@@ -599,13 +600,14 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
   return config;
 }
 
-async function createAemSiteConfig(newSiteName, config) {
+/** `createOnly`: never replace a config that exists already (the PUT answers 409). */
+async function createAemSiteConfig(newSiteName, config, { createOnly = false } = {}) {
   let response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
     method: 'PUT',
     body: JSON.stringify(config),
     contentType: 'application/json',
   });
-  if (response.status === 409) {
+  if (response.status === 409 && !createOnly) {
     // AEM Code Sync may have created a default config for the new repo already; replace it with ours
     response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
       method: 'POST',
@@ -1048,7 +1050,7 @@ async function recordInRegistry(row) {
 async function cloneToSourceBus(siteName, baselineSite, baselineConfig) {
   setProgress(true, 15, 'Creating site config…', null, 'Configuring', '');
   const newConfig = buildNewSiteConfig(baselineConfig, siteName, { userEmail: app.userEmail, baselineSite });
-  await createAemSiteConfig(siteName, newConfig);
+  await createAemSiteConfig(siteName, newConfig, { createOnly: true });
   const template = createSourceBusClient({ org: ORG, site: baselineSite, token: app.imsToken });
   const sourceBus = createSourceBusClient({ org: ORG, site: siteName, token: app.imsToken });
   setProgress(true, 17, 'Waiting for the new site…', null, 'Configuring', '');
@@ -1094,10 +1096,12 @@ async function cloneSite(siteName, opts = {}) {
     // the template's config says where its content is: a DA folder, or the source bus (Helix 6)
     const baselineConfig = await fetchBaselineConfig(baselineSite);
     const hlx6 = isHlx6Config(baselineConfig);
-    const [aemExists, daExists] = await Promise.all([siteExistsInAem(siteName), !hlx6 && folderExistsInDa(siteName)]);
-    // second run: AEM Code Sync may have created a default config for this repo already
-    const resumable = aemExists && (await fetchBaselineConfig(siteName).catch(() => ({}))).code?.repo === siteName;
-    if (aemExists && !resumable) {
+    const [existingSite, daExists] = await Promise.all([findSiteInAem(siteName), !hlx6 && folderExistsInDa(siteName)]);
+    // second run: AEM Code Sync may have created a default config for this repo already.
+    // Helix 6 never resumes: a config with this repo can belong to a finished demo, and its
+    // source files would be overwritten. Nor does a DA clone take over a Helix 6 site.
+    const resumable = !hlx6 && existingSite?.code?.repo === siteName && !isHlx6Config(existingSite);
+    if (existingSite && !resumable) {
       throw new Error(`A demo named "${siteName}" already exists. Change the site name (e.g. "${siteName}-2") and try again.`);
     }
     if (daExists) {
