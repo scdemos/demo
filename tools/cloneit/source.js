@@ -154,24 +154,25 @@ const defaultSleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms);
 /**
  * Runs tasks with at most `max` in flight and at least `minIntervalMs` between starts.
  * `limit.coolDown(ms)` holds back new starts, e.g. after a 429 (the project's
- * budget is used up, not only this request's).
+ * budget is used up, not only this request's), also for tasks already waiting to start.
  */
 export function createLimiter(max = CONCURRENCY, minIntervalMs = MIN_INTERVAL_MS, sleep = defaultSleep) {
   let active = 0;
   let nextStart = 0;
   const waiting = [];
   const limit = async (task) => {
-    if (active >= max) await new Promise((resolve) => { waiting.push(resolve); });
-    active += 1;
+    if (active < max) active += 1;
+    else await new Promise((resolve) => { waiting.push(resolve); });
     try {
-      const now = Date.now();
-      const wait = Math.max(0, nextStart - now);
-      nextStart = Math.max(now, nextStart) + minIntervalMs;
-      if (wait) await sleep(wait);
+      // check the clock again after each wait: a cool-down may have moved the next start
+      while (Date.now() < nextStart) await sleep(nextStart - Date.now());
+      nextStart = Date.now() + minIntervalMs;
       return await task();
     } finally {
-      active -= 1;
-      waiting.shift()?.();
+      // hand the slot to the next waiting task, so nothing slips in between
+      const next = waiting.shift();
+      if (next) next();
+      else active -= 1;
     }
   };
   limit.coolDown = (ms) => {
@@ -228,17 +229,18 @@ export function createSourceBusClient({
   minIntervalMs = MIN_INTERVAL_MS, sleep = defaultSleep,
 }) {
   const limit = createLimiter(concurrency, minIntervalMs, sleep);
-  const request = (path, init = {}) => {
+  // every attempt, retries included, goes through the limiter
+  const request = (path, init = {}, retries = undefined) => {
     const url = `${AEM_API}/${org}/sites/${site}/${path}`;
     const opts = { ...init, headers: { Authorization: `Bearer ${token}`, ...init.headers } };
-    return limit(() => fetchWithRetry(() => fetchFn(url, opts), {
-      sleep, onRetry: (ms) => limit.coolDown(ms),
-    }));
+    return fetchWithRetry(() => limit(() => fetchFn(url, opts)), {
+      retries, sleep, onRetry: (ms) => limit.coolDown(ms),
+    });
   };
-  const source = (path, folder = false, init = {}) => {
+  const source = (path, folder = false, init = {}, retries = undefined) => {
     let rel = path.replace(/^\/+/, '');
     if (folder && rel && !rel.endsWith('/')) rel = `${rel}/`;
-    return request(`source/${rel}`, init);
+    return request(`source/${rel}`, init, retries);
   };
   const failure = (resp) => ({
     ok: false, status: resp.status, error: resp.headers.get('x-error') || `HTTP ${resp.status}`,
@@ -266,20 +268,27 @@ export function createSourceBusClient({
     },
     /**
      * Waits until the source bus knows a new site: it answers 404 until the site config is
-     * there. The root folder of an existing site always lists.
+     * there. The root folder of an existing site always answers a HEAD. One deadline for
+     * everything: this loop, not the copy's retries, waits out 429, 503 and network errors.
      */
     async waitUntilReady({ timeoutMs = 60000, intervalMs = 2000 } = {}) {
       const until = Date.now() + timeoutMs;
+      const signal = AbortSignal.timeout(timeoutMs);
       for (;;) {
-        const resp = await source('', true);
-        if (resp.ok) return;
-        if (resp.status === 401 || resp.status === 403) {
-          throw new Error(`No write access to ${org}/${site} on the source bus (${resp.status})`);
+        const resp = await source('', true, { method: 'HEAD', signal }, 0).catch((error) => {
+          if (signal.aborted) throw new Error(`Source bus for ${org}/${site} not ready after ${timeoutMs / 1000} s`);
+          if (!(error instanceof TypeError)) throw error;
+          return null;
+        });
+        if (resp?.ok) return;
+        if (resp?.status === 401 || resp?.status === 403) {
+          throw new Error(`No access to ${org}/${site} on the source bus (${resp.status})`);
         }
-        if (resp.status !== 404 || Date.now() + intervalMs > until) {
-          throw new Error(`Source bus for ${org}/${site} not ready: ${resp.status}`);
+        const delay = Math.max(intervalMs, (resp && retryAfterMs(resp)) || 0);
+        if ((resp && ![404, 429, 503].includes(resp.status)) || Date.now() + delay > until) {
+          throw new Error(`Source bus for ${org}/${site} not ready: ${resp?.status ?? 'network error'}`);
         }
-        await sleep(intervalMs);
+        await sleep(delay);
       }
     },
     /** Starts a bulk preview (`preview`) or publish (`live`) job on the resource root. */
