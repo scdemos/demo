@@ -330,12 +330,6 @@ body.appear {
   display: block;
 }
 
-/* Target is deciding what these sections show (scripts.js): keep their space, hide the content
-   (opacity, so no descendant can show itself, as visibility would allow) */
-body.personalization-pending main .section[data-mbox]:not([data-personalized]),
-body.personalization-pending main > [data-offer-pending] {
-  opacity: 0;
-}
 
 /* inside <aem-embed>, the body is only as tall as the embedded content */
 :host body {
