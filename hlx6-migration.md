@@ -275,9 +275,11 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   Opened from demo-hlx6, it clones demo-hlx6: it creates the new site's config first, copies through the
   source bus, previews and publishes through the Helix 6 API, and gives the requester the `admin` site role
   instead of DA write. Today "Start clone" stays disabled on demo-hlx6 because the worker's CORS allowlist
-  only has demo's origins; the branch adds demo-hlx6's. Unit tests only past the first worker call: a real
-  clone needs the worker's credentials, and merging changes `workers/cloneit_token/**`, which deploys the
-  worker. Demo Admin still can't delete a Helix 6 clone (it only accepts `content.da.live` sources).
+  only has demo's origins; the branch adds demo-hlx6's, for calls with the user's IMS token only. On Nov 24
+  a local run with Ben's tokens in place of the worker's service account cloned demo-hlx6 completely: 209 of
+  209 files copied, 194 pages and assets previewed and published, then removed again. Ben's account can't
+  add a new repo to AEM Code Sync, so that step was stubbed and the clone had no code; it's untested with
+  the real service account. Merging changes `workers/cloneit_token/**`, which deploys the worker. Demo Admin still can't delete a Helix 6 clone (it only accepts `content.da.live` sources).
 
 - [ ] **Demo Admin** ([#142](https://github.com/scdemos/demo/pull/142), [#143](https://github.com/scdemos/demo/pull/143)):
   backs up and resets the demo and deletes CloneIt demos. It copies and deletes through `admin.da.live` and
