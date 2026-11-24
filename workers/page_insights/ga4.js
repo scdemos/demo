@@ -200,7 +200,8 @@ export async function pageReport(env, { path, days }, fetchImpl = fetch, now = D
     dateRanges: [range],
     dimensions: [{ name: 'customEvent:block_name' }, { name: 'customEvent:link_text' }],
     metrics: [{ name: 'eventCount' }],
-    dimensionFilter: exact('eventName', 'cta_click'),
+    // button clicks, and what visitors opened or picked in blocks (FAQ, tabs, video, store locator)
+    dimensionFilter: { filter: { fieldName: 'eventName', inListFilter: { values: ['cta_click', 'block_interaction'] } } },
     orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
     limit: 10,
   }).then((r) => rowsOf(r).map((x) => ({

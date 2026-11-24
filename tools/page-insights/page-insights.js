@@ -31,6 +31,18 @@ const EVENT_LABELS = {
   generate_lead: 'Leads',
   quiz_complete: 'Quizzes completed',
   cta_click: 'Button clicks',
+  block_interaction: 'Block interactions',
+  view_item_list: 'Product list views',
+  select_item: 'Products picked from a list',
+  view_promotion: 'Promotion views',
+  select_promotion: 'Promotion clicks',
+  remove_from_cart: 'Removals from cart',
+  search: 'Searches',
+  view_search_results: 'Search results views',
+  share: 'Shares',
+  form_start: 'Forms started',
+  click: 'Outbound clicks',
+  file_download: 'File downloads',
   scroll: 'Scrolls',
   user_engagement: 'Engagement pings',
   session_start: 'Sessions started',
@@ -199,8 +211,8 @@ function table(caption, head, rows) {
 }
 
 function ctasCard(ctas) {
-  if (!ctas.length) return h('p', { class: 'insights-empty' }, 'No button clicks on this page in this period.');
-  return table('Button clicks by block', ['Block', 'Button', 'Clicks'], ctas.map((x) => [x.block === 'default-content' ? 'Page text' : x.block, x.label || '–', nf.format(x.clicks)]));
+  if (!ctas.length) return h('p', { class: 'insights-empty' }, 'No clicks on this page in this period.');
+  return table('Clicks by block', ['Block', 'Clicked', 'Clicks'], ctas.map((x) => [x.block === 'default-content' ? 'Page text' : x.block, x.label || '–', nf.format(x.clicks)]));
 }
 
 function channelsCard(channels, scope) {
