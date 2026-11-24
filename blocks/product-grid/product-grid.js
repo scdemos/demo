@@ -9,7 +9,7 @@
  */
 
 import { createOptimizedPicture } from '../../scripts/aem.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackItemList } from '../../scripts/shared.js';
 
 /**
  * Fetch and return the data array from a product index JSON.
@@ -104,8 +104,20 @@ export default async function decorate(block) {
     }
 
     const ul = createTag('ul', { class: 'product-grid-list' });
-    products.forEach((product) => ul.append(buildCard(product, indexUrl)));
+    const cards = products.map((product) => {
+      const card = buildCard(product, indexUrl);
+      ul.append(card);
+      return {
+        link: card.querySelector('a'),
+        id: product.sku,
+        url: product.url,
+        name: product.title || product.sku,
+        price: product.price,
+      };
+    });
     block.append(ul);
+    const heading = block.closest('.section')?.querySelector('h2, h3');
+    trackItemList(ul, heading?.textContent.trim() || 'Products', cards);
   } catch {
     block.append(createTag('p', { class: 'product-grid-empty' }, 'Unable to load products right now.'));
   } finally {

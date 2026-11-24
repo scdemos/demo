@@ -5,6 +5,7 @@
  */
 
 import { loadScript } from '../../scripts/aem.js';
+import { trackInteraction } from '../../scripts/shared.js';
 
 const getEmbedContainerStyle = (fixedHeight) => (fixedHeight
   ? `left: 0; width: 100%; height: ${fixedHeight}px; position: relative;`
@@ -107,6 +108,11 @@ export default function decorate(block) {
     wrapper.innerHTML = '<div class="embed-placeholder-play"><button type="button" aria-label="Play video"></button></div>';
     wrapper.prepend(placeholder);
     wrapper.addEventListener('click', () => {
+      // the video's address names it (YouTube and Vimeo ids aren't personal); of the query,
+      // only YouTube's video id is kept
+      const url = new URL(link);
+      const id = url.searchParams.get('v');
+      trackInteraction(block, `${url.hostname.replace(/^www\./, '')}${url.pathname}${id ? `?v=${id}` : ''}`);
       loadEmbed(block, link, true, fixedHeight);
     });
     block.append(wrapper);

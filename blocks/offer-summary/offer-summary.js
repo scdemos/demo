@@ -1,5 +1,5 @@
 import { getMetadata, toClassName } from '../../scripts/aem.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent, trackPromotion } from '../../scripts/shared.js';
 import { addSchema } from '../../scripts/schema.js';
 
 const CONFIG_KEYS = [
@@ -64,6 +64,7 @@ function buildShare(cfg) {
   btn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(window.location.href.split('?')[0]);
+      trackEvent('share', { method: 'copy', content_type: 'offer', item_id: window.location.pathname });
       status.textContent = cfg.copied || '';
       setTimeout(() => { status.textContent = ''; }, 4000);
     } catch (e) { /* clipboard unavailable */ }
@@ -168,4 +169,5 @@ export default function decorate(block) {
   block.replaceChildren(card);
 
   buildSchema(cfg);
+  trackPromotion(block, cfg.name || head.querySelector('h1, h2, h3')?.textContent || '');
 }

@@ -1,5 +1,5 @@
 import { readBlockConfig, toClassName } from '../../scripts/aem.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackItemList, trackPromotion } from '../../scripts/shared.js';
 import { addSchema } from '../../scripts/schema.js';
 
 const text = (value) => (Array.isArray(value) ? value.join(', ') : String(value ?? '')).trim();
@@ -168,6 +168,17 @@ export default async function decorate(block) {
     grid.append(li);
     return li;
   });
+  // offers are promotions; products are a product list
+  if (cfg.type === 'offer') nodes.forEach((li, i) => trackPromotion(li, items[i].title));
+  else {
+    trackItemList(grid, cfg.heading || document.querySelector('main h1')?.textContent.trim() || 'Catalog', nodes.map((li, i) => ({
+      link: li.querySelector('a'),
+      id: items[i].sku || items[i].id,
+      url: items[i].url,
+      name: items[i].title,
+      price: items[i].price,
+    })));
+  }
 
   if (!cfg.filters.length && !cfg.sort && !cfg.search) {
     block.append(grid);

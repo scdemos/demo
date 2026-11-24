@@ -79,7 +79,15 @@ export function addToCart(product) {
 /** Sets a line's quantity; 0 removes it. */
 export function setQuantity(sku, quantity) {
   const q = Math.max(0, Math.min(MAX_QUANTITY, Math.trunc(Number(quantity)) || 0));
-  write(read().map((i) => (i.sku === sku ? { ...i, quantity: q } : i)).filter((i) => i.quantity > 0));
+  const items = read();
+  const line = items.find((i) => i.sku === sku);
+  write(items.map((i) => (i.sku === sku ? { ...i, quantity: q } : i)).filter((i) => i.quantity > 0));
+  const change = line ? q - Number(line.quantity) : 0;
+  if (change) {
+    trackEvent(change > 0 ? 'add_to_cart' : 'remove_from_cart', {
+      ecommerce: ecommerce([{ ...line, quantity: Math.abs(change) }]),
+    });
+  }
 }
 
 /** Updates a line's price (the catalog's price changed since it was added). */

@@ -487,3 +487,110 @@ export function onTrackEvent(fn) {
   trackedEvents.forEach(fn);
   trackListeners.add(fn);
 }
+
+/**
+ * Text that's safe to send with an analytics event: trimmed and cut to 100 characters, and empty
+ * when it could hold an email address or a phone number (an @, or 7 digits or more, whatever
+ * separates them).
+ * @param {string} text
+ * @returns {string}
+ */
+export function safeLabel(text) {
+  const label = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 100);
+  return label.includes('@') || (label.match(/\p{Nd}/gu) || []).length >= 7 ? '' : label;
+}
+
+/**
+ * Calls `fn` once, the first time `el` is seen: half of it on screen, or any of it across the
+ * middle of the screen (an element too tall to be half on screen still gets there).
+ * @param {Element} el
+ * @param {() => void} fn
+ */
+export function onFirstView(el, fn) {
+  let observers = [];
+  // every observer reports once at the start, whatever is visible, so each checks its own rule
+  const when = (rule) => (entries) => {
+    if (!observers.length || !entries.some(rule)) return;
+    observers.forEach((o) => o.disconnect());
+    observers = [];
+    fn();
+  };
+  observers = [
+    new IntersectionObserver(when((e) => e.intersectionRatio >= 0.5), { threshold: 0.5 }),
+    new IntersectionObserver(when((e) => e.isIntersecting), { rootMargin: '-50% 0px -50% 0px' }),
+  ];
+  observers.forEach((o) => o.observe(el));
+}
+
+/** The name analytics events use for the block `el` is in. */
+export const blockNameOf = (el) => el.closest('[data-block-name]')?.dataset.blockName || 'default-content';
+
+/**
+ * Records a visitor's interaction with a block (an FAQ opened, a tab chosen, a video played),
+ * with what they picked as `link_text`.
+ * @param {Element} el the element interacted with
+ * @param {string} label what was picked
+ * @param {string} [block] the block's name, when `el` isn't inside a block element
+ */
+export function trackInteraction(el, label, block = blockNameOf(el)) {
+  trackEvent('block_interaction', { block_name: block, link_text: safeLabel(label) });
+}
+
+/**
+ * Tracks a list of products: `view_item_list` when the list is first seen, `select_item` when a
+ * product is picked.
+ * @param {Element} list the list's element
+ * @param {string} name the list's name
+ * @param {{link: Element, id?: string, url?: string, name: string, price?: string|number}[]} products
+ *   each product's id, or else its page's URL
+ */
+export function trackItemList(list, name, products) {
+  if (!products.length) return;
+  // a product without an id is known by its page's path (never its query or hash)
+  const idOf = (p) => {
+    if (p.id) return String(p.id);
+    try {
+      return new URL(p.url, window.location.href).pathname;
+    } catch {
+      return '';
+    }
+  };
+  const itemOf = (p, index) => {
+    const item = {
+      item_id: idOf(p), item_name: p.name, index, item_list_name: name,
+    };
+    const price = Number.parseFloat(p.price);
+    if (Number.isFinite(price)) item.price = price;
+    return item;
+  };
+  const items = products.map(itemOf);
+  // only the products on show (a filtered list hides some)
+  onFirstView(list, () => {
+    const shown = items.filter((item, i) => !products[i].link.closest('[hidden]'));
+    if (shown.length) trackEvent('view_item_list', { ecommerce: { item_list_name: name, items: shown } });
+  });
+  products.forEach((p, i) => p.link.addEventListener('click', () => {
+    trackEvent('select_item', { ecommerce: { item_list_name: name, items: [items[i]] } });
+  }));
+}
+
+/**
+ * Tracks a promotion: `view_promotion` when it's first seen, `select_promotion` when one of its
+ * links is clicked.
+ * @param {Element} el the promotion's element
+ * @param {string} name the promotion's name
+ */
+export function trackPromotion(el, name) {
+  const label = safeLabel(name);
+  if (!label) return;
+  // the block's name is read when the event is sent: `el` may not be on the page yet
+  const ecommerce = () => ({
+    promotion_name: label,
+    creative_slot: blockNameOf(el),
+    items: [{ item_id: label, item_name: label, promotion_name: label }],
+  });
+  onFirstView(el, () => trackEvent('view_promotion', { ecommerce: ecommerce() }));
+  el.addEventListener('click', (e) => {
+    if (e.target.closest?.('a[href]')) trackEvent('select_promotion', { ecommerce: ecommerce() });
+  });
+}
