@@ -1,11 +1,12 @@
-/* Author-only auth-state switcher, docked to the bottom-left edge: the right edge already holds the
-   social share dock and the peek tab, and this tool only shows on preview hosts. */
+/* Author-only auth-state switcher — bottom-end (common pattern for floating tools).
+   Its handle is pinned to the bottom of the right edge at a fixed 7rem height: the peek tab and
+   the social share rail stack above it (see peek.css, social-share.css). */
 
 /* overflow must stay visible so the .auth-handle (positioned outside the box) is not clipped */
 
 .auth-toggle {
   position: fixed;
-  inset: auto auto calc(var(--gap-m) + env(safe-area-inset-bottom, 0px)) -15rem;
+  inset: auto -15rem calc(var(--gap-m) + env(safe-area-inset-bottom, 0px)) auto;
   transform: none;
   z-index: 10050;
   width: min(14rem, calc(100vw - 1.5rem));
@@ -20,7 +21,7 @@
   font-size: var(--step-n1);
   line-height: 1.4;
   opacity: 0;
-  transition: left var(--duration-2) var(--ease-out), opacity var(--duration-2) var(--ease-out);
+  transition: right var(--duration-2) var(--ease-out), opacity var(--duration-2) var(--ease-out);
 }
 
 .auth-toggle.visible {
@@ -28,7 +29,7 @@
 }
 
 .auth-toggle.expanded {
-  left: max(var(--gap-s), env(safe-area-inset-left, 0px));
+  right: max(var(--gap-s), env(safe-area-inset-right, 0px));
 }
 
 .auth-toggle-body {
@@ -39,14 +40,13 @@
 .auth-handle {
   position: absolute;
   z-index: 2;
-  top: 50%;
-  right: -2.5rem;
-  transform: translateY(-50%);
+  bottom: 0;
+  left: -2.5rem;
   min-width: 2.75rem;
-  min-height: 2.75rem;
+  height: 7rem;
   margin: 0;
   border: 0;
-  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
   background: var(--color-accent-fill);
   color: var(--color-on-accent);
   padding: var(--gap-s) var(--gap-2xs);
@@ -54,11 +54,11 @@
   font: inherit;
   text-align: center;
   box-shadow: var(--shadow-2);
-  transition: right var(--duration-2) var(--ease-out), opacity var(--duration-2) var(--ease-out), background-color var(--duration-2) var(--ease-out);
+  transition: left var(--duration-2) var(--ease-out), opacity var(--duration-2) var(--ease-out), background-color var(--duration-2) var(--ease-out);
 }
 
 .auth-handle:hover {
-  right: -2.75rem;
+  left: -2.75rem;
   background: var(--color-accent-fill-hover);
 }
 
@@ -164,12 +164,10 @@
 @keyframes auth-handle-bounce {
   0%,
   100% {
-    right: -2.5rem;
-    transform: translateY(-50%);
+    left: -2.5rem;
   }
 
   50% {
-    right: -2.75rem;
-    transform: translateY(-50%);
+    left: -2.75rem;
   }
 }
