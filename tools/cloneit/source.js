@@ -98,7 +98,8 @@ const MEDIA_QUERY = /^([^?#]*\/media_[0-9a-f]+\.[a-z0-9]+)\?.*?(#width=.*)?$/i;
  * Prepares a template file for the new site.
  * - html: `media_` refs point at the template's aem.page host, without delivery params. The
  *   new site's source bus fetches and stores them when the page is written.
- * - html and json: other links to the template's aem.page/aem.live hosts point at the new site.
+ * - html and json: other links to the template's aem.page/aem.live hosts and its source bus
+ *   (e.g. the library's templates sheet) point at the new site.
  * @param {string} text
  * @param {object} opts
  * @param {string} opts.org
@@ -110,7 +111,8 @@ export function rewriteForNewSite(text, {
   org, template, site, path,
 }) {
   const templateHost = new RegExp(`(//[a-z0-9-]+--)${esc(template)}(--${esc(org)}\\.aem\\.(?:page|live)\\b)(?![^\\s"'<>]*/media_)`, 'g');
-  const moved = text.replace(templateHost, `$1${site}$2`);
+  const moved = text.replace(templateHost, `$1${site}$2`)
+    .replaceAll(`${sourceBusUrl(org, template)}/`, `${sourceBusUrl(org, site)}/`);
   if (extOf(path) !== 'html') return moved;
   const base = `https://main--${template}--${org}.aem.page/${path.replace(/^\/+/, '')}`;
   return moved.replace(URL_ATTR, (full, attr, quote, raw) => {

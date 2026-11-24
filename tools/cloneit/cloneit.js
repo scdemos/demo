@@ -593,7 +593,10 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
 
   const daConfig = hlx6 && baselineConfig.editor?.da;
   if (daConfig) {
-    config.editor = { da: JSON.parse(rewriteDaConfigForNewSite(JSON.stringify(daConfig), newSiteName, baselineSite, userEmail)) };
+    // apps that take the site as query parameters (`?org=scdemos&site=demo-hlx6`) open the new site
+    const appSite = new RegExp(`([?&]org=${ORG}&site=)${baselineSite}(?=[&#"]|$)`, 'g');
+    const editor = JSON.stringify(daConfig).replace(appSite, `$1${newSiteName}`);
+    config.editor = { da: JSON.parse(rewriteDaConfigForNewSite(editor, newSiteName, baselineSite, userEmail)) };
   }
 
   cleanupSiteConfig(config);
