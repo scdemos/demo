@@ -1,5 +1,5 @@
 import { toClassName } from '../../scripts/aem.js';
-import { loadStylesFor } from '../../scripts/shared.js';
+import { loadStylesFor, trackInteraction } from '../../scripts/shared.js';
 
 function getTabDefinition(section, fallbackIdx = 0) {
   const tabId = String(section.dataset?.tabId || '').trim();
@@ -126,6 +126,8 @@ function buildTabsUI(tabDefs, tabsContainer, sectionId = '', label = '') {
     panel.append(tabDef.section);
 
     button.addEventListener('click', () => {
+      // tabs built from section metadata aren't inside a block element, so the name is given
+      if (button.getAttribute('aria-selected') !== 'true') trackInteraction(button, button.textContent, 'tabs');
       updateTabState(tabDefs, tabDef.id, tabButtons, tabPanels);
       scrollActiveTab(button, tabList);
       window.history.pushState({}, '', `${window.location.pathname}#${tabDef.id}`);

@@ -13,6 +13,8 @@
 import { loadCSS, readBlockConfig, toClassName } from '../../scripts/aem.js';
 import {
   createTag,
+  safeLabel,
+  trackEvent,
   fetchQueryIndexPage,
   formatDate,
   getContentTimestamp,
@@ -408,8 +410,14 @@ export async function keywordSearch(root, config, {
     }
   }
 
+  const trackSearch = () => {
+    const term = safeLabel(state.query);
+    if (term) trackEvent('search', { search_term: term });
+  };
+
   async function search(query) {
     state.query = String(query || '').trim();
+    trackSearch();
     state.displayCount = PAGE_SIZE;
     await render();
   }
@@ -470,6 +478,9 @@ export async function keywordSearch(root, config, {
     await render();
   });
 
+  // a search that arrived in the URL (from the header's search field); without its own form, the
+  // block driving this one runs that search through search()
+  if (ownForm) trackSearch();
   await render();
   return { search };
 }

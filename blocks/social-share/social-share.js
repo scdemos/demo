@@ -1,4 +1,6 @@
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent } from '../../scripts/shared.js';
+
+const trackShare = (method) => trackEvent('share', { method, content_type: 'page', item_id: window.location.pathname });
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const FEEDBACK_RESET_MS = 2000;
@@ -170,6 +172,7 @@ function buildAction(action, shareData, block) {
       button.addEventListener('click', async () => {
         try {
           await copyToClipboard(shareData.url);
+          trackShare('copy');
           setCopyFeedback(block, button, 'Page link copied', 'check');
         } catch {
           setCopyFeedback(block, button, 'Unable to copy page link', 'copy');
@@ -181,6 +184,7 @@ function buildAction(action, shareData, block) {
       button.addEventListener('click', async () => {
         try {
           await navigator.share(shareData);
+          trackShare('native');
         } catch {
           // Ignore canceled native-share dialogs.
         }
@@ -200,6 +204,7 @@ function buildAction(action, shareData, block) {
     title: action.label,
   }, [icon, label]);
 
+  link.addEventListener('click', () => trackShare(action.id));
   item.append(link);
   return item;
 }

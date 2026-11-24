@@ -1,4 +1,4 @@
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackInteraction } from '../../scripts/shared.js';
 import { extendSchema } from '../../scripts/schema.js';
 
 const FAQ_INDEX_PATH = '/faq-index.json';
@@ -19,6 +19,7 @@ function toggleItem(button) {
   button.setAttribute('aria-expanded', String(!expanded));
   const panel = button.parentElement.nextElementSibling;
   panel.hidden = expanded;
+  if (!expanded) trackInteraction(button, button.textContent);
 }
 
 /**

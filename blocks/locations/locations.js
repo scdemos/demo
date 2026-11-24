@@ -1,6 +1,6 @@
 import { toClassName } from '../../scripts/aem.js';
 import { addSchema } from '../../scripts/schema.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackInteraction } from '../../scripts/shared.js';
 
 const format = (str, vars) => str.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
 const split = (value) => String(value || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -70,7 +70,10 @@ function buildPin(loc, index, onSelect) {
     style: `left:${Number(loc.x) || 50}%;top:${Number(loc.y) || 50}%`,
   });
   pin.append(createTag('span', { 'aria-hidden': 'true' }, String(index + 1)));
-  pin.addEventListener('click', () => onSelect(pin, loc));
+  pin.addEventListener('click', () => {
+    trackInteraction(pin, loc.name);
+    onSelect(pin, loc);
+  });
   return pin;
 }
 

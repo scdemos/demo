@@ -7,7 +7,9 @@
  * consented.js when they accept on this page view), so Google loads nothing for anyone else.
  */
 import GtmMartech from '../plugins/gtm-martech/src/index.js';
-import { onTrackEvent, trackEvent } from './shared.js';
+import {
+  blockNameOf, onTrackEvent, safeLabel, trackEvent,
+} from './shared.js';
 
 // GA4 measurement ID(s), loaded first, and GTM containers by phase. With none of
 // them, Google stays off.
@@ -51,12 +53,10 @@ function trackCtaClicks() {
     const link = e.target.closest?.('a.button');
     // only web links, without query or hash: mailto:, tel: and parameters can carry personal data
     if (!link || !/^https?:$/.test(link.protocol)) return;
-    const text = link.textContent.trim().slice(0, 100);
     trackEvent('cta_click', {
-      // a label that looks like an email address or phone number isn't sent
-      link_text: /@|\d[\d\s().-]{6,}/.test(text) ? '' : text,
+      link_text: safeLabel(link.textContent),
       link_url: `${link.origin}${link.pathname}`,
-      block_name: link.closest('[data-block-name]')?.dataset.blockName || 'default-content',
+      block_name: blockNameOf(link),
     });
   });
 }

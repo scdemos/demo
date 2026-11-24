@@ -1,4 +1,4 @@
-import { createTag, groupButtons } from '../../scripts/shared.js';
+import { createTag, groupButtons, trackPromotion } from '../../scripts/shared.js';
 
 /**
  * Campaign: featured offer band.
@@ -60,4 +60,5 @@ export default function decorate(block) {
   if (block.classList.contains('ink')) block.classList.add('surface-ink');
   if (block.classList.contains('flame')) block.classList.add('surface-flame');
   block.replaceChildren(inner);
+  trackPromotion(block, heading?.textContent || '');
 }
