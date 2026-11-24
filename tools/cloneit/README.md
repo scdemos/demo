@@ -28,6 +28,17 @@ After a successful clone, use **Copy handoff** to copy a plain-text block (Previ
 
 The new site uses `https://content.da.live/scdemos/{sitename}/` as its content source.
 
+### Helix 6 template
+
+Opened from `demo-hlx6` (`da.live/app/scdemos/demo-hlx6/tools/cloneit/cloneit`), CloneIt clones `demo-hlx6` instead of `demo`; opened from any other site it clones `demo`. When the template keeps its content in the Helix 6 source bus (its site config's content source is `sourcebus`, or a `https://api.aem.live/…/source` url, as on `scdemos/demo-hlx6`), the new site gets its own source bus instead of a DA folder (`source.js`):
+
+1. The site config is created first (the source bus answers 404 for a site without one): content source `https://api.aem.live/scdemos/sites/{site}/source` with the template's source type, the template's DA config (a Helix 6 site keeps it in `editor.da`) rewritten as in step 2, and the same roles as above.
+2. Every file is read from the template's source bus and written to the new site's (the source bus can't copy across sites), from the browser with your own IMS token: the `admin` role in the new site config lets you write. The same folders are left out as above, and the trash too. Images (`media_…`) point at the template's `aem.page` host when the page is written, so the source bus stores them for the new site; other links to the template's hosts point at the new site. Requests are paced (at most 4 at a time, 8 per second per site) and retried on 429, 503 and network errors.
+3. Preview and publish go through the Helix 6 API (`POST https://api.aem.live/scdemos/sites/{site}/preview/` and `…/live/`, jobs polled), with your token. Files below dot folders (`.da`, page attachments) aren't previewed.
+4. No DA permissions rows: on Helix 6 the site config's roles decide who can edit.
+
+Code sync, the query index and the registry work as above. Demo Admin can't delete a Helix 6 demo yet (it only deletes demos whose content is in `content.da.live/scdemos/{site}/`).
+
 **Edit in DA:** `https://da.live/#/scdemos/{sitename}`
 
 ## How to Use
@@ -52,6 +63,7 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 |------|------|
 | `cloneit.html` | Single-page UI: header, config card (optional customer site, site name, GitHub user), progress, result (with AI handoff), bulk modal, help modal, toast |
 | `cloneit.js` | Constants, DA_SDK org-config fetch, validation, worker proxy calls, clone flow, event wiring, init |
+| `source.js` | Helix 6 templates: source-bus listing, copy, link rewrites, pacing and retries, bulk jobs (no DOM) |
 | `cloneit.css` | Styles (no preprocessor). Scoped by section/component class names. |
 | `README.md` | This documentation |
 
@@ -82,6 +94,9 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 | AEM Admin | `POST /code/scdemos/{site}/main/*`, `GET …/scripts/aem.js` | Own repo: full code sync, then wait until code is served |
 | AEM Admin | `POST /preview|live/scdemos/{site}/main/*`, `GET /job/…/details` | Bulk preview + publish of every copied path |
 | DA Admin | `GET/POST /source/scdemos/demo-registry/demos.json` | Registry row (best effort) |
+| Helix 6 API | `GET /scdemos/sites/{template}/source/{path}` | Helix 6 template: list and read every file (your token) |
+| Helix 6 API | `POST /scdemos/sites/{site}/source/{path}` | Helix 6 template: write each file to the new site |
+| Helix 6 API | `POST /scdemos/sites/{site}/preview/`, `…/live/`, `GET …/jobs/{topic}/{job}/details` | Helix 6 template: bulk preview + publish |
 | CloneIt worker | `POST …/whoami` | Verifies the signed-in user; tells the UI whether demo creation is enabled |
 | CloneIt worker | `POST …/standalone` | Own repo: create `scdemos/<site>` from `TEMPLATE_REPO`, add it to the AEM Code Sync installation (auto-discovered), make the requester's GitHub user admin, grant `GITHUB_TEAM` push (if set) |
 | CloneIt worker | `POST …/permissions` | Appends `/<site>/CONFIG` and `/<site>/**` (`write`, the caller's email from their IMS token) to the org's DA permissions sheet, and adds the email to the existing `write` rows for `CONFIG` and `/<template>/+**` (skipped when those rows don't exist). Only for a demo the caller requested: the repo `scdemos/<site>` that `/standalone` created (topic `customer-demo`, description ending `(requested by <email>)`); never the template. Needs `GITHUB_PROVISION_TOKEN`. Appends at the end of the sheet and re-reads to check (if two writes overlap, the last one wins); rows already there aren't duplicated |
