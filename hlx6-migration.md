@@ -10,13 +10,14 @@ our worklist, so the open items name the PR, issue or prepared fix behind them.
 
 **Research scope**: walkthrough of all 31 how-to scripts on demo-hlx6 on Oct 9 (9 work, 10 partly,
 10 broken, 2 not testable), PR and issue states checked Nov 19, caught up with main on Nov 24
-([#103](https://github.com/scdemos/demo/pull/103) to [#154](https://github.com/scdemos/demo/pull/154)).
+([#103](https://github.com/scdemos/demo/pull/103) to [#154](https://github.com/scdemos/demo/pull/154)),
+content and DA site config copied again from demo on Nov 24.
 
 **demo moved to the Frescopa redesign** ([#105](https://github.com/scdemos/demo/pull/105)) with
 language markets ([#110](https://github.com/scdemos/demo/pull/110), [#118](https://github.com/scdemos/demo/pull/118)).
-demo-hlx6 runs the same code but still has the October content, so its pages show the old content in
-the new frame. Copying the content again comes first (see the first item under "Config and content"),
-and the Oct 9 walkthrough results are out of date until then.
+demo-hlx6 runs the same code and has had demo's content again since Nov 24: same pages, same preview
+and publish state, same index. The Oct 9 walkthrough results are out of date until the walkthrough is
+run again (see "Config and content").
 
 - demo: https://main--demo--scdemos.aem.page/
 - demo-hlx6: https://main--demo-hlx6--scdemos.aem.page/
@@ -26,21 +27,34 @@ and the Oct 9 walkthrough results are out of date until then.
 
 ## Completed ✓
 
-Site setup and content (October copy, see "Copy the content again"):
+Site setup and content:
 
 - [x] Site created with the source bus as content source. The org needs nothing enabled beyond that.
-- [x] Content copied: 562 files. Pages that weren't live on demo (368) were unpublished again after the copy.
-- [x] DA site config: the 13 sheets live in `editor.da` of the site config, where da.live reads them for
-  Helix 6 sites. Library, prompts, skills, prepare and flags rows are picked up.
+- [x] Content copied again on Nov 24: all 280 non-draft files of demo (plus `.da/translate.json`,
+  `.da/adobe-target.json`, the form schemas and the `.da/icons`). What demo dropped since October (21
+  folders such as `/es/`, `/learn/`, `/faqs/` and 80 single files) went to `/.trash`, and 488 paths were
+  unpublished and unpreviewed. Links to demo's hosts point at demo-hlx6, except the `demo.bbird.live`
+  worker endpoints (contact form, login, content search, RSS feeds).
+- [x] Preview and publish state matches demo for 286 of its 290 files, including the 2 how-tos demo
+  took down (`how-to-use-msm`, `how-to-manage-translations-and-rollouts`). The other 4 are unlinked
+  videos under `/demo-docs/media/old/`. `/query-index.json` has the same 110 rows as demo's.
+- [x] `/en/offers/member-week` (the header's announcement bar links to it) is live on demo without a DA
+  source. Rebuilt on demo-hlx6 from demo's delivered HTML; the rendered page matches demo's.
+- [x] DA site config copied again into `editor.da`, with every demo URL pointed at demo-hlx6: the new
+  `apps` (Frescopa Studio, Manage Tags, Media Library, Manage Schemas, Workfront, FindReplace Pro),
+  the new `library` rows (Page Insights, Brand Visibility, Block Inspector, LanguageTool, Anchor Links),
+  the `channels` sheet for the Frescopa app, and demo's `flags` and `data` rows.
 - [x] Library: `blocks.json`, `templates.json` and `icons.json` point at demo-hlx6 instead of demo.
-- [x] Videos: 16 how-to videos re-encoded to 3.2-3.9 MB and relinked (the source bus refuses larger
-  uploads, see below). All 27 mp4 links on the how-to pages answer 200.
+- [x] Videos: 24 screencasts re-encoded to 3.2-4.0 MB (the source bus refuses larger uploads, see
+  below): the 16 from October and 8 of the new ones. Every mp4 link plays, except one that is missing
+  on demo too (see "Broken images and videos").
 - [x] Icons: the 10 svgs under `/icons/` existed only as previewed content on demo, not in DA or git.
   Copied from demo's aem.page to the source bus, previewed and published.
-- [x] Query and FAQ index: `query.yaml` copied (indices `default` and `faqs`), bulk-indexed.
-  `/search` shows the same results as demo.
-- [x] Feedback form: the `demo.bbird.live/contact-us/` endpoint is back in all 40 `contact-us` and
-  `feedback` fragments.
+- [x] Index and sitemap: demo's current `query.yaml` (with `publisheddate`, without the `faqs` index)
+  and its `sitemap.yaml` (origin set to demo-hlx6's aem.live host) written, site reindexed.
+- [x] json2html: worker config for `scdemos/demo-hlx6/main` (events from demo-hlx6's `events.json`,
+  press releases from the AEM author) and `content.overlay` set. The 9 event and 4 press pages render on
+  aem.live. Pages outside `/en/events/` and `/en/press/` still preview from the source bus.
 - [x] Draft pages the how-tos link to (experimentation challenger, FAQ block demo) copied and published.
 - [x] Access roles: demo's site roles copied, `*@adobe.com` and the two demo IMS groups can publish
   (see the verification item below).
@@ -62,7 +76,8 @@ Fixed upstream:
 - [x] Scheduled publish of canvas pages (`.html` paths were refused at publish time): [adobe/da-live#1436](https://github.com/adobe/da-live/pull/1436).
   Scheduled snapshot publish is untested on Helix 6.
 - [x] YAML site config (`query.yaml`, `sitemap.yaml`) can be written through api.aem.live:
-  [adobe/helix-api-service#473](https://github.com/adobe/helix-api-service/pull/473) (not retested after deploy)
+  [adobe/helix-api-service#473](https://github.com/adobe/helix-api-service/pull/473). Used for the Nov 24
+  copy: both writes answered 204 and read back unchanged.
 
 Fixed on main (this repo):
 
@@ -84,7 +99,9 @@ Fixed on main (this repo):
   ([#111](https://github.com/scdemos/demo/pull/111)), Edge Commerce product pages, cart and orders
   ([#144](https://github.com/scdemos/demo/pull/144), [#145](https://github.com/scdemos/demo/pull/145)), the
   contact form worker and Target offers only work on demo's production host. demo-hlx6 has no production
-  host, and its aem.page/aem.live hosts behave like demo's.
+  host, and its aem.page/aem.live hosts behave like demo's. The same goes for the `public` part of demo's
+  site config (product bus mixer, product indexer, content fragment path mappings) and its `robots.txt`:
+  both are for the CDN host and weren't copied.
 - **Dynamic Media smart crop dialog**: the picker finds no approved assets with crops. Same AEM author
   as demo, so not a Helix 6 issue.
 
@@ -135,6 +152,14 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 
 - [ ] **Image interning keeps query params**: `media_<hash>.png?width=750&format=png` gets interned as the
   750px rendition under a new hash. Not filed.
+
+- [ ] **Overlay pages that need the user's login**: the press pages go through json2html to the AEM
+  author and forward the caller's `Authorization` header. A bulk preview job doesn't send it, so all 4
+  press pages fell back to 404; previewing them one at a time worked. Not filed, not checked on demo.
+
+- [ ] **Setting `content.overlay`**: the source bus site config only takes `content` as a whole object
+  (`config/content/overlay.json` answers 400 "invalid object path"). Writing the whole object works and
+  keeps the `contentBusId`, which comes from the source URL. Minor, not filed.
 
 ---
 
@@ -228,37 +253,31 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 
 ## Pending: Config and content (our side)
 
-- [ ] **Copy the content again**: demo-hlx6 has the October content, demo has the Frescopa redesign.
-  demo indexes 109 pages, demo-hlx6 154; 78 are only on demo (56 under `/en/`, 19 under `/demo-docs/`)
-  and 123 only on demo-hlx6 (pages demo dropped, such as `/learn/`, `/start-here/`, `/fr/`, `/es/`).
-  On Nov 24 `/en/` on demo-hlx6 showed the old wealth content in the Frescopa frame, with no nav links and
-  an empty hero image. Copy demo again, remove what demo dropped, and redo the interning, video and
-  contact form steps above where they still apply.
+- [ ] **Keep the copy current**: demo keeps changing (a how-to was published during the Nov 24 copy).
+  The copy scripts compare demo's DA files and delivery state with demo-hlx6, so a later run only has
+  to pick up the changes.
 
-- [ ] **Walkthrough again**: after the copy. demo's showcase lists 27 how-tos now. New since Oct 9:
+- [ ] **Walkthrough again**: demo's showcase lists 27 how-tos now. New since Oct 9:
   `how-to-create-customer-demo`, `how-to-integrate-workfront`, `how-to-publish-rss-feeds`,
   `how-to-showcase-omnichannel`, `how-to-use-edge-commerce`. Gone from demo: `how-to-use-msm`,
   `how-to-use-quick-edit`, `how-to-manage-translations-and-rollouts`, `how-to-use-ew-basics`,
   `how-to-reuse-demo-site`, `how-to-author-ue`.
 
-- [ ] **DA site config**: copy demo's sheets again. demo has new rows, such as Page Insights in `library`
-  and Frescopa Studio in `apps`; both point at scdemos/demo.
-
 - [ ] **DA org config**: `editor.path` rows only exist for demo, so `/faqs` on demo-hlx6 opens in the canvas
   instead of the form editor and `/demo-slides` doesn't open in formsref. The `msm` sheet has no demo-hlx6
-  row. Rows prepared, not applied. Check them against the new content.
+  row. Rows prepared, not applied. demo dropped `/faqs/` and `/demo-slides/` (the slides moved to
+  `/demo-docs/demo-slides/`), so the prepared rows need redoing.
 
-- [ ] **json2html**: event detail pages 404 and the json2html worker answers 500 (no config for
-  `scdemos/demo-hlx6/main`). Set the worker config first, then `content.overlay` in the site config: preview
-  only falls back to the base source on 401/403/404, so an overlay pointing at an unconfigured worker would
-  break every preview. main added event, events, press and journey templates
-  ([#122](https://github.com/scdemos/demo/pull/122), [#125](https://github.com/scdemos/demo/pull/125)), and
-  `templates/events/events.html` loads images from `main--demo--scdemos.aem.live`
-  ([events.html#L49](https://github.com/scdemos/demo/blob/8b0b6a69914d07e9e7ab421eb873cfae8396dc1e/templates/events/events.html#L49)).
+- [ ] **Event template images (this repo)**: `templates/events/events.html` loads event images from
+  `main--demo--scdemos.aem.live`
+  ([events.html#L49](https://github.com/scdemos/demo/blob/8b0b6a69914d07e9e7ab421eb873cfae8396dc1e/templates/events/events.html#L49)),
+  so event pages on demo-hlx6 show demo's images. A relative URL would work for both sites.
 
-- [ ] **Content fragment overlay**: same overlay, plus the `/articles/` worker entry from demo's worker
-  config. The press releases from AEM Content Fragments ([#125](https://github.com/scdemos/demo/pull/125))
-  go through it too.
+- [ ] **Orphan pages on demo**: `/en/offers/member-week` is live on demo but has no DA source, so authors
+  can't edit it there (rebuilt on demo-hlx6, see above). demo also still serves 7 pages whose source is
+  gone (`/de/fragments/contact-us`, `feedback`, `got-feedback`, `tabs-about-us`, the two
+  `/fragments/offers/hero-*` Target offers, `/docs/library/blocks/journey-map`); demo-hlx6 kept their
+  October copies live.
 
 - [ ] **Access roles**: test edit, preview and publish as a plain `@adobe.com` user.
 
@@ -268,14 +287,16 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 - [ ] **Icons in git (this repo)**: main added only `icons/logo.svg`. The 10 svgs under `/icons/` still exist
   only as previewed content. Check which ones the redesign still uses and commit those.
 
-- [ ] **Broken images**: recheck after the copy. `/start-here` is gone from demo; the two xmod docs
-  (`/demo-docs/usecases/how-to-reskin-using-xmod`, `/demo-docs/media/healthdemo-xmod-prompt`) are still there.
+- [ ] **Broken images and videos (demo content)**: every image was stored in the media bus during the
+  copy, except in 3 docs whose DA source on demo already has `about:error` images: `/en/membership`,
+  `/experiments/membership-cta/challenger-1` and `/docs/library/templates/event`.
+  `how-to-see-page-analytics` links `experience-workspace-page-insights-ga4.mp4`, which doesn't exist on
+  demo either.
 
 - [ ] **xmod reskin prompt**: the prompt template in `/demo-docs/` tells the agent to read and write through
   `admin.da.live` and `admin.hlx.page`, the wrong store for a Helix 6 site.
 
 - [ ] **Recheck after upstream deploys**: page and section metadata in the canvas (gated content toggle,
-  nav/footer overrides) after da-universal#307, and a `query.yaml` write through api.aem.live after
-  helix-api-service#473.
+  nav/footer overrides) after da-universal#307.
 
 - [ ] **Test content**: `/drafts/hlx6-tests/` holds pages and media from the fix tests. Keep or remove.
