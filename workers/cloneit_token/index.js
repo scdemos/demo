@@ -14,6 +14,7 @@
 // LEGACY_COMPAT (default on): requests WITHOUT an Authorization header behave exactly like the previous
 // CloneIt worker (POST / returns the technical token, /cloneprocess limited to the old allowlist), so the
 // currently deployed CloneIt page keeps working. Set LEGACY_COMPAT = "false" once every page sends a token.
+// Only ALLOWED_ORIGINS get the legacy routes; IMS_ONLY_ORIGINS always need a token.
 
 import {
   assertDemoAdmin, listClones, deleteCloneStep, jobState,
@@ -34,17 +35,19 @@ let cachedToken = null;
 let cachedExpiry = 0;
 const userCache = new Map(); // token hash → { email, exp }
 
-function getAllowedOrigins(env) {
-  return (env.ALLOWED_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
+/** ALLOWED_ORIGINS, plus IMS_ONLY_ORIGINS unless the request takes a legacy (no-token) route. */
+function getAllowedOrigins(env, legacy) {
+  const lists = legacy ? [env.ALLOWED_ORIGINS] : [env.ALLOWED_ORIGINS, env.IMS_ONLY_ORIGINS];
+  return lists.filter(Boolean).join(',').split(',').map((o) => o.trim()).filter(Boolean);
 }
 
 /**
  * Exact match, or a `*` wildcard for one branch label: `https://*--demo--scdemos.aem.page` allows
  * `https://custdemo--demo--scdemos.aem.page` (branch previews), never extra subdomains or other hosts.
  */
-export function originMatches(origin, env) {
+export function originMatches(origin, env, legacy = false) {
   if (!origin) return false;
-  return getAllowedOrigins(env).some((allowed) => {
+  return getAllowedOrigins(env, legacy).some((allowed) => {
     if (!allowed.includes('*')) return allowed === origin;
     const re = new RegExp(`^${allowed.split('*').map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?')}$`);
     return re.test(origin);
@@ -450,7 +453,8 @@ export default {
     if (!env.ADOBE_CLIENT_ID || !env.ADOBE_CLIENT_SECRET) return workerErr(cors, 'Worker not configured', 500);
 
     // previous CloneIt page (no Authorization header): unchanged behavior while LEGACY_COMPAT is on
-    if (!request.headers.get('Authorization') && env.LEGACY_COMPAT !== 'false' && ['/', '/cloneprocess'].includes(pathname)) {
+    if (!request.headers.get('Authorization') && env.LEGACY_COMPAT !== 'false' && ['/', '/cloneprocess'].includes(pathname)
+      && originMatches(request.headers.get('Origin') || '', env, true)) {
       try {
         if (pathname === '/cloneprocess') return await proxyToAdmin(request, env, cors, true);
         const token = await generateToken(env);

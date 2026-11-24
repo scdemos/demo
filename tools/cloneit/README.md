@@ -108,7 +108,8 @@ All CloneIt files live under the project’s `tools/cloneit/` folder:
 - **Backward compatible:** while `LEGACY_COMPAT` is `"true"` (default), requests without an `Authorization`
   header behave like the previous worker (`POST /` returns the technical token, `/cloneprocess` uses the old
   allowlist), so the currently deployed CloneIt page keeps working. Set it to `"false"` once every page
-  sends a token: the old behavior gives anyone who fakes an allowed `Origin` an admin token.
+  sends a token: the old behavior gives anyone who fakes an allowed `Origin` an admin token. Only
+  `ALLOWED_ORIGINS` get this; origins in `IMS_ONLY_ORIGINS` (the demo-hlx6 pages) always need a token.
 - **Who may call (new routes and new paths):** the caller's own Adobe IMS access token (the DA session,
   read with `DA_SDK` and sent as `Authorization: Bearer …`). The worker validates it with IMS, accepts
   only `IMS_CLIENT_IDS` (DA = `darkalley`) and `ALLOWED_EMAIL_DOMAINS` (`adobe.com`). The `Origin`
