@@ -37,8 +37,8 @@ const userCache = new Map(); // token hash → { email, exp }
 
 /** ALLOWED_ORIGINS, plus IMS_ONLY_ORIGINS unless the request takes a legacy (no-token) route. */
 function getAllowedOrigins(env, legacy) {
-  const lists = legacy ? [env.ALLOWED_ORIGINS] : [env.ALLOWED_ORIGINS, env.IMS_ONLY_ORIGINS];
-  return lists.filter(Boolean).join(',').split(',').map((o) => o.trim()).filter(Boolean);
+  return [env.ALLOWED_ORIGINS, !legacy && env.IMS_ONLY_ORIGINS].filter(Boolean).join(',')
+    .split(',').map((o) => o.trim()).filter(Boolean);
 }
 
 /**

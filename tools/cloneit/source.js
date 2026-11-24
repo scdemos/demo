@@ -230,14 +230,14 @@ export function createSourceBusClient({
 }) {
   const limit = createLimiter(concurrency, minIntervalMs, sleep);
   // every attempt, retries included, goes through the limiter
-  const request = (path, init = {}, retries = undefined) => {
+  const request = (path, init = {}, retries) => {
     const url = `${AEM_API}/${org}/sites/${site}/${path}`;
     const opts = { ...init, headers: { Authorization: `Bearer ${token}`, ...init.headers } };
     return fetchWithRetry(() => limit(() => fetchFn(url, opts)), {
       retries, sleep, onRetry: (ms) => limit.coolDown(ms),
     });
   };
-  const source = (path, folder = false, init = {}, retries = undefined) => {
+  const source = (path, folder = false, init = {}, retries) => {
     let rel = path.replace(/^\/+/, '');
     if (folder && rel && !rel.endsWith('/')) rel = `${rel}/`;
     return request(`source/${rel}`, init, retries);
