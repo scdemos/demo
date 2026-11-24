@@ -31,6 +31,18 @@ const EVENT_LABELS = {
   generate_lead: 'Leads',
   quiz_complete: 'Quizzes completed',
   cta_click: 'Button clicks',
+  block_interaction: 'Block interactions',
+  view_item_list: 'Product list views',
+  select_item: 'Products picked from a list',
+  view_promotion: 'Promotion views',
+  select_promotion: 'Promotion clicks',
+  remove_from_cart: 'Removals from cart',
+  search: 'Searches',
+  view_search_results: 'Search results views',
+  share: 'Shares',
+  form_start: 'Forms started',
+  click: 'Outbound clicks',
+  file_download: 'File downloads',
   scroll: 'Scrolls',
   user_engagement: 'Engagement pings',
   session_start: 'Sessions started',
@@ -65,6 +77,8 @@ let token = '';
 let org = '';
 let site = '';
 let page = DEFAULT_PAGE;
+// opened without a page, the app shows the whole site until one is picked
+let pagePicked = false;
 let days = 30;
 let pageRequest = 0;
 let siteRequest = 0;
@@ -95,7 +109,7 @@ function showPage() {
   $('page-path').value = page;
   const link = $('page-link');
   link.href = liveUrl(page);
-  document.title = `Page insights: ${page}`;
+  document.title = pagePicked ? `Page insights: ${page}` : 'Page insights';
 }
 
 // ---- small charts (inline SVG, with the numbers in their label) ----
@@ -199,8 +213,8 @@ function table(caption, head, rows) {
 }
 
 function ctasCard(ctas) {
-  if (!ctas.length) return h('p', { class: 'insights-empty' }, 'No button clicks on this page in this period.');
-  return table('Button clicks by block', ['Block', 'Button', 'Clicks'], ctas.map((x) => [x.block === 'default-content' ? 'Page text' : x.block, x.label || '–', nf.format(x.clicks)]));
+  if (!ctas.length) return h('p', { class: 'insights-empty' }, 'No clicks on this page in this period.');
+  return table('Clicks by block', ['Block', 'Clicked', 'Clicks'], ctas.map((x) => [x.block === 'default-content' ? 'Page text' : x.block, x.label || '–', nf.format(x.clicks)]));
 }
 
 function channelsCard(channels, scope) {
@@ -255,6 +269,7 @@ function renderSource(s, scope) {
 }
 
 async function loadPage() {
+  if (!pagePicked) return;
   pageRequest += 1;
   const mine = pageRequest;
   showPage();
@@ -278,12 +293,16 @@ async function loadSite() {
   siteRequest += 1;
   const mine = siteRequest;
   $('site').setAttribute('aria-busy', 'true');
+  // with no page picked, the site report is the whole view and the status line is its own
+  if (!pagePicked) setStatus('Loading the whole site…');
   try {
     const data = await post('site', { days });
     if (mine !== siteRequest) return;
+    if (!pagePicked) setStatus('');
     $('site').replaceChildren(...data.sources.map((x) => renderSource(x, 'site')));
   } catch (e) {
     if (mine !== siteRequest) return;
+    if (!pagePicked) setStatus('');
     $('site').replaceChildren(h('p', { class: 'insights-source-note' }, say(e.message)));
   } finally {
     if (mine === siteRequest) $('site').removeAttribute('aria-busy');
@@ -292,6 +311,7 @@ async function loadSite() {
 
 function showPath(path) {
   page = path;
+  pagePicked = true;
   window.history.replaceState(null, '', `#/${org}/${site}${page}`);
   loadPage();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -332,13 +352,16 @@ async function init() {
     org = o || sdk.context?.org || '';
     site = s || sdk.context?.repo || '';
     const docPath = rest.length ? rest.join('/') : sdk.context?.path || params.get('page') || '';
-    page = toPagePath(docPath) || DEFAULT_PAGE;
+    // a page named in the link (even the root, /) is shown; no page at all shows the whole site
+    pagePicked = String(docPath).trim() !== '';
+    page = pagePicked ? toPagePath(docPath) || '/' : DEFAULT_PAGE;
     if (!token || !org || !site) throw new Error('sign_in_required');
   } catch (e) {
     setStatus(say(e.message === 'sign_in_required' ? e.message : 'sign_in_required'), true);
     return;
   }
   wire();
+  showPage();
   loadPage();
   loadSite();
 }

@@ -198,6 +198,10 @@ describe('page report', () => {
     expect(d.trend.value.at(-1).views).toBe(12);
     expect(d.trend.value[0].views).toBe(0);
     expect(d.ctas.value).toEqual([{ block: 'hero', label: 'Get started', clicks: 14 }]);
+    // clicks count buttons and block interactions (FAQ, tabs, video, store locator), on this page only
+    const clicks = calls.find((c) => c.body?.dimensions?.[0]?.name === 'customEvent:block_name');
+    expect(JSON.stringify(clicks.body.dimensionFilter)).toContain('"values":["cta_click","block_interaction"]');
+    expect(JSON.stringify(clicks.body.dimensionFilter)).toContain('pagePath');
     expect(d.channels.value).toEqual([{ source: 'newsletter', medium: 'email', sessions: 6 }]);
 
     const reports = calls.filter((c) => c.url.endsWith(':runReport'));
