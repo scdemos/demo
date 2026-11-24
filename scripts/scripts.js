@@ -19,7 +19,7 @@ import {
   toClassName,
 } from './aem.js';
 import {
-  initMartech, martechEager, martechLazy, updateUserConsent,
+  initMartech, martechEager, martechLazy, stopPersonalization, updateUserConsent,
 } from '../plugins/martech/src/index.js';
 import { getMarket, getStoredConsent, isGatedPage } from './shared.js';
 import { runExperimentation, runExperimentationLazy } from './experiment-loader.js';
@@ -457,6 +457,10 @@ const isStructuralDiv = (el) => el.classList.contains('section')
   || el.classList.contains('section-metadata')
   || [...el.classList].some((c) => c.endsWith('-wrapper') || c.endsWith('-container'));
 
+// Blocks a Target offer injected that are still loading: personalized sections stay hidden
+// until they are ready, so an offer never shows half-decorated.
+const injectedBlockLoads = new Set();
+
 function watchForTargetInjectedBlocks(main) {
   const observer = new MutationObserver((mutations) => {
     const toDecorate = new Set();
@@ -464,6 +468,12 @@ function watchForTargetInjectedBlocks(main) {
     mutations.forEach(({ addedNodes }) => {
       addedNodes.forEach((node) => {
         if (node.nodeType !== Node.ELEMENT_NODE) return;
+        // a replaceHtml offer swaps a whole section for new markup without data-mbox: keep that
+        // hidden too until the offer is in place (revealOffers)
+        if (node.parentElement === main && offerMayArrive()) {
+          node.dataset.offerPending = 'true';
+          setPending(node, true);
+        }
         [node, ...node.querySelectorAll('div[class]')].forEach((el) => {
           if (
             el.tagName === 'DIV'
@@ -496,11 +506,174 @@ function watchForTargetInjectedBlocks(main) {
       decorateButtons(block);
       decorateIcons(block);
     });
-    Promise.all([...toDecorate].map((block) => loadBlock(block)))
+    const loads = Promise.all([...toDecorate].map((block) => loadBlock(block)))
       .catch(() => { /* a failed block load shouldn't break the page */ });
+    injectedBlockLoads.add(loads);
+    loads.finally(() => injectedBlockLoads.delete(loads));
   });
 
   observer.observe(main, { childList: true, subtree: true });
+}
+
+// Personalized sections (section metadata `mbox`) stay hidden while Target decides, so visitors
+// never see the default content before an offer replaces it. Each section appears once its offer
+// is in place (the martech plugin's martech:propositions-applied event), or as soon as Target
+// answers without an offer for it. Target's timeout (1s) and a safety timer bound the wait.
+const PERSONALIZATION_PENDING = 'personalization-pending';
+const PERSONALIZATION_SAFETY_TIMEOUT = 3000;
+// id of each offer still to apply -> the personalized sections it will change (and attributes)
+const pendingOffers = new Map();
+const appliedOffers = new Set();
+let decisionsSettled = false;
+
+// whether an offer can still land on the page (Target hasn't answered, or an offer is pending)
+function offerMayArrive() {
+  return document.body.classList.contains(PERSONALIZATION_PENDING)
+    && (!decisionsSettled || pendingOffers.size > 0);
+}
+
+
+// hidden content must not be reachable by keyboard or assistive tech either
+function setPending(el, pending) {
+  if (pending) el.setAttribute('inert', '');
+  else el.removeAttribute('inert');
+}
+
+// a section's mbox can list several scopes ("hero-offer, audience-banner"), as in the plugin
+const sectionScopes = (section) => String(section.dataset.mbox || '').split(',')
+  .map((scope) => scope.trim()).filter(Boolean);
+
+function clearOfferPending() {
+  document.querySelectorAll('main > [data-offer-pending]').forEach((el) => {
+    delete el.dataset.offerPending;
+    setPending(el, false);
+  });
+}
+
+function revealAllPersonalized() {
+  document.body.classList.remove(PERSONALIZATION_PENDING);
+  document.querySelectorAll('main .section[data-mbox][inert]').forEach((el) => setPending(el, false));
+  clearOfferPending();
+}
+
+// The personalized sections an offer changes: those named by its scope (mbox), and those its
+// items' selectors point into (VEC offers come under the __view__ scope with a selector).
+function offerSections(proposition) {
+  const all = [...document.querySelectorAll('main .section[data-mbox]')];
+  const sections = new Set(all.filter((section) => sectionScopes(section).includes(proposition.scope)));
+  proposition.items?.forEach((item) => {
+    if (!item.data?.selector) return;
+    let targets = [];
+    try {
+      targets = [...document.querySelectorAll(item.data.selector)];
+    } catch { /* a Target-only selector (like :eq(n)) native CSS can't parse */ }
+    // the target may not be on the page yet (the SDK waits for it) or can't be resolved here: it
+    // could be in any of them, so hold every personalized section until the offer is in place
+    if (!targets.length) all.forEach((section) => sections.add(section));
+    targets.forEach((el) => {
+      const section = el.closest('main .section[data-mbox]');
+      if (section) sections.add(section);
+    });
+  });
+  return sections;
+}
+
+// Shows every personalized section no pending offer will change.
+function revealSettledSections() {
+  const pending = new Set([...pendingOffers.values()].flatMap((offer) => [...offer.sections]));
+  document.querySelectorAll('main .section[data-mbox]:not([data-personalized])').forEach((section) => {
+    if (!pending.has(section)) {
+      section.dataset.personalized = 'true';
+      setPending(section, false);
+    }
+  });
+}
+
+// The Web SDK reports an offer applied before it has finished rendering it. A section's offer is
+// in place once its default content (tagged when the hold started) is gone, the section itself
+// was replaced, or, for offers that only edit part of it, the section changed. Until then it
+// stays hidden; the safety timer is the last resort.
+const offerRendered = (section) => !section.isConnected
+  || !section.querySelector(':scope > [data-default-content]');
+
+function waitForOfferRender(sections, attributes = []) {
+  const waiting = new Set(sections.filter((section) => !offerRendered(section)));
+  if (!waiting.size) return Promise.resolve();
+  return new Promise((resolve) => {
+    const observer = new MutationObserver((mutations) => {
+      waiting.forEach((section) => {
+        if (offerRendered(section) || mutations.some((m) => section.contains(m.target))) {
+          waiting.delete(section);
+        }
+      });
+      if (waiting.size) return;
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(document.querySelector('main'), {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      // what VEC offers edit; not our flags or EDS's decoration status
+      attributeFilter: [...new Set(['style', 'src', 'srcset', 'href', 'alt', ...attributes])],
+    });
+  });
+}
+
+async function revealOffers(ids) {
+  const offers = ids.map((id) => pendingOffers.get(id)).filter(Boolean);
+  await waitForOfferRender(
+    offers.flatMap((offer) => [...offer.sections]),
+    offers.flatMap((offer) => offer.attributes),
+  );
+  // let the injected-block observer pick up the offer's markup, then wait for those blocks
+  await new Promise((resolve) => { setTimeout(resolve, 0); });
+  await Promise.allSettled([...injectedBlockLoads]);
+  ids.forEach((id) => {
+    appliedOffers.add(id);
+    pendingOffers.delete(id);
+  });
+  revealSettledSections();
+  clearOfferPending();
+}
+
+function holdPersonalizedSections(main) {
+  document.body.classList.add(PERSONALIZATION_PENDING);
+  main.querySelectorAll('.section[data-mbox]').forEach((section) => {
+    setPending(section, true);
+    [...section.children].forEach((child) => { child.dataset.defaultContent = ''; });
+  });
+  document.addEventListener('martech:propositions-applied', (e) => revealOffers(e.detail?.ids || []));
+  setTimeout(() => {
+    if (!document.body.classList.contains(PERSONALIZATION_PENDING)) return;
+    // too late: show what is there and never swap it afterwards
+    stopPersonalization();
+    revealAllPersonalized();
+  }, PERSONALIZATION_SAFETY_TIMEOUT);
+}
+
+/**
+ * Target answered (or gave up): reveal every personalized section that gets no offer.
+ * @param {object} [response] the decisions; none when Target timed out or failed
+ */
+function settlePersonalization(response) {
+  decisionsSettled = true;
+  if (!response?.propositions) {
+    revealAllPersonalized();
+    return;
+  }
+  response.propositions
+    .filter((p) => p.items?.some((i) => i.schema === 'https://ns.adobe.com/personalization/html-content-item'
+      || i.schema === 'https://ns.adobe.com/personalization/dom-action'))
+    .filter((p) => !appliedOffers.has(p.id))
+    .forEach((p) => pendingOffers.set(p.id, {
+      sections: offerSections(p),
+      // attributes a VEC setAttribute action changes, so its render is noticed
+      attributes: (p.items || []).filter((i) => i.data?.type === 'setAttribute')
+        .flatMap((i) => (typeof i.data?.content === 'object' ? Object.keys(i.data.content || {}) : [])),
+    }));
+  revealSettledSections();
+  if (!pendingOffers.size) clearOfferPending();
 }
 
 let martechStarted = false;
@@ -685,10 +858,16 @@ async function loadEager(doc) {
     // Re-decorate EDS block markup that a Target offer injects after decoration has
     // already run (e.g. a replaceHtml offer that brings in authored block HTML). Started
     // before martechEager applies propositions so the observer is live when offers land.
-    if (personalizationEnabled && !IS_EDITOR) watchForTargetInjectedBlocks(main);
+    if (personalizationEnabled && !IS_EDITOR) {
+      watchForTargetInjectedBlocks(main);
+      if (martechLoadedPromise) holdPersonalizedSections(main);
+    }
     document.body.classList.add('appear');
     await Promise.all([
-      martechLoadedPromise && martechLoadedPromise.then(martechEager),
+      martechLoadedPromise && martechLoadedPromise.then(martechEager).then(
+        (response) => personalizationEnabled && settlePersonalization(response),
+        () => personalizationEnabled && revealAllPersonalized(),
+      ),
       loadSection(main.querySelector('.section'), async (s) => {
         await waitForFirstImage(s);
         await loadFragments(s);

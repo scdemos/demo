@@ -731,14 +731,23 @@ async function applyPropositions(instanceName) {
         applyOptions,
       );
       const newlyRendered = [];
+      const appliedScopes = new Set();
       appliedPropositions.propositions?.forEach((item) => {
         if (item.renderAttempted) {
           renderedPropositionIds.add(item.id);
           newlyRendered.push(item.id);
+          const scope = propositions.find((p) => p.id === item.id)?.scope;
+          if (scope) appliedScopes.add(scope);
           propositions = propositions.filter((p) => p.id !== item.id);
         }
       });
       reportLateDisplayedPropositions(newlyRendered);
+      if (appliedScopes.size) {
+        // Lets the project reveal content it held back until its offer was in place
+        document.dispatchEvent(new CustomEvent('martech:propositions-applied', {
+          detail: { ids: newlyRendered, scopes: [...appliedScopes] },
+        }));
+      }
       if (!propositions.length) {
         // Everything was applied, no need to keep watching the DOM
         disconnect?.();
@@ -928,6 +937,14 @@ export async function applyPersonalization(viewName) {
     throw new Error('The `viewName` parameter needs to be defined');
   }
   return window[config.alloyInstanceName]('applyPropositions', { viewName });
+}
+
+/**
+ * Stops applying personalization on this page view: propositions that have not been applied yet
+ * are dropped, so content the visitor already sees is never swapped later.
+ */
+export function stopPersonalization() {
+  personalizationTimedOut = true;
 }
 
 /**
