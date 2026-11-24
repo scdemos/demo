@@ -1,4 +1,6 @@
-/* Author-only auth-state switcher — bottom-end (common pattern for floating tools) */
+/* Author-only auth-state switcher — bottom-end (common pattern for floating tools).
+   Its handle is pinned to the bottom of the right edge at a fixed 7rem height: the peek tab and
+   the social share rail stack above it (see peek.css, social-share.css). */
 
 /* overflow must stay visible so the .auth-handle (positioned outside the box) is not clipped */
 
@@ -38,11 +40,10 @@
 .auth-handle {
   position: absolute;
   z-index: 2;
-  top: 50%;
+  bottom: 0;
   left: -2.5rem;
-  transform: translateY(-50%);
   min-width: 2.75rem;
-  min-height: 2.75rem;
+  height: 7rem;
   margin: 0;
   border: 0;
   border-radius: var(--radius-pill) 0 0 var(--radius-pill);
@@ -164,11 +165,9 @@
   0%,
   100% {
     left: -2.5rem;
-    transform: translateY(-50%);
   }
 
   50% {
     left: -2.75rem;
-    transform: translateY(-50%);
   }
 }

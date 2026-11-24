@@ -60,3 +60,9 @@ main .peek .peek-label {
     bottom: var(--gap-xl);
   }
 }
+
+/* Preview hosts add the author-only auth toggle, whose 7rem handle sits at the bottom of the right
+   edge (auth-toggle.css): the peek moves up to sit just above it. */
+body:has(> .auth-toggle) main .peek {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--gap-m) + 7rem + var(--gap-s));
+}

@@ -88,4 +88,24 @@ main .social-share .social-share-sr-only {
   main .social-share .social-share-list {
     flex-direction: column;
   }
+
+  /* With the auth toggle (preview hosts), the right edge stacks auth handle, peek (about 10.25rem
+     tall, see peek.css), then this rail: anchor it above the peek instead of centering it. */
+  body:has(> .auth-toggle) main .social-share {
+    inset: auto var(--gap-m) calc(env(safe-area-inset-bottom, 0px) + var(--gap-m) + 7rem + var(--gap-s) + 10.25rem + var(--gap-s)) auto;
+    transform: none;
+  }
+}
+
+/* Too short for that stack (header, rail, peek and auth handle need about 45rem): keep the
+   mobile bottom bar instead, clear of the right edge. */
+@media (width >= 900px) and (height < 45rem) {
+  body:has(> .auth-toggle) main .social-share {
+    inset: auto auto calc(env(safe-area-inset-bottom, 0px) + var(--gap-s)) 50%;
+    transform: translateX(-50%);
+  }
+
+  body:has(> .auth-toggle) main .social-share .social-share-list {
+    flex-direction: row;
+  }
 }
