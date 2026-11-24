@@ -55,6 +55,12 @@ Site setup and content:
 - [x] json2html: worker config for `scdemos/demo-hlx6/main` (events from demo-hlx6's `events.json`,
   press releases from the AEM author) and `content.overlay` set. The 9 event and 4 press pages render on
   aem.live. Pages outside `/en/events/` and `/en/press/` still preview from the source bus.
+- [x] Form editor paths: `/en/app` (the Frescopa app document) and `/demo-docs/demo-slides` open in the
+  form editor, as on demo. On demo these `editor.path` rows live in the DA org config, but da.live skips
+  the org config for Helix 6 sites and reads only the site's `editor.da`
+  ([utils.js#L419-L423](https://github.com/adobe/da-live/blob/33cfe07e3baf4379a52287cb28ec30e0d8ffe476/blocks/shared/utils.js#L419-L423)),
+  so the two rows went into demo-hlx6's `editor.da` `data` sheet. Checked: browse links both app docs to
+  `da.live/form`, and the form editor loads `experience` with its schema.
 - [x] Draft pages the how-tos link to (experimentation challenger, FAQ block demo) copied and published.
 - [x] Access roles: demo's site roles copied, `*@adobe.com` and the two demo IMS groups can publish
   (see the verification item below).
@@ -92,7 +98,7 @@ Fixed on main (this repo):
 
 - **Universal Editor**: retired for this demo ([#90](https://github.com/scdemos/demo/pull/90)), and there
   is no UE on Helix 6 + DA.
-- **Comments**: off on Helix 6 by design, `.da/comments` isn't copied.
+- **Old comments**: `.da/comments` isn't copied. Commenting itself is tracked under "DA apps" below.
 - **Versions and dates**: not carried over, by decision. Every doc shows the copy date.
 - **Classic editor**: `da.live/edit` redirects to the canvas because of the `ew.enabled` site flag, same as on demo.
 - **Everything behind the demo.bbird.live CDN**: login and gated content
@@ -129,8 +135,10 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   ported the endpoint, but no source write, `/media` upload or preview logs an entry. The media library's
   Images view stays empty because of it. No issue yet.
 
-- [ ] **MSM inheritance**: demo is the MSM base for `demo-us`, `demo-wealth` and `demo-advisor`. A source
-  bus site has no fetch-time inheritance, so demo-hlx6 can't be a base. See also the MSM panel below.
+- [ ] **MSM inheritance**: demo is the MSM base for `demo-ca` (the org's `msm` sheet; `demo-us`,
+  `demo-wealth` and `demo-advisor` are gone). A source bus site has no fetch-time inheritance, so
+  demo-hlx6 can't be a base. The `msm` sheet is in the DA org config, which da.live doesn't read for
+  Helix 6 sites. See also the MSM panel below.
 
 - [ ] **Permissions model**: the DA org permissions sheet (IMS groups, path rows, read-only users) has no
   Helix 6 equivalent; access is the site's role list. From reading helix-api-service, `basic_publish`
@@ -153,9 +161,16 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 - [ ] **Image interning keeps query params**: `media_<hash>.png?width=750&format=png` gets interned as the
   750px rendition under a new hash. Not filed.
 
-- [ ] **Overlay pages that need the user's login**: the press pages go through json2html to the AEM
-  author and forward the caller's `Authorization` header. A bulk preview job doesn't send it, so all 4
-  press pages fell back to 404; previewing them one at a time worked. Not filed, not checked on demo.
+- [ ] **Bulk preview of press pages (overlays that need the user's login)**: the press pages come from
+  AEM Content Fragments through json2html, which passes the caller's IMS token on to the AEM author.
+  A single preview sends the token to any Adobe source, the overlay included. A bulk preview job only
+  takes the token along when the site's base `content.source` is an Adobe source
+  ([Job.js#L335-L336](https://github.com/adobe/helix-api-service/blob/97307f02efbe1fac47321107456228b8709894d0/src/job/Job.js#L335-L336),
+  added in [adobe/helix-api-service#391](https://github.com/adobe/helix-api-service/pull/391)), and it
+  never checks `content.overlay`. On demo the base is `content.da.live`, so the token comes along. On
+  Helix 6 the base is the source bus, which doesn't count, so the AEM author answers 401 and all 4 press
+  pages fell back to 404. Previewing them one at a time worked. Fix: also check `content.overlay` there
+  (helix-admin has the same code, but legacy DA sites don't hit it). Not filed.
 
 - [ ] **Setting `content.overlay`**: the source bus site config only takes `content` as a whole object
   (`config/content/overlay.json` answers 400 "invalid object path"). Writing the whole object works and
@@ -201,6 +216,10 @@ local branch with tests, live-checked on demo-hlx6, not yet a PR.
 - [ ] **Site apps (`da.live/apps#/...`)**: nothing prepared.
   [site-apps.js#L67](https://github.com/adobe/da-nx/blob/0f67b1b0c9d2ad7427c2f52fc524b8eab6178ed7/nx/blocks/site-apps/site-apps.js#L67)
   builds `admin.da.live` URLs.
+
+- [ ] **Comments**: commenting doesn't work on Helix 6 sites, probably because Helix 6 doesn't send a
+  document ID. [adobe/da-live#1780](https://github.com/adobe/da-live/issues/1780) (open, Usman Khalid),
+  including mentions and notifications.
 
 ---
 
@@ -262,11 +281,6 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   `how-to-showcase-omnichannel`, `how-to-use-edge-commerce`. Gone from demo: `how-to-use-msm`,
   `how-to-use-quick-edit`, `how-to-manage-translations-and-rollouts`, `how-to-use-ew-basics`,
   `how-to-reuse-demo-site`, `how-to-author-ue`.
-
-- [ ] **DA org config**: `editor.path` rows only exist for demo, so `/faqs` on demo-hlx6 opens in the canvas
-  instead of the form editor and `/demo-slides` doesn't open in formsref. The `msm` sheet has no demo-hlx6
-  row. Rows prepared, not applied. demo dropped `/faqs/` and `/demo-slides/` (the slides moved to
-  `/demo-docs/demo-slides/`), so the prepared rows need redoing.
 
 - [ ] **Event template images (this repo)**: `templates/events/events.html` loads event images from
   `main--demo--scdemos.aem.live`
