@@ -1,0 +1,8 @@
+{
+  "title": "Choose an audience",
+  "instructions": "Select an audience to insert Section Metadata at the cursor. Place it in the section you want to target.",
+  "loading": "Loading audiences…",
+  "empty": "No audiences are available.",
+  "error": "Could not load audiences. Close and reopen the picker to try again.",
+  "insertError": "Could not insert the audience. Try selecting it again."
+}
