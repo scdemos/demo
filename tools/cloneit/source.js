@@ -290,9 +290,19 @@ export function createSourceBusClient({
         headers: { 'Content-Type': 'application/json' },
       });
     },
-    /** Details of a job, by the topic it reports (`preview`, `live-publish`). */
-    jobDetails(job) {
-      return request(`jobs/${job.topic}/${job.name}/details`);
+    /**
+     * Details of a job, by the topic it reports (`preview`, `live-publish`). Throws when they
+     * can't be read, or the job failed, was cancelled or expired: a stopped job only has a
+     * report of its paths when it ran.
+     */
+    async jobDetails(job) {
+      const resp = await request(`jobs/${job.topic}/${job.name}/details`);
+      if (!resp.ok) throw new Error(`${job.topic} job: ${resp.status} ${resp.headers.get('x-error') || ''}`.trim());
+      const details = await resp.json();
+      if (details.error || ['cancelled', 'expired'].includes(details.state)) {
+        throw new Error(`${job.topic} job: ${details.error || details.state}`);
+      }
+      return details;
     },
   };
 }

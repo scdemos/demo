@@ -942,23 +942,19 @@ async function waitForCodeSync(siteName, onTick) {
   return false;
 }
 
-/** Bulk jobs through the Admin API with the worker's technical account (DA sites). */
+/**
+ * Bulk jobs through the Admin API with the worker's technical account (DA sites). Same methods as
+ * the source bus client, which runs them on the Helix 6 API for source-bus sites.
+ */
 function adminBulk(siteName) {
   return {
-    start: (route, body) => cloneitProcessFetch('helix', Paths.helixBulk(route, siteName), {
+    startJob: (route, body) => cloneitProcessFetch('helix', Paths.helixBulk(route, siteName), {
       method: 'POST',
       body: JSON.stringify(body),
       contentType: 'application/json',
     }),
-    details: (topic, job) => cloneitProcessFetch('helix', Paths.helixJob(siteName, topic, job.name)),
-  };
-}
-
-/** Bulk jobs through the Helix 6 API with the user's token (source-bus sites). */
-function sourceBusBulk(client) {
-  return {
-    start: (route, body) => client.startJob(route, body),
-    details: (topic, job) => client.jobDetails(job),
+    jobDetails: async (job) => (await cloneitProcessFetch('helix', Paths.helixJob(siteName, job.topic, job.name)))
+      .json().catch(() => ({})),
   };
 }
 
@@ -968,14 +964,14 @@ function sourceBusBulk(client) {
  */
 async function runBulkJob(siteName, topic, paths, onTick, bulk = adminBulk(siteName)) {
   const route = topic === 'publish' ? 'live' : 'preview';
-  const response = await bulk.start(route, { paths, forceUpdate: true });
+  const response = await bulk.startJob(route, { paths, forceUpdate: true });
   if (!response.ok) throw new Error(`${route}: ${response.status} ${response.headers.get('x-error') || ''}`.trim());
   const { job } = await response.json();
   for (let i = 0; i < 180; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     await wait(2000);
     // eslint-disable-next-line no-await-in-loop
-    const d = await (await bulk.details(topic, job)).json().catch(() => ({}));
+    const d = await bulk.jobDetails(job);
     // the job reports progress while it runs (processed of total); if not, the UI shows "in bulk…"
     if (onTick) onTick(d.progress?.processed ?? null, d.progress?.total ?? paths.length);
     if (d.state === 'stopped') {
@@ -1185,7 +1181,7 @@ async function cloneSite(siteName, opts = {}) {
         const first = !done && lastPhase !== topic;
         lastPhase = topic;
         setProgress(true, pct, `${verb} ${total} pages and assets in bulk…`, first ? `${verb} in bulk (one AEM job)…` : null, topic === 'preview' ? 'Preview' : 'Publish', done ? `${Math.min(done, total)} / ${total}` : '');
-      }, sourceBus ? sourceBusBulk(sourceBus) : undefined);
+      }, sourceBus || undefined);
     } catch (pubErr) {
       console.warn('Bulk preview/publish failed:', pubErr);
       publish = { error: pubErr.message || String(pubErr) };
