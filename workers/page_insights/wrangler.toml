@@ -1,0 +1,28 @@
+name = "demo-bbird-page-insights"
+main = "index.js"
+compatibility_date = "2026-03-13"
+workers_dev = true
+account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
+
+# Analytics for one page, for the Page insights DA app (tools/page-insights).
+routes = [
+   { pattern = "demo.bbird.live/page-insights/*", zone_name = "bbird.live" },
+]
+
+[vars]
+PATH_PREFIX = "page-insights"
+# Callers must be able to list this DA site with their own DA token.
+SITE = "scdemos/demo"
+# Origins of the app (served from the demo site, opened from da.live).
+ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.preview.da.live,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live,https://*--demo--scdemos.preview.da.live"
+# IMS client ids whose user tokens are accepted (DA = darkalley).
+IMS_CLIENT_IDS = "darkalley"
+# GA4 property (Admin > Property details > Property ID: a number, not the G- measurement ID)
+GA4_PROPERTY_ID = "565648595"
+# The property's reporting time zone, for daily views
+PROPERTY_TIMEZONE = "America/Los_Angeles"
+# Secrets (wrangler secret put GA4_SERVICE_ACCOUNT --config workers/page_insights/wrangler.toml):
+#   GA4_SERVICE_ACCOUNT: the JSON key of a Google service account that is Viewer on the GA4 property
+
+[observability.logs]
+enabled = true

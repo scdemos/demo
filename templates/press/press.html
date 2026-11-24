@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{properties.elements.headline.value}}</title>
+    <meta name="template" content="article">
+    <meta name="publisheddate" content="{{properties.elements.date.value}}">
+    <meta name="dateline" content="{{properties.elements.location.value}}">
+    <meta name="description" content="{{properties.elements.summary.value}}">
+    <meta name="image" content="{{{properties.elements.image.value}}}">
+    <meta name="keywords" content="press, news">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <div class="hero">
+          <div>
+            <div>
+              <picture>
+                <img src="{{{properties.elements.image.value}}}" alt="{{properties.elements.imageAlt.value}}">
+              </picture>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p>Press release</p>
+              <h1>{{properties.elements.headline.value}}</h1>
+              <p>{{properties.elements.summary.value}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        {{{properties.elements.body.value}}}
+        {{#properties.elements.contact.value}}
+        <p><strong>Media contact:</strong> {{properties.elements.contact.value}}</p>
+        {{/properties.elements.contact.value}}
+      </div>
+      <div>
+        <h2>More press releases</h2>
+        <div class="related-articles no-image">
+          <div>
+            <div>keywords</div>
+            <div>press</div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

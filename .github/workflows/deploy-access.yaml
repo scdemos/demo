@@ -1,0 +1,38 @@
+name: Deploy Access Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/access/**'
+      - '.github/workflows/deploy-access.yaml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    # production deploys come from main only, also when run by hand
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install worker dependencies
+        working-directory: workers/access
+        run: npm install
+      # The worker's own credentials come from these repository secrets and are set on the
+      # Cloudflare worker at each deploy: UMAPI_CLIENT_ID, UMAPI_CLIENT_SECRET, GITHUB_TEAM_TOKEN
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ac7ee4615628005dc5ba0a22f0aae2a6
+          workingDirectory: workers/access
+          wranglerVersion: "4.131.2"
+          secrets: |
+            UMAPI_CLIENT_ID
+            UMAPI_CLIENT_SECRET
+            GITHUB_TEAM_TOKEN
+        env:
+          UMAPI_CLIENT_ID: ${{ secrets.UMAPI_CLIENT_ID }}
+          UMAPI_CLIENT_SECRET: ${{ secrets.UMAPI_CLIENT_SECRET }}
+          GITHUB_TEAM_TOKEN: ${{ secrets.ACCESS_GITHUB_TEAM_TOKEN }}

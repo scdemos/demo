@@ -31,12 +31,21 @@ const cssFiles = modifiedFiles.filter((f) => f.endsWith('.css'));
 if (cssFiles.length > 0) {
   const fileList = cssFiles.join(' ');
   try {
-    await run(`npx stylelint --fix ${fileList}`);
+    await run(`npx stylelint --allow-empty-input --fix ${fileList}`);
   } catch {
     // fix ran; lint check below will surface unfixable errors
   }
   await run(`git add ${fileList}`);
   // Fail the commit if unfixable lint errors remain
-  const output = await run(`npx stylelint ${fileList}`);
+  const output = await run(`npx stylelint --allow-empty-input ${fileList}`);
   if (output) console.log(output);
+}
+
+// customer-demo skill: docs must stay in sync with the skill and its scripts
+if (modifiedFiles.some((f) => f.startsWith('.skills/customer-demo/'))) {
+  await new Promise((resolve, reject) => exec('node .skills/customer-demo/scripts/docs-check.mjs', (error, stdout) => {
+    if (stdout) console.log(stdout);
+    if (error) reject(new Error('customer-demo docs out of sync (see above)'));
+    else resolve();
+  }));
 }

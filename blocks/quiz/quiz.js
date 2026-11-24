@@ -1,4 +1,4 @@
-import { createTag } from '../../scripts/shared.js';
+import { createTag, trackEvent } from '../../scripts/shared.js';
 
 function toBool(value) {
   return String(value || '').trim().toLowerCase() === 'true';
@@ -96,7 +96,7 @@ export default function decorate(block) {
   const status = createTag('div', { class: 'quiz-status', role: 'status', 'aria-live': 'polite' });
   const completeBanner = createTag('div', { class: 'quiz-complete-banner', hidden: true });
   const form = createTag('form', { class: 'quiz-form' });
-  const submit = createTag('button', { type: 'submit', class: 'quiz-submit' }, 'Check answers');
+  const submit = createTag('button', { type: 'submit', class: 'quiz-submit button primary' }, 'Check answers');
   const isSlider = questions.length > 1;
   const sliderTrack = createTag('div', { class: isSlider ? 'quiz-slider-track' : 'quiz-questions-list' });
   const sliderViewport = isSlider ? createTag('div', { class: 'quiz-slider' }, sliderTrack) : null;
@@ -254,6 +254,7 @@ export default function decorate(block) {
       if (!config.doNotMarkLessonAsCompleted) {
         window.dispatchEvent(new CustomEvent('quiz:completed', { detail: { score, total } }));
       }
+      trackEvent('quiz_complete', { score, total });
     } else {
       completeBanner.textContent = `You scored ${score} of ${total} — review each question and try again.`;
       completeBanner.className = 'quiz-complete-banner is-retry';

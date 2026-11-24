@@ -12,45 +12,26 @@ import {
   loadSections,
 } from '../../scripts/aem.js';
 
-import { getLocale } from '../../scripts/shared.js';
+import { fetchFragment } from '../../scripts/shared.js';
 import dynamicBlocks from '../dynamic/index.js';
 
-/** Hash that opts out of localizing fragment URLs. */
-const DNT_HASH = '#_dnt';
-
 /**
- * Loads a fragment, trying the locale-prefixed path first and falling back to the original.
- * Example: on /de/page, /fragments/nav → tries /de/fragments/nav then /fragments/nav.
- * Append #_dnt to the path to skip localization for a specific fragment.
- * @param {string} path The path to the fragment (may include #_dnt hash)
+ * Loads a fragment, in this page's market: on /de/ pages /fragments/x loads /de/fragments/x
+ * when it exists, else /fragments/x. Add #_dnt to the link to always load /fragments/x.
+ * @param {string} path The path to the fragment
  * @returns {Promise<HTMLElement>} The root element of the fragment
  */
 export async function loadFragment(path) {
   if (path && path.startsWith('/') && !path.startsWith('//')) {
-    const dnt = path.includes(DNT_HASH);
-    const cleanPath = path.replace(DNT_HASH, '').replace(/#$/, '');
-
-    const { prefix } = getLocale();
-    const localizedPath = (!dnt && prefix) ? `${prefix}${cleanPath}` : cleanPath;
-
-    let resp = await fetch(`${localizedPath}.plain.html`);
-    let resolvedPath = localizedPath;
-    if (!resp.ok && prefix && !dnt) {
-      console.log('Fragment not found for localized path: %s', localizedPath)
-
-      resp = await fetch(`${cleanPath}.plain.html`);
-      resolvedPath = cleanPath;
-    } else {
-      console.log('Found localized fragment for path: %s', localizedPath);
-    }
-
-    if (resp.ok) {
+    const found = await fetchFragment(path);
+    if (found) {
       const main = document.createElement('main');
-      main.innerHTML = await resp.text();
+      main.innerHTML = found.html;
 
+      // reset base path for media to the fragment version that loaded
       const resetAttributeBase = (tag, attr) => {
         main.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((elem) => {
-          elem[attr] = new URL(elem.getAttribute(attr), new URL(resolvedPath, window.location)).href;
+          elem[attr] = new URL(elem.getAttribute(attr), new URL(found.path, window.location)).href;
         });
       };
       resetAttributeBase('img', 'src');

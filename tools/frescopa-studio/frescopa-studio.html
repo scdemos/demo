@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Frescopa Studio</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/styles/fonts.css">
+  <link rel="stylesheet" href="/tools/frescopa-studio/frescopa-studio.css">
+  <!-- DA App SDK: https://docs.da.live/developers/guides/developing-apps-and-plugins -->
+  <script src="https://da.live/nx/utils/sdk.js" type="module"></script>
+  <script src="/tools/frescopa-studio/frescopa-studio.js" type="module"></script>
+</head>
+<body>
+  <header class="studio-bar">
+    <h1>Frescopa Studio</h1>
+    <p class="studio-status" id="status" role="status"></p>
+    <select class="studio-select" id="document" aria-label="Document" hidden></select>
+    <a class="studio-link" id="open-in-da" target="_blank" rel="noopener">Open in DA</a>
+    <a class="studio-link" id="channels-config" target="_blank" rel="noopener" title="Pick which apps show each schema in the channels sheet of the site config">Channels</a>
+    <button class="studio-button" id="preview" type="button" disabled>Preview</button>
+    <button class="studio-button primary" id="publish" type="button" disabled>Publish</button>
+  </header>
+  <main class="studio">
+    <form class="studio-form" id="form" novalidate></form>
+    <section class="studio-phone" aria-label="Preview">
+      <div class="studio-preview-bar" id="preview-bar" hidden>
+        <select class="studio-select" id="channel" aria-label="Channel" hidden></select>
+        <select class="studio-select" id="device" aria-label="Device"></select>
+      </div>
+      <div class="studio-stage" id="stage" hidden>
+        <iframe id="phone" title="Preview" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
+      <p class="studio-phone-note" id="phone-note"></p>
+    </section>
+  </main>
+</body>
+</html>

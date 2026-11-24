@@ -1,0 +1,114 @@
+/* Studio journeys: searchable list (default) and capability map (variant `map`) */
+.journeys :is(h3, p, ul, dl, dd) {
+  margin: 0;
+}
+
+.journeys .journeys-search {
+  width: 100%;
+  max-width: 28rem;
+  min-height: 2.75rem;
+  padding: 0 var(--gap-xs);
+  border: var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.journeys .journeys-search:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.journeys .journeys-count {
+  margin: var(--gap-xs) 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.journeys .journeys-count.is-error {
+  color: var(--color-danger);
+}
+
+.journeys .journeys-list {
+  padding: 0;
+  list-style: none;
+  border-top: var(--border);
+}
+
+.journeys .journeys-row {
+  display: grid;
+  gap: var(--gap-3xs);
+  padding: var(--gap-s) 0;
+  border-bottom: var(--border);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.journeys .journeys-row-title {
+  color: var(--color-link);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semibold);
+}
+
+.journeys .journeys-row:hover .journeys-row-title {
+  text-decoration: underline;
+}
+
+.journeys .journeys-row-meta {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+/* Capability map */
+.journeys .journeys-map-grid {
+  display: grid;
+  gap: var(--gap-m);
+}
+
+@media (width >= 600px) {
+  .journeys .journeys-map-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (width >= 900px) {
+  .journeys .journeys-map-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.journeys .journeys-map-group {
+  display: grid;
+  align-content: start;
+  gap: var(--gap-2xs);
+}
+
+.journeys .journeys-map-group h3 {
+  font-size: var(--step-1);
+}
+
+.journeys .journeys-map-summary,
+.journeys .journeys-map-status {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+}
+
+.journeys .journeys-map-group ul {
+  display: grid;
+  gap: var(--gap-3xs);
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.journeys .journeys-map-legend {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--gap-3xs) var(--gap-s);
+  margin-top: var(--gap-l);
+  font-size: var(--step-n1);
+}
+
+.journeys .journeys-map-legend dt {
+  font-weight: var(--weight-semibold);
+}

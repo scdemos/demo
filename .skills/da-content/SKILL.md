@@ -1,0 +1,153 @@
+---
+name: da-content
+description: "Use before writing, fixing or answering questions about the HTML of pages that authors edit in Experience Workspace / DA (da.live), including hand-written sample pages for local testing. The pipeline silently drops or rewrites markup in ways that are not guessable, so check here first when a generated page previews empty, loses its metadata, icons, Section Metadata style or block, shows about:error images, turns a table into a block, loses span classes or bold in block cells, or has its links rewritten; when uploading pages or media to the DA source API or the Source Bus API at api.aem.live (200 but nothing written, SVG over 40 KB returns 409); or when you need to see how the pipeline read a page. Not for block JS/CSS (building-blocks), tokens (da-auth) or the aem CLI (aem-cli)."
+license: Apache-2.0
+metadata:
+  version: "1.1.0"
+---
+
+# Authored content HTML (Experience Workspace / DA)
+
+The rules for the HTML that Experience Workspace (formerly DA) stores and the
+Edge Delivery pipeline turns into a page. They apply whatever the API backend
+(DA or Source Bus) or hostname, and also to hand-written pages in `./content/` served by
+`aem up` (see **aem-cli**). Everything below was checked against a live
+preview; wrong markup fails silently, with no error.
+
+The upload and preview rules below are for the DA source API (`admin.da.live`).
+Some sites keep their authored content in Source Bus (`api.aem.live`); see
+[Source Bus](#source-bus-apilive). Find the store in the site config
+(`content.source.type`: `markup` is DA, `sourcebus` is Source Bus) or ask the
+user; `fstab.yaml` is deprecated. If `admin.da.live` calls fail or find nothing
+in a site the user says has content, it may be on Source Bus. See **da-auth**
+for credentials.
+
+## Page structure
+
+```html
+<body><header></header><main>
+  <div>
+    <h1>Title</h1>
+    <p>Intro</p>
+    <div class="cards"><div><div>cell</div><div>cell</div></div></div>
+  </div>
+  <div>
+    <div class="metadata"><div><div>title</div><div>My page</div></div></div>
+  </div>
+</main><footer></footer></body>
+```
+
+- `<main>` is required (sections with no `<main>` around them preview empty);
+  `<body>`, `<header>` and `<footer>` are optional, and text placed in header
+  or footer is dropped.
+- **Everything must be inside a section div that is a direct child of
+  `<main>`.** Elements placed directly in `<main>` are dropped. A div placed
+  there is taken as a section, so a block or metadata div there is not a
+  block: its rows become paragraphs. `<hr>` also starts a new section.
+- Attributes `id`, `class`, `style`, `data-*` on default content are dropped;
+  headings get an `id` from their text. Empty `<p>` is dropped.
+
+## Blocks
+
+- Div form: `<div class="name variant">`, one child div per row, one grandchild
+  div per cell. Table form: header row `<td colspan="N">Name (variant, …)</td>`
+  then rows. Use letters, digits and single hyphens for names. The pipeline
+  turns `Feature_Block` into `feature-block` and `columns (v)` into
+  `columns v`; don't rely on it.
+- A block inside a block cell is flattened to text. No nested blocks.
+- **A plain `<table>` in default content becomes a block named after its
+  first cell** and that header row is consumed. Never use a bare table for
+  data; make it a block.
+
+## Section Metadata
+
+Inside the section it styles: `<div class="section-metadata">` with rows of
+`key` / `value` (`style` = `dark, highlight`). The class is one token, exactly
+`section-metadata`. `class="Section Metadata"` makes a different block and the
+metadata is silently lost; the table form with header text `Section Metadata`
+is fine. Keys are used as typed.
+
+## Page metadata
+
+`<div class="metadata">` inside its own section, conventionally last. Rows:
+`title` → `<title>`; `description` → description, og and twitter; `og:title`
+also sets `twitter:title`; `image` → og and twitter image (absolute URL);
+`tags` → one `article:tag` per comma value; any other key → `<meta name>`
+with the key lowercased and spaces turned into hyphens (`my custom` →
+`my-custom`). Canonical, og:url and twitter:card are added. Don't author
+og/twitter rows yourself.
+
+## Icons
+
+Write `:name:` as text. The pipeline turns any `:[a-z0-9-]+:` into
+`<span class="icon icon-name"></span>`, in default content and block cells,
+and the project's decoration loads the SVG from `/icons/name.svg`. An authored
+empty `<span class="icon icon-name">` sent by direct PUT also previews as an
+icon, but a page opened in the DA editor lost the span, so use `:name:` for
+anything authors will edit. The whitespace around an icon is removed.
+
+## Images and links
+
+- Use absolute `<img src>` URLs the preview can fetch. They are sideloaded
+  and delivered as `<picture>` with webp/jpeg sources at 750 and 2000 px, plus
+  width, height and lazy loading. Don't hand-author `<picture>`/`<source>`;
+  it is replaced. Repo-relative or document-relative paths
+  (`/images/a.png`) become `<img src="about:error">`. Always set `alt`.
+- Links to the site's own `aem.page`/`aem.live` URLs become relative; other
+  hosts stay. `class` and `target` on `<a>` are dropped, `title` is kept.
+  Bold or italic standalone links (`<strong><a>`) are what decoration turns
+  into buttons; that is project code, not the pipeline.
+
+## Inline tags (same in default content and cells)
+
+Kept: `strong`, `em`, `del`, `code`, `u`, `sub`, `sup`, `a`. Rewritten: `b`→
+`strong`, `i`/`mark`→`em`, `s`→`del`, `kbd`→`code`. Unwrapped (text kept, class
+lost): `span`, `ins`. Cells: a lone `<p>` is unwrapped; `<br>` depends on its
+position. Style with classes on the block, not on inline tags.
+
+## Uploading
+
+- `PUT https://admin.da.live/source/{org}/{repo}/{path}.html` with
+  `Authorization: Bearer <IMS token>` (see **da-auth**; `aem content` manages its
+  own login in `.hlx/.da-token.json`, direct API calls follow da-auth) and a **multipart
+  form with the file in field `data`**. Any other field name returns 200 and
+  writes nothing (the next GET is 404). A missing or bad token returns 401
+  with an empty body.
+- Preview is a separate step:
+  `POST https://admin.hlx.page/preview/{org}/{repo}/main/{path-without-.html}`
+  with the same Bearer token, then `/live/` to publish. Uploading alone does
+  not change `aem.page`.
+- Binaries go through the same PUT (`data=@file;type=image/png`). **`aem
+  content push` reports ✓ for PNG/SVG but writes nothing**; upload binaries
+  with the PUT. Pages pushed by the CLI do arrive.
+- SVG over 40 KB fails preview with 409 `AEM_BACKEND_SVG_TOO_BIG`.
+
+## Source Bus (api.aem.live)
+
+Same HTML rules as above; different calls, all with the **da-auth** Bearer token:
+
+- Write: `PUT https://api.aem.live/{org}/sites/{site}/source/{path}.html` with
+  the raw body and `Content-Type: text/html` (`--data-binary @file`), not DA's
+  multipart form. A page with external images returns 400: `POST` it instead so
+  the images are interned. `GET` reads it; a trailing `/` lists a folder.
+- Preview and publish: `POST https://api.aem.live/{org}/sites/{site}/preview/{path}`
+  and `.../live/{path}` (path without `.html`, no `main` segment). The legacy
+  `POST admin.hlx.page/preview/{org}/{site}/main/{path}` fails on these sites
+  (404 `No handler found for document`).
+  `GET .../status/{path}` shows the state.
+- A DA site answers a Source Bus listing with 200 and `[]`, and a Source Bus
+  site can keep stale pages in `admin.da.live`: an empty or populated listing
+  does not identify the store; the site config does.
+
+## Seeing what the pipeline did
+
+After the preview POST, `GET https://admin.hlx.page/preview/{org}/{repo}/main/{path}.md`
+with header `x-auth-token: <IMS token>` returns the markdown the pipeline
+built from your HTML: dropped content, lost spans and blocks that didn't
+form show up there, even when `aem.page` needs site authentication.
+
+## More
+
+[references/media.md](./references/media.md): where binaries live (`/media`,
+dot-folders), which types are delivered, size caps. Carried over from the
+previous version, not re-verified except where marked.

@@ -1,0 +1,13 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "aem-block-library",
+  "path": "plugins/aem/edge-delivery-services/skills/aem-block-library",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:20.000Z",
+  "files": [
+    "CHANGELOG.md",
+    "SKILL.md"
+  ]
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <title>Demo access</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Get access to the scdemos demo site and CloneIt">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="/styles/fonts.css">
+    <link rel="stylesheet" href="/tools/access/access.css">
+    <script src="/tools/access/access.js" type="module"></script>
+  </head>
+  <body class="appear">
+    <main class="access">
+      <h1>Get demo access</h1>
+      <p class="access-lead">Sign up once to get:</p>
+      <ul class="access-gets">
+        <li>Write access to the demo site in Experience Workspace</li>
+        <li>Added to the demo's GitHub group</li>
+        <li>Your own demos with CloneIt</li>
+      </ul>
+
+      <p class="access-status" id="status" role="status">Checking your Adobe sign-in…</p>
+
+      <form class="access-form" id="form" hidden>
+        <h2>Sign up</h2>
+        <p class="access-who">Signed in as <strong id="who"></strong></p>
+        <label for="github-user">GitHub username</label>
+        <input id="github-user" name="githubUser" autocomplete="username" required
+          pattern="[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}"
+          placeholder="e.g. octocat" aria-describedby="github-help">
+        <p class="access-help" id="github-help">GitHub emails you an invitation to scdemos if you aren't in it yet.</p>
+        <button type="submit" id="submit">Request access</button>
+      </form>
+
+      <section class="access-result" id="result" hidden aria-live="polite">
+        <h2 id="result-title"></h2>
+        <ul id="result-steps"></ul>
+        <div id="result-next"></div>
+      </section>
+    </main>
+  </body>
+</html>

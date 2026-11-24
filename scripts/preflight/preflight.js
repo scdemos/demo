@@ -7,7 +7,7 @@ import TEMPLATES from './templates.js';
 
 const SECTION_STYLES = [
   'light', 'dark-scheme', 'light-scheme', 'divider', 'gradient', 'highlight',
-  'ink', 'rust', 'warm', 'center', 'login-teaser-image', 'tabs',
+  'ink', 'rust', 'warm', 'center', 'login-teaser-image', 'tabs', 'cover',
 ];
 const SECTION_KEYS = ['tab-id', 'tab-title', 'view', 'mbox', 'mbox-action'];
 const SECTION_INTERNAL_ATTRS = ['data-section-status'];

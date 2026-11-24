@@ -1,0 +1,5 @@
+# vendored agent skills from adobe/skills: keep byte-identical to upstream
+.skills/
+
+# vendored third-party libraries: keep byte-identical to their npm release
+plugins/

@@ -1,0 +1,79 @@
+{
+  "slug": "gated-content-visitor-member-live-site",
+  "steps": [
+    {
+      "do": "signedOut"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/en/stories/made-to-last"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Gated content \u00b7 Live site",
+      "title": "What visitors and members see",
+      "items": [
+        "1 \u00b7 Visitors get the opening and a sign-in teaser",
+        "2 \u00b7 Members sign in",
+        "3 \u00b7 Members get the full story"
+      ]
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 2200,
+      "caption": "A visitor opens a members-only story on the live site"
+    },
+    {
+      "do": "hover",
+      "text": "Keep reading with Frescopa Circle",
+      "n": 1,
+      "hold": 1500,
+      "caption": "Below the opening, visitors get a sign-in teaser instead of the story"
+    },
+    {
+      "do": "caption",
+      "n": 1,
+      "hold": 3200,
+      "caption": "The members-only sections never reach the browser: the CDN removes them"
+    },
+    {
+      "do": "signIn",
+      "text": "Sign in to keep reading",
+      "n": 2,
+      "caption": "Click **Sign in to keep reading**, enter a name and click **Continue**",
+      "name": "Alex Rivera"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 1800,
+      "caption": "Signed in, the same page shows the full story"
+    },
+    {
+      "do": "hover",
+      "text": "Designed to be opened",
+      "n": 3,
+      "hold": 1500,
+      "caption": "Members get the whole article\u2026"
+    },
+    {
+      "do": "hover",
+      "text": "Watch: a morning in the workshop",
+      "n": 3,
+      "hold": 1800,
+      "caption": "\u2026and members-only extras, like the workshop video"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Gated content",
+      "title": "One page, two audiences",
+      "items": [
+        "Visitors: public sections and a sign-in teaser",
+        "Members: the full story after sign-in",
+        "Enforced at the edge, not hidden in the browser"
+      ]
+    }
+  ]
+}

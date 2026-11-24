@@ -1,6 +1,9 @@
 ---
 name: page-decomposition
-description: Analyze content sequences within a section and provide neutral descriptions for AEM Edge Delivery Services. Invoked per section during page import to identify breaking points between default content and blocks.
+description: "Use this when the page-import pipeline needs to analyze the content sequences within a single section and describe them neutrally for AEM Edge Delivery Services. Covers identifying breaking points between default content and blocks, one section at a time. Do not invoke directly — called by page-import per section."
+license: Apache-2.0
+metadata:
+  version: "1.0.1"
 ---
 
 # Page Decomposition
@@ -28,7 +31,7 @@ From the calling skill (identify-page-structure), you need:
 
 - **page-import** - Top-level orchestrator
 - **identify-page-structure** - Invokes this skill for each section (Step 2b)
-- **block-inventory** - Provides available blocks AFTER decomposition
+- **identify-page-structure** (Step 2.5) - Surveys available blocks AFTER decomposition
 - **content-modeling** - Makes authoring decisions AFTER decomposition
 - **content-driven-development** - References section structure in html-structure.md
 

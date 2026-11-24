@@ -21,7 +21,7 @@ function audience(section) {
 }
 
 /**
- * Author/dev environments only; production gating is server-side (CDN Worker + Cloudflare Access).
+ * Author/dev environments only; production gating is server-side (CDN Worker + demo login session).
  * @returns {boolean}
  */
 function isAuthorEnvironment() {
@@ -33,11 +33,15 @@ function isAuthorEnvironment() {
 }
 
 /**
- * @returns {boolean} true = authenticated, false = anonymous
+ * `?auth=true|false` overrides; otherwise the real session decides.
+ * @returns {Promise<boolean>} true = authenticated, false = anonymous
  */
-function getAuthState() {
+async function getAuthState() {
   const authValue = new URLSearchParams(window.location.search).get('auth');
-  return authValue === 'true';
+  if (authValue === 'true' || authValue === 'false') return authValue === 'true';
+  const { getSessionState } = await import('../shared/auth-api.js');
+  const session = await getSessionState();
+  return Boolean(session?.authenticated);
 }
 
 /** @returns {boolean} */
@@ -84,6 +88,7 @@ function checkBlockProtectionInSection(section, isAuthenticated) {
   restrictedBlocks.forEach((block) => {
     const hasLoggedIn = block.classList.contains('logged-in');
     const hasLoggedOut = block.classList.contains('logged-out');
+    if (hasLoggedIn && hasLoggedOut) return; // both variants: everyone sees it
     if ((!isAuthenticated && hasLoggedIn) || (isAuthenticated && hasLoggedOut)) {
       block.remove();
     }
@@ -99,12 +104,9 @@ function applySectionLevelProtection(protectionMetadata, isAuthenticated) {
     sectionData.element.remove();
   });
 
-  const remainingSections = document.querySelectorAll('main > div');
-  const publicSections = Array.from(remainingSections).filter((section) => (
-    audience(section) === null
-  ));
-
-  publicSections.forEach((section) => {
+  // Blocks in kept sections, public or audience-specific, still follow their own audience
+  // (same as the CDN worker).
+  document.querySelectorAll('main > div').forEach((section) => {
     checkBlockProtectionInSection(section, isAuthenticated);
   });
 }
@@ -112,10 +114,11 @@ function applySectionLevelProtection(protectionMetadata, isAuthenticated) {
 /**
  * Apply content protection in author/dev environments when the page is gated (`meta gated=true`).
  */
-function applyContentProtection() {
+async function applyContentProtection() {
   if (!isAuthorEnvironment() || !isGatedPage()) return;
 
-  const isAuthenticated = getAuthState();
+  const isAuthenticated = await getAuthState();
+  document.documentElement.dataset.auth = String(isAuthenticated);
   const sectionProtectionMetadata = checkSectionLevelProtection(isAuthenticated);
   applySectionLevelProtection(sectionProtectionMetadata, isAuthenticated);
 }
@@ -133,14 +136,13 @@ function initContentProtection() {
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
-      applyContentProtection();
+      await applyContentProtection();
       await createAuthorToggle();
     }, { once: true });
     return;
   }
 
-  applyContentProtection();
-  createAuthorToggle();
+  applyContentProtection().then(createAuthorToggle);
 }
 
 export {

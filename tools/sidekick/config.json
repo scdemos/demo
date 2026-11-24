@@ -1,13 +1,40 @@
 {
-  "project": "DIYFire",
+  "project": "Demo Site",
   "plugins": [
+    {
+      "id": "quick-edit",
+      "title": "Quick Edit",
+      "environments": [
+        "dev",
+        "preview"
+      ],
+      "event": "quick-edit"
+    },
     {
       "id": "experimentation",
       "titleI18n": {
         "en": "Experimentation"
       },
-      "environments": ["dev", "preview"],
+      "environments": [
+        "dev",
+        "preview"
+      ],
       "event": "experimentation"
+    },
+    {
+      "id": "review",
+      "title": "Review...",
+      "environments": [
+        "dev",
+        "preview",
+        "review"
+      ],
+      "url": "https://tools.aem.live/tools/snapshot-admin/popover.html",
+      "isPopover": true,
+      "popoverRect": "width:400px; height:400px",
+      "passConfig": true,
+      "passReferrer": true
     }
-  ]
+  ],
+  "editUrlPattern": "https://da.live/edit#/{{org}}/{{site}}{{pathname}}"
 }

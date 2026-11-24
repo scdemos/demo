@@ -9,9 +9,26 @@ routes = [
    { pattern = "demo.bbird.live/*", zone_name = "bbird.live" },
 ]
 
+[cache]
+enabled = true
+
+[exports.default]
+type = "worker"
+
+[exports.default.cache]
+enabled = false
+
+[exports.Anonymous]
+type = "worker"
+
+[exports.Anonymous.cache]
+enabled = true
+
 [vars]
 ORIGIN_HOSTNAME = "main--demo--scdemos.aem.network"
 PUSH_INVALIDATION = "enabled"
+# Optional: exact paths of gated pages whose anonymous HTML is edge-cached (comma-separated).
+GATED_CACHE_PATHS = ""
 
 [observability.logs]
 enabled = true

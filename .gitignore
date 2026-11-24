@@ -17,3 +17,9 @@ helix-importer-ui
 !AGENTS.md
 tasks/lessons.md
 tasks/todo.md
+
+# customer-demo run reports are personal working notes (lessons go into SKILL.md/scripts instead)
+.skills/customer-demo/references/pilot-reports/
+
+# customer-demo skill run state (resume file, local only)
+.customer-demo/

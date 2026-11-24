@@ -1,0 +1,23 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "figma-to-content",
+  "path": "plugins/aem/edge-delivery-services/skills/figma-to-content",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:03.000Z",
+  "files": [
+    ".releaserc.json",
+    "CHANGELOG.md",
+    "README.md",
+    "SKILL.md",
+    "package.json",
+    "references/annotation-contract.md",
+    "references/phase-0-preflight.md",
+    "references/phase-1-read-figma.md",
+    "references/phase-2-resolve.md",
+    "references/phase-3-blocks.md",
+    "references/phase-4-da-html.md",
+    "references/phase-5-deploy.md"
+  ]
+}

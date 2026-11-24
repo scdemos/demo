@@ -1,0 +1,33 @@
+name = "demo-bbird-access"
+main = "index.js"
+compatibility_date = "2026-03-13"
+workers_dev = true
+account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
+
+# Demo access requests (replaces the n8n workflow).
+routes = [
+   { pattern = "demo.bbird.live/access/*", zone_name = "bbird.live" },
+]
+
+[vars]
+PATH_PREFIX = "access"
+# Origins of the access app (served from the demo site, opened from da.live).
+ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.preview.da.live,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live,https://*--demo--scdemos.preview.da.live"
+# IMS client ids whose user tokens are accepted (DA = darkalley).
+IMS_CLIENT_IDS = "darkalley"
+# Emails on these domains get access right away; anyone else is added to REQUESTS_SHEET for review.
+AUTO_DOMAINS = "adobe.com"
+GITHUB_ORG = "scdemos"
+# the demo's GitHub group (team slug); CloneIt requires it too
+GITHUB_TEAM = "sc-team"
+# CAS Hub
+ADMIN_ORG_ID = "138A07885EE042D20A495CFA@AdobeOrg"
+ADMIN_GROUP = "da-demosite-authors"
+REQUESTS_SHEET = "/scdemos/demo/.da/aem-permission-requests.json"
+# Secrets (wrangler secret put … --config workers/access/wrangler.toml):
+#   UMAPI_CLIENT_ID, UMAPI_CLIENT_SECRET: Developer Console project in CAS Hub with the User Management API
+#     (its technical account also writes REQUESTS_SHEET in DA)
+#   GITHUB_TEAM_TOKEN: token of an scdemos org owner or sc-team maintainer, scope admin:org (authorize SSO if enforced)
+
+[observability.logs]
+enabled = true

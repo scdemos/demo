@@ -1,0 +1,16 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "content-driven-development",
+  "path": "plugins/aem/edge-delivery-services/skills/content-driven-development",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:15.000Z",
+  "files": [
+    ".releaserc.json",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "package.json",
+    "references/html-structure.md"
+  ]
+}

@@ -1,0 +1,73 @@
+/* Cookie consent banner (plugins/cookieconsent) in the site theme; loaded with the banner. */
+#cc-main {
+  --cc-font-family: var(--font-sans);
+  --cc-modal-border-radius: var(--radius-l);
+  --cc-btn-border-radius: var(--radius-pill);
+  --cc-bg: var(--color-surface-raised);
+  --cc-primary-color: var(--color-text-strong);
+  --cc-secondary-color: var(--color-text);
+  --cc-link-color: var(--color-link);
+  --cc-btn-primary-bg: var(--color-accent-fill);
+  --cc-btn-primary-color: var(--color-on-accent);
+  --cc-btn-primary-border-color: var(--color-accent-fill);
+  --cc-btn-primary-hover-bg: var(--color-accent-fill-hover);
+  --cc-btn-primary-hover-color: var(--color-on-accent);
+  --cc-btn-primary-hover-border-color: var(--color-accent-fill-hover);
+  --cc-btn-secondary-bg: transparent;
+  --cc-btn-secondary-color: var(--color-text-strong);
+  --cc-btn-secondary-border-color: var(--color-border-strong);
+  --cc-btn-secondary-hover-bg: var(--color-surface-sunken);
+  --cc-btn-secondary-hover-color: var(--color-text-strong);
+  --cc-btn-secondary-hover-border-color: var(--color-text-strong);
+  --cc-separator-border-color: var(--color-border);
+  --cc-toggle-on-bg: var(--color-accent-fill);
+  --cc-toggle-on-knob-bg: var(--color-surface-raised);
+  --cc-toggle-off-bg: var(--color-border-strong);
+  --cc-toggle-off-knob-bg: var(--color-surface-raised);
+  --cc-toggle-enabled-icon-color: var(--color-accent-fill);
+  --cc-toggle-disabled-icon-color: var(--color-text-muted);
+  --cc-toggle-readonly-bg: var(--color-border);
+  --cc-toggle-readonly-knob-bg: var(--color-surface-raised);
+  --cc-toggle-readonly-knob-icon-color: var(--color-border-strong);
+  --cc-section-category-border: var(--color-border);
+  --cc-cookie-category-block-bg: var(--color-surface);
+  --cc-cookie-category-block-border: var(--color-border);
+  --cc-cookie-category-block-hover-bg: var(--color-surface-sunken);
+  --cc-cookie-category-block-hover-border: var(--color-border-strong);
+  --cc-cookie-category-expanded-block-bg: var(--color-surface);
+  --cc-cookie-category-expanded-block-hover-bg: var(--color-surface-sunken);
+  --cc-footer-bg: var(--color-surface);
+  --cc-footer-color: var(--color-text-muted);
+  --cc-footer-border-color: var(--color-border);
+  --cc-overlay-bg: rgb(0 0 0 / 55%);
+  --cc-webkit-scrollbar-bg: var(--color-border-strong);
+  --cc-webkit-scrollbar-hover-bg: var(--color-text-muted);
+}
+
+/* while the consent bar is open, the page ends above it */
+html[class~="show--consent"] body {
+  padding-bottom: var(--consent-bar-height, 0);
+}
+
+/* "Cookie preferences" link added at the end of the footer when none is authored */
+footer .cookie-preferences {
+  margin: 0;
+  padding: var(--gap-s) var(--gutter);
+  text-align: center;
+}
+
+footer .cookie-preferences-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--step-n1);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+footer .cookie-preferences-link:hover {
+  color: var(--color-link-hover);
+}

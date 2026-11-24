@@ -1,0 +1,33 @@
+{
+  "slug": "json2html-press-sidekick",
+  "uploadFolder": "/demo-docs/media",
+  "sidekick": true,
+  "steps": [
+    { "do": "visit", "url": "https://main--demo--scdemos.aem.page/en/press", "hidden": true },
+    { "do": "sidekickSignIn", "hidden": true },
+    { "do": "openFolder", "hidden": true },
+    { "do": "closeChat", "hidden": true },
+    {
+      "do": "titleCard", "hold": 4000,
+      "kicker": "json2html · AEM Content Fragments",
+      "title": "Publish a Content Fragment as a page",
+      "items": ["1 · No page for it in Experience Workspace", "2 · Sidekick Update renders the fragment", "3 · Publish it"]
+    },
+    { "do": "browse", "path": "/en", "n": 1, "hold": 1500, "caption": "In Experience Workspace, **/en** has the **press** listing page" },
+    { "do": "pointAt", "text": "press", "n": 1, "hold": 3000, "caption": "…but no page for any press release: those live in AEM as Content Fragments" },
+    { "do": "visit", "url": "https://main--demo--scdemos.aem.page/en/press/member-week-returns", "n": 2, "caption": "Open the new release’s URL on the preview site" },
+    { "do": "pointAt", "text": "This page took", "n": 2, "hold": 2500, "caption": "Not a page yet: it has never been previewed" },
+    { "do": "sidekickClick", "name": "Update", "until": "Member Week returns", "n": 2, "caption": "Sidekick › **Update**: json2html reads the fragment from AEM and fills the template" },
+    { "do": "pointAt", "text": "Member Week returns December 3 to 9", "n": 2, "hold": 3500, "caption": "Headline, summary, image, date and body, all from the Content Fragment" },
+    { "do": "sidekickClick", "name": "Publish", "n": 3, "caption": "**Publish** puts it live" },
+    {
+      "do": "visit", "url": "https://demo.bbird.live/en/press/member-week-returns",
+      "until": { "url": "https://demo.bbird.live/en/press/member-week-returns", "text": "Member Week returns" },
+      "n": 3, "caption": "Live on the site, served from the CDN like any other page"
+    },
+    {
+      "do": "endCard", "kicker": "json2html", "title": "Content Fragments in, pages out",
+      "items": ["Authors write in AEM, or brief Coworker", "Sidekick Update renders the fragment", "One template for every release"], "hold": 3500
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "preferencesLink": "Cookie preferences",
+  "banner": {
+    "consentModal": {
+      "title": "We use cookies",
+      "description": "We use cookies to measure how the site is used and to show content that fits your interests. You can accept all, keep only the necessary ones, or choose for yourself.",
+      "acceptAllBtn": "Accept all",
+      "acceptNecessaryBtn": "Necessary only",
+      "showPreferencesBtn": "Manage preferences"
+    },
+    "preferencesModal": {
+      "title": "Cookie preferences",
+      "acceptAllBtn": "Accept all",
+      "acceptNecessaryBtn": "Necessary only",
+      "savePreferencesBtn": "Save preferences",
+      "closeIconLabel": "Close",
+      "sections": [
+        {
+          "description": "Choose which cookies we may use. You can change this at any time from the link at the bottom of every page."
+        },
+        {
+          "title": "Strictly necessary",
+          "description": "Needed for the site to work, for example to remember your choices here. Always on.",
+          "linkedCategory": "necessary"
+        },
+        {
+          "title": "Analytics",
+          "description": "Help us understand how visitors use the site so we can improve it.",
+          "linkedCategory": "analytics"
+        },
+        {
+          "title": "Personalization",
+          "description": "Let us tailor content and offers to your interests. Needs analytics to be on.",
+          "linkedCategory": "targeting"
+        }
+      ]
+    }
+  }
+}

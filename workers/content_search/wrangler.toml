@@ -1,0 +1,51 @@
+name = "demo-bbird-content-search"
+main = "index.js"
+compatibility_date = "2026-03-13"
+account_id = "ac7ee4615628005dc5ba0a22f0aae2a6"
+
+# Natural-language search over the query index for the search block (Search (AI) and Search (Tabs))
+# (same /search and /gensearch contract as the Content AI proxy).
+routes = [
+   { pattern = "demo.bbird.live/content-search/*", zone_name = "bbird.live" },
+]
+
+[ai]
+binding = "AI"
+
+[vars]
+PATH_PREFIX = "content-search"
+SITE_URL = "https://demo.bbird.live"
+CONTENT_ORIGIN = "https://main--demo--scdemos.aem.live"
+# Pages to search (path prefixes) and pages to leave out (exact paths, or prefixes ending in /).
+INCLUDE_PATHS = "/demo-docs/,/en/"
+EXCLUDE_PATHS = "/demo-docs/nav,/demo-docs/footer,/demo-docs/demo-slides/,/demo-docs/media/,/en/nav,/en/footer,/en/search,/en/studio,/en/studio/"
+# Scopes a search block picks with its content-source row: frescopa = only the Frescopa site.
+SCOPES = "frescopa=/en/"
+# Fallback source: product documentation, searched only when no site page matches.
+DOCS_ORIGIN = "https://www.aem.live"
+DOCS_INCLUDE_PATHS = "/docs/,/developer/"
+DOCS_LABEL = "AEM product documentation"
+EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5"
+ANSWER_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+# Pages scoring below this (cosine similarity plus a small word-match boost) are not returned.
+MIN_SCORE = "0.65"
+ALLOWED_ORIGINS = "https://demo.bbird.live,https://main--demo--scdemos.aem.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.preview.da.live,http://localhost:3000,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live,https://*--demo--scdemos.preview.da.live"
+
+[observability.logs]
+enabled = true
+
+# Each answer costs Workers AI usage: limits per client IP and for everyone, per route
+# (approximate, per Cloudflare location; period must be 10 or 60 seconds).
+[[ratelimits]]
+name = "CLIENT_LIMITER"
+namespace_id = "2101"
+  [ratelimits.simple]
+  limit = 20
+  period = 60
+
+[[ratelimits]]
+name = "TOTAL_LIMITER"
+namespace_id = "2102"
+  [ratelimits.simple]
+  limit = 300
+  period = 60

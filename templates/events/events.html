@@ -1,26 +1,37 @@
 <head>
-  <title>{{title}} | Upcoming Events</title>
-  <meta name="description" content="{{description}}">
-  <meta name="date" content="{{occurrenceDate}}">
-  <meta name="keywords" content="events, upcoming-events">
+  <title>{{title}} | Frescopa</title>
+  <meta name="description" content="{{summary}}">
+  <meta name="date" content="{{date}}">
+  <meta name="keywords" content="events, {{type}}, {{city}}, Experiences">
   <meta name="template" content="events">
+  <meta name="image" content="https://main--demo--scdemos.aem.live{{image}}">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@graph": [{
       "@type": "Event",
       "name": "{{title}}",
-      "description": "{{description}}",
-      "startDate": "{{occurrenceDate}}",
+      "description": "{{summary}}",
+      "startDate": "{{date}}",
       "eventStatus": "https://schema.org/EventScheduled",
+      {{#online}}
+      "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+      "location": {
+        "@type": "VirtualLocation",
+        "name": "{{house}}"
+      },
+      {{/online}}
+      {{^online}}
+      "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
       "location": {
         "@type": "Place",
-        "name": "{{location}}",
-        "address": "{{address}}"
+        "name": "{{house}}",
+        "address": "{{street}}, {{cityLine}}"
       },
+      {{/online}}
       "organizer": {
         "@type": "Organization",
-        "name": "diyFIRE",
+        "name": "Frescopa",
         "url": "https://demo.bbird.live"
       }
     }]
@@ -35,56 +46,43 @@
         <div>
           <div>
             <picture>
-              <source
-                type="image/webp"
-                srcset="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=2000&format=webply&optimize=medium?width=2000&format=webp&optimize=medium"
-                media="(min-width: 600px)"
-              >
-              <source
-                type="image/webp"
-                srcset="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=750&format=webp&optimize=medium"
-              >
-              <source
-                type="image/jpeg"
-                srcset="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=2000&format=jpg&optimize=medium"
-                media="(min-width: 600px)"
-              >
-              <img
-                loading="lazy"
-                alt=""
-                src="https://main--demo--scdemos.aem.page/media_177a7c712187a211f6f8145d918eda02fad1ad060.jpg?width=750&format=jpg&optimize=medium"
-                width="1600"
-                height="900"
-              >
+              <img src="https://main--demo--scdemos.aem.live{{image}}" alt="">
             </picture>
           </div>
         </div>
         <div>
           <div>
-            <h1 id="{{id}}">{{title}}</h1>
+            <p>{{#type}}{{type}} · {{/type}}{{city}}</p>
+            <h1>{{title}}</h1>
+            <p>{{summary}}</p>
+            {{#ctaUrl}}<p><strong><a href="{{ctaUrl}}">{{cta}}</a></strong></p>{{/ctaUrl}}
+            <p><em><a href="/en/experiences#upcoming-events">All events</a></em></p>
           </div>
-        </div>
-      </div>
-      <div class="columns">
-        <div>
-          <div>
-            <p>{{description}}</p>
-            {{#details}}<p>{{details}}</p>{{/details}}
-            <p>Type : {{type}}</p>
-            <p>Date : {{occurrenceDate}}</p>
-            <p>Time : {{time}}</p>
-          </div>
-        </div>
-      </div>
-      <div class="section-metadata">
-        <div>
-          <div>Style</div>
-          <div>divider, center</div>
         </div>
       </div>
     </div>
     <div>
-      <h2 id="other-events">Other Events</h2>
+      <div class="columns">
+        <div>
+          <div>
+            <h2>About this event</h2>
+            {{#details}}<p>{{details}}</p>{{/details}}
+            <p>Date: {{date}}</p>
+            {{#time}}<p>Time: {{time}}</p>{{/time}}
+            {{#type}}<p>Type: {{type}}</p>{{/type}}
+          </div>
+          <div>
+            <h2>Where</h2>
+            <p><strong>{{house}}</strong></p>
+            <p>{{street}}<br>{{cityLine}}</p>
+            {{#price}}<p>{{price}}</p>{{/price}}
+            {{#ctaUrl}}<p><a href="{{ctaUrl}}">{{cta}}</a></p>{{/ctaUrl}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h2>More events</h2>
       <div class="related-articles">
         <div>
           <div>keywords</div>

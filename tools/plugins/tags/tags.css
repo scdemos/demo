@@ -12,7 +12,7 @@
 
 /* Header */
 .tags-header {
-  margin: 5px 20px 5px 20px;
+  margin: 5px 20px;
   text-align: center;
   flex-shrink: 0;
   font-style: oblique;
@@ -39,7 +39,7 @@
 
 /* Search container */
 .search-container {
-  margin: 0 20px 20px 20px;
+  margin: 0 20px 20px;
   flex-shrink: 0;
 }
 
@@ -56,10 +56,6 @@
 
 .search-input:focus {
   border-color: #007bff;
-}
-
-.search-input:blur {
-  border-color: #dee2e6;
 }
 
 /* Results container */
@@ -182,6 +178,6 @@
   border-radius: 6px;
   border: 1px solid #dee2e6;
   font-size: 14px;
-  margin: 0 20px 20px 20px;
+  margin: 0 20px 20px;
   flex-shrink: 0;
 } 

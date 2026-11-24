@@ -1,0 +1,68 @@
+/* Peek: a slim tab fixed to the right edge. It stays clear of the social share dock:
+   above the bottom bar on mobile, below the side rail from 900px.
+   Its injected section takes no space in the flow. */
+main > .section.peek-container {
+  padding-block: 0;
+}
+
+main .peek {
+  position: fixed;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--gap-s) + 4.25rem);
+  z-index: 950;
+}
+
+main .peek .peek-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-2xs);
+  width: 2.75rem;
+  padding-block: var(--gap-s);
+  border: var(--border);
+  border-right: 0;
+  border-radius: var(--radius-m) 0 0 var(--radius-m);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-3);
+  color: var(--color-text-strong);
+  text-decoration: none;
+  transition: background-color var(--duration-1) var(--ease-out), color var(--duration-1) var(--ease-out);
+}
+
+main .peek .peek-link:hover {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-text);
+}
+
+main .peek .peek-link:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+main .peek .peek-mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+main .peek .peek-label {
+  font-size: var(--step-n1);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+@media (width >= 900px) {
+  main .peek {
+    bottom: var(--gap-xl);
+  }
+}
+
+/* Preview hosts add the author-only auth toggle, whose 7rem handle sits at the bottom of the right
+   edge (auth-toggle.css): the peek moves up to sit just above it. */
+body:has(> .auth-toggle) main .peek {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--gap-m) + 7rem + var(--gap-s));
+}

@@ -1,0 +1,91 @@
+{
+  "slug": "coworker-target-activities-create",
+  "uploadFolder": "/demo-docs/media",
+  "headed": true,
+  "steps": [
+    {
+      "do": "openCoworker",
+      "url": "https://experience.adobe.com/#/@ccs/coworker/75205073054494925312"
+    },
+    {
+      "do": "coworkerClearChats",
+      "hidden": true
+    },
+    {
+      "do": "openCoworker",
+      "hidden": true
+    },
+    {
+      "do": "titleCard",
+      "hold": 4000,
+      "kicker": "Coworker · Adobe Target",
+      "title": "Have Coworker build your Target activities",
+      "items": [
+        "1 · Describe the A/B test and the targeting in a chat",
+        "2 · Check Coworker’s plan and create the drafts",
+        "3 · Activate them when you’re ready"
+      ]
+    },
+    {
+      "do": "coworkerClick",
+      "name": "Chats",
+      "n": 1,
+      "caption": "In **Coworker**, open **Chats**"
+    },
+    {
+      "do": "coworkerClick",
+      "name": "New chat",
+      "n": 1,
+      "caption": "Start a **New chat**"
+    },
+    {
+      "do": "coworkerAsk",
+      "text": "In Adobe Target (Default Workspace, property demo-fire), set up two Form-Based activities for our Frescopa offers page using the existing HTML offers I sent from Experience Workspace (don't create new offers): 1) \"Frescopa Offers - Hero A/B\": A/B test on mbox offers-hero, A = default content, B = offer 1537342 \"Frescopa Offers Hero - Frescopa One half price\", 50/50, success metric: clicks on the offers-hero mbox. 2) \"Frescopa Offers - Welcome XT\": Experience Targeting on mbox offers-welcome, audience New Visitors gets offer 1537343 \"Frescopa Offers Welcome - New visitors\", everyone else sees default content, metric: engagement (page views). Start on activation, priority 0. Show me the plan first.",
+      "n": 1,
+      "caption": "Describe both activities: locations, offers, audience, split and metrics",
+      "typeDelay": 12
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 3500,
+      "caption": "Coworker finds the offers sent from Experience Workspace and shows its plan"
+    },
+    {
+      "do": "coworkerAsk",
+      "text": "Looks good. Create both as drafts. The page is https://demo.bbird.live/en/offers, give me the QA links.",
+      "n": 2,
+      "caption": "The plan is right: create both as drafts",
+      "typeDelay": 25
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 3500,
+      "caption": "Both drafts are in Target, with QA links to check each experience on the live page"
+    },
+    {
+      "do": "coworkerAsk",
+      "text": "Activate both activities now.",
+      "n": 3,
+      "caption": "Ready to go live: activate them"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 3500,
+      "caption": "Both activities are live on the offers page"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Coworker · Adobe Target",
+      "title": "From idea to live test in one chat",
+      "items": [
+        "Coworker reads the offers you sent from Experience Workspace",
+        "You approve the plan before anything is created",
+        "Activities stay drafts until you activate them"
+      ],
+      "hold": 3500
+    }
+  ]
+}

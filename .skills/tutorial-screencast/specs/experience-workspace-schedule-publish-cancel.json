@@ -1,0 +1,98 @@
+{
+  "slug": "experience-workspace-schedule-publish-cancel",
+  "page": "holiday-hours-update",
+  "uploadFolder": "/demo-docs/media",
+  "steps": [
+    {
+      "do": "openFolder"
+    },
+    {
+      "do": "closeChat"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace · Schedule Publish",
+      "title": "Publish a page later, automatically",
+      "items": [
+        "1 · Edit the page",
+        "2 · … › Schedule Publish: pick a date and time",
+        "3 · See or cancel it in the Schedule Publish app"
+      ]
+    },
+    {
+      "do": "createPage",
+      "n": 1,
+      "caption": "Create a page: **New** › Page, name it, **Create**"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 1,
+      "caption": "Switch to **Content** view"
+    },
+    {
+      "do": "typeText",
+      "text": "Holiday hours",
+      "style": "h1",
+      "n": 1,
+      "caption": "Write the page: a heading…"
+    },
+    {
+      "do": "typeText",
+      "text": "All Frescopa Houses close at 4pm on December 24 and reopen on December 26.",
+      "n": 1,
+      "caption": "…and the news it announces"
+    },
+    {
+      "do": "view",
+      "mode": "layout",
+      "n": 2,
+      "hold": 1500,
+      "caption": "Back in **Layout** view, the page is ready to go"
+    },
+    {
+      "do": "schedulePublish",
+      "days": 2,
+      "time": "09:00",
+      "n": 2,
+      "caption": "**…** › **Schedule Publish**: pick a date and time, **Schedule**"
+    },
+    {
+      "do": "caption",
+      "n": 2,
+      "hold": 2200,
+      "caption": "It publishes on its own at that time, with the page as it is then"
+    },
+    {
+      "do": "schedulerApp",
+      "n": 3,
+      "hold": 3000,
+      "caption": "The **Schedule Publish** app lists every scheduled page, when and by whom"
+    },
+    {
+      "do": "schedulerApp",
+      "remove": true,
+      "n": 3,
+      "hold": 1200,
+      "caption": "Changed your mind? **Delete** cancels the scheduled publish"
+    },
+    {
+      "do": "caption",
+      "n": 3,
+      "hold": 2000,
+      "caption": "Nothing will be published: the schedule is gone"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Schedule Publish",
+      "title": "Go live on time, without being there",
+      "items": [
+        "… › Schedule Publish on any page",
+        "The page is previewed now and published at the set time",
+        "See and cancel schedules in the Schedule Publish app"
+      ],
+      "hold": 3500
+    }
+  ]
+}

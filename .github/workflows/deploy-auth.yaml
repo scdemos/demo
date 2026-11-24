@@ -6,6 +6,7 @@ on:
     paths:
       - 'workers/auth/**/*.js'
       - 'workers/auth/wrangler.toml'
+      - 'workers/shared/**/*.js'
 
 jobs:
   deploy:

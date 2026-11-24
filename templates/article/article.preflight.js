@@ -10,10 +10,11 @@ export default function validate(doc, main) {
       hint: 'Start the article with a hero block whose title is Heading 1.',
     });
   }
-  if (!getMetadata('author', doc)) {
+  // a press release names its dateline city instead of an author
+  if (!getMetadata('author', doc) && !getMetadata('dateline', doc)) {
     issues.push({ message: 'Article has no author.', hint: 'Add Author to the page metadata.' });
   }
-  const date = getMetadata('date', doc);
+  const date = getMetadata('date', doc) || getMetadata('publisheddate', doc);
   if (!date) {
     issues.push({ message: 'Article has no date.', hint: 'Add Date to the page metadata.' });
   } else if (!isDate(date)) {

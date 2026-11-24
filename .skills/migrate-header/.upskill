@@ -1,0 +1,23 @@
+{
+  "kind": "github",
+  "source": "adobe/skills",
+  "skill": "migrate-header",
+  "path": "plugins/aem/edge-delivery-services/skills/migrate-header",
+  "sha": "81d1d53afdd48c395843e05a9049017739af6277",
+  "version": 1,
+  "installed": "2026-11-17T21:53:13.000Z",
+  "files": [
+    ".releaserc.json",
+    "CHANGELOG.md",
+    "SKILL.md",
+    "assets/header/header.css",
+    "assets/header/header.js",
+    "assets/tabs/tabs.css",
+    "assets/tabs/tabs.js",
+    "package.json",
+    "references/eds-header.md",
+    "references/ladder.md",
+    "references/panel-kinds.md",
+    "scripts/hrefs-check.mjs"
+  ]
+}

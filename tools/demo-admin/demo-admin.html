@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <title>Demo admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Back up and reset the demo site, and delete CloneIt demos">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="/styles/fonts.css">
+    <link rel="stylesheet" href="/tools/demo-admin/demo-admin.css">
+    <script src="/tools/demo-admin/demo-admin.js" type="module"></script>
+  </head>
+  <body class="appear">
+    <main class="admin">
+      <h1>Demo admin</h1>
+      <p class="admin-status" id="status" role="status">Checking your Adobe sign-in…</p>
+
+      <div id="tools" hidden>
+        <p class="admin-meta">Every backup, reset and delete is recorded in the <a href="https://da.live/sheet#/scdemos/demo/.backup/demo-admin-operations" target="_blank" rel="noopener">operations log</a>.</p>
+        <section class="admin-card" aria-labelledby="backup-title">
+          <h2 id="backup-title">Backup</h2>
+          <p>Copies the demo to <code>/demo/.backup</code> and replaces the previous backup. Drafts aren't included.</p>
+          <p class="admin-meta" id="backup-info"></p>
+          <button type="button" id="backup">Back up now</button>
+          <ol class="admin-log" id="backup-log" aria-live="polite" hidden></ol>
+        </section>
+
+        <section class="admin-card" aria-labelledby="reset-title">
+          <h2 id="reset-title">Reset the demo</h2>
+          <p>Replaces the demo with the backup, then previews and publishes every page. Pages added since the backup are unpublished and removed. Drafts stay as they are.</p>
+          <button type="button" id="reset" class="danger">Reset to backup</button>
+          <ol class="admin-log" id="reset-log" aria-live="polite" hidden></ol>
+        </section>
+        <section class="admin-card" aria-labelledby="clones-title">
+          <h2 id="clones-title">CloneIt demos</h2>
+          <p>Deleting a demo unpublishes and unpreviews its pages, removes its permissions and content, then deletes the site and its GitHub repo.</p>
+          <p class="admin-meta" id="clones-status" role="status">Loading…</p>
+          <table class="admin-table" id="clones" hidden>
+            <thead>
+              <tr><th scope="col">Demo</th><th scope="col">Requested by</th><th scope="col">Created</th><th scope="col"><span class="admin-sr">Actions</span></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <ol class="admin-log" id="clone-log" aria-live="polite" hidden></ol>
+        </section>
+      </div>
+
+      <dialog class="admin-dialog" id="confirm" aria-labelledby="confirm-title">
+        <form method="dialog">
+          <h2 id="confirm-title"></h2>
+          <p id="confirm-text"></p>
+          <label for="confirm-input" id="confirm-label"></label>
+          <input id="confirm-input" autocomplete="off" spellcheck="false">
+          <div class="admin-dialog-actions">
+            <button type="submit" value="cancel" class="secondary">Cancel</button>
+            <button type="submit" value="ok" id="confirm-ok"></button>
+          </div>
+        </form>
+      </dialog>
+    </main>
+  </body>
+</html>

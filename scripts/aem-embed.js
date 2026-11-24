@@ -100,6 +100,10 @@ export class AEMEmbed extends HTMLElement {
     main.innerHTML = htmlText;
 
     const scriptsModule = await import(`${origin}${window.hlx.codeBasePath}/scripts/scripts.js`);
+    // product pages: the embedded page has only the authored part; the product itself is loaded here
+    if (scriptsModule.buildProductPage) {
+      await scriptsModule.buildProductPage(main, new URL(this.getAttribute('url'), origin));
+    }
     if (scriptsModule.decorateMain) {
       await scriptsModule.decorateMain(main, true);
     }
@@ -133,11 +137,14 @@ export class AEMEmbed extends HTMLElement {
     if (scriptsModule.decorateEmbed) {
       await scriptsModule.decorateEmbed(main);
 
-      // decorateEmbed may load CSS into document.head via loadCSS;
-      // mirror any new stylesheets into the shadow DOM.
+      // decorateEmbed may load CSS into document.head via loadCSS; mirror it into the
+      // shadow DOM. Copy only stylesheets from this site: the host page's own styles
+      // (e.g. an app's body layout) must not leak into the embed. When the host is
+      // another origin, a block that loads CSS later has to add it to the embed itself.
       const loadedLinks = document.head.querySelectorAll('link[rel="stylesheet"]');
       loadedLinks.forEach((link) => {
         const { href } = link;
+        if (new URL(href).origin !== origin) return;
         if (!body.querySelector(`link[href="${href}"]`)) {
           const clone = document.createElement('link');
           clone.setAttribute('rel', 'stylesheet');

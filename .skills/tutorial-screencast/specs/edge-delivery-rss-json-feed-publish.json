@@ -1,0 +1,116 @@
+{
+  "slug": "edge-delivery-rss-json-feed-publish",
+  "restoreAfterTest": [
+    "/en/stories/a-day-with-concierge.html"
+  ],
+  "steps": [
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/rss.xml",
+      "zoom": 1.5
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Edge Delivery Services \u00b7 RSS and JSON Feed",
+      "title": "Publish an article, every feed reader gets it",
+      "items": [
+        "1 \u00b7 The site's articles as RSS and JSON Feed",
+        "2 \u00b7 An article's metadata feeds the item",
+        "3 \u00b7 Edit and publish: the feed follows"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "A day with Frescopa Concierge",
+      "n": 1,
+      "hold": 1800,
+      "caption": "**demo.bbird.live/rss.xml**: the site's articles, newest first"
+    },
+    {
+      "do": "pointAt",
+      "text": "surprising amount of listening",
+      "n": 1,
+      "hold": 1800,
+      "caption": "Each item has the title, link, date, author, tags and description"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/feed.json",
+      "n": 1,
+      "caption": "The same articles as **JSON Feed** at /feed.json",
+      "zoom": 1.5
+    },
+    {
+      "do": "pointAt",
+      "text": "A day with Frescopa Concierge",
+      "n": 1,
+      "hold": 1800,
+      "caption": "The same articles as **JSON Feed** at /feed.json"
+    },
+    {
+      "do": "openPage",
+      "path": "/en/stories/a-day-with-concierge",
+      "n": 2,
+      "caption": "Open the article in Experience Workspace"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 2,
+      "caption": "Open the article in Experience Workspace"
+    },
+    {
+      "do": "pointAt",
+      "text": "template",
+      "n": 2,
+      "hold": 2200,
+      "caption": "**Metadata**: template article and a date put the page in the feed"
+    },
+    {
+      "do": "editText",
+      "where": "content",
+      "in": "One specialist, eleven conversations",
+      "nth": -1,
+      "word": "surprising",
+      "with": "remarkable",
+      "n": 2,
+      "caption": "Change the **description** the feed shows"
+    },
+    {
+      "do": "publish",
+      "n": 3,
+      "caption": "**Send** \u203a **Preview & Publish** \u203a **Publish**"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/rss.xml",
+      "fresh": true,
+      "until": {
+        "url": "https://demo.bbird.live/rss.xml",
+        "text": "remarkable amount of listening",
+        "bust": false
+      },
+      "n": 3,
+      "caption": "Reload the feed: the new description is there",
+      "zoom": 1.5
+    },
+    {
+      "do": "pointAt",
+      "text": "remarkable amount of listening",
+      "n": 3,
+      "hold": 2200,
+      "caption": "Reload the feed: the new description is there"
+    },
+    {
+      "do": "endCard",
+      "kicker": "RSS and JSON Feed",
+      "title": "One source, every channel",
+      "items": [
+        "Built from the site's query index, nothing extra to author",
+        "A Worker on the site's domain serves /rss.xml and /feed.json",
+        "Newsletters, apps and aggregators subscribe once"
+      ]
+    }
+  ]
+}

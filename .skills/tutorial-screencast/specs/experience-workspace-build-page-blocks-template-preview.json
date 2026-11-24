@@ -1,0 +1,136 @@
+{
+  "slug": "experience-workspace-build-page-blocks-template-preview",
+  "page": "home-brewing-guide",
+  "steps": [
+    {
+      "do": "openFolder"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3500,
+      "kicker": "Experience Workspace",
+      "title": "Build a new page with blocks",
+      "items": [
+        "1 · Create a page",
+        "2 · Start from a template",
+        "3 · Add blocks from the Library",
+        "4 · Edit in Layout, Content and Split view",
+        "5 · Preview"
+      ]
+    },
+    {
+      "do": "createPage",
+      "n": 1,
+      "caption": "Click **New** › Page, name it and click **Create**"
+    },
+    {
+      "do": "view",
+      "mode": "layout",
+      "caption": "The editor opens in **Layout** view: the page as visitors see it"
+    },
+    {
+      "do": "addTemplate",
+      "name": "Story",
+      "n": 2,
+      "caption": "Start from a template: **Panels** › Templates › **Add** on Story",
+      "hold": 600
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 3,
+      "caption": "**Content** view shows the page as a document. Each block is a table"
+    },
+    {
+      "do": "cursorToEnd",
+      "n": 3,
+      "caption": "Click below the last block to add more"
+    },
+    {
+      "do": "addBlock",
+      "search": "cards",
+      "name": "Cards (features)",
+      "n": 3,
+      "caption": "Open **Blocks**, search the Library and add **Cards (features)**"
+    },
+    {
+      "do": "cursorToEnd",
+      "n": 3,
+      "caption": "Click below it again for the next block"
+    },
+    {
+      "do": "addBlock",
+      "search": "related",
+      "name": "Related articles (by keywords)",
+      "n": 3,
+      "caption": "Complex blocks too: **Related articles** pulls stories from the site index"
+    },
+    {
+      "do": "view",
+      "mode": "layout",
+      "n": 4,
+      "caption": "Back in **Layout** view, the new blocks are styled and live"
+    },
+    {
+      "do": "showBlock",
+      "block": "cards"
+    },
+    {
+      "do": "editText",
+      "where": "layout",
+      "in": "Volume pricing, invoicing",
+      "word": "Volume",
+      "with": "Bulk",
+      "n": 4,
+      "caption": "Edit right on the page: double-click a word and type",
+      "hold": 500
+    },
+    {
+      "do": "showBlock",
+      "block": "related-articles",
+      "caption": "Related articles are filled in from the site automatically",
+      "hold": 1000
+    },
+    {
+      "do": "view",
+      "mode": "split",
+      "n": 4,
+      "caption": "**Split view**: edit the document and watch the page update"
+    },
+    {
+      "do": "editText",
+      "where": "content",
+      "in": "The case for a slow morning",
+      "word": "slow",
+      "with": "quiet"
+    },
+    {
+      "do": "hover",
+      "where": "layout",
+      "text": "quiet morning",
+      "hold": 400
+    },
+    {
+      "do": "preview",
+      "n": 5,
+      "caption": "Click **Send**, keep **Preview** selected and click **Update**"
+    },
+    {
+      "do": "caption",
+      "caption": "Your page is on the preview site: **{previewHost}**",
+      "hold": 2200
+    },
+    {
+      "do": "endCard",
+      "kicker": "That's it",
+      "title": "A new page, built from blocks",
+      "items": [
+        "Template: Panels › Templates › Add",
+        "Blocks: Blocks panel › search › Add",
+        "Views: Layout · Content · Split view",
+        "Share: Send › Preview › Update"
+      ],
+      "hold": 3200
+    }
+  ]
+}

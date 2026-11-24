@@ -1,0 +1,105 @@
+{
+  "slug": "experience-workspace-forms-sheet-submit",
+  "steps": [
+    {
+      "do": "openSheet",
+      "path": "/forms/contact-us"
+    },
+    {
+      "do": "titleCard",
+      "hold": 3200,
+      "kicker": "Experience Workspace · Forms",
+      "title": "Build a form from a sheet",
+      "items": [
+        "1 · Define the fields in a sheet",
+        "2 · Add the Form block to a page",
+        "3 · Visitors submit, an endpoint receives it"
+      ]
+    },
+    {
+      "do": "pointAt",
+      "text": "field",
+      "n": 1,
+      "hold": 1500,
+      "caption": "The form is a sheet in Experience Workspace: **one row per field**"
+    },
+    {
+      "do": "pointAt",
+      "text": "textarea",
+      "n": 1,
+      "hold": 1500,
+      "caption": "**type** sets the input: text, textarea, select, checkbox…"
+    },
+    {
+      "do": "pointAt",
+      "text": "TRUE",
+      "n": 1,
+      "hold": 1500,
+      "caption": "**required** makes the browser check the field before sending"
+    },
+    {
+      "do": "pointAt",
+      "text": "confirmation",
+      "n": 1,
+      "hold": 1800,
+      "caption": "Rows for the buttons, and a **confirmation** page to show after sending"
+    },
+    {
+      "do": "openPage",
+      "path": "/fragments/feedback"
+    },
+    {
+      "do": "view",
+      "mode": "content",
+      "n": 2,
+      "hold": 2600,
+      "caption": "On a page, the **Form** block links the sheet, then the submit endpoint"
+    },
+    {
+      "do": "visit",
+      "url": "https://demo.bbird.live/fragments/feedback",
+      "n": 3,
+      "caption": "Visitors see the fields from the sheet"
+    },
+    {
+      "do": "fillField",
+      "label": "Name",
+      "exact": false,
+      "text": "Alex Rivera",
+      "n": 3,
+      "caption": "Fill in the form"
+    },
+    {
+      "do": "fillField",
+      "label": "Message",
+      "exact": false,
+      "text": "Loved the Frescopa House tour in Toronto!",
+      "n": 3,
+      "caption": "Fill in the form"
+    },
+    {
+      "do": "click",
+      "n": 3,
+      "caption": "**Contact Us** posts the values as JSON to the endpoint",
+      "text": "Contact Us"
+    },
+    {
+      "do": "pointAt",
+      "text": "Thank you",
+      "n": 3,
+      "hold": 2200,
+      "caption": "The endpoint forwards it to the team's Slack, and the thank-you page shows"
+    },
+    {
+      "do": "endCard",
+      "kicker": "Forms",
+      "title": "Fields in a sheet, submissions to your endpoint",
+      "items": [
+        "Authors change fields without code",
+        "Keep webhook URLs and keys in the endpoint, not the sheet",
+        "Need adaptive forms, PDFs or signatures? Use AEM Forms"
+      ],
+      "hold": 3000
+    }
+  ]
+}

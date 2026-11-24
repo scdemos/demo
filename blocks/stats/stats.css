@@ -1,0 +1,157 @@
+/* Stats: proof figures with optional ticker */
+
+.stats {
+  color: var(--color-text);
+}
+
+.stats .stats-intro {
+  max-width: 40rem;
+  margin-bottom: var(--gap-xl);
+}
+
+.stats .stats-intro > :last-child {
+  margin-bottom: 0;
+}
+
+.stats .stats-intro p {
+  color: var(--color-text-muted);
+  font-size: var(--step-1);
+}
+
+.stats .stats-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-xl) var(--grid-gap);
+  margin: 0;
+}
+
+.stats .stats-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2xs);
+  padding-top: var(--gap-s);
+  border-top: 2px solid var(--color-accent);
+}
+
+.stats dt {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  line-height: 1.4;
+}
+
+.stats .stats-item p {
+  margin: 0;
+}
+
+.stats dd {
+  position: relative;
+  order: -1;
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: var(--step-6);
+  font-weight: var(--weight-black);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+/* count-up: an overlay animates while the authored number stays put underneath */
+.stats .stats-counting {
+  color: transparent;
+}
+
+.stats .stats-count {
+  position: absolute;
+  inset: 0;
+  color: var(--color-text-strong);
+}
+
+@media (width >= 900px) {
+  .stats .stats-list {
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  }
+}
+
+/* ticker */
+.stats .stats-ticker {
+  margin-top: var(--gap-2xl);
+  padding-block: var(--gap-s);
+  border-block: var(--border);
+}
+
+.stats .stats-ticker-viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.stats .stats-ticker-label {
+  margin-bottom: var(--gap-xs);
+  color: var(--color-text-muted);
+  font-size: var(--step-n2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.stats .stats-ticker-label p {
+  margin: 0;
+}
+
+.stats .stats-ticker-track,
+.stats .stats-ticker-source,
+.stats .stats-ticker-copy {
+  display: flex;
+  width: max-content;
+}
+
+.stats .stats-ticker :is(ul, ol) {
+  display: flex;
+  gap: var(--gap-xl);
+  margin: 0;
+  padding: 0 var(--gap-xl) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--step-1);
+  font-weight: var(--weight-bold);
+  list-style: none;
+  white-space: nowrap;
+}
+
+.stats .stats-ticker li::after {
+  content: '●';
+  margin-left: var(--gap-xl);
+  color: var(--color-highlight);
+  font-size: 0.5em;
+  vertical-align: middle;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stats .stats-ticker-track {
+    animation: stats-ticker 48s linear infinite;
+  }
+
+  .stats .stats-ticker:hover .stats-ticker-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes stats-ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ink panel */
+.stats.ink {
+  padding: var(--gap-xl) var(--gap-l);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(60% 80% at 100% 0%, rgb(124 92 255 / 18%), transparent 62%),
+    var(--color-bg);
+}
+
+@media (width >= 900px) {
+  .stats.ink {
+    padding: var(--gap-2xl) var(--gap-xl);
+  }
+}

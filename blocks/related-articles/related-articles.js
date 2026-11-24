@@ -1,4 +1,4 @@
-import { readBlockConfig } from '../../scripts/aem.js';
+import { createOptimizedPicture, readBlockConfig } from '../../scripts/aem.js';
 import {
   createTag,
   fetchQueryIndexAll,
@@ -6,6 +6,7 @@ import {
   getArticleKeywords,
   getAuthoredLinks,
   getContentTimestamp,
+  inCurrentMarket,
   normalizePath,
   parseKeywords,
   pathFromHref,
@@ -63,12 +64,22 @@ function matchArticles(rows, keywordsConfig, excludedConfig, limit) {
    Default slider variant
    ----------------------------------------------------------------------- */
 
-function buildSliderCard(article) {
+function buildImage(src) {
+  const url = new URL(src, window.location.href);
+  if (url.origin === window.location.origin) return createOptimizedPicture(url.pathname, '', false, [{ width: '750' }]);
+  return createTag('img', { src: url.href, alt: '', loading: 'lazy' });
+}
+
+function buildSliderCard(article, showImage) {
   const href = normalizePath(article.path);
   const link = createTag('a', { href, class: 'related-articles-card-link' });
-  link.append(createTag('div', { class: 'related-articles-card-strip' }));
+  if (showImage && article.image) {
+    link.append(createTag('div', { class: 'related-articles-card-image' }, buildImage(article.image)));
+  }
 
   const content = createTag('div', { class: 'related-articles-card-content' });
+  const [tag] = parseKeywords(getArticleKeywords(article));
+  if (tag) content.append(createTag('p', { class: 'related-articles-card-tag' }, tag));
   content.append(createTag('h3', {}, article.title || href));
   if (article.description) {
     content.append(createTag('p', { class: 'related-articles-card-description' }, article.description));
@@ -130,7 +141,7 @@ function buildSliderControls(list) {
   return controls;
 }
 
-function renderSlider(block, articles, emptyMessage) {
+function renderSlider(block, articles, emptyMessage, showImage) {
   block.textContent = '';
 
   const slider = createTag('div', { class: 'related-articles-slider' });
@@ -142,7 +153,7 @@ function renderSlider(block, articles, emptyMessage) {
     block.append(createTag('p', { class: 'related-articles-empty' }, emptyMessage));
     return;
   }
-  articles.forEach((article) => list.append(buildSliderCard(article)));
+  articles.forEach((article) => list.append(buildSliderCard(article, showImage)));
   if (articles.length > 1) slider.append(buildSliderControls(list));
 }
 
@@ -218,7 +229,9 @@ async function fetchArticles(block, config) {
 
   const keywords = String(config.keywords || 'random').trim();
   const excluded = String(config['excluded-keywords'] || '').trim();
-  const allArticles = await fetchQueryIndexAll();
+  const current = normalizePath(window.location.pathname);
+  const allArticles = (await fetchQueryIndexAll())
+    .filter((row) => row?.path && inCurrentMarket(row.path) && normalizePath(row.path) !== current);
   return matchArticles(allArticles, keywords, excluded, RESULT_LIMIT);
 }
 
@@ -231,7 +244,8 @@ export default async function init(block) {
     if (isBento) {
       renderBentoGrid(block, articles, 'No related articles found.');
     } else {
-      renderSlider(block, articles, 'No related articles found.');
+      // `no-image` variant: text-only cards, for pages without card images
+      renderSlider(block, articles, 'No related articles found.', !block.classList.contains('no-image'));
     }
   } catch {
     const msg = 'Unable to load related articles right now.';

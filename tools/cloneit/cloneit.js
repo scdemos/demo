@@ -1,24 +1,35 @@
 /* eslint-disable no-console */
 
-// CloneIt: copy baseline DA + AEM config to a new repoless site (init → cloneSite → worker).
+// CloneIt: create a demo (init → cloneSite → worker). Every demo gets its own repo scdemos/<site>
+// (created by the worker from scdemos/demo and added to AEM Code Sync) and its own DA folder with the
+// demo content, config and index, previewed and published. Customizing it with the customer-demo AI
+// skill is an optional next step.
 
 const ORG = 'scdemos';
 const CODE_OWNER = 'scdemos';
 const CODE_REPO = 'demo';
-const CLONEIT_WORKER_URL = 'https://demo.bbird.live/cloneit/';
+const DEFAULT_WORKER_URL = 'https://demo.bbird.live/cloneit/';
+// ?worker=http://localhost:8787 points the app at a local `wrangler dev` worker (localhost only)
+function resolveWorkerUrl() {
+  const override = new URLSearchParams(window.location.search).get('worker');
+  if (override && /^http:\/\/localhost:\d+\/?$/.test(override)) return override.endsWith('/') ? override : `${override}/`;
+  return DEFAULT_WORKER_URL;
+}
+const CLONEIT_WORKER_URL = resolveWorkerUrl();
+// every demo starts from the base demo site (content + code); the customer-demo skill replaces the content
+const BASELINE_SITE = 'demo';
+const GH_USER_KEY = 'cloneit.githubUser';
+const GH_USER_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
+const REGISTRY = { site: 'demo-registry', path: 'demos.json' };
 const CLONEIT_WORKER_ERROR_SOURCE = 'cloneit-worker';
 
 const DA_SDK_URL = 'https://da.live/nx/utils/sdk.js';
-const DA_CONSTANTS_URL = 'https://da.live/nx/public/utils/constants.js';
 
 /** User-facing messages (avoid scattering literals). */
 const UI = {
   toastSdkFailed:
     'Sign in to Document Authoring and open CloneIt from DA, then refresh.',
-  toastDemositesEmpty:
-    'No demo templates found. Add rows to the demosites sheet in scdemos org config.',
-  toastReady: 'CloneIt is ready. Choose a template and enter a site name.',
-  toastPickTemplate: 'Choose a template before cloning.',
+  toastReady: 'CloneIt is ready. Enter a site name and your GitHub username to start.',
 };
 
 // Paths must stay aligned with workers/cloneit_token isAllowedProxyPath().
@@ -32,17 +43,24 @@ const Paths = {
   daConfig: (org, repo) => `/config/${org}/${repo}`,
   daCopyFromBaseline: (baselineSite, sourcePath) => `/copy/${ORG}/${baselineSite}/${sourcePath}`,
   daSource: (site, cleanPath) => `/source/${ORG}/${site}/${cleanPath}`,
+  helixCode: (site, path = '*') => `/code/${ORG}/${site}/main/${path}`,
+  helixBulk: (topic, site) => `/${topic}/${ORG}/${site}/main/*`,
+  helixJob: (site, topic, job) => `/job/${ORG}/${site}/main/${topic}/${job}/details`,
 };
 
+/** The worker requires the caller's own IMS token (from the DA SDK) on every request. */
+function authHeaders(extra = {}) {
+  return app.imsToken ? { ...extra, Authorization: `Bearer ${app.imsToken}` } : extra;
+}
+
 async function ensureWorkerReady() {
-  const response = await fetch(CLONEIT_WORKER_URL, { method: 'POST' });
-  if (!response.ok) {
-    throw new Error(`Worker: ${response.status}`);
-  }
+  const response = await fetch(`${CLONEIT_WORKER_URL}whoami`, { method: 'POST', headers: authHeaders() });
   const data = await response.json().catch(() => ({}));
-  if (typeof data.access_token !== 'string' || !data.access_token) {
-    throw new Error('Worker did not return an access token');
+  if (!response.ok) {
+    throw new Error(data.error || `Worker: ${response.status}`);
   }
+  app.userEmail = data.email || '';
+  app.standaloneAvailable = !!data.standalone;
 }
 
 function utf8ToBase64(str) {
@@ -55,7 +73,7 @@ function utf8ToBase64(str) {
 async function cloneitProcessFetch(kind, path, opts = {}) {
   const response = await fetch(`${CLONEIT_WORKER_URL}cloneprocess`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({
       kind,
       path,
@@ -76,34 +94,27 @@ async function cloneitProcessFetch(kind, path, opts = {}) {
   return response;
 }
 
+function wait(ms) {
+  return new Promise((r) => { setTimeout(r, ms); });
+}
+
 const API = {
   AEM_CONFIG: 'https://admin.hlx.page/config',
 };
 
 const app = {
   workerReady: false,
-  demositesReady: false,
+  sdkReady: false,
+  imsToken: '',
+  userEmail: '',
+  standaloneAvailable: false,
 };
 
 const SITE_NAME_MAX_LENGTH = 50;
 const RESERVED_NAMES = ['admin', 'api', 'config', 'main', 'live', 'preview', 'status', 'job'];
 
-const LOCALE_EXCLUDED_FOLDER_NAMES = new Set([
-  'ar', 'bg', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr', 'he', 'hi', 'hr', 'hu', 'id', 'it', 'ja', 'ko',
-  'lt', 'lv', 'ms', 'nl', 'no', 'pl', 'pt', 'ro', 'ru', 'sk', 'sl', 'sv', 'th', 'tr', 'uk', 'vi', 'zh',
-  'en-gb', 'en-us', 'pt-br', 'zh-cn', 'zh-tw',
-]);
-
-function isExcludedLocaleFolderName(name) {
-  if (!name || typeof name !== 'string') return false;
-  return LOCALE_EXCLUDED_FOLDER_NAMES.has(name.toLowerCase());
-}
-
-function pathStartsWithExcludedLocale(relPath) {
-  if (!relPath) return false;
-  const first = relPath.split('/').filter(Boolean)[0];
-  return isExcludedLocaleFolderName(first);
-}
+// the base demo's working folders; everything else (/en, /de, /media, …) is copied
+const SKIPPED_FOLDERS = new Set(['drafts', 'demo-docs']);
 
 function showToast(message, type = 'info') {
   const toast = document.getElementById('toast');
@@ -117,120 +128,18 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
-function normalizeBaselineSiteSegment(raw) {
-  const trimmed = (raw || '').trim().toLowerCase();
-  if (!trimmed) return '';
-  const pattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-  return pattern.test(trimmed) ? trimmed : '';
-}
-
-/**
- * @param {unknown} json — org config JSON from GET /config/{org}/
- * @returns {{ name: string, site: string }[]}
- */
-function parseDemositesSheet(json) {
-  if (!json || typeof json !== 'object') return [];
-  const sheet = /** @type {Record<string, { data?: unknown[] }>} */ (json).demosites;
-  const data = sheet?.data;
-  if (!Array.isArray(data)) return [];
-  const out = [];
-  data.forEach((row) => {
-    if (!row || typeof row !== 'object') return;
-    const r = /** @type {Record<string, string>} */ (row);
-    const label = (r.name ?? r.Name ?? '').trim();
-    const site = normalizeBaselineSiteSegment(String(r.site ?? r.Site ?? ''));
-    if (!site) return;
-    out.push({ name: label || site, site });
-  });
-  return out;
-}
-
-async function loadDemositesMapping() {
-  const select = document.getElementById('baseline-select');
-  if (!select) return;
-
-  select.innerHTML = '';
-  const loadingOpt = document.createElement('option');
-  loadingOpt.value = '';
-  loadingOpt.textContent = 'Loading templates…';
-  select.appendChild(loadingOpt);
-  select.disabled = true;
-  app.demositesReady = false;
-
+/** Loads the DA SDK for the signed-in user's IMS token (the worker requires it on every call). */
+async function initDaSdk() {
   try {
-    const [{ default: DA_SDK }, { DA_ORIGIN }] = await Promise.all([
-      import(DA_SDK_URL),
-      import(DA_CONSTANTS_URL),
-    ]);
-    const sdk = await DA_SDK;
-    const { actions } = sdk;
-    if (!actions?.daFetch) {
-      throw new Error('no_da_fetch');
-    }
-    const resp = await actions.daFetch(`${DA_ORIGIN}/config/${ORG}/`);
-    if (!resp.ok) {
-      throw new Error(`config_${resp.status}`);
-    }
-    const json = await resp.json();
-    const rows = parseDemositesSheet(json);
-    select.innerHTML = '';
-    if (rows.length === 0) {
-      const o = document.createElement('option');
-      o.value = '';
-      o.textContent = 'No templates';
-      select.appendChild(o);
-      showToast(UI.toastDemositesEmpty, 'error');
-      return;
-    }
-    rows.forEach(({ name, site }) => {
-      const o = document.createElement('option');
-      o.value = site;
-      o.textContent = name;
-      select.appendChild(o);
-    });
-    select.disabled = false;
-    app.demositesReady = true;
+    const { default: DA_SDK } = await import(DA_SDK_URL);
+    // outside a DA context the SDK never resolves: fail fast with a clear message
+    const sdk = await Promise.race([DA_SDK, wait(8000).then(() => { throw new Error('no_da_context'); })]);
+    app.imsToken = sdk.token || '';
+    app.sdkReady = !!app.imsToken;
   } catch (e) {
-    console.error('Demosites load failed:', e);
-    select.innerHTML = '';
-    const o = document.createElement('option');
-    o.value = '';
-    o.textContent = 'Unavailable';
-    select.appendChild(o);
-    showToast(UI.toastSdkFailed, 'error');
+    console.error('DA SDK unavailable:', e);
+    app.sdkReady = false;
   }
-}
-
-function getSelectedBaselineSite() {
-  const sel = document.getElementById('baseline-select');
-  const v = sel?.value;
-  return normalizeBaselineSiteSegment(v || '');
-}
-
-/** Visible template name from the baseline select (demosites sheet name column). */
-function getSelectedBaselineLabel() {
-  const sel = document.getElementById('baseline-select');
-  const opt = sel?.selectedOptions?.[0];
-  if (!opt || !opt.value) return '';
-  const t = (opt.textContent || '').trim();
-  return t || '';
-}
-
-/**
- * Empty input is allowed and returns { valid: true, value: '' } so the admin field stays optional.
- * Non-empty input must look like a single email address (no globs, no commas).
- */
-function validateAdminEmail(raw) {
-  const trimmed = (raw || '').trim();
-  if (!trimmed) return { valid: true, value: '' };
-  if (trimmed.length > 254) {
-    return { valid: false, error: 'Admin email must be 254 characters or less' };
-  }
-  const pattern = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
-  if (!pattern.test(trimmed)) {
-    return { valid: false, error: 'Enter a valid admin email (e.g. name@example.com)' };
-  }
-  return { valid: true, value: trimmed };
 }
 
 function validateSiteName(name, baselineSite) {
@@ -317,11 +226,12 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     daConfigCopied = false,
     queryIndex = {},
     baselineSite: baselineSiteOpt = '',
-    templateLabel: templateLabelOpt = '',
-    adminEmail = '',
+    codeSynced = true,
+    publish = null,
+    copyFailed = [],
+    permissions = null,
   } = options;
   const baselineSite = baselineSiteOpt || '—';
-  const templateLabel = (templateLabelOpt || '').trim() || baselineSiteOpt || '—';
   const {
     copied: queryIndexCopied = false,
     verified: queryIndexVerified = false,
@@ -330,11 +240,9 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   } = queryIndex;
 
   const plainLines = [];
-  plainLines.push(`Template: ${templateLabel}`);
   plainLines.push(`DA content: ${ORG}/${baselineSite}/ → ${ORG}/${siteName}/`);
   if (daConfigCopied) plainLines.push('DA config copied');
   plainLines.push('AEM site config created');
-  if (adminEmail) plainLines.push(`Admin email granted: ${adminEmail}`);
 
   const queryYamlUrl = `${API.AEM_CONFIG}/${ORG}/sites/${siteName}/content/query.yaml`;
   let queryLine = '';
@@ -355,23 +263,44 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     plainLines.push('Query index (query.yaml): not configured');
   }
 
-  const adminLine = adminEmail
-    ? `<li>Admin role granted to <code>${escapeHtml(adminEmail)}</code></li>`
-    : '';
+  const extra = [];
+  if (copyFailed.length) {
+    extra.push([`<strong>${copyFailed.length} file${copyFailed.length === 1 ? '' : 's'} couldn't be copied</strong>: ${copyFailed.map((f) => `<code>${escapeHtml(f)}</code>`).join(', ')}`, `Not copied: ${copyFailed.join(', ')}`]);
+  }
+  extra.push([`Own repository <code>${ORG}/${escapeHtml(siteName)}</code>, added to AEM Code Sync`, `Own repository ${ORG}/${siteName}, added to AEM Code Sync`]);
+  if (!codeSynced) extra.push(['<strong>Code sync still running</strong>: the site may show unstyled for a minute', 'Code sync still running']);
+  if (publish?.error) {
+    extra.push([`<strong>Automatic preview/publish failed</strong> (${escapeHtml(publish.error)}): use Bulk Preview/Publish below`, `Automatic preview/publish failed: ${publish.error}`]);
+  } else if (publish) {
+    const failed = publish.failed?.length ? `, ${publish.failed.length} not published (see below)` : '';
+    extra.push([`Previewed and published ${publish.published} pages and assets${escapeHtml(failed)}`, `Published ${publish.published}${failed}`]);
+  }
+  if (permissions?.error) {
+    extra.push([`<strong>Edit access not added</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin for write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>`, `Edit access not added: ${permissions.error}`]);
+  } else if (permissions) {
+    const shared = (permissions.joined || []).length ? `, and added to <code>${permissions.joined.map(escapeHtml).join('</code>, <code>')}</code>` : '';
+    extra.push([`You can edit the demo's content and config in DA (<code>${escapeHtml(permissions.email)}</code>: write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>${shared})`, `Edit access in DA for ${permissions.email}: /${siteName}/CONFIG and /${siteName}/**${(permissions.joined || []).length ? `; added to ${permissions.joined.join(', ')}` : ''}`]);
+  }
+  extra.forEach(([, plain]) => plainLines.push(plain));
+  const extraHtml = extra.map(([html]) => `<li>${html}</li>`).join('');
+
+  const adminLine = '';
 
   const html = `
-    <li>Template: ${escapeHtml(templateLabel)}</li>
     <li>DA content: <code>${ORG}/${escapeHtml(baselineSite)}/</code> → <code>${ORG}/${siteName}/</code></li>
     ${daConfigCopied ? '<li>DA config copied</li>' : ''}
     <li>AEM site config created</li>
     ${adminLine}
     ${queryLine}
+    ${extraHtml}
   `;
 
   return { html, plainLines };
 }
 
 function buildDetailsClipboardText(siteName, siteUrl, daUrl, githubUrl, plainLines) {
+  const next = app.lastPrompt && document.getElementById('ai-handoff')?.hidden === false
+    ? ['', 'Next (in VS Code / Claude Code, in the repo):', app.lastPrompt] : [];
   return [
     `Site: ${siteName}`,
     '',
@@ -382,6 +311,7 @@ function buildDetailsClipboardText(siteName, siteUrl, daUrl, githubUrl, plainLin
     `AEM preview: ${siteUrl}`,
     `Document Authoring: ${daUrl}`,
     `Code repository: ${githubUrl}`,
+    ...next,
   ].join('\n');
 }
 
@@ -432,6 +362,35 @@ function showResult(success, siteName, errorMessage, options = {}) {
       if (urlEl) urlEl.textContent = githubUrl;
     }
 
+    const sub = document.getElementById('result-sub');
+    if (sub) {
+      sub.textContent = 'Your repository, site and DA folder are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.';
+    }
+    const handoff = document.getElementById('ai-handoff');
+    if (handoff) {
+      handoff.hidden = false;
+      const prompt = `/customer-demo ${options.customerSite || '<customer website URL>'}`;
+      app.lastPrompt = prompt;
+      const promptEl = document.getElementById('ai-handoff-prompt');
+      if (promptEl) promptEl.textContent = prompt;
+      const vscode = document.getElementById('open-vscode-link');
+      if (vscode) vscode.href = `vscode://vscode.git/clone?url=${encodeURIComponent(`https://github.com/${ORG}/${siteName}.git`)}`;
+    }
+
+    // automatic publish: only fall back to the manual Bulk app when it failed as a whole
+    const pub = options.publish;
+    const bulk = document.getElementById('bulk-actions');
+    if (bulk) bulk.hidden = !pub?.error;
+    const fails = document.getElementById('publish-failures');
+    if (fails) {
+      const list = pub?.failed || [];
+      fails.hidden = !list.length;
+      const summary = document.getElementById('publish-failures-summary');
+      if (summary) summary.textContent = `${list.length} item${list.length === 1 ? '' : 's'} couldn't be published`;
+      const ul = document.getElementById('publish-failures-list');
+      if (ul) ul.innerHTML = list.map((f) => `<li><code>${escapeHtml(f)}</code></li>`).join('');
+    }
+
     app.lastClonedSite = siteName;
     app.contentPaths = contentPaths;
     app.lastDetailsCopyText = buildDetailsClipboardText(siteName, siteUrl, daUrl, githubUrl, plainLines);
@@ -441,6 +400,12 @@ function showResult(success, siteName, errorMessage, options = {}) {
     errorCard.style.display = 'block';
     const msgEl = document.getElementById('result-error-message');
     if (msgEl) msgEl.textContent = (errorMessage || 'An unknown error occurred');
+    // not in the demo's GitHub group: point to the Access App in a modal that stays until closed
+    if (options.signUp) {
+      const modal = document.getElementById('signup-modal');
+      modal?.classList.remove('hidden');
+      modal?.querySelector('.modal-cta')?.focus();
+    }
   }
 }
 
@@ -451,7 +416,7 @@ function hideResult() {
 
 function updateBulkActionButtons() {
   const bulkBtn = document.getElementById('bulk-btn');
-  const bulkHint = document.querySelector('.bulk-hint');
+  const bulkHint = document.querySelector('#bulk-actions .bulk-hint');
   const hasPaths = app.contentPaths && app.contentPaths.length > 0;
 
   if (bulkBtn) bulkBtn.disabled = !hasPaths;
@@ -529,57 +494,88 @@ function cleanupSiteConfig(config) {
   }
 }
 
-function buildNewSiteConfig(baselineConfig, newSiteName, adminEmail = '') {
-  const now = new Date().toISOString();
+/** Rewrites strings in a JSON-able value that point at the baseline site. */
+function rewriteBaselineRefs(value, baselineSite, newSiteName) {
+  const json = JSON.stringify(value)
+    .split(`${ORG}/${baselineSite}/`).join(`${ORG}/${newSiteName}/`)
+    .split(`main--${baselineSite}--${ORG}`).join(`main--${newSiteName}--${ORG}`);
+  return JSON.parse(json);
+}
 
+/**
+ * Site config for the new site: content from its DA folder, code from its own repo.
+ * Roles: the requester as admin, *@adobe.com author/publish,
+ * plus the template's technical accounts so automation (bulk preview/publish) keeps working.
+ */
+function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
+  const { userEmail = '', baselineSite = '' } = opts;
+  const now = new Date().toISOString();
+  const codeRepo = newSiteName;
   const config = {
     version: baselineConfig.version ?? 1,
     name: newSiteName,
     created: now,
     lastModified: now,
     content: {
-      source: {
-        type: 'markup',
-        url: `https://content.da.live/${ORG}/${newSiteName}/`,
-      },
+      source: { type: 'markup', url: `https://content.da.live/${ORG}/${newSiteName}/` },
     },
-    code: baselineConfig.code
-      ? { ...baselineConfig.code, owner: CODE_OWNER, repo: CODE_REPO }
-      : {
-        owner: CODE_OWNER,
-        repo: CODE_REPO,
-        source: { type: 'github', url: `https://github.com/${CODE_OWNER}/${CODE_REPO}` },
-      },
+    code: {
+      ...(baselineConfig.code || {}),
+      owner: CODE_OWNER,
+      repo: codeRepo,
+      source: { type: 'github', url: `https://github.com/${CODE_OWNER}/${codeRepo}` },
+    },
   };
 
   if (baselineConfig.sidekick && Object.keys(baselineConfig.sidekick).length > 0) {
-    config.sidekick = { ...baselineConfig.sidekick };
+    config.sidekick = rewriteBaselineRefs(baselineConfig.sidekick, baselineSite, newSiteName);
   }
   if (baselineConfig.headers && Object.keys(baselineConfig.headers).length > 0) {
     config.headers = { ...baselineConfig.headers };
   }
-
-  const email = (adminEmail || '').trim();
-  if (email) {
-    // AccessConfig schema: access.admin.role.<roleName> = [emailGlob, ...].
-    // requireAuth defaults to 'auto' which enforces auth because a role mapping exists.
-    config.access = {
-      admin: {
-        role: { admin: [email] },
-      },
-    };
+  if (baselineConfig.robots?.txt) {
+    // never point a demo's robots.txt at the template's sitemap host
+    config.robots = { txt: `${baselineConfig.robots.txt.replace(/^Sitemap:.*$/gim, '').trim()}\n` };
   }
+  if (baselineConfig.public && Object.keys(baselineConfig.public).length > 0) {
+    const pub = rewriteBaselineRefs(baselineConfig.public, baselineSite, newSiteName);
+    // products come from the template's Edge Commerce catalog: keep the new site's product routing on it
+    const bus = baselineConfig.public.mixerConfig?.backends?.adobe_productbus;
+    if (bus && pub.mixerConfig?.backends?.adobe_productbus) pub.mixerConfig.backends.adobe_productbus = { ...bus };
+    // content mappings into another program's DAM are template-specific
+    delete pub.paths;
+    delete pub.xwalk;
+    config.public = pub;
+  }
+
+  const admins = new Set([userEmail].filter(Boolean));
+  const role = { admin: [...admins], author: ['*@adobe.com'], publish: ['*@adobe.com'] };
+  const baseRoles = baselineConfig.access?.admin?.role || {};
+  Object.entries(baseRoles).forEach(([name, members]) => {
+    (members || []).filter((m) => /@techacct\.adobe\.com$/i.test(m)).forEach((m) => {
+      role[name] = [...new Set([...(role[name] || []), m])];
+    });
+  });
+  if (role.admin.length) config.access = { admin: { role } };
 
   cleanupSiteConfig(config);
   return config;
 }
 
 async function createAemSiteConfig(newSiteName, config) {
-  const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
+  let response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
     method: 'PUT',
     body: JSON.stringify(config),
     contentType: 'application/json',
   });
+  if (response.status === 409) {
+    // AEM Code Sync may have created a default config for the new repo already; replace it with ours
+    response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
+      method: 'POST',
+      body: JSON.stringify(config),
+      contentType: 'application/json',
+    });
+  }
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Failed to create AEM site config: ${response.status} ${response.statusText} - ${text}`);
@@ -642,23 +638,31 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-function getDefaultIndexHtml(siteName) {
-  return `<body><header></header><main>
-  <h1>Welcome to ${siteName}</h1>
-  <p>Your new site has been created. Edit this page in <a href="https://da.live/#/${ORG}/${siteName}">Document Authoring</a>.</p>
-</main><footer></footer></body>`;
-}
-
 async function fetchDaConfig(org, repo) {
   const response = await cloneitProcessFetch('da', Paths.daConfig(org, repo));
   if (!response.ok) return null;
   return response.text();
 }
 
-function rewriteDaConfigForNewSite(configJson, newSiteName, baselineSite) {
-  const baselineRef = `${ORG}/${baselineSite}`;
-  const newRef = `${ORG}/${newSiteName}`;
-  return configJson.replace(new RegExp(baselineRef.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), newRef);
+/**
+ * Rewrites every DA config sheet for the new site (same rules as the customer-demo skill's
+ * da-config.mjs): baseline references → new site, and publish approvers → the requester only, so the
+ * template's approvers never get emails about this demo.
+ */
+function rewriteDaConfigForNewSite(configJson, newSiteName, baselineSite, userEmail = '') {
+  const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const rewritten = configJson
+    .replace(new RegExp(`${esc(`${ORG}/${baselineSite}`)}(?![a-z0-9-])`, 'g'), `${ORG}/${newSiteName}`)
+    .replace(new RegExp(esc(`main--${baselineSite}--${ORG}`), 'g'), `main--${newSiteName}--${ORG}`);
+  let cfg;
+  try { cfg = JSON.parse(rewritten); } catch { return rewritten; }
+  const sheet = cfg['publish-workflow-config'];
+  if (sheet && Array.isArray(sheet.data)) {
+    sheet.data = userEmail ? [{ pattern: '/*', approvers: userEmail, cc: '', notifyonreject: 'true' }] : [];
+    sheet.total = sheet.data.length;
+    sheet.limit = sheet.data.length;
+  }
+  return JSON.stringify(cfg);
 }
 
 async function createDaConfig(org, repo, content) {
@@ -691,22 +695,15 @@ async function collectAllFilePaths(basePath, files, baselineSite) {
   for (const item of items) {
     const isFile = item.lastModified != null && (item.ext || /\.(html|json|png|jpg|jpeg|gif|svg|webp|pdf)$/i.test(item.name || ''));
     const isFolder = !item.ext && !item.lastModified && item.name && item.name !== '.DS_Store';
-    const skipFolder = isFolder && (
-      item.name === 'drafts'
-      || item.name === 'demo-docs'
-      || isExcludedLocaleFolderName(item.name)
-    );
-
-    if (skipFolder) continue;
+    // only top-level working folders are skipped, not e.g. /en/drafts
+    if (!bp && SKIPPED_FOLDERS.has(isFolder ? item.name : (item.name || '').replace(/\.html$/, ''))) continue;
 
     if (isFile) {
       const itemPath = (item.path || '').replace(/^\/+/, '');
       const relPath = itemPath.startsWith(prefix)
         ? itemPath.slice(prefix.length).replace(/^\/+/, '')
         : (bp ? `${bp}/${item.name}` : (item.name || itemPath));
-      const normalized = relPath || item.name;
-      if (pathStartsWithExcludedLocale(normalized)) continue;
-      fileList.push(normalized);
+      fileList.push(relPath || item.name);
 
       if (item.ext === 'html') {
         const hiddenFolder = `.${item.name}`;
@@ -729,26 +726,26 @@ async function collectAllFilePaths(basePath, files, baselineSite) {
   return fileList;
 }
 
-function isHiddenAssetPath(path) {
-  return path.split('/')[0].startsWith('.');
-}
-
-async function rewriteKnownHiddenAssetRefs(sourcePath, newSiteName, baselineSite, hiddenAssetPaths) {
-  if (hiddenAssetPaths.length === 0) return;
+/**
+ * Copied pages and sheets keep absolute links to the template's DA content (images in /media/, hidden
+ * per-page asset folders, …). That content needs a sign-in, so the new site's preview can't load it:
+ * point every such link at the new site's copy instead. Absolute links to the template's aem.page and
+ * aem.live hosts are pointed at the new site's too.
+ */
+async function rewriteBaselineContentRefs(sourcePath, newSiteName, baselineSite) {
   const response = await cloneitProcessFetch('da', Paths.daSource(newSiteName, sourcePath));
   if (!response.ok) return;
   const original = await response.text();
-  let rewritten = original;
-  hiddenAssetPaths.forEach((assetPath) => {
-    const from = `https://content.da.live/${ORG}/${baselineSite}/${assetPath}`;
-    const to = `https://content.da.live/${ORG}/${newSiteName}/${assetPath}`;
-    rewritten = rewritten.split(from).join(to);
-  });
+  // DA content links, and absolute links to the template's aem.page and aem.live hosts. aem.network links
+  // stay: that's where the products every demo shows live (the template's Edge Commerce catalog).
+  const rewritten = original
+    .split(`https://content.da.live/${ORG}/${baselineSite}/`).join(`https://content.da.live/${ORG}/${newSiteName}/`)
+    .replace(new RegExp(`(//[a-z0-9-]+--)${baselineSite}(--${ORG}\\.aem\\.(?:page|live)\\b)`, 'g'), `$1${newSiteName}$2`);
   if (rewritten === original) return;
   await createDaSource(newSiteName, sourcePath, rewritten);
 }
 
-async function copyDaFile(sourcePath, newSiteName, baselineSite, hiddenAssetPaths) {
+async function copyDaFile(sourcePath, newSiteName, baselineSite) {
   const response = await cloneitProcessFetch('da', Paths.daCopyFromBaseline(baselineSite, sourcePath), {
     method: 'POST',
     form: { destination: `/${ORG}/${newSiteName}/${sourcePath}` },
@@ -759,8 +756,8 @@ async function copyDaFile(sourcePath, newSiteName, baselineSite, hiddenAssetPath
     throw new Error(`Failed to copy ${sourcePath}: ${response.status} ${response.statusText} - ${text}`);
   }
 
-  if (sourcePath.endsWith('.html')) {
-    await rewriteKnownHiddenAssetRefs(sourcePath, newSiteName, baselineSite, hiddenAssetPaths);
+  if (/\.(html|json)$/.test(sourcePath)) {
+    await rewriteBaselineContentRefs(sourcePath, newSiteName, baselineSite);
   }
 
   return response;
@@ -771,20 +768,28 @@ async function copyDaFolder(newSiteName, baselineSite, onProgress) {
   if (files.length === 0) {
     throw new Error('No files found in baseline DA folder');
   }
-  const hiddenAssetPaths = files.filter(isHiddenAssetPath);
+  const copied = [];
+  const failed = [];
 
+  // one failing file shouldn't stop the rest of the site from being copied
   for (let i = 0; i < files.length; i += 1) {
     if (onProgress) onProgress(i + 1, files.length, files[i]);
-    await copyDaFile(files[i], newSiteName, baselineSite, hiddenAssetPaths);
+    try {
+      await copyDaFile(files[i], newSiteName, baselineSite);
+      copied.push(files[i]);
+    } catch (e) {
+      console.warn(e);
+      failed.push(files[i]);
+    }
   }
-  return files;
+  return { copied, failed };
 }
 
 function daPathsToApiPaths(daFiles) {
   return daFiles.map((f) => {
     if (f.endsWith('.html')) {
-      const withoutExt = f.slice(0, -5);
-      return withoutExt === 'index' ? '/' : `/${withoutExt}`;
+      // index.html → folder URL: "index.html" → "/", "en/index.html" → "/en/"
+      return `/${f.slice(0, -5)}`.replace(/(^|\/)index$/, '$1');
     }
     return `/${f}`.replace(/\/+/g, '/');
   });
@@ -809,118 +814,305 @@ async function createDaSource(siteName, path, content) {
   return response;
 }
 
-async function cloneSite(siteName, baselineSite, adminEmail = '') {
-  if (!app.workerReady) {
-    showToast('CloneIt worker is not ready. Refresh the page or check worker configuration.', 'error');
-    return;
-  }
-  if (!baselineSite) {
-    showToast(UI.toastPickTemplate, 'error');
-    return;
-  }
 
+async function workerPost(path, body) {
+  const response = await fetch(`${CLONEIT_WORKER_URL}${path}`, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw Object.assign(new Error(data.error || `${path}: ${response.status}`), { status: response.status, data });
+  }
+  return data;
+}
+
+/** Site name text → slug: "Acme Investments, Inc." → "acme-investments-inc". */
+function slugFromName(name) {
+  return String(name || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, SITE_NAME_MAX_LENGTH).replace(/-+$/, '');
+}
+
+/** "manulifeim.com/institutional/tw/en" → "https://manulifeim.com/institutional/tw/en"; '' when not a web URL. */
+function normalizeCustomerUrl(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return '';
+  try {
+    const url = new URL(/^https?:\/\//i.test(text) ? text : `https://${text}`);
+    if (!/^https?:$/.test(url.protocol) || !url.hostname.includes('.')) return '';
+    return url.href.replace(/\/$/, '');
+  } catch {
+    return '';
+  }
+}
+
+/** Suggested site name from the customer's domain: "https://www.manulifeim.com/..." → "manulifeim". */
+function siteNameFromUrl(raw) {
+  const href = normalizeCustomerUrl(raw);
+  if (!href) return '';
+  const labels = new URL(href).hostname.toLowerCase().replace(/^(www\d?|m)\./, '').split('.');
+  labels.pop();
+  // second-level public suffixes such as .co.uk / .com.au
+  if (labels.length > 1 && /^(co|com|org|net|gov|ac|edu)$/.test(labels[labels.length - 1])) labels.pop();
+  return slugFromName(labels[labels.length - 1] || '');
+}
+
+/** The worker creates scdemos/<site>, adds it to AEM Code Sync and makes the requester admin. */
+async function provisionRepo(siteName, githubUser) {
+  try {
+    return await workerPost('standalone', { site: siteName, githubUser });
+  } catch (e) {
+    // a demo repo from an earlier, interrupted run (e.g. Code Sync was added later by an admin): continue with it
+    if (e.status === 409 && e.message === 'repo_exists') {
+      try {
+        return await workerPost('standalone', { site: siteName, githubUser, resume: true });
+      } catch (e2) {
+        if (e2.status === 409) throw new Error(`Repository ${ORG}/${siteName} already exists and wasn't created by CloneIt. Change the site name (e.g. add -2) and try again.`);
+        throw e2;
+      }
+    }
+    if (e.status === 403 && /github_user_not_in/.test(e.message)) {
+      throw Object.assign(
+        new Error(`GitHub user "${githubUser}" isn't in the demo's GitHub group yet. Sign up with the Access App first.`),
+        { signUp: true },
+      );
+    }
+    throw e;
+  }
+}
+
+/** Full code sync (the template commit predates Code Sync membership), then wait until code is served. */
+async function waitForCodeSync(siteName, onTick) {
+  await cloneitProcessFetch('helix', Paths.helixCode(siteName), { method: 'POST' }).catch(() => {});
+  for (let i = 0; i < 40; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const r = await cloneitProcessFetch('helix', Paths.helixCode(siteName, 'scripts/aem.js'));
+    if (r.ok) return true;
+    if (onTick) onTick(i);
+    // eslint-disable-next-line no-await-in-loop
+    await wait(3000);
+  }
+  return false;
+}
+
+/** Bulk preview (topic preview) or publish (topic publish) through the Admin API; waits for the job. */
+async function runBulkJob(siteName, topic, paths, onTick) {
+  const route = topic === 'publish' ? 'live' : 'preview';
+  const response = await cloneitProcessFetch('helix', Paths.helixBulk(route, siteName), {
+    method: 'POST',
+    body: JSON.stringify({ paths, forceUpdate: true }),
+    contentType: 'application/json',
+  });
+  if (!response.ok) throw new Error(`${route}: ${response.status} ${response.headers.get('x-error') || ''}`.trim());
+  const { job } = await response.json();
+  for (let i = 0; i < 180; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await wait(2000);
+    // eslint-disable-next-line no-await-in-loop
+    const d = await (await cloneitProcessFetch('helix', Paths.helixJob(siteName, topic, job.name))).json().catch(() => ({}));
+    // the job reports progress while it runs (processed of total); if not, the UI shows "in bulk…"
+    if (onTick) onTick(d.progress?.processed ?? null, d.progress?.total ?? paths.length);
+    if (d.state === 'stopped') {
+      const res = d.data?.resources || [];
+      return {
+        okPaths: res.filter((x) => x.status === 200).map((x) => x.path),
+        failed: res.filter((x) => x.status !== 200).map((x) => ({ path: x.path, status: x.status })),
+      };
+    }
+  }
+  throw new Error(`${route} job did not finish in time`);
+}
+
+async function runBulkInChunks(siteName, topic, paths, onPhase) {
+  const okPaths = [];
+  const failed = [];
+  for (let i = 0; i < paths.length; i += 400) {
+    if (onPhase) onPhase(topic, i, paths.length);
+    // eslint-disable-next-line no-await-in-loop
+    const r = await runBulkJob(siteName, topic, paths.slice(i, i + 400), (processed) => {
+      if (onPhase && processed != null) onPhase(topic, i + processed, paths.length);
+    });
+    okPaths.push(...r.okPaths);
+    failed.push(...r.failed);
+  }
+  return { okPaths, failed };
+}
+
+/**
+ * Preview everything (one retry for transient 5xx), then publish only what previewed. Files in hidden
+ * DA attachment folders (`/.name/…`) are previewed but never published: the live tier doesn't serve them.
+ */
+async function previewAndPublish(siteName, paths, onPhase) {
+  const preview = await runBulkInChunks(siteName, 'preview', paths, onPhase);
+  const transient = preview.failed.filter((f) => f.status >= 500).map((f) => f.path);
+  if (transient.length) {
+    const retry = await runBulkInChunks(siteName, 'preview', transient, onPhase);
+    preview.okPaths.push(...retry.okPaths);
+    preview.failed = [...preview.failed.filter((f) => f.status < 500), ...retry.failed];
+  }
+  const publishable = preview.okPaths.filter((p) => !/(^|\/)\.[^/]+\//.test(p));
+  const live = await runBulkInChunks(siteName, 'publish', publishable, onPhase);
+  return {
+    previewed: preview.okPaths.length,
+    published: live.okPaths.length,
+    failed: [...preview.failed.map((f) => `preview ${f.path} (${f.status})`), ...live.failed.map((f) => `publish ${f.path} (${f.status})`)],
+  };
+}
+
+/** Audit log: one row per created demo in DA scdemos/demo-registry/demos.json (best effort). */
+async function recordInRegistry(row) {
+  try {
+    const path = Paths.daSource(REGISTRY.site, REGISTRY.path);
+    const r = await cloneitProcessFetch('da', path);
+    let sheet = { total: 0, limit: 0, offset: 0, data: [], ':type': 'sheet' };
+    if (r.ok) {
+      const j = await r.json().catch(() => null);
+      if (Array.isArray(j?.data)) sheet = j;
+      else if (Array.isArray(j?.data?.data)) sheet = j.data;
+    }
+    sheet.data.push(row);
+    sheet.total = sheet.data.length;
+    sheet.limit = sheet.data.length;
+    await createDaSource(REGISTRY.site, REGISTRY.path, JSON.stringify(sheet));
+  } catch (e) {
+    console.warn('Registry write skipped:', e);
+  }
+}
+
+async function cloneSite(siteName, opts = {}) {
+  const baselineSite = BASELINE_SITE;
+  const { githubUser = '', customerSite = '' } = opts;
+  if (!app.workerReady) {
+    showToast('CloneIt worker is not ready. Sign in to da.live and refresh.', 'error');
+    return;
+  }
   setButtonLoading(true);
   hideResult();
-
   const filesEl = document.getElementById('progress-files');
   if (filesEl) filesEl.innerHTML = '';
+  let repo = null;
 
   try {
-    setProgress(true, 5, 'Checking if site name is available…', null, 'Checking', '');
-    const [aemExists, daExists] = await Promise.all([
-      siteExistsInAem(siteName),
-      folderExistsInDa(siteName),
-    ]);
-
-    if (aemExists) {
-      throw new Error(
-        `Site "${siteName}" already exists in AEM. Choose a different name or delete the existing site first.`,
-      );
+    setProgress(true, 3, 'Checking if site name is available…', null, 'Checking', '');
+    const [aemExists, daExists] = await Promise.all([siteExistsInAem(siteName), folderExistsInDa(siteName)]);
+    // second run: AEM Code Sync may have created a default config for this repo already
+    const resumable = aemExists && (await fetchBaselineConfig(siteName).catch(() => ({}))).code?.repo === siteName;
+    if (aemExists && !resumable) {
+      throw new Error(`A demo named "${siteName}" already exists. Change the site name (e.g. "${siteName}-2") and try again.`);
     }
     if (daExists) {
-      throw new Error(
-        `Folder "${ORG}/${siteName}" already exists in DA. Choose a different name or remove the existing folder first.`,
-      );
+      throw new Error(`A DA folder "${ORG}/${siteName}" already exists. Change the site name (e.g. "${siteName}-2") and try again.`);
     }
 
-    setProgress(true, 8, 'Creating DA folder…', null, 'Setup', '');
-    const indexContent = getDefaultIndexHtml(siteName);
-    await createDaSource(siteName, 'index.html', indexContent);
+    setProgress(true, 5, `Creating repository ${ORG}/${siteName}…`, null, 'Repository', '');
+    repo = await provisionRepo(siteName, githubUser);
+    (repo.steps || []).forEach((st) => setProgress(true, 8, st, `GitHub: ${st}`, 'Repository', ''));
+    if (!repo.codeSync?.added) {
+      throw new Error(`Repository created, but it couldn't be added to AEM Code Sync (${repo.codeSync?.reason}). Ask an scdemos admin to add ${ORG}/${siteName} to AEM Code Sync, then run CloneIt again with the same name.`);
+    }
 
-    setProgress(true, 10, 'Copying DA config…', null, 'Setup', '');
+    setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
+    const { copied: copiedFiles, failed: copyFailed } = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
+      const pct = 15 + Math.floor((current / total) * 35);
+      setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
+    });
+    if (!copiedFiles.length) throw new Error(`No content could be copied from ${ORG}/${baselineSite}.`);
+
+    setProgress(true, 52, 'Copying DA config (all sheets)…', null, 'Setup', '');
     let daConfigCopied = false;
     const daConfigContent = await fetchDaConfig(ORG, baselineSite);
     if (daConfigContent?.trim()) {
       try {
-        const rewrittenConfig = rewriteDaConfigForNewSite(daConfigContent, siteName, baselineSite);
-        await createDaConfig(ORG, siteName, rewrittenConfig);
+        await createDaConfig(ORG, siteName, rewriteDaConfigForNewSite(daConfigContent, siteName, baselineSite, app.userEmail));
         daConfigCopied = true;
       } catch (configErr) {
         console.warn('DA config copy skipped:', configErr);
       }
     }
 
-    setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
-    let copiedFiles = [];
-    try {
-      copiedFiles = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
-        const pct = 15 + Math.floor((current / total) * 25);
-        setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
-      });
-    } catch (copyError) {
-      setProgress(true, 35, 'Copy failed, updating index.html…', null, 'Fallback', '');
-      await createDaSource(siteName, 'index.html', indexContent);
-      copiedFiles = ['index.html'];
-    }
-
-    setProgress(true, 50, 'Fetching baseline config…', null, 'Configuring', '');
+    setProgress(true, 55, 'Fetching baseline config…', null, 'Configuring', '');
     const baselineConfig = await fetchBaselineConfig(baselineSite);
-
-    setProgress(true, 70, adminEmail ? `Creating site config (admin: ${adminEmail})…` : 'Creating site config…', null, 'Configuring', '');
-    const newConfig = buildNewSiteConfig(baselineConfig, siteName, adminEmail);
+    setProgress(true, 60, 'Creating site config…', null, 'Configuring', '');
+    const newConfig = buildNewSiteConfig(baselineConfig, siteName, {
+      userEmail: app.userEmail, baselineSite,
+    });
     await createAemSiteConfig(siteName, newConfig);
 
-    const queryIndex = {
-      copied: false,
-      verified: false,
-      skippedNoBaseline: false,
-      error: null,
-    };
+    const queryIndex = { copied: false, verified: false, skippedNoBaseline: false, error: null };
     const queryYaml = await fetchBaselineQueryIndex(baselineSite);
     if (!queryYaml?.trim()) {
       queryIndex.skippedNoBaseline = true;
     } else {
-      setProgress(true, 85, 'Copying query index config…', null, 'Configuring', '');
+      setProgress(true, 64, 'Copying query index config…', null, 'Configuring', '');
       try {
         await createQueryIndex(siteName, queryYaml);
         queryIndex.copied = true;
-        setProgress(true, 88, 'Verifying query index (query.yaml)…', null, 'Configuring', '');
         queryIndex.verified = await verifyQueryIndexAfterCreate(siteName);
-        if (!queryIndex.verified) {
-          console.warn('Query index GET verification failed after upload; Admin API may still be propagating.');
-        }
       } catch (queryErr) {
         queryIndex.error = queryErr.message || String(queryErr);
         console.warn('Query index copy failed:', queryErr);
       }
     }
 
-    setProgress(true, 100, 'Done', null, 'Done', '');
+    setProgress(true, 68, 'Syncing code to AEM…', null, 'Code sync', '');
+    const codeSynced = await waitForCodeSync(siteName, (i) => setProgress(true, 68, `Waiting for AEM Code Sync… (${(i + 1) * 3}s)`, null, 'Code sync', ''));
+
     const contentPaths = daPathsToApiPaths(copiedFiles);
-    const templateLabel = getSelectedBaselineLabel() || baselineSite;
+    let publish = null;
+    try {
+      let lastPhase = '';
+      publish = await previewAndPublish(siteName, contentPaths, (topic, done, total) => {
+        const verb = topic === 'preview' ? 'Previewing' : 'Publishing';
+        const [from, to] = topic === 'preview' ? [72, 86] : [86, 99];
+        const pct = done ? from + Math.floor((Math.min(done, total) / total) * (to - from)) : from;
+        // AEM runs these as one bulk job: show its progress when reported, otherwise just "in bulk"
+        const first = !done && lastPhase !== topic;
+        lastPhase = topic;
+        setProgress(true, pct, `${verb} ${total} pages and assets in bulk…`, first ? `${verb} in bulk (one AEM job)…` : null, topic === 'preview' ? 'Preview' : 'Publish', done ? `${Math.min(done, total)} / ${total}` : '');
+      });
+    } catch (pubErr) {
+      console.warn('Bulk preview/publish failed:', pubErr);
+      publish = { error: pubErr.message || String(pubErr) };
+    }
+
+    // write access for the requester to the demo's DA content and config (org permissions sheet)
+    setProgress(true, 99, 'Giving you edit access in DA…', null, 'Permissions', '');
+    let permissions = null;
+    try {
+      permissions = await workerPost('permissions', { site: siteName });
+    } catch (permErr) {
+      console.warn('Permissions not added:', permErr);
+      permissions = { error: permErr.message || String(permErr) };
+    }
+
+    await recordInRegistry({
+      date: new Date().toISOString(),
+      site: siteName,
+      template: baselineSite,
+      customer: customerSite,
+      requester: app.userEmail,
+      repo: `https://github.com/${ORG}/${siteName}`,
+    });
+
+    setProgress(true, 100, 'Done', null, 'Done', '');
     showResult(true, siteName, null, {
       codeConfig: newConfig.code,
       contentPaths,
       daConfigCopied,
       queryIndex,
       baselineSite,
-      templateLabel,
-      adminEmail,
+      repo,
+      codeSynced,
+      publish,
+      customerSite,
+      copyFailed,
+      permissions,
     });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
     console.error('Clone failed:', error);
-    showResult(false, siteName, error.message);
+    showResult(false, siteName, error.message, { signUp: !!error.signUp });
     showToast(error.message, 'error');
   } finally {
     setButtonLoading(false);
@@ -928,22 +1120,38 @@ async function cloneSite(siteName, baselineSite, adminEmail = '') {
   }
 }
 
+/** The customer site is optional; '' when empty, null when typed but not a web URL. */
+function getCustomerSite() {
+  const raw = (document.getElementById('customer-site-input')?.value || '').trim();
+  if (!raw) return '';
+  return normalizeCustomerUrl(raw) || null;
+}
+
+function getGithubUser() {
+  return (document.getElementById('github-user-input')?.value || '').trim();
+}
+
+/** Without the worker's GitHub token, demos can't be created: say so instead of failing later. */
+function applyAvailability() {
+  const note = document.getElementById('unavailable-note');
+  if (note) note.hidden = !app.workerReady || !app.sdkReady || app.standaloneAvailable;
+}
+
 function updateCloneButtonState() {
   const cloneBtn = document.getElementById('clone-btn');
   const siteInput = document.getElementById('site-name-input');
-  const emailInput = document.getElementById('admin-email-input');
-  const baseline = getSelectedBaselineSite();
-  const { value } = validateSiteName(siteInput?.value || '', baseline);
-  const emailOk = validateAdminEmail(emailInput?.value || '').valid;
+  const { value } = validateSiteName(siteInput?.value || '', BASELINE_SITE);
+  // the requester's GitHub username is required: they become admin of the new repo
+  const ghOk = GH_USER_RE.test(getGithubUser());
+  const urlOk = getCustomerSite() !== null;
   if (cloneBtn) {
-    cloneBtn.disabled = !app.workerReady || !app.demositesReady || !value || !baseline || !emailOk;
+    cloneBtn.disabled = !app.workerReady || !app.sdkReady || !app.standaloneAvailable || !value || !ghOk || !urlOk;
   }
 }
 
 function setupEventListeners() {
   const siteInput = document.getElementById('site-name-input');
   const cloneBtn = document.getElementById('clone-btn');
-  const baselineSelect = document.getElementById('baseline-select');
   const previewEl = document.getElementById('site-preview');
   const helpBtn = document.getElementById('help-btn');
   const modal = document.getElementById('help-modal');
@@ -952,9 +1160,8 @@ function setupEventListeners() {
 
   if (siteInput) {
     siteInput.addEventListener('input', () => {
-      const baseline = getSelectedBaselineSite();
-      const { value } = validateSiteName(siteInput.value, baseline);
-      if (previewEl) previewEl.textContent = value || 'yoursite';
+      const { value } = validateSiteName(siteInput.value, BASELINE_SITE);
+      if (previewEl) previewEl.textContent = value || 'acme-investments';
       updateCloneButtonState();
     });
     siteInput.addEventListener('keydown', (e) => {
@@ -965,42 +1172,25 @@ function setupEventListeners() {
     });
   }
 
-  if (baselineSelect) {
-    baselineSelect.addEventListener('change', () => {
-      updateCloneButtonState();
-    });
-  }
-
   if (cloneBtn) {
     cloneBtn.addEventListener('click', () => {
-      const baselineSite = getSelectedBaselineSite();
-      if (!baselineSite) {
-        showToast(UI.toastPickTemplate, 'error');
-        return;
-      }
-      const { valid, value, error } = validateSiteName(siteInput?.value, baselineSite);
+      const { valid, value, error } = validateSiteName(siteInput?.value, BASELINE_SITE);
       if (!valid) {
         showToast(error, 'error');
         return;
       }
-      const emailInput = document.getElementById('admin-email-input');
-      const emailResult = validateAdminEmail(emailInput?.value || '');
-      if (!emailResult.valid) {
-        showToast(emailResult.error, 'error');
+      const customerSite = getCustomerSite();
+      if (customerSite === null) {
+        showToast('Enter a valid customer website URL (e.g. https://www.acme-investments.com/en) or leave it empty', 'error');
         return;
       }
-      cloneSite(value, baselineSite, emailResult.value);
-    });
-  }
-
-  const adminEmailInput = document.getElementById('admin-email-input');
-  if (adminEmailInput) {
-    adminEmailInput.addEventListener('input', updateCloneButtonState);
-    adminEmailInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        cloneBtn?.click();
+      const gh = getGithubUser();
+      if (!GH_USER_RE.test(gh)) {
+        showToast('Enter your GitHub username: you become admin of the new repo.', 'error');
+        return;
       }
+      try { localStorage.setItem(GH_USER_KEY, gh); } catch { /* storage unavailable */ }
+      cloneSite(value, { githubUser: gh, customerSite });
     });
   }
 
@@ -1027,6 +1217,29 @@ function setupEventListeners() {
     });
   }
 
+  const signupModal = document.getElementById('signup-modal');
+  if (signupModal) {
+    // closed with its button, a click outside or Escape: focus goes back to the site name field
+    const closeSignup = () => {
+      signupModal.classList.add('hidden');
+      document.getElementById('site-name-input')?.focus();
+    };
+    signupModal.querySelector('.modal-close')?.addEventListener('click', closeSignup);
+    signupModal.addEventListener('click', (e) => {
+      if (e.target === signupModal) closeSignup();
+    });
+    signupModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeSignup();
+      // keep Tab inside the dialog: it has two controls, the close button and the link
+      if (e.key === 'Tab') {
+        const items = [...signupModal.querySelectorAll('.modal-close, .modal-cta')];
+        const i = items.indexOf(document.activeElement);
+        e.preventDefault();
+        items[(i + (e.shiftKey ? items.length - 1 : 1)) % items.length]?.focus();
+      }
+    });
+  }
+
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       const openModal = document.querySelector('.modal-overlay:not(.hidden)');
@@ -1042,6 +1255,38 @@ function setupEventListeners() {
 
   const bulkBtn = document.getElementById('bulk-btn');
   if (bulkBtn) bulkBtn.addEventListener('click', handleBulkAction);
+
+  document.getElementById('github-user-input')?.addEventListener('input', updateCloneButtonState);
+
+  // the site name is suggested from the customer site until the SC edits it; clearing it resumes the suggestion
+  const customerInput = document.getElementById('customer-site-input');
+  if (customerInput && siteInput) {
+    let siteEdited = false;
+    siteInput.addEventListener('input', (e) => {
+      if (e.isTrusted) siteEdited = siteInput.value.trim() !== '';
+    });
+    customerInput.addEventListener('input', () => {
+      if (!siteEdited) {
+        siteInput.value = siteNameFromUrl(customerInput.value);
+        siteInput.dispatchEvent(new Event('input'));
+      }
+      updateCloneButtonState();
+    });
+    customerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        cloneBtn?.click();
+      }
+    });
+  }
+
+  document.getElementById('copy-prompt-btn')?.addEventListener('click', () => {
+    if (!app.lastPrompt) return;
+    navigator.clipboard.writeText(app.lastPrompt).then(
+      () => showToast('Prompt copied. Paste it in Copilot or Claude Code inside the repo.', 'success'),
+      () => showToast('Could not copy. Select the prompt text instead.', 'error'),
+    );
+  });
 
   const copyDetailsBtn = document.getElementById('copy-details-btn');
   if (copyDetailsBtn) {
@@ -1063,23 +1308,30 @@ function setupEventListeners() {
 async function init() {
   setupEventListeners();
 
-  const siteInput = document.getElementById('site-name-input');
+  const customerInput = document.getElementById('customer-site-input');
   const cloneBtn = document.getElementById('clone-btn');
-  if (siteInput) siteInput.focus();
+  if (customerInput) customerInput.focus();
   if (cloneBtn) cloneBtn.disabled = true;
   setCloneStep(1);
+  // remembered from the last own-repo request on this browser
+  const ghInput = document.getElementById('github-user-input');
+  try { if (ghInput && !ghInput.value) ghInput.value = localStorage.getItem(GH_USER_KEY) || ''; } catch { /* storage unavailable */ }
 
+  // the DA SDK provides the signed-in user's IMS token, which the worker needs on every call
+  await initDaSdk();
   try {
     await ensureWorkerReady();
     app.workerReady = true;
   } catch (error) {
     console.error('Init failed:', error);
-    showToast('CloneIt worker unavailable. Check ALLOWED_ORIGINS and deployment.', 'error');
+    showToast(/sign_in|token|user_not_allowed/.test(error.message)
+      ? 'Sign in to da.live with your Adobe account and open CloneIt from DA.'
+      : 'CloneIt worker unavailable. Check ALLOWED_ORIGINS and deployment.', 'error');
   }
-
-  await loadDemositesMapping();
+  if (!app.sdkReady) showToast(UI.toastSdkFailed, 'error');
+  applyAvailability();
   updateCloneButtonState();
-  if (app.workerReady && app.demositesReady) {
+  if (app.workerReady && app.sdkReady && app.standaloneAvailable) {
     showToast(UI.toastReady, 'success');
   }
 }

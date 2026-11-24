@@ -15,6 +15,9 @@
     "dev:contact-us": "wrangler dev --config ./workers/contact_us/wrangler.toml",
     "deploy:contact-us": "wrangler deploy --config ./workers/contact_us/wrangler.toml",
     "tail:contact-us": "wrangler tail --config ./workers/contact_us/wrangler.toml",
+    "dev:orders": "wrangler dev --config ./workers/orders/wrangler.toml",
+    "deploy:orders": "wrangler deploy --config ./workers/orders/wrangler.toml",
+    "tail:orders": "wrangler tail --config ./workers/orders/wrangler.toml",
     "dev:feed": "wrangler dev --config ./workers/feed/wrangler.toml",
     "deploy:feed": "wrangler deploy --config ./workers/feed/wrangler.toml",
     "tail:feed": "wrangler tail --config ./workers/feed/wrangler.toml",
@@ -23,7 +26,13 @@
     "tail:cdn": "wrangler tail --config ./workers/cdn/wrangler.toml",
     "dev:cloneit-token": "wrangler dev --config ./workers/cloneit_token/wrangler.toml",
     "deploy:cloneit-token": "wrangler deploy --config ./workers/cloneit_token/wrangler.toml",
-    "tail:cloneit-token": "wrangler tail --config ./workers/cloneit_token/wrangler.toml"
+    "tail:cloneit-token": "wrangler tail --config ./workers/cloneit_token/wrangler.toml",
+    "dev:access": "wrangler dev --config ./workers/access/wrangler.toml",
+    "deploy:access": "wrangler deploy --config ./workers/access/wrangler.toml",
+    "tail:access": "wrangler tail --config ./workers/access/wrangler.toml",
+    "dev:content-search": "wrangler dev --config ./workers/content_search/wrangler.toml",
+    "deploy:content-search": "wrangler deploy --config ./workers/content_search/wrangler.toml",
+    "tail:content-search": "wrangler tail --config ./workers/content_search/wrangler.toml"
   },
   "repository": {
     "type": "git",
