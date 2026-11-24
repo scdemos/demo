@@ -176,6 +176,21 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   (`config/content/overlay.json` answers 400 "invalid object path"). Writing the whole object works and
   keeps the `contentBusId`, which comes from the source URL. Minor, not filed.
 
+- [ ] **Conditional writes aren't atomic**: a source bus write with `If-Match` or `If-None-Match` checks the
+  ETag with a HEAD and then writes without a condition
+  ([post.js#L51-L61](https://github.com/adobe/helix-api-service/blob/729986f9bd24f9770eeee6a4bc6614d465d20eb9/src/source/post.js#L51-L61)).
+  Two writers that start at the same time both get 201, and one change is lost. Legacy DA passes the
+  condition on to storage. Request publish relies on it for its requests sheet. The fix,
+  [adobe/helix-api-service#574](https://github.com/adobe/helix-api-service/pull/574), was closed without
+  merging. Found in a local test during the Nov 24 review, not filed.
+
+- [ ] **Ping header also marks overlay sites**: helix-admin's ping sends `x-api-upgrade-available` when the
+  site's source is on the source bus, and also when only its `content.overlay` is
+  ([index.js#L101-L110](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/index.js#L101-L110)).
+  da.live and the apps read that header to decide where a site's documents live, so a DA site with a
+  source bus overlay looks like a Helix 6 site. The media library and request publish worker branches
+  also read the site's content source; the shared `isHlx6` in da-nx doesn't yet. Not filed.
+
 ---
 
 ## Pending: DA apps that only talk to the legacy store
