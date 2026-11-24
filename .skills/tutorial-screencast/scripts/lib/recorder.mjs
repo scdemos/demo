@@ -168,7 +168,7 @@ export const SIDEKICK = process.env.TUTORIAL_SIDEKICK
   || path.join(os.homedir(), 'repos/github.com/adobe/aem-sidekick/dist/chrome');
 
 export async function startRecording({
-  rawDir, rawRoot, headless = true, sidekick = false,
+  rawDir, rawRoot, headless = true, sidekick = false, consentBanner = false,
 }) {
   const rel = path.relative(rawRoot, rawDir);
   if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) throw new Error(`refusing to clear ${rawDir}: not inside ${rawRoot}`);
@@ -181,7 +181,11 @@ export async function startRecording({
   const ctx = await chromium.launchPersistentContext(PROFILE, {
     // Extensions need a visible browser.
     headless: sidekick ? false : headless,
-    args: sidekick ? [`--disable-extensions-except=${SIDEKICK}`, `--load-extension=${SIDEKICK}`] : [],
+    args: [
+      ...(sidekick ? [`--disable-extensions-except=${SIDEKICK}`, `--load-extension=${SIDEKICK}`] : []),
+      // the live site's cookie banner hides itself from automated browsers (navigator.webdriver)
+      ...(consentBanner ? ['--disable-blink-features=AutomationControlled'] : []),
+    ],
     viewport: { width: W, height: H },
     recordVideo: { dir: rawDir, size: { width: W, height: H } },
   });
