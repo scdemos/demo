@@ -487,15 +487,10 @@ function handleBulkAction() {
   openBulkAppWithUrls(app.lastClonedSite, app.contentPaths);
 }
 
-/**
- * The site config stored for a name; null when there is none (404). A config it can't read
- * counts as one; any other error stops the clone before it creates anything.
- */
+/** The site config stored for a name; null when there is none. A config it can't read counts as one. */
 async function findSiteInAem(siteName) {
   const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`Couldn't check whether "${siteName}" exists (${response.status}). Try again.`);
-  return (await response.json().catch(() => ({}))) ?? {};
+  return response.ok ? (await response.json().catch(() => ({}))) ?? {} : null;
 }
 
 async function folderExistsInDa(siteName) {
