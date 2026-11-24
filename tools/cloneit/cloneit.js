@@ -457,9 +457,15 @@ function handleBulkAction() {
   openBulkAppWithUrls(app.lastClonedSite, app.contentPaths);
 }
 
+/**
+ * Whether a site config exists for a name. Only a 404 means the name is free; any other error
+ * stops the clone before it creates anything.
+ */
 async function siteExistsInAem(siteName) {
   const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
-  return response.ok;
+  if (response.status === 404) return false;
+  if (!response.ok) throw new Error(`Couldn't check whether "${siteName}" exists (${response.status}). Try again.`);
+  return true;
 }
 
 async function folderExistsInDa(siteName) {
