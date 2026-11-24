@@ -37,7 +37,7 @@ Opened from `demo-hlx6` (`da.live/app/scdemos/demo-hlx6/tools/cloneit/cloneit`),
 3. Preview and publish go through the Helix 6 API (`POST https://api.aem.live/scdemos/sites/{site}/preview/` and `…/live/`, jobs polled), with your token. Files below dot folders (`.da`, page attachments) aren't previewed.
 4. No DA permissions rows: on Helix 6 the site config's roles decide who can edit.
 
-Code sync, the query index and the registry work as above. Demo Admin can't delete a Helix 6 demo yet (it only deletes demos whose content is in `content.da.live/scdemos/{site}/`).
+Code sync, the query index and the registry work as above. CloneIt copies the stored source files, not pages that the template's content overlay generates (such as the `json2html` event pages): the clone gets no overlay, and the result says so. Demo Admin can't delete a Helix 6 demo yet (it only deletes demos whose content is in `content.da.live/scdemos/{site}/`).
 
 **Edit in DA:** `https://da.live/#/scdemos/{sitename}`
 
