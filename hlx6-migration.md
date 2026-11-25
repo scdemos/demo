@@ -126,6 +126,13 @@ Fixed on main (this repo):
   ([adobe/helix-admin#3771](https://github.com/adobe/helix-admin/issues/3771), closed as completed on
   Oct 14). da.live and the apps follow the ping alone, so a DA site with a source bus overlay counts as
   Helix 6.
+- **Image copies keep query params**: a `media_<hash>.png?width=750&format=png` URL from another EDS
+  site is stored as the 750px rendition under a new hash. Helix 5 copied the same bytes at preview
+  ([mdast-process-images.js#L59-L86](https://github.com/adobe/helix-html2md-lib/blob/65bf45bee30e57ff98e2d7a7a898af879c305f84/src/mdast-process-images.js#L59-L86)).
+  Helix 6 copies on save, on purpose ([adobe/helix-api-service#74](https://github.com/adobe/helix-api-service/pull/74),
+  [Slack, Aug 27](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1787837268015579)), and puts the new
+  media URL in the doc. Clone It drops the rendition params before import
+  ([source.js#L94-L130](https://github.com/scdemos/demo/blob/315639c56ee83991e752a4b6f2c91adf2838983d/tools/cloneit/source.js#L94-L130)).
 
 ---
 
@@ -228,9 +235,6 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   `/preview/*` and `/live/*` and got 400. The app now uses the Helix 6 host, and array calls use
   `/preview/` and `/live/`. On the deployed branch, Preview and Publish each succeeded for both test
   pages in da.live. The array API passed preview, publish, unpreview and unpublish on the same pages.
-
-- [ ] **Image interning keeps query params**: `media_<hash>.png?width=750&format=png` gets interned as the
-  750px rendition under a new hash. Not filed.
 
 - [ ] **Bulk preview of press pages (overlays that need the user's login)**: the press pages come from
   AEM Content Fragments through json2html, which passes the caller's IMS token on to the AEM author.
