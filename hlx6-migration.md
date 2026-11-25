@@ -70,6 +70,11 @@ Site setup and content:
   supports Helix 6, see request publish below.
 - [x] Images that pointed at `content.da.live/scdemos/demo/...` (63 refs in 13 docs) were interned
   into the media bus on save.
+- [x] **Direct Dynamic Media delivery** ([scdemos/demo#162](https://github.com/scdemos/demo/pull/162), merged):
+  DA saves editable images as links so Helix 6 keeps the DAM URL. Preview drops `data-edit-as`, so the
+  demo renders the bare links as pictures and keeps the Smart Crop query and alt text. On the
+  [hlx6 preview](https://hlx6--demo-hlx6--scdemos.aem.page/drafts/dynamic-media-link-images), both
+  images load from DAM and the named DAM link is still clickable. The site's DA settings are unchanged.
 
 Fixed upstream:
 
@@ -429,12 +434,6 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 ---
 
 ## Pending: Config and content (our side)
-
-- [ ] **Direct Dynamic Media delivery** ([scdemos/demo#162](https://github.com/scdemos/demo/pull/162), open):
-  DA saves editable images as links so Helix 6 keeps the DAM URL. Preview drops `data-edit-as`; the
-  demo renders the bare image links as pictures and keeps the Smart Crop query and alt text. On the
-  [branch preview](https://dmimages--demo-hlx6--scdemos.aem.page/drafts/dynamic-media-link-images), both
-  images load and the named DAM link is still clickable. The site's DA settings are unchanged.
 
 - [ ] **Keep the copy current**: demo keeps changing (a how-to was published during the Nov 24 copy).
   The copy scripts compare demo's DA files and delivery state with demo-hlx6, so a later run only has
