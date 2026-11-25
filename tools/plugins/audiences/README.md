@@ -61,7 +61,7 @@ Put Audience, Campaign Audience and Experiment Audience on the page section that
 
 ## AJO setup
 
-Set the values in `scripts/ajo-config.js`: surface and timeout (800 ms). The surface is fixed so every host (localhost, `.aem.page`, `.aem.live`) asks AJO the same question; an empty surface falls back to `web://<current host>/#audiences`. AJO lookups use the site datastream (`MARTECH_DATASTREAM_ID`), which needs Experience Platform with Adobe Journey Optimizer enabled.
+Set the values in `scripts/ajo-config.js`: surface and timeout (1500 ms). The surface is fixed so every host (localhost, `.aem.page`, `.aem.live`) asks AJO the same question; an empty surface falls back to `web://<current host>/#audiences`. AJO lookups use the site datastream (`MARTECH_DATASTREAM_ID`), which needs Experience Platform with Adobe Journey Optimizer enabled.
 
 A campaign for **All visitors** needs nothing else: starting or stopping it in AJO turns the audience on or off for everyone. A campaign that targets an AEP audience also needs edge segmentation on the datastream and an Active-On-Edge merge policy in the sandbox.
 
