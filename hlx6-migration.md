@@ -187,10 +187,14 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   demo-hlx6 can't be a base. The `msm` sheet is in the DA org config, which da.live doesn't read for
   Helix 6 sites. See also the MSM panel below.
 
-- [ ] **Permissions model**: the DA org permissions sheet (IMS groups, path rows, read-only users) has no
-  Helix 6 equivalent; access is the site's role list. From reading helix-api-service, `basic_publish`
-  isn't a role on api.aem.live (not verified, not filed). da.live's new permission UI
-  ([adobe/da-live#1503](https://github.com/adobe/da-live/pull/1503)) edits the DA sheet, not the Helix 6 role list.
+- [ ] **Permissions model**: on Helix 6, access is the site's role list (`admin`, `author`, `publish`, `view`
+  and others, granted to emails or IMS groups as `<imsorgid>/<group>`), and each role covers the whole site.
+  The path rows of the DA org permissions sheet (access per folder) have no Helix 6 equivalent; fine-grained
+  access is [adobe/helix-api-service#291](https://github.com/adobe/helix-api-service/issues/291) (open).
+  From reading helix-api-service, `basic_publish` isn't a role on api.aem.live (not verified, not filed).
+  da.live's permissions page ([adobe/da-live#1503](https://github.com/adobe/da-live/pull/1503)) sends Helix 6
+  sites to tools.aem.live's user-admin, which edits the site's role list
+  ([permissions.js#L28-L33](https://github.com/adobe/da-live/blob/f18b897a7bc8cd43939f0eaa87fd6459a04e9f86/blocks/permissions/permissions.js#L28-L33)).
 
 - [ ] **robots.txt** can't be written through api.aem.live (text/plain body):
   [adobe/helix-api-service#472](https://github.com/adobe/helix-api-service/issues/472), waiting on
