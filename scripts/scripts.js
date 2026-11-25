@@ -21,13 +21,11 @@ import {
 import {
   initMartech, martechEager, martechLazy, updateUserConsent,
 } from '../plugins/martech/src/index.js';
-import {
-  getMarket, getStoredConsent, getVisitorType, isGatedPage,
-} from './shared.js';
+import { getMarket, getStoredConsent, isGatedPage } from './shared.js';
 import { runExperimentation, runExperimentationLazy } from './experiment-loader.js';
 import { MARTECH_DATASTREAM_ID } from './ajo-config.js';
 import {
-  setAjoConsent, setAjoMartechReady,
+  applyAjoSections, setAjoConsent, setAjoMartechReady,
 } from './ajo.js';
 
 const { searchParams } = new URL(window.location.href);
@@ -52,8 +50,6 @@ async function dynamicBlocks(main) {
 // plugin's own simulation panel stays off: it would open on top of it on every ?experiment= link.
 const EXPERIMENTATION_CONFIG = {
   simulationUI: false,
-  // Authors must see and edit every audience's section; nothing is removed while authoring.
-  keepUnmatchedSections: IS_EDITOR,
   isProd: () => {
     const { hostname } = window.location;
     return hostname !== 'localhost' && !hostname.endsWith('.page');
@@ -568,7 +564,7 @@ export function startMartech(consent, personalization) {
     share: false,
   }).catch(() => { /* Web SDK reports its own errors */ });
   setAjoMartechReady(ready);
-  // Startup may outlive the audience deadline; keep its rejection handled independently.
+  // Journey Optimizer may stop waiting for startup; keep its rejection handled independently.
   ready.catch(() => {});
   return ready;
 }
@@ -686,7 +682,6 @@ async function loadEager(doc) {
   document.documentElement.lang = getMarket().lang;
   decorateTemplateAndTheme();
   applyTheme();
-  if (!IS_EDITOR) getVisitorType();
 
   // Martech only runs with consent. A returning visitor who accepted analytics gets it here,
   // so Target can personalize before the first paint; everyone else waits for the banner
@@ -700,6 +695,8 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     await runExperimentation(doc, EXPERIMENTATION_CONFIG);
+    // Authors edit the authored sections, so Journey Optimizer content stays out of editors.
+    if (!IS_EDITOR) await applyAjoSections(main);
     await buildProductPage(main);
     decorateMain(main);
     // Target offers can bring in block markup after the page was decorated
@@ -707,7 +704,7 @@ async function loadEager(doc) {
     document.body.classList.add('appear');
     await Promise.all([
       martechLoadedPromise && martechLoadedPromise.then(martechEager),
-      // Audience targeting may leave no section (e.g. every section targets another audience).
+      // An empty main (or one Journey Optimizer could not fill) has no first section to load.
       main.querySelector('.section') && loadSection(main.querySelector('.section'), async (s) => {
         await waitForFirstImage(s);
         await loadFragments(s);

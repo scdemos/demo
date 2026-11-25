@@ -13,18 +13,12 @@ const SECTION_KEYS = /^data-(experiment|campaign|audience)/;
 
 /**
  * Delivered pages carry Section Metadata as section data attributes (e.g. data-experiment,
- * data-audience:-member-week). The plugin reads Section Metadata tables, so rebuild one per
- * section from those attributes. Runs once, before any detection or decoration.
+ * data-audience:-mobile).
+ * The plugin reads Section Metadata tables, so rebuild one per section from those attributes.
  * @param {Document} doc
  */
-const seenSections = new WeakSet();
-
 function restoreSectionMetadata(doc) {
   doc.querySelectorAll('main > div').forEach((section) => {
-    // Later passes only look at sections a served campaign brought in: the engine writes its
-    // own data-audience/data-experiment on sections it has already handled.
-    if (seenSections.has(section)) return;
-    seenSections.add(section);
     const attrs = [...section.attributes].filter(({ name }) => SECTION_KEYS.test(name));
     if (!attrs.length || section.querySelector(':scope > .section-metadata')) return;
     const meta = doc.createElement('div');
@@ -47,17 +41,10 @@ function restoreSectionMetadata(doc) {
  * Whether the page has experiment, campaign or audience metadata (page or section level).
  * @returns {boolean}
  */
-export function isExperimentationEnabled(doc = document) {
-  return !!doc.head.querySelector('[name^="experiment"],[name^="campaign-"],[name="audience"],[name^="audience-"],[property^="campaign:"],[property^="audience:"]')
-    || [...doc.querySelectorAll('.section-metadata div')]
+export function isExperimentationEnabled() {
+  return !!document.head.querySelector('[name^="experiment"],[name^="campaign-"],[name^="audience-"],[property^="campaign:"],[property^="audience:"]')
+    || [...document.querySelectorAll('.section-metadata div')]
       .some((d) => /Experiment|Campaign|Audience/i.test(d.textContent));
-}
-
-/** Experiment-only pages do not need the audience sheet on their rendering path. */
-function hasAudienceMetadata(doc) {
-  return !!doc.head.querySelector('[name="audience"],[name^="audience-"],[property^="audience:"],[name="experiment-audience"],[name="experiment-audiences"],[name="campaign-audience"],[name="campaign-audiences"]')
-    || [...doc.querySelectorAll('.section-metadata > div > div:first-child')]
-      .some((cell) => /^(audience(?:$|[\s:(-])|(?:experiment|campaign)[\s-]+audiences?$)/i.test(cell.textContent.trim()));
 }
 
 /**
@@ -82,31 +69,14 @@ function answerEmptyConfig() {
  */
 export async function runExperimentation(doc, config) {
   restoreSectionMetadata(doc);
-  enabled = isExperimentationEnabled(doc);
+  enabled = isExperimentationEnabled();
   if (!enabled) {
     answerEmptyConfig();
     return null;
   }
   try {
-    const plugin = import(PLUGIN);
-    let registered = false;
-    const prepareAudiences = async (target) => {
-      restoreSectionMetadata(doc);
-      if (registered) {
-        const { refreshAudienceGates } = await import('./audiences.js');
-        refreshAudienceGates(doc);
-        return;
-      }
-      if (!hasAudienceMetadata(doc)) return;
-      registered = true;
-      const { registerAudiences } = await import('./audiences.js');
-      await registerAudiences(target, doc);
-    };
-    await prepareAudiences(config);
-    const { loadEager } = await plugin;
-    // A served campaign can bring in content with its own audience sections; the engine
-    // calls this again between the campaign and audience passes.
-    return await loadEager(doc, { ...config, prepareAudiences });
+    const { loadEager } = await import(PLUGIN);
+    return await loadEager(doc, config);
   } catch (error) {
     console.error('Failed to load experimentation (eager):', error);
     return null;
