@@ -197,9 +197,18 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   (the images of Helix 6 previews and the path of uploads).
 
 - [ ] **MSM inheritance**: demo is the MSM base for `demo-ca` (the org's `msm` sheet; `demo-us`,
-  `demo-wealth` and `demo-advisor` are gone). A source bus site has no fetch-time inheritance, so
-  demo-hlx6 can't be a base. The `msm` sheet is in the DA org config, which da.live doesn't read for
-  Helix 6 sites. See also the MSM panel below.
+  `demo-wealth` and `demo-advisor` are gone). The da-msm worker reads pages only from legacy DA, and
+  Helix 6 previews read the source bus without going through the worker, so demo-hlx6 can't be a base
+  today. The `msm` sheet is in the DA org config, which da.live doesn't read for Helix 6 sites. Sean
+  Steimer plans Helix 6 support in the next MSM version, tentatively for mid-January
+  ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795639833844779?thread_ts=1795639365.103839)).
+  In his plan MSM and Loc become one app, smart overwrite replaces inheritance (his current thinking),
+  and the worker stays only for link rewriting and placeholders
+  ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640178769409?thread_ts=1795639365.103839)).
+  [adobe/da-live#1794](https://github.com/adobe/da-live/pull/1794) (open, draft: 3-way review in the
+  canvas editor) is the first piece. MSM is getting a full overhaul, so we won't fix MSM as-is on Helix 6
+  for scdemo ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640326777499?thread_ts=1795639365.103839)). See also the
+  MSM panel below.
 
 - [ ] **Permissions model**: on Helix 6, access is the site's role list (`admin`, `author`, `publish`, `view`
   and others, granted to emails or IMS groups as `<imsorgid>/<group>`), and each role covers the whole site.
@@ -309,7 +318,9 @@ along the way" below.
   [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
   export that merge from base imports, so #1341's merge is broken on main today. The fix is the separate
   branch `msmmerge`, as for the four other bugs #1341 has (see "Fixes found along the way").
-  `msmhlx6` merges after `msmstat` so Resume inheritance keeps the override if the site status read fails.
+  We won't fix the panel as-is for scdemo, since MSM is getting a full overhaul (see MSM inheritance above,
+  [Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640325947449?thread_ts=1795639365.103839)). `msmhlx6` stays a branch
+  without a PR.
   The aem-apps MSM app
   ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4) is DA-only too.
 
