@@ -1,5 +1,6 @@
 // Site datastream: Analytics, Target, and Experience Platform with Adobe Journey Optimizer.
-export const MARTECH_DATASTREAM_ID = '6b7be811-0b55-4061-9639-334d462b74ac'; // frescopa-demo
+// frescopa-sandbox datastream, Frescopa sandbox (report suite ccsfrescopa-demo).
+export const MARTECH_DATASTREAM_ID = '1745a516-afcc-4432-bc75-06a017965561';
 
 export const AJO_CONFIG = {
   // One surface for every host (localhost, .aem.page, .aem.live), matching the AJO channel
