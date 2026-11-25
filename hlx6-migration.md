@@ -159,6 +159,18 @@ Known problems that won't be fixed.
   aem-apps MSM app ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4)
   is DA-only too.
 
+- **Conditional writes aren't atomic**: a source bus write with `If-Match` or `If-None-Match` checks the
+  ETag with a HEAD and then writes without a condition
+  ([post.js#L51-L61](https://github.com/adobe/helix-api-service/blob/729986f9bd24f9770eeee6a4bc6614d465d20eb9/src/source/post.js#L51-L61)).
+  Two writers that start at the same time both get 201, and one change is lost. Legacy DA passes the
+  condition on to storage. Request publish relies on it for its requests sheet, so of two requests sent at
+  the same moment, one can be lost. Sean Steimer filed it as
+  [adobe/helix-api-service#571](https://github.com/adobe/helix-api-service/issues/571) (closed, not planned) and
+  closed both fixes without merging them on Nov 23:
+  [adobe/helix-shared#1329](https://github.com/adobe/helix-shared/pull/1329) (closed) and
+  [adobe/helix-api-service#574](https://github.com/adobe/helix-api-service/pull/574) (closed).
+  Nobody is working on it.
+
 ---
 
 ## Pending: Blocked on Helix 6
@@ -275,14 +287,6 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 - [ ] **Setting `content.overlay`**: the source bus site config only takes `content` as a whole object
   (`config/content/overlay.json` answers 400 "invalid object path"). Writing the whole object works and
   keeps the `contentBusId`, which comes from the source URL. Minor, not filed.
-
-- [ ] **Conditional writes aren't atomic**: a source bus write with `If-Match` or `If-None-Match` checks the
-  ETag with a HEAD and then writes without a condition
-  ([post.js#L51-L61](https://github.com/adobe/helix-api-service/blob/729986f9bd24f9770eeee6a4bc6614d465d20eb9/src/source/post.js#L51-L61)).
-  Two writers that start at the same time both get 201, and one change is lost. Legacy DA passes the
-  condition on to storage. Request publish relies on it for its requests sheet. The fix,
-  [adobe/helix-api-service#574](https://github.com/adobe/helix-api-service/pull/574), was closed without
-  merging. Found in a local test during the Nov 24 review, not filed.
 
 ---
 
