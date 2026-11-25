@@ -539,7 +539,8 @@ function rewriteBaselineRefs(value, baselineSite, newSiteName) {
  * plus the template's technical accounts so automation (bulk preview/publish) keeps working.
  * Helix 6 template: content from the new site's source bus, and the DA config (which a Helix 6
  * site keeps in `editor.da`) rewritten for the new site. On Helix 6 the roles also decide who
- * can edit content.
+ * can edit content, so there is no *@adobe.com author/publish: the requester and the template's
+ * admins are admin.
  */
 function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
   const { userEmail = '', baselineSite = '' } = opts;
@@ -585,9 +586,11 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
     config.public = pub;
   }
 
-  const admins = new Set([userEmail].filter(Boolean));
-  const role = { admin: [...admins], author: ['*@adobe.com'], publish: ['*@adobe.com'] };
   const baseRoles = baselineConfig.access?.admin?.role || {};
+  const admins = new Set([userEmail, ...(hlx6 ? baseRoles.admin || [] : [])].filter(Boolean));
+  const role = hlx6
+    ? { admin: [...admins] }
+    : { admin: [...admins], author: ['*@adobe.com'], publish: ['*@adobe.com'] };
   Object.entries(baseRoles).forEach(([name, members]) => {
     (members || []).filter((m) => /@techacct\.adobe\.com$/i.test(m)).forEach((m) => {
       role[name] = [...new Set([...(role[name] || []), m])];
