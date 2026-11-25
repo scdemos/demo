@@ -143,9 +143,7 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   PDFs, 36 MB for mp4, 10 s to fetch. Not tried: PDFs, files over 20 MB, the API key header, and whether
   SC roles have `media:upload`. It does not fix the editor: da-live and EW still save through the source
   PUT, so authors still get the 413. The file lands in the media bus, which authors can't browse, under a
-  hash name, and the route is commented out in the OpenAPI spec. The test file
-  `media_176fd2fa40a4a6d383d428ebeccb44b21cf588b0d.mp4` is still in demo-hlx6's media bus: no page links it,
-  and the token used for the test has no `media:delete`.
+  hash name, and the route is commented out in the OpenAPI spec.
 
 - [ ] **Rate limit without CORS headers**: the 429 of api.aem.live comes from its Fastly service (config
   backup `s2dVksBUsvEKaaYF13wIh6.json` in adobe/aem.page), not from helix-api-service, so helix-api-service's
