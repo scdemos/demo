@@ -9,9 +9,10 @@ still have to do on our side, and where Helix 6 or the DA apps don't support som
 our worklist, so the open items name the PR, issue or prepared fix behind them.
 
 **Research scope**: walkthrough of all 31 how-to scripts on demo-hlx6 on Oct 9 (9 work, 10 partly,
-10 broken, 2 not testable), PR and issue states checked Nov 19, caught up with main on Nov 24
+10 broken, 2 not testable), caught up with main on Nov 24
 ([#103](https://github.com/scdemos/demo/pull/103) to [#154](https://github.com/scdemos/demo/pull/154)),
-content and DA site config copied again from demo on Nov 24.
+content and DA site config copied again from demo on Nov 24. PR, issue and branch states were checked
+again on Nov 25, the day [adobe/da-nx#936](https://github.com/adobe/da-nx/pull/936) merged.
 
 **demo moved to the Frescopa redesign** ([#105](https://github.com/scdemos/demo/pull/105)) with
 language markets ([#110](https://github.com/scdemos/demo/pull/110), [#118](https://github.com/scdemos/demo/pull/118)).
@@ -79,6 +80,9 @@ Fixed upstream:
   [adobe/da-universal#307](https://github.com/adobe/da-universal/pull/307) (merged Oct 28, not rechecked on demo-hlx6 yet)
 - [x] Fragment picker lists Helix 6 sites: [adobe-rnd/aem-apps#44](https://github.com/adobe-rnd/aem-apps/pull/44).
   Retested Oct 29: list, search, preview and insert work. Loading takes 20-30s (paced listing) vs ~3s on demo.
+- [x] Schema editor lists, saves and deletes schemas on the source bus: [adobe/da-nx#936](https://github.com/adobe/da-nx/pull/936)
+  (merged Nov 25). A new schema's name is checked first (HEAD, then POST), because the source bus has no
+  create-only save.
 - [x] Scheduled publish of canvas pages (`.html` paths were refused at publish time): [adobe/da-live#1436](https://github.com/adobe/da-live/pull/1436).
   Scheduled snapshot publish is untested on Helix 6.
 - [x] YAML site config (`query.yaml`, `sitemap.yaml`) can be written through api.aem.live:
@@ -110,6 +114,13 @@ Fixed on main (this repo):
   both are for the CDN host and weren't copied.
 - **Dynamic Media smart crop dialog**: the picker finds no approved assets with crops. Same AEM author
   as demo, so not a Helix 6 issue.
+- **Ping header on overlay sites**: helix-admin's ping also sends `x-api-upgrade-available` when only a
+  site's `content.overlay` is on the source bus
+  ([index.js#L101-L110](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/index.js#L101-L110)).
+  That is intended
+  ([adobe/helix-admin#3771](https://github.com/adobe/helix-admin/issues/3771), closed as completed on
+  Oct 14). da.live and the apps follow the ping alone, so a DA site with a source bus overlay counts as
+  Helix 6.
 
 ---
 
@@ -125,15 +136,25 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
   [#408](https://github.com/adobe/helix-api-service/pull/408) (presigned upload, open).
 
-- [ ] **Rate limit without CORS headers**: the source bus allows 10 requests/s per project and answers
-  more with a 429 that has no CORS headers, so browsers report a network error instead of a 429. Apps
-  that list folders in parallel break on it. [adobe/da-live#1397](https://github.com/adobe/da-live/issues/1397) (open).
-  The fragment picker and the prepared fixes for the media library, translations, EW chat and clone it
-  pace their requests (4 in flight, 8 starts/s, retry after `x-retry-after`). The schema editor doesn't yet.
+- [ ] **Rate limit without CORS headers**: the 429 of api.aem.live comes from its Fastly service (config
+  backup `s2dVksBUsvEKaaYF13wIh6.json` in adobe/aem.page), not from helix-api-service, so helix-api-service's
+  CORS wrapper never runs. The limit is keyed by org, site and topic: every `/source/*` call of a site
+  shares one bucket, for all users (10 requests per second over 10 seconds, then a 1-minute penalty box).
+  Observed on Nov 25: about 180 requests in 7 s trip it, 30 s at 5.5 requests/s don't. After that every
+  source call of the site gets a 429 for about 60 s, with no `access-control-*` headers (the browser
+  reports `Failed to fetch`), `retry-after: 0` and `x-retry-after: 60`. OPTIONS and unauthenticated
+  requests count and can trip it alone. Apps that list folders in parallel break on it.
+  [adobe/da-live#1397](https://github.com/adobe/da-live/issues/1397) (open). The fix goes into the Fastly
+  VCL. The fragment picker and the prepared fixes for the media library, translations, EW chat, clone it,
+  request publish and MSM pace their requests (about 8 starts/s, retry after `x-retry-after` where the
+  browser can read it). The schema editor (merged in #936) doesn't pace its requests.
 
 - [ ] **Medialog**: nothing writes the medialog for Helix 6 sites. [adobe/helix-api-service#177](https://github.com/adobe/helix-api-service/issues/177)
   ported the endpoint, but no source write, `/media` upload or preview logs an entry. The media library's
-  Images view stays empty because of it. No issue yet.
+  Images view stays empty because of it. Two open PRs add the logging:
+  [adobe/helix-api-service#522](https://github.com/adobe/helix-api-service/pull/522) (media uploads,
+  previews and unpreviews) and [adobe/helix-api-service#526](https://github.com/adobe/helix-api-service/pull/526)
+  (the images of Helix 6 previews and the path of uploads).
 
 - [ ] **MSM inheritance**: demo is the MSM base for `demo-ca` (the org's `msm` sheet; `demo-us`,
   `demo-wealth` and `demo-advisor` are gone). A source bus site has no fetch-time inheritance, so
@@ -184,20 +205,14 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   [adobe/helix-api-service#574](https://github.com/adobe/helix-api-service/pull/574), was closed without
   merging. Found in a local test during the Nov 24 review, not filed.
 
-- [ ] **Ping header also marks overlay sites**: helix-admin's ping sends `x-api-upgrade-available` when the
-  site's source is on the source bus, and also when only its `content.overlay` is
-  ([index.js#L101-L110](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/index.js#L101-L110)).
-  da.live and the apps read that header to decide where a site's documents live, so a DA site with a
-  source bus overlay looks like a Helix 6 site. The media library and request publish worker branches
-  also read the site's content source; the shared `isHlx6` in da-nx doesn't yet. Not filed.
-
 - [ ] **A failed config lookup looks like "no site"**: when helix-admin can't load a site's config, for
   example because the config service answers 5xx, it treats that like a site without config
   ([config/utils.js#L33-L41](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/config/utils.js#L33-L41),
   [index.js#L219-L224](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/index.js#L219-L224)).
   The ping then answers 404 without the upgrade header, exactly as for a legacy DA site, so da.live can
   take a Helix 6 site for legacy and save to `admin.da.live`. Only browsers that haven't opened the site
-  before are affected. Fix: answer 502 for a failed lookup. Found in the second review on Nov 24, not filed.
+  before are affected. da-nx's `hlx6probe` reads such a 404 as legacy, as main does, so it can't catch this
+  either. Fix: answer 502 for a failed lookup. Found in the second review on Nov 24, not filed.
 
 ---
 
@@ -206,36 +221,39 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 Most DA apps build `admin.da.live` URLs themselves, so on Helix 6 they see an empty site. The shared fix
 is da-nx's `nx2/utils/api.js` (`source.*`, `config.*`), which picks the source bus or the legacy store per
 site. Apps served from other origins detect Helix 6 themselves, as aem-apps#44 does. "Prepared" means a
-pushed branch with tests, rebased onto main on Nov 24 and live-checked on demo-hlx6 and a legacy DA site,
-not yet a PR. On Nov 24 each branch also went through an adversarial review, and the fixes from it are
-pushed.
+pushed branch with tests, live-checked on demo-hlx6 and on legacy DA sites, not yet a PR. Each branch went
+through an adversarial review on Nov 24 and a comparison with main on legacy sites on Nov 25; the fixes
+from both are pushed. When the Helix 6 check fails (a ping without the upgrade header, a 401, 403, 429 or
+5xx after two retries, an unreadable config), the apps use the legacy store, as main does today. Bugs that
+main has too are not in these branches. Each is its own small branch and PR, listed under "Fixes found
+along the way" below.
 
-- [ ] **Shared Helix 6 check (`isHlx6`)**: prepared ([da-nx/hlx6probe](https://github.com/adobe/da-nx/tree/hlx6probe)).
-  nx2's `isHlx6` keeps a failed ping until the page reloads and reads a 5xx as "legacy", so one bad ping
-  can send a Helix 6 site's reads and writes to `admin.da.live`. The branch retries a 429 or 503 twice and
-  doesn't keep a failed result. The schema editor, quick edit, translations and MSM fixes need it to
-  recover without a reload. It still can't tell overlay sites apart (see "Ping header also marks overlay
-  sites" above).
-
-- [ ] **Schema editor**: [adobe/da-nx#936](https://github.com/adobe/da-nx/pull/936) (open, in review).
-  Shows "No schemas found" and saves to the legacy store.
+- [ ] **Shared Helix 6 check (`isHlx6`)**: prepared ([da-nx/hlx6probe](https://github.com/adobe/da-nx/tree/hlx6probe)),
+  no PR yet. On main, nx2's `isHlx6` reads a 5xx as "legacy" at once and keeps a ping without an answer
+  until the page reloads, so one bad ping can send a Helix 6 site's reads and writes to `admin.da.live`.
+  The branch retries a 429 or 5xx twice, then reads the site as legacy, as main does. A ping without an
+  answer also reads as legacy but isn't kept, so the next call asks again. Quick edit, translations and
+  MSM call `isHlx6` on legacy sites, so they merge after it.
 
 - [ ] **Quick edit**: prepared ([da-nx/qehlx6](https://github.com/adobe/da-nx/tree/qehlx6)). The portal
   opens, but nothing becomes editable: it checks `admin.da.live` for the page and gives up on the 404. Also
   hardcodes the collab room and image upload. Small overlaps with the open
   [adobe/da-nx#896](https://github.com/adobe/da-nx/pull/896) and [adobe/da-nx#992](https://github.com/adobe/da-nx/pull/992):
-  whichever lands second needs a small rebase.
+  whichever lands second needs a small rebase. Merges after `hlx6probe`.
 
 - [ ] **Translations and rollouts**: prepared ([da-nx/lochlx6](https://github.com/adobe/da-nx/tree/lochlx6)).
   Translate and rollout read `.da/translate.json` from `admin.da.live` and would save projects there. The
   branch now sits on the copy engine from [adobe/da-nx#801](https://github.com/adobe/da-nx/pull/801) (merged
   Nov 4) and hands it a fetch and a config loader that use the source bus on Helix 6. Still open: the
-  editor's Rollout panel builds its own copy engine and keeps versions on `admin.da.live`.
+  editor's Rollout panel builds its own copy engine and keeps versions on `admin.da.live`. Merges after
+  `hlx6probe`; main was merged in on Nov 25.
 
 - [ ] **Media library**: [adobe/da-nx#944](https://github.com/adobe/da-nx/pull/944) (open, in review).
   "Site not found" today. With the fix, validation, indexing and rebuild work; the Images view still
   needs the medialog (above). Merge order to agree with
-  [adobe/da-nx#866](https://github.com/adobe/da-nx/pull/866).
+  [adobe/da-nx#866](https://github.com/adobe/da-nx/pull/866). The ping header alone decides where a site
+  lives, and a failed check uses DA, as main does. A race in the index lock heartbeat (main has it too)
+  is the separate branch `mllockhb`; merge it first or together with this PR.
 
 - [ ] **Request publish**: prepared for the worker
   ([publish-requests-worker/prhlx6](https://github.com/cloudadoption/publish-requests-worker/tree/prhlx6), v1
@@ -247,7 +265,8 @@ pushed.
   [aem-apps#73](https://github.com/adobe-rnd/aem-apps/pull/73). The worker's new setup routes
   ([publish-requests-worker#41](https://github.com/cloudadoption/publish-requests-worker/pull/41)) only
   use `admin.da.live`, so on Helix 6 the branch refuses them (501) instead of saving config the workflow
-  ignores. Whether setup should write `config/editor/da.json` instead is for Sagar to decide.
+  ignores. Whether setup should write `config/editor/da.json` instead is for Sagar to decide. Both branches
+  use the ping header alone to pick the store, and a failed detection uses DA, as main does.
 
 - [ ] **EW chat (da-agent)**: prepared (da-agent `agnthlx6`, not pushed). The agent calls Helix 6 pages
   "empty", joins the wrong collab room and would write to the legacy store. Pushing any da-agent branch
@@ -257,8 +276,9 @@ pushed.
 - [ ] **MSM panel (da-live)**: prepared ([da-live/msmhlx6](https://github.com/adobe/da-live/tree/msmhlx6)) on
   top of [adobe/da-live#1341](https://github.com/adobe/da-live/pull/1341) (open), see also
   [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
-  export that merge from base imports, so #1341's merge is broken on main today; the branch now merges
-  through the public loc SDK. The aem-apps MSM app
+  export that merge from base imports, so #1341's merge is broken on main today. The fix is the separate
+  branch `msmmerge`, as for the four other bugs #1341 has (see "Fixes found along the way").
+  `msmhlx6` merges after `hlx6probe`. The aem-apps MSM app
   ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4) is DA-only too.
 
 - [ ] **Site apps (`da.live/apps#/...`)**: nothing prepared.
@@ -268,6 +288,66 @@ pushed.
 - [ ] **Comments**: commenting doesn't work on Helix 6 sites, probably because Helix 6 doesn't send a
   document ID. [adobe/da-live#1780](https://github.com/adobe/da-live/issues/1780) (open, Usman Khalid),
   including mentions and notifications.
+
+---
+
+## Fixes found along the way (not Helix 6)
+
+These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`.
+
+- [ ] **API: org-level `.da` paths**: [da-nx/nodaping](https://github.com/adobe/da-nx/tree/nodaping), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx2/utils/api.js#L690).
+  For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da`, which fails as a network error and stays failed, so `source.*` calls on those paths fail for the whole page. With `hlx6probe` such a path reads as legacy; this branch also saves the ping.
+
+- [ ] **Media library: index lock refresh**: [da-nx/mllockhb](https://github.com/adobe/da-nx/tree/mllockhb), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/media-library/indexing/build.js#L271-L318).
+  The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. Merge before `mlhlx6` or together with it.
+
+- [ ] **Schema editor: markup in schema text**: [da-nx/schmesc](https://github.com/adobe/da-nx/tree/schmesc), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/utils/utils.js#L89).
+  `<em>` in a description is lost on save and `&copy;` comes back as `©`; `$&` in the JSON writes `{{JSON}}`.
+
+- [ ] **Schema editor: files that aren't schemas**: [da-nx/schmhtml](https://github.com/adobe/da-nx/tree/schmhtml), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/utils/utils.js#L78-L80).
+  Every entry in `.da/forms/schemas` is listed as a schema, so a `.json` file shows up as an empty invalid schema and can replace the existing schema with the same name.
+
+- [ ] **Schema editor: failed save or delete**: [da-nx/schmerr](https://github.com/adobe/da-nx/tree/schmerr), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/schema-editor.js#L157).
+  The error goes to a field that only exists in new-schema mode, so the editor throws and shows nothing.
+
+- [ ] **Translations: unreadable `translate.json`**: [da-nx/loccfg](https://github.com/adobe/da-nx/tree/loccfg), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/utils/utils.js#L320).
+  A failed read is cached as an empty config, so translate and validate run without the site's languages until a reload.
+
+- [ ] **Translations: copy and archive in the dashboard**: [da-nx/loccopy](https://github.com/adobe/da-nx/tree/loccopy), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/index.js#L61).
+  A 403 or 500 shows as done: copy adds a project that doesn't exist, archive drops one that is still active.
+
+- [ ] **Translations: first load of the dashboard**: [da-nx/locdash](https://github.com/adobe/da-nx/tree/locdash), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/dashboard.js#L146).
+  A failed or cancelled first load leaves the loading bar and nothing else, and later filter changes wait on the same failed load.
+
+- [ ] **Translations: dependent languages**: [da-nx/locdeps](https://github.com/adobe/da-nx/tree/locdeps), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L370).
+  When a read of the source language's pages fails, the page goes to the vendor without content and the language is never retried.
+
+- [ ] **Translations: failed page or project read**: [da-nx/locreads](https://github.com/adobe/da-nx/tree/locreads), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L92-L94).
+  A read that throws leaves the page without content and without an error, and it goes to the vendor like that.
+
+- [ ] **Quick edit: failed preview**: [da-nx/qepvstat](https://github.com/adobe/da-nx/tree/qepvstat), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/src/utils.js#L284-L285).
+  The message ends after the colon, because admin.hlx.page answers over HTTP/2, which has no status text. The branch adds the status code.
+
+- [ ] **Quick edit: failed start**: [da-nx/qeretry](https://github.com/adobe/da-nx/tree/qeretry), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/quick-edit-portal.js#L122-L127).
+  A network error on the image cookie or the document check is kept for the life of the page, so nothing opens until a reload.
+
+- [ ] **MSM (on top of #1341): merge from base**: [da-live/msmmerge](https://github.com/adobe/da-live/tree/msmmerge), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L69-L77).
+  #1341 imports `mergeCopy` from loc code that da-nx#801 moved to the public SDK, so every merge fails with "mergeCopy is not a function".
+
+- [ ] **MSM (on top of #1341): inherited pages**: [da-live/msmhead](https://github.com/adobe/da-live/tree/msmhead), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/config.js#L71-L77).
+  Any failed HEAD counts as "no page of its own", so a 403 or 5xx lists a satellite as inherited, and Cancel inheritance overwrites its page.
+
+- [ ] **MSM (on top of #1341): resume inheritance**: [da-live/msmstat](https://github.com/adobe/da-live/tree/msmstat), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L45-L54).
+  A failed status read counts as "not previewed, not published", so the override is deleted and preview and live keep serving it.
+
+- [ ] **MSM (on top of #1341): result of resume inheritance**: [da-live/msmrepub](https://github.com/adobe/da-live/tree/msmrepub), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/msm.js#L234-L254).
+  A failed re-preview or re-publish is ignored and the row shows success.
+
+- [ ] **MSM (on top of #1341): one unreadable satellite**: [da-live/msmauth](https://github.com/adobe/da-live/tree/msmauth), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/shared/utils.js#L78-L95).
+  A 401 from DA sends the whole editor to /not-found.
+
+- [ ] **Clone it: site name check**: [demo/cloneck](https://github.com/scdemos/demo/tree/cloneck), [bug on main](https://github.com/scdemos/demo/blob/4172925b11690f68656f8c904b7eaf4ea3fb36e9/tools/cloneit/cloneit.js#L460-L463).
+  Every answer except 2xx counts as "name is free", so a 401, 403, 429 or 5xx lets the clone go on: it creates the repo and copies the DA content, and a 409 on the config write is answered with a POST that replaces the existing config.
 
 ---
 
@@ -287,7 +367,8 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   a local run with Ben's tokens in place of the worker's service account cloned demo-hlx6 completely: 209 of
   209 files copied, 194 pages and assets previewed and published, then removed again. Ben's account can't
   add a new repo to AEM Code Sync, so that step was stubbed and the clone had no code; it's untested with
-  the real service account. Merging changes `workers/cloneit_token/**`, which deploys the worker. Demo Admin still can't delete a Helix 6 clone (it only accepts `content.da.live` sources).
+  the real service account. Merging changes `workers/cloneit_token/**`, which deploys the worker. Demo Admin still can't delete a Helix 6 clone (it only accepts `content.da.live` sources). The check
+  that a new site name is free is the separate branch `cloneck`.
 
 - [ ] **Demo Admin** ([#142](https://github.com/scdemos/demo/pull/142), [#143](https://github.com/scdemos/demo/pull/143)):
   backs up and resets the demo and deletes CloneIt demos. It copies and deletes through `admin.da.live` and
