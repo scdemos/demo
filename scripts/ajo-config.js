@@ -6,5 +6,5 @@ export const AJO_CONFIG = {
   // One surface for every host (localhost, .aem.page, .aem.live), matching the AJO channel
   // configuration frescopa-web-audiences.
   surface: 'web://main--demo--scdemos.aem.live/#audiences',
-  timeout: 800,
+  timeout: 1500,
 };
