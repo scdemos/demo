@@ -125,6 +125,23 @@ node workers/cloneit_token/index.test.mjs        # offline tests
 # app: open CloneIt from DA with ?ref=local&worker=http://localhost:8797
 ```
 
+## Branch Previews
+
+Every push to a branch that changes `workers/cloneit_token/` runs `.github/workflows/preview-cloneit-token.yaml`: the worker tests, then `wrangler preview`, which deploys the branch's worker as a Cloudflare [Preview](https://developers.cloudflare.com/workers/previews/) at `https://<branch>-demo-cloneit-token.aem-poc-lab.workers.dev/cloneit/`. Production doesn't change until the branch is merged to `main`.
+
+- Open CloneIt or Demo Admin with `?worker=<branch>` (e.g. `https://<branch>--demo--scdemos.aem.page/tools/cloneit/cloneit.html?worker=<branch>`, or from DA with `?ref=<branch>&worker=<branch>`).
+- A Preview only creates, grants and deletes sites whose name starts with `ci-` (`SITE_PREFIX` in `[previews.vars]`). It works on the real scdemos org with production's technical account and GitHub token: delete test demos with Demo Admin (`?worker=<branch>`).
+- `[previews.vars]` in `wrangler.toml` is a copy of `[vars]` plus `SITE_PREFIX`: Previews don't inherit `[vars]`, so change both.
+- Previews get their secrets from the Preview base config, set once by an admin with the production values:
+
+```bash
+cd workers/cloneit_token
+npx wrangler@4.168.0 preview base-config secret put ADOBE_CLIENT_ID   # also ADOBE_CLIENT_SECRET, ADOBE_SCOPES, COMMERCE_TOKEN, GITHUB_PROVISION_TOKEN
+```
+
+  Changes to the base config only reach Previews created afterwards; for an existing one use `wrangler preview secret put <NAME> --name <branch>`.
+- Deleting the branch deletes its Preview (from the workflow on `main`). Preview URLs are public, like the production worker's, and take the same requests.
+
 ## References
 
 - [Repoless documentation](https://www.aem.live/docs/repoless)
