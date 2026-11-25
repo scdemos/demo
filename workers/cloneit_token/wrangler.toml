@@ -31,5 +31,20 @@ CODE_SYNC_INSTALLATION_ID = "180300339"   # AEM Code Sync on scdemos (org settin
 #   authorize for SSO if enforced; + delete_repo for Demo Admin's clone delete). Without it the
 #   standalone lane is disabled and only repoless clones are offered.
 
+# Branch Previews (`wrangler preview`, run by .github/workflows/preview-cloneit-token.yaml) don't inherit [vars]:
+# keep these in sync with [vars]. SITE_PREFIX limits a Preview to ci-* sites. Previews get production's secrets
+# from the Preview base config (wrangler preview base-config secret put …).
+[previews.vars]
+PATH_PREFIX = "cloneit"
+ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.preview.da.live,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live"
+LEGACY_COMPAT = "true"
+ALLOWED_EMAIL_DOMAINS = "adobe.com"
+IMS_CLIENT_IDS = "darkalley"
+TEMPLATE_REPO = "scdemos/demo"
+GITHUB_TEAM = "sc-team"
+PROTECTED_SITES = ""
+CODE_SYNC_INSTALLATION_ID = "180300339"
+SITE_PREFIX = "ci-"
+
 [observability.logs]
 enabled = true

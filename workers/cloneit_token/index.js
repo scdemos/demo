@@ -17,7 +17,7 @@
 // Only ALLOWED_ORIGINS get the legacy routes; IMS_ONLY_ORIGINS always need a token.
 
 import {
-  assertDemoAdmin, listClones, deleteCloneStep, jobState,
+  assertDemoAdmin, listClones, deleteCloneStep, jobState, outsidePrefix,
 } from './admin.js';
 import { productIndex } from './commerce.js';
 
@@ -249,6 +249,7 @@ export async function provisionStandalone({ site, githubUser, email, resume }, e
   const fail = (msg, status = 400, extra = {}) => Object.assign(new Error(msg), { status, extra: { steps, ...extra } });
 
   if (!SITE_RE.test(site || '') || site.length > 50) throw fail('invalid_site_name');
+  if (outsidePrefix(site, env)) throw fail('site_name_needs_prefix');
   if (site === tRepo) throw fail('site_name_is_template');
   // the requester becomes admin of the new repo, so their GitHub account is required
   if (!githubUser || !GH_USER_RE.test(githubUser)) throw fail('github_user_required');
@@ -384,6 +385,7 @@ export async function assertOwnsDemo(site, email, env, gh) {
   const tRepo = (env.TEMPLATE_REPO || `${org}/demo`).split('/')[1];
   const fail = (msg, status = 403) => Object.assign(new Error(msg), { status });
   if (!SITE_RE.test(site || '') || site.length > 50) throw fail('invalid_site_name', 400);
+  if (outsidePrefix(site, env)) throw fail('site_name_needs_prefix', 400);
   if (site === tRepo) throw fail('site_name_is_template', 400);
   const repo = await gh(`/repos/${org}/${site}`);
   if (repo.status === 404) throw fail('site_not_found', 404);

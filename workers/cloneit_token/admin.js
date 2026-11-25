@@ -20,8 +20,11 @@ const orgOf = (env) => env.ORG || 'scdemos';
 const templateOf = (env) => (env.TEMPLATE_REPO || `${orgOf(env)}/demo`).split('/')[1];
 const sleep = (ms) => new Promise((r) => { setTimeout(r, ms); });
 
+/** Branch Previews set SITE_PREFIX (ci-): they only create, grant and delete sites with that prefix. */
+export const outsidePrefix = (site, env) => Boolean(env.SITE_PREFIX) && !String(site).startsWith(env.SITE_PREFIX);
+
 export function isProtected(site, env) {
-  return site === templateOf(env) || list(env.PROTECTED_SITES).includes(site);
+  return site === templateOf(env) || list(env.PROTECTED_SITES).includes(site) || outsidePrefix(site, env);
 }
 
 /** Throws unless DA says the caller can write the whole org (x-da-actions: /=read,write on the org listing). */
