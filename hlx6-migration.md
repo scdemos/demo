@@ -340,7 +340,7 @@ along the way" below.
 
 ## Fixes found along the way (not Helix 6)
 
-These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`.
+These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`. The five MSM branches are on hold, since MSM is getting a full overhaul (see the MSM panel above).
 
 - [ ] **API: org-level `.da` paths**: [da-nx/nodaping](https://github.com/adobe/da-nx/tree/nodaping), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx2/utils/api.js#L690).
   For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da`, which fails as a network error and stays failed, so `source.*` calls on those paths fail for the whole page. The fix uses the legacy store for those paths without sending a ping.
