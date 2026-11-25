@@ -9,9 +9,12 @@ const ORG = 'scdemos';
 const CODE_OWNER = 'scdemos';
 const CODE_REPO = 'demo';
 const DEFAULT_WORKER_URL = 'https://demo.bbird.live/cloneit/';
-// ?worker=http://localhost:8787 points the app at a local `wrangler dev` worker (localhost only)
+// ?worker=<branch> points the app at that branch's Preview of the worker (see README, "Branch Previews"),
+// ?worker=http://localhost:8787 at a local `wrangler dev` worker (localhost only)
+const PREVIEW_RE = /^[a-z][a-z0-9-]{0,43}$/;
 function resolveWorkerUrl() {
   const override = new URLSearchParams(window.location.search).get('worker');
+  if (override && PREVIEW_RE.test(override)) return `https://${override}-demo-cloneit-token.aem-poc-lab.workers.dev/cloneit/`;
   if (override && /^http:\/\/localhost:\d+\/?$/.test(override)) return override.endsWith('/') ? override : `${override}/`;
   return DEFAULT_WORKER_URL;
 }
