@@ -1,5 +1,42 @@
 import { getMetadata, loadCSS } from './aem.js';
 
+let visitorType;
+
+const VISIT_MARKER = 'demo-first-visit';
+
+/**
+ * Snapshot the first-visit marker once per page view. Visit history is personalization data,
+ * so it is read and written only with targeting consent; unknown without it or without storage.
+ */
+export function getVisitorType() {
+  if (visitorType !== undefined) return visitorType;
+  visitorType = null;
+  const consent = getStoredConsent();
+  // Targeting counts only alongside analytics, as on the consent banner.
+  if (!consent?.analytics || !consent?.targeting) return visitorType;
+  try {
+    const returning = localStorage.getItem(VISIT_MARKER) !== null;
+    localStorage.setItem(VISIT_MARKER, 'true');
+    visitorType = returning ? 'returning-visitor' : 'new-visitor';
+  } catch { /* No persistent storage: neither visitor audience is known. */ }
+  return visitorType;
+}
+
+/** Forget visit history when targeting consent is withdrawn. */
+export function clearVisitorType() {
+  visitorType = null;
+  try { localStorage.removeItem(VISIT_MARKER); } catch { /* nothing stored */ }
+}
+
+/** Bound optional remote work without leaving a timer running after completion. */
+export function withTimeout(promise, timeout, fallback = null) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((resolve) => { timer = setTimeout(() => resolve(fallback), timeout); }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 /**
  * Market context from the URL: the first /{lang}/ folder in the path (e.g. /en/, /de/).
  * Anything before it (e.g. a content folder such as /drafts/frescopa) is part of the root.

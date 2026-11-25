@@ -97,6 +97,7 @@ export const DEFAULT_CONFIG = {
 let config;
 let alloyConfig;
 let isAlloyConfigured = false;
+let alloyReady;
 const pendingAlloyCommands = [];
 const pendingDatalayerEvents = [];
 /** IDs of propositions that have been actually displayed (direct-inject or alloy-applied). */
@@ -323,7 +324,7 @@ export async function sendAnalyticsEvent(xdmData, dataMapping = {}, configOverri
  * @param {Object} webSDKConfig The configuration to use
  * @returns a promise that the library was loaded and configured
  */
-async function loadAndConfigureAlloy(instanceName, webSDKConfig) {
+async function configureAlloy(instanceName, webSDKConfig) {
   await import('./alloy.min.js');
   try {
     await window[instanceName]('configure', webSDKConfig);
@@ -333,6 +334,28 @@ async function loadAndConfigureAlloy(instanceName, webSDKConfig) {
   } catch (err) {
     handleRejectedPromise(err instanceof Error ? err : new Error(err));
   }
+}
+
+function loadAndConfigureAlloy(instanceName, webSDKConfig) {
+  alloyReady ||= configureAlloy(instanceName, webSDKConfig);
+  return alloyReady;
+}
+
+/** Fetch JSON code-based content without applying it or reporting an impression. */
+export async function getCodeBasedExperience(surface, signal, canRequest = () => true) {
+  assertInitialized('getCodeBasedExperience');
+  await loadAndConfigureAlloy(config.alloyInstanceName, alloyConfig);
+  if (signal?.aborted || !canRequest()) return null;
+  return sendEvent({
+    type: 'decisioning.propositionFetch',
+    renderDecisions: false,
+    personalization: {
+      surfaces: [surface],
+      schemas: ['https://ns.adobe.com/personalization/json-content-item'],
+      defaultPersonalizationEnabled: false,
+      sendDisplayEvent: false,
+    },
+  });
 }
 
 /**

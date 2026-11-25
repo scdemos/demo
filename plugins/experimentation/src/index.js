@@ -620,7 +620,9 @@ async function applyAllModifications(
   // config + resolution (as section- and fragment-level already do).
   const keyFn = type === pluginOptions.experimentsMetaTagPrefix ? toCamelCase : toClassName;
   const pageMetadata = getAllMetadata(type, keyFn);
-  const pageNS = await modificationsHandler(
+  // A served page-level campaign leaves its head metadata in place; skipping page-level
+  // audiences and experiments keeps them from replacing the campaign's content.
+  const pageNS = pluginOptions.skipPageLevel ? null : await modificationsHandler(
     document.querySelector('main'),
     pageMetadata,
   );
@@ -869,6 +871,7 @@ async function runExperiment(document, pluginOptions) {
           type: 'experiment',
           experiment: id,
           variant,
+          run: !!config.run,
         },
       }));
     },
@@ -986,6 +989,18 @@ async function getAudienceConfig(pluginOptions, metadata, overrides) {
     return null;
   }
 
+  // Inline section targeting: authors keep the variant in this section rather than a URL.
+  if (metadata.value) {
+    const names = stringToArray(metadata.value).map(toClassName);
+    const resolvedAudiences = await getResolvedAudiences(names, pluginOptions) || [];
+    return {
+      inline: true,
+      configuredAudiences: Object.fromEntries(names.map((name) => [name, window.location.pathname])),
+      resolvedAudiences,
+      selectedAudience: resolvedAudiences[0] || null,
+    };
+  }
+
   const configuredAudiencesName = Object.keys(metadata.audiences || metadata).map(toClassName);
   const resolvedAudiences = await getResolvedAudiences(
     configuredAudiencesName,
@@ -1045,6 +1060,12 @@ async function serveAudience(document, pluginOptions) {
     parseAudienceManifest,
     getUrlFromAudienceConfig,
     (el, config, result) => {
+      if (config.inline && !config.selectedAudience) {
+        // Never remove document chrome for a plain page-level Audience value, nor anything
+        // on authoring surfaces, where authors edit every audience's section.
+        if (el !== document.body && !pluginOptions.keepUnmatchedSections) el.remove();
+        return;
+      }
       fireRUM('audience', config, pluginOptions, result);
       // dispatch event
       const { selectedAudience = 'default' } = config;
@@ -1158,9 +1179,20 @@ export async function loadEager(document, options = {}) {
 
   const ns = window.aem || window.hlx || {};
   ns.experimentation = { version: VERSION };
-  ns.audiences = await serveAudience(document, pluginOptions);
-  ns.experiments = await runExperiment(document, pluginOptions);
+  // A campaign link is the visitor's explicit intent, so it wins over an audience variant on
+  // the same section: serving it replaces the section, metadata included, before audiences run.
   ns.campaigns = await runCampaign(document, pluginOptions);
+  const pageCampaignServed = ns.campaigns.some((c) => c.type === 'page' && c.servedExperience);
+  // Lets the project prepare audience metadata the served campaign content brought in.
+  if (pluginOptions.prepareAudiences) await pluginOptions.prepareAudiences(pluginOptions);
+  ns.audiences = await serveAudience(
+    document,
+    pageCampaignServed ? { ...pluginOptions, skipPageLevel: true } : pluginOptions,
+  );
+  ns.experiments = await runExperiment(
+    document,
+    pageCampaignServed ? { ...pluginOptions, skipPageLevel: true } : pluginOptions,
+  );
 
   // Backward compatibility
   ns.experiment = ns.experiments.find((e) => e.type === 'page');
