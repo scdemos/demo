@@ -145,7 +145,9 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   ([skill-folder-api.js#L86-L90](https://github.com/adobe-rnd/ew-extensions/blob/53fb9bc67cbe225cf602a537c834a4d50fd23b1a/blocks/skills/utils/skill-folder-api.js#L86-L90)).
   If admin.da.live starts passing Helix 6 sites through to the source bus (the "dual stack" plan,
   [#da-team, 2026-10-30](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1793374840712289?thread_ts=1793369006.544449)),
-  those writes get the 415.
+  those writes get the 415. Asked Sharanya Vinod and Tobias Bocanegra whether there's a plan for skills on
+  CMA with source bus sites
+  ([#da-team, 2026-11-25](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795626254173009)).
 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
