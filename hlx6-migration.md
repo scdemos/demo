@@ -149,6 +149,16 @@ Known problems that won't be fixed.
   before are affected. Answering 502 for a failed lookup would fix it. Found in the second review on Nov 24;
   it has been discussed at length since and won't be changed.
 
+- **MSM panel (da-live)**: we won't fix the panel as-is for scdemo, since MSM is getting a full overhaul
+  (see MSM inheritance below, [Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640325947449?thread_ts=1795639365.103839)). The fix stays on
+  [da-live/msmhlx6](https://github.com/adobe/da-live/tree/msmhlx6) without a PR, on top of
+  [adobe/da-live#1341](https://github.com/adobe/da-live/pull/1341) (open), see also
+  [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
+  export that merge from base imports, so #1341's merge is broken on main today. That fix is the separate
+  branch `msmmerge`, on hold with the four other #1341 fixes (see "Fixes found along the way"). The
+  aem-apps MSM app ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4)
+  is DA-only too.
+
 ---
 
 ## Pending: Blocked on Helix 6
@@ -230,7 +240,7 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   [adobe/da-live#1794](https://github.com/adobe/da-live/pull/1794) (open, draft: 3-way review in the
   canvas editor) is the first piece. MSM is getting a full overhaul, so we won't fix MSM as-is on Helix 6
   for scdemo ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640326777499?thread_ts=1795639365.103839)). See also the
-  MSM panel below.
+  MSM panel under "Won't Do".
 
 - [ ] **Permissions model**: on Helix 6, access is the site's role list (`admin`, `author`, `publish`, `view`
   and others, granted to emails or IMS groups as `<imsorgid>/<group>`), and each role covers the whole site.
@@ -324,17 +334,6 @@ along the way" below.
   redeploys `da-agent-ci`, and da-agent is to be removed "before Christmas"
   ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795444687667769?thread_ts=1795429693.558869)).
 
-- [ ] **MSM panel (da-live)**: prepared ([da-live/msmhlx6](https://github.com/adobe/da-live/tree/msmhlx6)) on
-  top of [adobe/da-live#1341](https://github.com/adobe/da-live/pull/1341) (open), see also
-  [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
-  export that merge from base imports, so #1341's merge is broken on main today. The fix is the separate
-  branch `msmmerge`, as for the four other bugs #1341 has (see "Fixes found along the way").
-  We won't fix the panel as-is for scdemo, since MSM is getting a full overhaul (see MSM inheritance above,
-  [Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640325947449?thread_ts=1795639365.103839)). `msmhlx6` stays a branch
-  without a PR.
-  The aem-apps MSM app
-  ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4) is DA-only too.
-
 - [ ] **Site apps (`da.live/apps#/...`)**: nothing prepared.
   [site-apps.js#L67](https://github.com/adobe/da-nx/blob/0f67b1b0c9d2ad7427c2f52fc524b8eab6178ed7/nx/blocks/site-apps/site-apps.js#L67)
   builds `admin.da.live` URLs.
@@ -347,7 +346,7 @@ along the way" below.
 
 ## Fixes found along the way (not Helix 6)
 
-These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`. The five MSM branches are on hold, since MSM is getting a full overhaul (see the MSM panel above).
+These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`. The five MSM branches are on hold, since MSM is getting a full overhaul (see the MSM panel under "Won't Do").
 
 - [ ] **API: org-level `.da` paths**: [da-nx/nodaping](https://github.com/adobe/da-nx/tree/nodaping), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx2/utils/api.js#L690).
   For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da`, which fails as a network error and stays failed, so `source.*` calls on those paths fail for the whole page. The fix uses the legacy store for those paths without sending a ping.
