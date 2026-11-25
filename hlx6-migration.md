@@ -215,10 +215,6 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   `/preview/` and `/live/`. On the deployed branch, Preview and Publish each succeeded for both test
   pages in da.live. The array API passed preview, publish, unpreview and unpublish on the same pages.
 
-- [ ] **AEM Assets URLs**: the source bus keeps `/adobe/dynamicmedia/deliver/` URLs as external images, but
-  interns `/adobe/assets/urn:...` URLs on POST (and refuses them on PUT). The editor uses POST, so it works,
-  but the doc ends up with a media bus copy instead of the DAM URL.
-
 - [ ] **Image interning keeps query params**: `media_<hash>.png?width=750&format=png` gets interned as the
   750px rendition under a new hash. Not filed.
 
@@ -433,6 +429,12 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 ---
 
 ## Pending: Config and content (our side)
+
+- [ ] **Direct Dynamic Media delivery** ([scdemos/demo#162](https://github.com/scdemos/demo/pull/162), open):
+  DA saves editable images as links so Helix 6 keeps the DAM URL. Preview drops `data-edit-as`; the
+  demo renders the bare image links as pictures and keeps the Smart Crop query and alt text. On the
+  [branch preview](https://dmimages--demo-hlx6--scdemos.aem.page/drafts/dynamic-media-link-images), both
+  images load and the named DAM link is still clickable. The site's DA settings are unchanged.
 
 - [ ] **Keep the copy current**: demo keeps changing (a how-to was published during the Nov 24 copy).
   The copy scripts compare demo's DA files and delivery state with demo-hlx6, so a later run only has
