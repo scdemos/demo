@@ -21,7 +21,9 @@ import {
 import {
   initMartech, martechEager, martechLazy, updateUserConsent,
 } from '../plugins/martech/src/index.js';
-import { getMarket, getStoredConsent, isGatedPage } from './shared.js';
+import {
+  createTag, getMarket, getStoredConsent, isDamImage, isGatedPage, moveInstrumentation,
+} from './shared.js';
 import { runExperimentation, runExperimentationLazy } from './experiment-loader.js';
 
 const { searchParams } = new URL(window.location.href);
@@ -303,6 +305,26 @@ function decorateSectionMetadata(main) {
   });
 }
 
+// DA saves an editable image as a link whose text is its URL. Preview drops data-edit-as.
+function decorateDamLinks(main) {
+  const links = new Set([...main.querySelectorAll('a[href^="https://delivery-" i]:not([download], [target])')].filter((a) => (
+    !a.children.length && a.textContent.trim() === a.getAttribute('href')
+    && !a.closest('.metadata, .section-metadata') && isDamImage(a.href)
+  )));
+  const images = [...links].filter((a) => {
+    if (a.dataset.editAs === 'image') return true;
+    const parent = a.parentElement;
+    return parent.matches('p, div') && [...parent.childNodes].every((node) => (
+      links.has(node) || (node.nodeType === Node.TEXT_NODE && !node.textContent.trim())
+    ));
+  });
+  images.forEach((a) => {
+    const img = createTag('img', { alt: a.title, loading: 'lazy', src: a.getAttribute('href') });
+    moveInstrumentation(a, img);
+    a.replaceWith(img);
+  });
+}
+
 /**
  * Wraps bare content images in <picture>. Images that are not in the media bus
  * (e.g. local content/ previews) are rendered without one, but blocks expect it.
@@ -358,6 +380,7 @@ function decorateSectionLayouts(main) {
 }
 
 export function decorateMain(main) {
+  decorateDamLinks(main);
   wrapBareImages(main);
   decorateButtons(main);
   decorateIcons(main);

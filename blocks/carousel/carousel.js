@@ -1,5 +1,5 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
-import { createTag } from '../../scripts/shared.js';
+import { createTag, isDamImage, moveInstrumentation } from '../../scripts/shared.js';
 
 const AUTOPLAY_MS = 7000;
 const DETACHED_TICKS = 3;
@@ -38,11 +38,17 @@ function buildSlide(row, index) {
   const [mediaCell, contentCell] = [...row.children];
   const img = mediaCell?.querySelector('picture img');
   if (img) {
-    const optimized = createOptimizedPicture(img.src, img.alt || '', index === 0, [
-      { media: '(min-width: 900px)', width: '2000' },
-      { width: '900' },
-    ]);
-    slide.append(createTag('div', { class: 'carousel-slide-media' }, optimized));
+    let picture = img.closest('picture');
+    if (isDamImage(img.src)) {
+      if (index === 0) img.loading = 'eager';
+    } else {
+      picture = createOptimizedPicture(img.src, img.alt || '', index === 0, [
+        { media: '(min-width: 900px)', width: '2000' },
+        { width: '900' },
+      ]);
+      moveInstrumentation(img, picture.querySelector('img'));
+    }
+    slide.append(createTag('div', { class: 'carousel-slide-media' }, picture));
   }
   const content = createTag('div', { class: 'carousel-slide-content' });
   if (contentCell) content.append(...contentCell.childNodes);
