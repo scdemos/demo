@@ -37,6 +37,7 @@ CODE_SYNC_INSTALLATION_ID = "180300339"   # AEM Code Sync on scdemos (org settin
 [previews.vars]
 PATH_PREFIX = "cloneit"
 ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.preview.da.live,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live"
+IMS_ONLY_ORIGINS = "https://*--demo-hlx6--scdemos.preview.da.live,https://*--demo-hlx6--scdemos.aem.page,https://*--demo-hlx6--scdemos.aem.live"
 LEGACY_COMPAT = "true"
 ALLOWED_EMAIL_DOMAINS = "adobe.com"
 IMS_CLIENT_IDS = "darkalley"
