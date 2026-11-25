@@ -148,6 +148,13 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   those writes get the 415. Asked Sharanya Vinod and Tobias Bocanegra whether there's a plan for skills on
   CMA with source bus sites
   ([Slack, 2026-11-25](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795626254173009)).
+  Hannes Hertach pointed to Natalia Venditto and expects CMA to store skills itself
+  ([Slack, 2026-11-25](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795627215802429?thread_ts=1795626254.173009)).
+  CMA does keep its own read-only copy, but it fills that copy from DA: since
+  [Adobe-AEM-Sites/aem-sites-claudebridge#388](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/pull/388) (merged 2026-11-20) it reads
+  `.da/skills/<id>/skill.md`, or the `skills` sheet when there are no folders, from admin.da.live with the
+  user's token and no Helix 6 check ([daSiteSkills.ts#L21](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L21),
+  [#L253-L260](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L253-L260), [#L306](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L306)). Not tested on demo-hlx6.
 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
