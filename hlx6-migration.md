@@ -131,6 +131,21 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 - [ ] **File types**: the source bus takes html, json, gif, ico, jpeg, jpg, png, svg, webp, avif, mp4 and pdf.
   The `.md` skills in `.da/skills/` can't be stored (the six skills come through the `skills` sheet
   instead), and neither can the EW chat's `.md` project memory.
+  Nobody has asked for `.md` on the source bus in Slack or GitHub yet. The list is deliberate:
+  [adobe/helix-api-service#318](https://github.com/adobe/helix-api-service/issues/318) asked for `.link`
+  and was closed with "we will not support `.link` files in source bus".
+  The old EW chat (da-agent) doesn't support Helix 6 at all. It reads and writes through admin.da.live,
+  and the EW team won't change that because Coworker/CMA replaces it
+  ([#da-team, 2026-10-30](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1793391128002559?thread_ts=1793369006.544449)).
+  da-agent is due to be removed before Christmas, and CMA won't have project memory
+  ([SITES-54760 thread, 2026-11-23](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795444687667769?thread_ts=1795429693.558869),
+  [2026-11-25](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795614332464599?thread_ts=1795429693.558869)),
+  so the memory part goes away with da-agent.
+  Still open: the ew-extensions skills app, which CMA uses, also writes `skill.md` to admin.da.live
+  ([skill-folder-api.js#L86-L90](https://github.com/adobe-rnd/ew-extensions/blob/53fb9bc67cbe225cf602a537c834a4d50fd23b1a/blocks/skills/utils/skill-folder-api.js#L86-L90)).
+  If admin.da.live starts passing Helix 6 sites through to the source bus (the "dual stack" plan,
+  [#da-team, 2026-10-30](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1793374840712289?thread_ts=1793369006.544449)),
+  those writes get the 415.
 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
