@@ -3,6 +3,7 @@
 //   POST /cloneprocess  → allow-listed Admin API (admin.hlx.page) / DA (admin.da.live) proxy, technical account
 //   POST /standalone    → create scdemos/<site> from the template repo, add it to AEM Code Sync, make the requester admin
 //   POST /permissions   → give the requester write on /<site>/CONFIG and /<site>/** in the org's DA permissions sheet
+//                         (Helix 6 template: add them to the template's author, publish and config_admin roles)
 //   POST /admin/clones  → demo admins: the CloneIt demos (see admin.js)
 //   POST /admin/delete  → demo admins: one step of deleting a CloneIt demo { site, step, job }
 //   POST /admin/job     → demo admins: state of a bulk job a delete step started { site, topic, name }
@@ -396,10 +397,47 @@ export async function assertOwnsDemo(site, email, env, gh) {
   if (!requester || !sameEmail(requester, email)) throw fail('not_demo_requester');
 }
 
-/** Reads the org config, appends the requester's rows, writes it back and checks they stuck (retries lost updates). */
-export async function grantDemoPermissions({ site, email }, env, { adminFetch, gh }, wait = sleep) {
+/** Helix 6 template roles that match the DA rows a requester joins: /<template>/+** (author, publish) and CONFIG. */
+const TEAM_ROLES = ['author', 'publish', 'config_admin'];
+
+/** Adds `email` to the team roles it's missing from. Returns { role, joined } (role null when nothing changes). */
+export function addToTeamRoles(role, email) {
+  const joined = TEAM_ROLES.filter((name) => !(role[name] || []).some((m) => sameEmail(m, email)));
+  if (!joined.length) return { role: null, joined };
+  const next = { ...role };
+  joined.forEach((name) => { next[name] = [...(role[name] || []), email]; });
+  return { role: next, joined };
+}
+
+/**
+ * Helix 6 template: the site config's roles decide who edits, not the DA permissions sheet. The requester is
+ * already admin of the new site; this adds them to the template's team roles and checks they stuck.
+ */
+async function joinTemplateRoles({ site, email, template }, env, adminFetch, wait) {
+  const path = `/config/${env.ORG || DEFAULT_ORG}/sites/${template}/access/admin/role.json`;
+  let joinedRoles = [];
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const res = await adminFetch('helix', path);
+    if (!res.ok) throw Object.assign(new Error(`template_roles_read_failed_${res.status}`), { status: 502 });
+    const { role, joined } = addToTeamRoles(await res.json(), email);
+    if (!role) return { site, email, siteRole: 'admin', template, joined: joinedRoles };
+    if (!joinedRoles.length) joinedRoles = joined;
+    if (attempt === 3) break;
+    const post = await adminFetch('helix', path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(role) });
+    if (!post.ok) throw Object.assign(new Error(`template_roles_write_failed_${post.status}`), { status: 502 });
+    await wait(500);
+  }
+  throw Object.assign(new Error('template_roles_write_not_confirmed'), { status: 502 });
+}
+
+/**
+ * Reads the org config, appends the requester's rows, writes it back and checks they stuck (retries lost updates).
+ * For a clone of the Helix 6 template (`template` === HLX6_TEMPLATE) it joins the template's roles instead.
+ */
+export async function grantDemoPermissions({ site, email, template }, env, { adminFetch, gh }, wait = sleep) {
   const org = env.ORG || DEFAULT_ORG;
   await assertOwnsDemo(site, email, env, gh);
+  if (template && template === env.HLX6_TEMPLATE) return joinTemplateRoles({ site, email, template }, env, adminFetch, wait);
   const rows = permissionRows(site, email);
   // also join the shared rows: org config (CONFIG) and the template's content, so the requester can
   // change any site config and the template like the rest of the team
@@ -494,7 +532,7 @@ export default {
         // the email always comes from the verified IMS token, never from the request
         if (!env.GITHUB_PROVISION_TOKEN) return workerErr(cors, 'standalone_not_configured', 501);
         const result = await grantDemoPermissions(
-          { site: String(body.site || '').toLowerCase(), email: user.email },
+          { site: String(body.site || '').toLowerCase(), email: user.email, template: String(body.template || '') },
           env,
           { adminFetch: techFetch(env), gh: githubClient(env) },
         );

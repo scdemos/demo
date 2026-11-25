@@ -305,11 +305,16 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     const failed = publish.failed?.length ? `, ${publish.failed.length} not published (see below)` : '';
     extra.push([`Previewed and published ${publish.published} pages and assets${escapeHtml(failed)}`, `Published ${publish.published}${failed}`]);
   }
-  if (permissions?.error) {
-    extra.push([`<strong>Edit access not added</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin for write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>`, `Edit access not added: ${permissions.error}`]);
-  } else if (permissions?.siteRole) {
+  if (permissions?.siteRole) {
     // Helix 6: the site config's roles decide who can edit, not the DA permissions sheet
-    extra.push([`You can edit the demo's content and config (<code>${escapeHtml(permissions.email)}</code>: <code>${escapeHtml(permissions.siteRole)}</code> role on the new site)`, `Edit access for ${permissions.email}: ${permissions.siteRole} role on the new site`]);
+    const joined = permissions.joined || [];
+    const team = joined.length ? `, and added to <code>${escapeHtml(baselineSite)}</code> roles <code>${joined.map(escapeHtml).join('</code>, <code>')}</code>` : '';
+    extra.push([`You can edit the demo's content and config (<code>${escapeHtml(permissions.email)}</code>: <code>${escapeHtml(permissions.siteRole)}</code> role on the new site${team})`, `Edit access for ${permissions.email}: ${permissions.siteRole} role on the new site${joined.length ? `; added to ${baselineSite} roles ${joined.join(', ')}` : ''}`]);
+    if (permissions.error) {
+      extra.push([`<strong>Not added to the <code>${escapeHtml(baselineSite)}</code> team roles</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin`, `Not added to the ${baselineSite} team roles: ${permissions.error}`]);
+    }
+  } else if (permissions?.error) {
+    extra.push([`<strong>Edit access not added</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin for write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>`, `Edit access not added: ${permissions.error}`]);
   } else if (permissions) {
     const shared = (permissions.joined || []).length ? `, and added to <code>${permissions.joined.map(escapeHtml).join('</code>, <code>')}</code>` : '';
     extra.push([`You can edit the demo's content and config in DA (<code>${escapeHtml(permissions.email)}</code>: write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>${shared})`, `Edit access in DA for ${permissions.email}: /${siteName}/CONFIG and /${siteName}/**${(permissions.joined || []).length ? `; added to ${permissions.joined.join(', ')}` : ''}`]);
@@ -1198,17 +1203,17 @@ async function cloneSite(siteName, opts = {}) {
     }
 
     // write access for the requester to the demo's DA content and config (org permissions sheet).
-    // On Helix 6 the DA sheet plays no part: the admin role in the new site config grants it.
-    let permissions = hlx6 ? { email: app.userEmail, siteRole: 'admin' } : null;
-    if (!hlx6) {
-      setProgress(true, 99, 'Giving you edit access in DA…', null, 'Permissions', '');
-      try {
-        permissions = await workerPost('permissions', { site: siteName });
-      } catch (permErr) {
-        console.warn('Permissions not added:', permErr);
-        permissions = { error: permErr.message || String(permErr) };
-      }
+    // On Helix 6 the DA sheet plays no part: the admin role in the new site config grants it, and the
+    // worker adds the requester to the template's team roles.
+    let permissions = null;
+    setProgress(true, 99, hlx6 ? 'Adding you to the template team…' : 'Giving you edit access in DA…', null, 'Permissions', '');
+    try {
+      permissions = await workerPost('permissions', hlx6 ? { site: siteName, template: baselineSite } : { site: siteName });
+    } catch (permErr) {
+      console.warn('Permissions not added:', permErr);
+      permissions = { error: permErr.message || String(permErr) };
     }
+    if (hlx6) permissions = { email: app.userEmail, siteRole: 'admin', ...permissions };
 
     await recordInRegistry({
       date: new Date().toISOString(),
