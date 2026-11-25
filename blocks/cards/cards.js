@@ -3,6 +3,8 @@ import {
   createTag,
   fetchQueryIndexAll,
   getAuthoredLinks,
+  isDamImage,
+  moveInstrumentation,
   normalizePath,
   resolveArticlesFromIndex,
 } from '../../scripts/shared.js';
@@ -229,15 +231,15 @@ function decorateDefault(block) {
   if (block.classList.contains('stories')) ul.firstElementChild?.classList.add('cards-card-lead');
 
   ul.querySelectorAll('picture > img').forEach((img, idx) => {
-    const picture = img.closest('picture');
-    if (!picture) return;
-    if (isSvg(img.src)) {
+    if (isSvg(img.src) || isDamImage(img.src)) {
       img.loading = 'lazy';
       return;
     }
     const wide = (block.classList.contains('stories') && idx === 0) || block.classList.contains('cover');
     const width = wide ? '1200' : '750';
-    picture.replaceWith(createOptimizedPicture(img.src, img.alt || '', false, [{ width }]));
+    const optimized = createOptimizedPicture(img.src, img.alt || '', false, [{ width }]);
+    moveInstrumentation(img, optimized.querySelector('img'));
+    img.parentElement.replaceWith(optimized);
   });
 
   block.replaceChildren(ul);

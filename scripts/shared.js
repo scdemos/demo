@@ -80,6 +80,20 @@ export function isGatedPage() {
   return String(getMetadata('gated') || '').trim().toLowerCase() === 'true';
 }
 
+export function isDamImage(src) {
+  try {
+    const {
+      origin, pathname, username, password,
+    } = new URL(src);
+    return !username && !password
+      && /^https:\/\/delivery-p\d+-e\d+\.adobeaemcloud\.com$/.test(origin)
+      && /^\/adobe\/(?:assets\/urn:[^/]+\/(?:original\/)?as|dynamicmedia\/deliver)\//.test(pathname)
+      && /\.(?:avif|gif|jpe?g|png|webp)$/i.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Create an element with attributes and optional content.
  * @param {string} tag - Tag name
@@ -353,7 +367,7 @@ export function getAllMetadata(scope, doc = document) {
 export function moveInstrumentation(from, to) {
   [...from.attributes]
     .map(({ nodeName }) => nodeName)
-    .filter((attr) => attr.startsWith('data-aue-') || attr.startsWith('data-richtext-'))
+    .filter((attr) => attr.startsWith('data-aue-') || attr.startsWith('data-richtext-') || attr.startsWith('data-image-'))
     .forEach((attr) => {
       const value = from.getAttribute(attr);
       if (value) {
