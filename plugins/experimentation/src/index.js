@@ -871,7 +871,6 @@ async function runExperiment(document, pluginOptions) {
           type: 'experiment',
           experiment: id,
           variant,
-          run: !!config.run,
         },
       }));
     },
@@ -989,18 +988,6 @@ async function getAudienceConfig(pluginOptions, metadata, overrides) {
     return null;
   }
 
-  // Inline section targeting: authors keep the variant in this section rather than a URL.
-  if (metadata.value) {
-    const names = stringToArray(metadata.value).map(toClassName);
-    const resolvedAudiences = await getResolvedAudiences(names, pluginOptions) || [];
-    return {
-      inline: true,
-      configuredAudiences: Object.fromEntries(names.map((name) => [name, window.location.pathname])),
-      resolvedAudiences,
-      selectedAudience: resolvedAudiences[0] || null,
-    };
-  }
-
   const configuredAudiencesName = Object.keys(metadata.audiences || metadata).map(toClassName);
   const resolvedAudiences = await getResolvedAudiences(
     configuredAudiencesName,
@@ -1060,12 +1047,6 @@ async function serveAudience(document, pluginOptions) {
     parseAudienceManifest,
     getUrlFromAudienceConfig,
     (el, config, result) => {
-      if (config.inline && !config.selectedAudience) {
-        // Never remove document chrome for a plain page-level Audience value, nor anything
-        // on authoring surfaces, where authors edit every audience's section.
-        if (el !== document.body && !pluginOptions.keepUnmatchedSections) el.remove();
-        return;
-      }
       fireRUM('audience', config, pluginOptions, result);
       // dispatch event
       const { selectedAudience = 'default' } = config;
@@ -1179,12 +1160,10 @@ export async function loadEager(document, options = {}) {
 
   const ns = window.aem || window.hlx || {};
   ns.experimentation = { version: VERSION };
-  // A campaign link is the visitor's explicit intent, so it wins over an audience variant on
-  // the same section: serving it replaces the section, metadata included, before audiences run.
+  // A campaign link is the visitor's explicit intent, so it wins over audience and experiment
+  // variants on the same section: serving it replaces the section, metadata included.
   ns.campaigns = await runCampaign(document, pluginOptions);
   const pageCampaignServed = ns.campaigns.some((c) => c.type === 'page' && c.servedExperience);
-  // Lets the project prepare audience metadata the served campaign content brought in.
-  if (pluginOptions.prepareAudiences) await pluginOptions.prepareAudiences(pluginOptions);
   ns.audiences = await serveAudience(
     document,
     pageCampaignServed ? { ...pluginOptions, skipPageLevel: true } : pluginOptions,

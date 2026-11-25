@@ -3,8 +3,10 @@
 export const MARTECH_DATASTREAM_ID = '1745a516-afcc-4432-bc75-06a017965561';
 
 export const AJO_CONFIG = {
-  // One surface for every host (localhost, .aem.page, .aem.live), matching the AJO channel
-  // configuration frescopa-web-audiences.
-  surface: 'web://main--demo--scdemos.aem.live/#audiences',
+  // Journey Optimizer code-based channel configurations name pages on this host. Every host
+  // the site runs on (localhost, .aem.page, .aem.live, demo.bbird.live) asks for the same
+  // surfaces, so one channel configuration covers preview and production.
+  surfaceHost: 'main--demo--scdemos.aem.live',
+  // Longest the first section waits for Journey Optimizer before the authored content shows.
   timeout: 1500,
 };
