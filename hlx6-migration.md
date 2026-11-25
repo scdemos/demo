@@ -130,7 +130,7 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 
 - [ ] **File types**: the source bus takes html, json, gif, ico, jpeg, jpg, png, svg, webp, avif, mp4 and pdf.
   The `.md` skills in `.da/skills/` can't be stored (the six skills come through the `skills` sheet
-  instead), and neither can the EW chat's `.md` project memory or zip downloads.
+  instead), and neither can the EW chat's `.md` project memory.
 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
