@@ -209,10 +209,11 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   [adobe/helix-api-service#472](https://github.com/adobe/helix-api-service/issues/472), waiting on
   [adobe/helix-shared#1294](https://github.com/adobe/helix-shared/pull/1294) or [#1312](https://github.com/adobe/helix-shared/pull/1312).
 
-- [ ] **Bulk preview/publish from da.live**: da-nx sends Helix 6 bulk operations to `.../live/*`
-  ([api.js#L848](https://github.com/adobe/da-nx/blob/69006f3b54984630e06f77e287e329bde12738d0/nx2/utils/api.js#L848)),
-  and api.aem.live answers 400 "bulk operation must target the resource root" (it wants `.../live/`).
-  Seen from a script, not tried in the da.live UI yet. No issue yet.
+- [ ] **Bulk preview/publish from da.live**: [adobe/da-nx#1059](https://github.com/adobe/da-nx/pull/1059) (open, in review).
+  The app sent per-page requests to the legacy host and got 404. The array API sent its batches to
+  `/preview/*` and `/live/*` and got 400. The app now uses the Helix 6 host, and array calls use
+  `/preview/` and `/live/`. On the deployed branch, Preview and Publish each succeeded for both test
+  pages in da.live. The array API passed preview, publish, unpreview and unpublish on the same pages.
 
 - [ ] **AEM Assets URLs**: the source bus keeps `/adobe/dynamicmedia/deliver/` URLs as external images, but
   interns `/adobe/assets/urn:...` URLs on POST (and refuses them on PUT). The editor uses POST, so it works,
@@ -250,8 +251,7 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   [index.js#L219-L224](https://github.com/adobe/helix-admin/blob/cb2d5d65fe788f3fcd0f5013e3c474994c60fd19/src/index.js#L219-L224)).
   The ping then answers 404 without the upgrade header, exactly as for a legacy DA site, so da.live can
   take a Helix 6 site for legacy and save to `admin.da.live`. Only browsers that haven't opened the site
-  before are affected. da-nx's `hlx6probe` reads such a 404 as legacy, as main does, so it can't catch this
-  either. Fix: answer 502 for a failed lookup. Found in the second review on Nov 24, not filed.
+  before are affected. Fix: answer 502 for a failed lookup. Found in the second review on Nov 24, not filed.
 
 ---
 
@@ -262,30 +262,21 @@ is da-nx's `nx2/utils/api.js` (`source.*`, `config.*`), which picks the source b
 site. Apps served from other origins detect Helix 6 themselves, as aem-apps#44 does. "Prepared" means a
 pushed branch with tests, live-checked on demo-hlx6 and on legacy DA sites, not yet a PR. Each branch went
 through an adversarial review on Nov 24 and a comparison with main on legacy sites on Nov 25; the fixes
-from both are pushed. When the Helix 6 check fails (a ping without the upgrade header, a 401, 403, 429 or
-5xx after two retries, an unreadable config), the apps use the legacy store, as main does today. Bugs that
+from both are pushed. When the Helix 6 check fails, the apps use the legacy store, as main does. Bugs that
 main has too are not in these branches. Each is its own small branch and PR, listed under "Fixes found
 along the way" below.
-
-- [ ] **Shared Helix 6 check (`isHlx6`)**: prepared ([da-nx/hlx6probe](https://github.com/adobe/da-nx/tree/hlx6probe)),
-  no PR yet. On main, nx2's `isHlx6` reads a 5xx as "legacy" at once and keeps a ping without an answer
-  until the page reloads, so one bad ping can send a Helix 6 site's reads and writes to `admin.da.live`.
-  The branch retries a 429 or 5xx twice, then reads the site as legacy, as main does. A ping without an
-  answer also reads as legacy but isn't kept, so the next call asks again. Quick edit, translations and
-  MSM call `isHlx6` on legacy sites, so they merge after it.
 
 - [ ] **Quick edit**: prepared ([da-nx/qehlx6](https://github.com/adobe/da-nx/tree/qehlx6)). The portal
   opens, but nothing becomes editable: it checks `admin.da.live` for the page and gives up on the 404. Also
   hardcodes the collab room and image upload. Small overlaps with the open
   [adobe/da-nx#896](https://github.com/adobe/da-nx/pull/896) and [adobe/da-nx#992](https://github.com/adobe/da-nx/pull/992):
-  whichever lands second needs a small rebase. Merges after `hlx6probe`.
+  whichever lands second needs a small rebase.
 
 - [ ] **Translations and rollouts**: prepared ([da-nx/lochlx6](https://github.com/adobe/da-nx/tree/lochlx6)).
   Translate and rollout read `.da/translate.json` from `admin.da.live` and would save projects there. The
   branch now sits on the copy engine from [adobe/da-nx#801](https://github.com/adobe/da-nx/pull/801) (merged
   Nov 4) and hands it a fetch and a config loader that use the source bus on Helix 6. Still open: the
-  editor's Rollout panel builds its own copy engine and keeps versions on `admin.da.live`. Merges after
-  `hlx6probe`; main was merged in on Nov 25.
+  editor's Rollout panel builds its own copy engine and keeps versions on `admin.da.live`. Main was merged in on Nov 25.
 
 - [ ] **Media library**: [adobe/da-nx#944](https://github.com/adobe/da-nx/pull/944) (open, in review).
   "Site not found" today. With the fix, validation, indexing and rebuild work; the Images view still
@@ -317,7 +308,8 @@ along the way" below.
   [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
   export that merge from base imports, so #1341's merge is broken on main today. The fix is the separate
   branch `msmmerge`, as for the four other bugs #1341 has (see "Fixes found along the way").
-  `msmhlx6` merges after `hlx6probe`. The aem-apps MSM app
+  `msmhlx6` merges after `msmstat` so Resume inheritance keeps the override if the site status read fails.
+  The aem-apps MSM app
   ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4) is DA-only too.
 
 - [ ] **Site apps (`da.live/apps#/...`)**: nothing prepared.
@@ -335,7 +327,7 @@ along the way" below.
 These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`.
 
 - [ ] **API: org-level `.da` paths**: [da-nx/nodaping](https://github.com/adobe/da-nx/tree/nodaping), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx2/utils/api.js#L690).
-  For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da`, which fails as a network error and stays failed, so `source.*` calls on those paths fail for the whole page. With `hlx6probe` such a path reads as legacy; this branch also saves the ping.
+  For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da`, which fails as a network error and stays failed, so `source.*` calls on those paths fail for the whole page. The fix uses the legacy store for those paths without sending a ping.
 
 - [ ] **Media library: index lock refresh**: [da-nx/mllockhb](https://github.com/adobe/da-nx/tree/mllockhb), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/media-library/indexing/build.js#L271-L318).
   The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. Merge before `mlhlx6` or together with it.
