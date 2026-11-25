@@ -135,6 +135,17 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
   [#408](https://github.com/adobe/helix-api-service/pull/408) (presigned upload, open).
+  Workaround, tried on demo-hlx6 on 2026-11-25: a `POST` to `/{org}/sites/{site}/media/{path}` with the JSON
+  body `{"url": "<public file url>"}` and an IMS bearer token stored a 5.5 MB mp4 in the media bus (200 in
+  1.2 s) and returned `media_<hash>.mp4`. That file is served byte for byte on aem.page and aem.live, and
+  range requests work. The API fetches the url itself, without credentials, so the file must be public and
+  its host must not block cloud IPs (a Blender url got 502). Limits from the code: 20 MB for images and
+  PDFs, 36 MB for mp4, 10 s to fetch. Not tried: PDFs, files over 20 MB, the API key header, and whether
+  SC roles have `media:upload`. It does not fix the editor: da-live and EW still save through the source
+  PUT, so authors still get the 413. The file lands in the media bus, which authors can't browse, under a
+  hash name, and the route is commented out in the OpenAPI spec. The test file
+  `media_176fd2fa40a4a6d383d428ebeccb44b21cf588b0d.mp4` is still in demo-hlx6's media bus: no page links it,
+  and the token used for the test has no `media:delete`.
 
 - [ ] **Rate limit without CORS headers**: the 429 of api.aem.live comes from its Fastly service (config
   backup `s2dVksBUsvEKaaYF13wIh6.json` in adobe/aem.page), not from helix-api-service, so helix-api-service's
