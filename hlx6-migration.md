@@ -155,6 +155,8 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
   `.da/skills/<id>/skill.md`, or the `skills` sheet when there are no folders, from admin.da.live with the
   user's token and no Helix 6 check ([daSiteSkills.ts#L21](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L21),
   [#L253-L260](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L253-L260), [#L306](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L306)). Not tested on demo-hlx6.
+  Asked Natalia Venditto about it
+  ([Slack, 2026-11-25](https://cq-dev.slack.com/archives/C0CH4RNVB3L/p1795628017778069?thread_ts=1795627994.008169)).
 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
