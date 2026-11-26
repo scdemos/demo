@@ -371,43 +371,6 @@
   padding: 0;
 }
 
-/* side panels: rows of the block after its links */
-.form .form-layout {
-  display: grid;
-  gap: var(--gap-xl);
-  align-items: start;
-}
-
-@media (width >= 900px) {
-  .form .form-layout {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  }
-}
-
-.form .form-aside {
-  display: grid;
-  gap: var(--gap-m);
-}
-
-.form .form-aside-panel {
-  padding: var(--gap-l);
-  border: var(--border);
-  border-radius: var(--radius-l);
-  background: var(--color-surface-sunken);
-}
-
-.form .form-aside-panel > :first-child {
-  margin-top: 0;
-}
-
-.form .form-aside-panel > :last-child {
-  margin-bottom: 0;
-}
-
-.form .form-aside-panel :is(h2, h3) {
-  font-size: var(--step-1);
-}
-
 /* ==========================================================================
    Panel: one raised card, compact labels, leading required marker,
    end-aligned submit. The section's intro text lines up with the card.

@@ -145,9 +145,12 @@
     },
     "form": {
       "variants": [
-        "panel"
+        "panel",
+        "newsletter",
+        "multi-step",
+        "booking"
       ],
-      "use": "spreadsheet-driven form: row 1 = link to /forms/<name>.json (field,type,label,options,required,...), row 2 = submit URL (https://demo.bbird.live/contact-us/ allows any origin); panel = white raised form card. Sheet options are pipe-delimited (Asia|EMEA); end a single comma-containing option with | ; required accepts TRUE/true"
+      "use": "spreadsheet-driven form: row 1 = link to /forms/<name>.json (field,type,label,options,required,...), row 2 = submit URL (https://demo.bbird.live/contact-us/ allows any origin); panel = white raised form card; newsletter = one email field and a button; multi-step = steps from `step` rows in the sheet, with progress, Back/Continue and a review step; booking (with multi-step) = options as cards and paired fields. Text next to a form goes after the block, arranged with section metadata Layout/Arrange. Sheet options are pipe-delimited (Asia|EMEA); end a single comma-containing option with | ; required accepts TRUE/true"
     },
     "n8n-form": {
       "variants": [],
@@ -253,10 +256,6 @@
     "locations": {
       "variants": [],
       "use": "store / location finder: toolbar, map and cards from a JSON sheet (source)"
-    },
-    "booking": {
-      "variants": [],
-      "use": "multi-step booking flow (experience, date, details) from a JSON sheet; embeddable with aem-embed"
     },
     "journeys": {
       "variants": [],

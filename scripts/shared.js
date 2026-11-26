@@ -74,7 +74,8 @@ export function fragmentPaths(path) {
 export async function fetchFragment(path) {
   const tryPath = async ([first, ...rest]) => {
     if (!first) return null;
-    const resp = await fetch(`${first}.plain.html`);
+    // from this site, also when its code runs embedded in another page (aem-embed)
+    const resp = await fetch(new URL(`${first}.plain.html`, import.meta.url));
     if (resp.ok) return { path: first, html: await resp.text() };
     return tryPath(rest);
   };

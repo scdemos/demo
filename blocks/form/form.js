@@ -99,17 +99,59 @@ function buildOptionInput(field, option) {
   return input;
 }
 
+// this site, where the block's code comes from: the page's own origin, or the site an
+// aem-embed host loads it from
+const SITE = new URL(import.meta.url).origin;
+
+// `--repo--owner` of an aem.page / aem.live host, e.g. `--demo--scdemos`
+const siteOf = (hostname) => hostname.match(/(--[^.]+--[^.]+)\.aem\.(page|live)$/)?.[1];
+
+/**
+ * A link to this site as a path, so it resolves on every host, including localhost and
+ * an aem-embed host; links elsewhere give null. This site is the page's and the code's
+ * origin, and their aem.page / aem.live hosts; `anyAem` also takes any aem.page / aem.live
+ * host (the form's own sheet and confirmation links, which are always this site's).
+ * @param {string} raw - Path or URL
+ * @param {boolean} [anyAem] - Treat every aem.page / aem.live host as this site
+ * @returns {string|null} Path (e.g. /thank-you) or null
+ */
+function sitePath(raw, anyAem = false) {
+  try {
+    const url = new URL(String(raw || '').trim(), SITE);
+    const origins = [SITE, window.location.origin];
+    const own = origins.map((o) => siteOf(new URL(o).hostname)).filter(Boolean);
+    const aem = siteOf(url.hostname);
+    const sameSite = origins.includes(url.origin)
+      || (aem && (anyAem || own.includes(aem)));
+    return sameSite ? `${url.pathname}${url.search}${url.hash}` : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Where to fetch a sheet: this site's copy for links to the site (also when embedded on
+ * another site), otherwise the URL as given.
+ * @param {string} raw - Path or URL
+ * @param {boolean} [anyAem] - See sitePath
+ * @returns {string} URL to fetch
+ */
+const sheetUrl = (raw, anyAem = false) => {
+  const path = sitePath(raw, anyAem);
+  return path ? `${SITE}${path}` : String(raw).trim();
+};
+
 const isUrl = (options) => /^(https?:\/\/|\/)/.test(String(options || '').trim());
 
 /**
  * Options listed in a sheet: `option` and `value` columns, or `name` and `id` (e.g. the
  * locations sheet), so a value can come straight from a link such as `?location=new-york`;
  * an optional `description` column adds a line under a radio or checkbox option.
- * @param {string} url - Sheet JSON, on this site (`/en/data/locations.json`) or a full URL
+ * @param {string} url - Sheet JSON: a path or full URL on this site, or a URL elsewhere
  * @returns {Promise<Array<{value: string, label: string, description: string}>>}
  */
 async function loadOptions(url) {
-  const resp = await fetch(url.trim());
+  const resp = await fetch(sheetUrl(url));
   if (!resp.ok) throw new Error(`${resp.status}`);
   const { data = [] } = await resp.json();
   return data.map((row) => {
@@ -328,22 +370,6 @@ function generatePayload(form) {
   return payload;
 }
 
-/**
- * Normalizes confirmation path to a same-origin path for fragment loading.
- * @param {string} raw - Raw path or URL from form config
- * @returns {string|null} Normalized path (e.g. /thank-you) or null if invalid
- */
-function normalizeConfirmationPath(raw) {
-  try {
-    const url = new URL(String(raw || '').trim(), window.location.origin);
-    // links to this site's aem.page / aem.live hosts work on every host, including localhost
-    const sameSite = url.origin === window.location.origin || /\.aem\.(page|live)$/.test(url.hostname);
-    return sameSite ? url.pathname : null;
-  } catch {
-    return null;
-  }
-}
-
 /** Fills `{name}` placeholders in the text of `root` (e.g. `{ref}`, `{email}`). */
 function fillText(root, values) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -361,7 +387,7 @@ function fillText(root, values) {
  * @returns {Promise<boolean>} True if replacement succeeded
  */
 async function replaceWithThankYou(form, confirmationPath, values) {
-  const path = normalizeConfirmationPath(confirmationPath);
+  const path = sitePath(confirmationPath, true)?.replace(/[?#].*$/, '');
   const block = form.closest('.block');
   if (!path || !block) return false;
 
@@ -763,40 +789,20 @@ function sheetRows(json) {
 
 /**
  * Form block. First link = field definitions (sheet JSON), optional second link = submit URL.
- * Variants: `multi-step` splits the form at its `step` rows; any further rows of the block
- * (e.g. a "Good to know" panel) are shown next to the form.
+ * Variant `multi-step` splits the form at its `step` rows. Text that belongs next to the
+ * form goes after the block, arranged with section metadata (Layout, Arrange).
  * @param {HTMLElement} block - Form block element
  */
 export default async function decorate(block) {
-  // rows that are just a link set the form up (the sheet, then the submit URL); rows with
-  // more than a link are side panels
-  const squash = (text) => text.replace(/\s+/g, '');
-  const linksOf = (row) => [...row.querySelectorAll('a[href]')];
-  const onlyLinks = (row) => linksOf(row).length > 0
-    && squash(linksOf(row).map((a) => a.textContent).join('')) === squash(row.textContent);
-  const rows = [...block.children].filter((row) => row.textContent.trim());
-  const asides = rows.filter((row) => !onlyLinks(row));
-  const [source, submit] = rows.filter(onlyLinks).flatMap(linksOf).map((a) => a.href);
+  const [source, submit] = [...block.querySelectorAll('a[href]')].map((a) => a.href);
   try {
     if (!source) throw new Error('missing form definition link');
-    const resp = await fetch(new URL(source).pathname);
+    const resp = await fetch(sheetUrl(source, true));
     if (!resp.ok) throw new Error(`${resp.status}: ${resp.statusText}`);
     const data = sheetRows(await resp.json());
     if (!Array.isArray(data)) throw new Error('no form fields');
     const form = buildForm(data, submit, block.classList.contains('multi-step'));
-    if (asides.length) {
-      const aside = createElement('div', 'form-aside');
-      asides.forEach((row) => {
-        const panel = createElement('div', 'form-aside-panel');
-        [...row.children].forEach((cell) => panel.append(...cell.childNodes));
-        aside.append(panel);
-      });
-      const layout = createElement('div', 'form-layout');
-      layout.append(form, aside);
-      block.replaceChildren(layout);
-    } else {
-      block.replaceChildren(form);
-    }
+    block.replaceChildren(form);
     await form.ready;
     prefill(form, block);
   } catch (error) {
