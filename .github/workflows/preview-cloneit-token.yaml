@@ -1,0 +1,57 @@
+name: Preview CloneIt Token Worker
+
+# Every branch push that changes the worker gets its own Cloudflare Preview of it:
+# https://<branch>-demo-cloneit-token.aem-poc-lab.workers.dev/cloneit/ (open CloneIt or Demo Admin with ?worker=<branch>).
+# Deleting the branch deletes its Preview. Production still deploys from main (deploy-cloneit-token.yaml).
+
+on:
+  push:
+    branches-ignore: [main]
+    paths:
+      - 'workers/cloneit_token/**'
+      - 'scripts/products.js'
+      - '.github/workflows/preview-cloneit-token.yaml'
+  delete:
+
+concurrency:
+  group: preview-cloneit-token-${{ github.event_name == 'delete' && github.event.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event_name == 'push' || github.event.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      CLOUDFLARE_ACCOUNT_ID: ac7ee4615628005dc5ba0a22f0aae2a6
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      WRANGLER: wrangler@4.168.0
+    defaults:
+      run:
+        working-directory: workers/cloneit_token
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Worker tests
+        if: github.event_name == 'push'
+        run: for file in *.test.mjs; do node "$file" || exit 1; done
+      - name: Preview name
+        id: name
+        env:
+          BRANCH: ${{ github.event_name == 'delete' && github.event.ref || github.ref_name }}
+        # lowercase letters, digits and dashes, starting with a letter; with "-demo-cloneit-token" at most 63 characters
+        run: echo "name=$(printf '%s' "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s/^[^a-z]+//' | cut -c1-44 | sed -E 's/-+$//')" >> "$GITHUB_OUTPUT"
+      - name: Deploy the Preview
+        if: github.event_name == 'push' && steps.name.outputs.name != ''
+        env:
+          NAME: ${{ steps.name.outputs.name }}
+        run: |
+          npx -y "$WRANGLER" preview --name "$NAME"
+          echo "Worker: https://$NAME-demo-cloneit-token.aem-poc-lab.workers.dev/cloneit/ (open CloneIt with \`?worker=$NAME\`)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Delete the Preview
+        if: github.event_name == 'delete' && steps.name.outputs.name != ''
+        env:
+          NAME: ${{ steps.name.outputs.name }}
+        run: npx -y "$WRANGLER" preview delete --name "$NAME" --skip-confirmation || echo "No Preview named $NAME"

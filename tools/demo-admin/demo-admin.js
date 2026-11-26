@@ -20,10 +20,16 @@ const PUBLISHABLE = new Set(['html', 'json']);
 const BULK_MAX = 1000;
 const params = new URLSearchParams(window.location.search);
 const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
+const PREVIEW_RE = /^[a-z][a-z0-9-]{0,43}$/;
 
-/** ?worker= is honored only for local testing: a page served locally talking to a local worker. */
+/**
+ * ?worker=<branch> uses that branch's Preview of the worker (tools/cloneit/README.md, "Branch Previews").
+ * ?worker=<url> is honored only for local testing: a page served locally talking to a local worker.
+ */
 function workerUrl() {
   const fallback = 'https://demo.bbird.live/cloneit';
+  const preview = params.get('worker') || '';
+  if (PREVIEW_RE.test(preview)) return `https://${preview}-demo-cloneit-token.aem-poc-lab.workers.dev/cloneit`;
   if (!LOCAL_HOSTS.includes(window.location.hostname)) return fallback;
   try {
     const u = new URL(params.get('worker') || '');
