@@ -133,6 +133,31 @@ Fixed on main (this repo):
   [Slack, Aug 27](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1787837268015579)), and puts the new
   media URL in the doc. Clone It drops the rendition params before import
   ([source.js#L94-L130](https://github.com/scdemos/demo/blob/315639c56ee83991e752a4b6f2c91adf2838983d/tools/cloneit/source.js#L94-L130)).
+- **`.md` files on the source bus**: the source bus takes html, json, gif, ico, jpeg, jpg, png, svg, webp,
+  avif, mp4 and pdf. The list is deliberate:
+  [adobe/helix-api-service#318](https://github.com/adobe/helix-api-service/issues/318) asked for `.link`
+  and was closed with "we will not support `.link` files in source bus". The EW chat doesn't need `.md`
+  there any more:
+  - da-agent never supported Helix 6 and is due to be removed before Christmas
+    ([Slack, 2026-10-30](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1793391128002559?thread_ts=1793369006.544449)).
+    Its `.md` project memory goes with it, and CMA won't have project memory
+    ([SITES-54760 thread, 2026-11-23](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795444687667769?thread_ts=1795429693.558869),
+    [2026-11-25](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795614332464599?thread_ts=1795429693.558869)).
+  - CMA and Coworker keep skills in their own store, not in the content repo (Hannes Hertach and Markus Haack,
+    [Slack, 2026-11-25](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795627215802429?thread_ts=1795626254.173009),
+    [2026-11-26](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795680990886429?thread_ts=1795626254.173009)).
+    On a CMA site the ew-extensions skills app uploads skills to the CMA bridge
+    ([nx-skills-editor.js#L1135-L1158](https://github.com/adobe-rnd/ew-extensions/blob/42453867aa147aa9e3019f1511e4deda85717a71/blocks/skills/nx-skills-editor.js#L1135-L1158),
+    [skills-editor-api.js#L791-L808](https://github.com/adobe-rnd/ew-extensions/blob/42453867aa147aa9e3019f1511e4deda85717a71/blocks/skills/skills-editor-api.js#L791-L808)). Tested on the Helix 6 site
+    benpeter/hlx6-cma (2026-11-26): an uploaded skill shows up as a "Personal" skill, and neither the source
+    bus nor admin.da.live has a `.da` folder for the site afterwards.
+  - CMA can also copy a site's old da-agent skills, read-only
+    ([Adobe-AEM-Sites/aem-sites-claudebridge#388](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/pull/388)).
+
+  Still to do, but not a Helix 6 issue: demo's six da-agent skills (its `skills` sheet) have to move into
+  CMA before da-agent is removed, on demo and demo-hlx6. The CMA chat itself didn't run on the test site,
+  because the bridge doesn't have Ben's IMS org on its CMA pilot allowlist ("Tenant
+  138A07885EE042D20A495CFA@AdobeOrg is not yet enabled for this preview").
 
 ---
 
@@ -176,36 +201,6 @@ Known problems that won't be fixed.
 ## Pending: Blocked on Helix 6
 
 Things Helix 6 doesn't support yet, or supports differently. We can't fix these in our apps or config.
-
-- [ ] **File types**: the source bus takes html, json, gif, ico, jpeg, jpg, png, svg, webp, avif, mp4 and pdf,
-  so it can't store `.md` files. The list is deliberate:
-  [adobe/helix-api-service#318](https://github.com/adobe/helix-api-service/issues/318) asked for `.link`
-  and was closed with "we will not support `.link` files in source bus".
-  This no longer blocks the EW chat:
-  - The old EW chat (da-agent) doesn't support Helix 6 at all, and the EW team won't change that because
-    Coworker/CMA replaces it ([Slack, 2026-10-30](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1793391128002559?thread_ts=1793369006.544449)).
-    Its `.md` project memory goes away with it: da-agent is due to be removed before Christmas, and CMA won't
-    have project memory ([SITES-54760 thread, 2026-11-23](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795444687667769?thread_ts=1795429693.558869),
-    [2026-11-25](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795614332464599?thread_ts=1795429693.558869)).
-  - CMA and Coworker keep skills in their own store, not in the content repo (Hannes Hertach and Markus Haack,
-    [Slack, 2026-11-25](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795627215802429?thread_ts=1795626254.173009),
-    [2026-11-26](https://cq-dev.slack.com/archives/C09KTUTCFK8/p1795680990886429?thread_ts=1795626254.173009)).
-    On a CMA site the ew-extensions skills app uploads new skills to the CMA bridge, saves edits as new
-    Managed Agents versions and deletes them there
-    ([nx-skills-editor.js#L1135-L1158](https://github.com/adobe-rnd/ew-extensions/blob/42453867aa147aa9e3019f1511e4deda85717a71/blocks/skills/nx-skills-editor.js#L1135-L1158),
-    [skills-editor-api.js#L791-L808](https://github.com/adobe-rnd/ew-extensions/blob/42453867aa147aa9e3019f1511e4deda85717a71/blocks/skills/skills-editor-api.js#L791-L808)). Only the da-agent path still
-    writes `.da/skills` through admin.da.live. Observed on the Helix 6 test site benpeter/hlx6-cma
-    (2026-11-26): an uploaded skill shows up as a "Personal" skill in the skills app, and neither the source
-    bus nor admin.da.live has a `.da` folder for the site afterwards. The CMA chat itself refused to run there:
-    "Tenant 138A07885EE042D20A495CFA@AdobeOrg is not yet enabled for this preview" (the bridge's CMA pilot
-    allowlist), so using the skill in a chat isn't tested yet.
-  - CMA can copy a site's old da-agent skills: since
-    [Adobe-AEM-Sites/aem-sites-claudebridge#388](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/pull/388) (merged 2026-11-20,
-    behind a flag) it reads `.da/skills/<id>/skill.md`, or the `skills` sheet when there are no folders, from
-    admin.da.live and keeps read-only copies ([daSiteSkills.ts#L21](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L21),
-    [#L253-L260](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L253-L260), [#L306](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/blob/459807c0f221566b244fb0b3ea2cbe6ed822af44/src/skills/daSiteSkills.ts#L306)). Whether that finds demo-hlx6's six skills isn't tested.
-  Markus asked whether this is for a customer migration
-  ([Slack, 2026-11-26](https://cq-dev.slack.com/archives/C0CH4RNVB3L/p1795681033704089?thread_ts=1795627994.008169)).
 
 - [ ] **Media over ~4.5 MB**: source writes answer 413 from 4.55 MB up, which is why the videos were
   re-encoded. [adobe/helix-api-service#403](https://github.com/adobe/helix-api-service/issues/403),
