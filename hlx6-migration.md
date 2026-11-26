@@ -93,6 +93,11 @@ Fixed upstream:
 - [x] YAML site config (`query.yaml`, `sitemap.yaml`) can be written through api.aem.live:
   [adobe/helix-api-service#473](https://github.com/adobe/helix-api-service/pull/473). Used for the Nov 24
   copy: both writes answered 204 and read back unchanged.
+- [x] **Bulk preview/publish from da.live**: [adobe/da-nx#1059](https://github.com/adobe/da-nx/pull/1059) (merged Nov 26).
+  The app sent per-page requests to the legacy host and got 404. The array API sent its batches to
+  `/preview/*` and `/live/*` and got 400. The app now uses the Helix 6 host, and array calls use
+  `/preview/` and `/live/`. On the deployed branch, Preview and Publish each succeeded for both test
+  pages in da.live. The array API passed preview, publish, unpreview and unpublish on the same pages.
 
 Fixed on main (this repo):
 
@@ -261,12 +266,6 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
 - [ ] **robots.txt** can't be written through api.aem.live (text/plain body):
   [adobe/helix-api-service#472](https://github.com/adobe/helix-api-service/issues/472), waiting on
   [adobe/helix-shared#1294](https://github.com/adobe/helix-shared/pull/1294) or [#1312](https://github.com/adobe/helix-shared/pull/1312).
-
-- [ ] **Bulk preview/publish from da.live**: [adobe/da-nx#1059](https://github.com/adobe/da-nx/pull/1059) (open, in review).
-  The app sent per-page requests to the legacy host and got 404. The array API sent its batches to
-  `/preview/*` and `/live/*` and got 400. The app now uses the Helix 6 host, and array calls use
-  `/preview/` and `/live/`. On the deployed branch, Preview and Publish each succeeded for both test
-  pages in da.live. The array API passed preview, publish, unpreview and unpublish on the same pages.
 
 - [ ] **Bulk preview of press pages (overlays that need the user's login)**: the press pages come from
   AEM Content Fragments through json2html, which passes the caller's IMS token on to the AEM author.
