@@ -618,14 +618,26 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
   return config;
 }
 
-/** `createOnly`: never replace a config that exists already (the PUT answers 409). */
+/**
+ * AEM Code Sync sets up a new repo with a default site config that has its content in DA. On Helix 6
+ * it can come before or after ours: on ci-hlx6-1126 it replaced ours 350 ms after the PUT.
+ */
+function isCodeSyncDefault(config, siteName) {
+  return config?.content?.source?.url === `https://content.da.live/${ORG}/${siteName}/`;
+}
+
+/**
+ * `createOnly`: never replace a config that exists already (the PUT answers 409), except AEM Code
+ * Sync's default for the new repo.
+ */
 async function createAemSiteConfig(newSiteName, config, { createOnly = false } = {}) {
   let response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
     method: 'PUT',
     body: JSON.stringify(config),
     contentType: 'application/json',
   });
-  if (response.status === 409 && !createOnly) {
+  if (response.status === 409
+    && (!createOnly || isCodeSyncDefault(await findSiteInAem(newSiteName), newSiteName))) {
     // AEM Code Sync may have created a default config for the new repo already; replace it with ours
     response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
       method: 'POST',
@@ -1087,6 +1099,12 @@ async function cloneToSourceBus(siteName, baselineSite, baselineConfig) {
   });
   failed.forEach((f) => console.warn(`Not copied: ${f.path} (${f.status ?? ''} ${f.error})`));
   if (!copied.length) throw new Error(`No content could be copied from ${ORG}/${baselineSite}.`);
+  // Code Sync's default may have replaced our config after the PUT. Write ours again before the
+  // query index and preview, which go to the content bus of the config in place.
+  if (isCodeSyncDefault(await findSiteInAem(siteName), siteName)) {
+    setProgress(true, 50, 'Restoring site config…', 'AEM Code Sync replaced the site config, writing it again', 'Configuring', '');
+    await createAemSiteConfig(siteName, newConfig);
+  }
   return {
     newConfig, sourceBus, copied, failed: failed.map((f) => f.path),
   };
