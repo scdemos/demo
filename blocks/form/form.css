@@ -244,6 +244,171 @@
 }
 
 /* ==========================================================================
+   Multi-step: one step at a time, a progress list above, Back and Continue
+   below, and a review step that lists the answers.
+   ========================================================================== */
+.form .form-stepper {
+  display: flex;
+  gap: var(--gap-2xs);
+  margin: 0 0 var(--gap-s);
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.form .form-stepper li {
+  flex: 1;
+  padding-top: var(--gap-xs);
+  border-top: 3px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
+  font-weight: var(--weight-semibold);
+  counter-increment: step;
+}
+
+.form .form-stepper li::before {
+  content: counter(step, decimal-leading-zero) ' ';
+  font-variant-numeric: tabular-nums;
+}
+
+.form .form-stepper li[aria-current='step'] {
+  border-color: var(--color-accent);
+  color: var(--color-text-strong);
+}
+
+.form .form-stepper li.is-done {
+  border-color: var(--color-text-strong);
+  color: var(--color-text-strong);
+}
+
+.form .form-stepper[hidden],
+.form .form-step[hidden] {
+  display: none;
+}
+
+.form .form-step {
+  display: grid;
+  gap: var(--gap-m);
+  min-width: 0;
+}
+
+.form .form-step-title {
+  margin: 0;
+  font-size: var(--step-2);
+}
+
+.form .form-step-title:focus {
+  outline: none;
+}
+
+.form .form-step-title:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.form .form-step-help {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.form .form-step .button-wrapper {
+  justify-content: space-between;
+  margin-top: var(--gap-s);
+}
+
+.form .form-step .button-wrapper > :only-child {
+  margin-left: auto;
+}
+
+.form .form-review {
+  display: grid;
+  gap: var(--gap-2xs);
+  margin: 0;
+}
+
+.form .form-review div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap-s);
+  padding-block: var(--gap-2xs);
+  border-bottom: var(--border);
+}
+
+.form .form-review dt {
+  color: var(--color-text-muted);
+}
+
+.form .form-review dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: var(--weight-semibold);
+  text-align: right;
+}
+
+.form.multi-step .form-done {
+  padding: var(--gap-l);
+  border-radius: var(--radius-xl);
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.form.multi-step .form-done:focus {
+  outline: none;
+}
+
+.form.multi-step .form-done:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.form.multi-step .form-done :is(h2, h3) {
+  margin-top: 0;
+  color: var(--color-text-strong);
+}
+
+.form.multi-step .form-done .section,
+.form.multi-step .form-done .default-content-wrapper {
+  padding: 0;
+}
+
+/* side panels: rows of the block after its links */
+.form .form-layout {
+  display: grid;
+  gap: var(--gap-xl);
+  align-items: start;
+}
+
+@media (width >= 900px) {
+  .form .form-layout {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+.form .form-aside {
+  display: grid;
+  gap: var(--gap-m);
+}
+
+.form .form-aside-panel {
+  padding: var(--gap-l);
+  border: var(--border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-sunken);
+}
+
+.form .form-aside-panel > :first-child {
+  margin-top: 0;
+}
+
+.form .form-aside-panel > :last-child {
+  margin-bottom: 0;
+}
+
+.form .form-aside-panel :is(h2, h3) {
+  font-size: var(--step-1);
+}
+
+/* ==========================================================================
    Panel: one raised card, compact labels, leading required marker,
    end-aligned submit. The section's intro text lines up with the card.
    ========================================================================== */
@@ -340,4 +505,73 @@ main > .section.form-container:has(.form.panel) > div {
   background: none;
   font-size: var(--step-n1);
   font-weight: var(--weight-regular);
+}
+
+/* ==========================================================================
+   Booking: options as cards, half-width fields side by side.
+   ========================================================================== */
+@media (width >= 600px) {
+  .form.booking .form-step {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form.booking .form-step > * {
+    grid-column: 1 / -1;
+  }
+
+  .form.booking .form-step > .form-field.half {
+    grid-column: auto;
+  }
+}
+
+.form.booking .radio-field:has(.option-description) {
+  display: grid;
+  gap: var(--gap-xs);
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.form.booking .radio-field:has(.option-description) > legend {
+  grid-column: 1 / -1;
+  margin-bottom: var(--gap-xs);
+}
+
+.form.booking .form-field.radio-field > label:has(.option-description) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-content: start;
+  gap: var(--gap-3xs) var(--gap-xs);
+  padding: var(--gap-s);
+  border: 1.5px solid var(--color-border-strong);
+  border-radius: var(--radius-m);
+  background: var(--color-surface);
+  font-size: var(--step-0);
+  transition: border-color var(--duration-1) var(--ease-out), background-color var(--duration-1) var(--ease-out);
+}
+
+.form.booking .form-field.radio-field > label:has(input:checked) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+.form.booking .form-field.radio-field > label:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.form.booking .form-field.radio-field > label:has(input[aria-invalid='true']) {
+  border-color: var(--color-danger);
+}
+
+.form.booking .form-field.radio-field > label:has(.option-description) input {
+  grid-row: span 2;
+  margin-top: 0.2em;
+}
+
+.form.booking .option-label {
+  color: var(--color-text-strong);
+}
+
+.form.booking .option-description {
+  color: var(--color-text-muted);
+  font-size: var(--step-n1);
 }
