@@ -6,7 +6,7 @@ const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const API = 'https://analyticsdata.googleapis.com/v1beta';
 const SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 
-// The site's GA4 events (scripts/cart.js, the form, booking and quiz blocks) that count as results.
+// The site's GA4 events (scripts/cart.js, the form and quiz blocks) that count as results.
 export const CONVERSIONS = ['view_item', 'add_to_cart', 'begin_checkout', 'purchase', 'generate_lead', 'quiz_complete'];
 
 let token = null;
