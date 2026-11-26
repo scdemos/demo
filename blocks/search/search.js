@@ -7,7 +7,8 @@
  *   tabs  one search box, with keyword "Results" and an "AI answer" tab
  *
  * Keyword rows: view (cards | list), keywords, excluded-keywords, searchbar (enabled |
- * disabled); any other row is a filter group whose value lists its options.
+ * disabled), sort (disabled hides the sort control; other text renames it); any other row is a
+ * filter group whose value lists its options.
  * AI rows: see search-ai.js. Any key of LABELS overrides that text.
  */
 import { loadCSS, readBlockConfig, toClassName } from '../../scripts/aem.js';
@@ -207,7 +208,7 @@ function sortOptions(label, loose) {
     .map((value) => createTag('option', { value }, label(value)));
 }
 
-function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId, label, loose) {
+function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId, label, loose, sortable) {
   const panelId = `${idPrefix}-filters-panel`;
   const aside = createTag('aside', {
     class: 'search-filters',
@@ -228,12 +229,15 @@ function buildFilterSidebar(filterGroups, listId, idPrefix, sortSelectId, label,
     class: 'search-filters-panel',
   });
 
-  const sortWrap = createTag('div', { class: 'search-filters-sort' });
-  sortWrap.append(createTag('label', { for: sortSelectId }, label('sort-by')));
-  const select = createTag('select', { id: sortSelectId, name: 'search-sort', 'aria-controls': listId });
-  select.append(...sortOptions(label, loose));
-  sortWrap.append(select);
-  panel.append(sortWrap);
+  let select = null;
+  if (sortable) {
+    const sortWrap = createTag('div', { class: 'search-filters-sort' });
+    sortWrap.append(createTag('label', { for: sortSelectId }, label('sort-by')));
+    select = createTag('select', { id: sortSelectId, name: 'search-sort', 'aria-controls': listId });
+    select.append(...sortOptions(label, loose));
+    sortWrap.append(select);
+    panel.append(sortWrap);
+  }
 
   const list = createTag('div', { class: 'search-filter-list' });
   filterGroups.forEach((group) => {
@@ -308,6 +312,10 @@ export async function keywordSearch(root, config, {
   const keywords = parseKeywords(config.keywords || '');
   const excluded = parseKeywords(config['excluded-keywords'] || '');
   const searchBarEnabled = String(config.searchbar || '').trim().toLowerCase() === 'enabled';
+  // the sort row either switches the sort control on or off, or renames it
+  const sortSetting = String(config.sort || '').trim().toLowerCase();
+  const sortable = sortSetting !== 'disabled';
+  const sortText = ['enabled', 'disabled'].includes(sortSetting) ? LABELS.sort : label('sort');
   const initialQuery = (new URLSearchParams(window.location.search).get('q') || '').trim();
   const filterGroups = parseFilterGroupsFromConfig(
     config,
@@ -451,8 +459,9 @@ export async function keywordSearch(root, config, {
       sortSelectId,
       label,
       loose,
+      sortable,
     );
-    sortSelect.addEventListener('change', () => {
+    sortSelect?.addEventListener('change', () => {
       state.sort = sortSelect.value;
       render();
     });
@@ -461,14 +470,16 @@ export async function keywordSearch(root, config, {
     layout.append(aside, resultsWrap);
     root.append(controls, layout);
   } else {
-    const sortLabel = createTag('label', { class: 'search-sort-label', for: sortSelectId }, label('sort'));
-    const sortSelect = createTag('select', { id: sortSelectId, name: 'search-sort' }, sortOptions(label, loose));
-    sortLabel.append(sortSelect);
-    sortSelect.addEventListener('change', () => {
-      state.sort = sortSelect.value;
-      render();
-    });
-    controls.append(sortLabel);
+    if (sortable) {
+      const sortLabel = createTag('label', { class: 'search-sort-label', for: sortSelectId }, sortText);
+      const sortSelect = createTag('select', { id: sortSelectId, name: 'search-sort' }, sortOptions(label, loose));
+      sortLabel.append(sortSelect);
+      sortSelect.addEventListener('change', () => {
+        state.sort = sortSelect.value;
+        render();
+      });
+      controls.append(sortLabel);
+    }
     root.append(controls, resultsWrap);
   }
 
