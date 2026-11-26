@@ -10,7 +10,7 @@
  */
 import { loadCSS } from './aem.js';
 import {
-  CONSENT, clearVisitorType, createTag, getConsentOverride, getMarket,
+  CONSENT, createTag, getConsentOverride, getMarket,
 } from './shared.js';
 
 const BASE = window.hlx?.codeBasePath || '';
@@ -45,8 +45,8 @@ async function applyConsent(categories) {
   window.dispatchEvent(new CustomEvent('consent.update', {
     detail: { consented: categories.analytics, categories },
   }));
-  // Forget visit history on any withdrawal, whether or not martech ever started.
-  if (!categories.analytics || !categories.targeting) clearVisitorType();
+  // The site no longer keeps visit history; drop the marker earlier versions stored.
+  try { localStorage.removeItem('demo-first-visit'); } catch { /* nothing stored */ }
   if (consented) {
     await consented.updateConsent(categories);
   } else if (categories.analytics) {

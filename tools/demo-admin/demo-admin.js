@@ -184,15 +184,24 @@ async function daList(path) {
   return items;
 }
 
-/** Every file under `path`, skipping the SKIP folders at the top. */
-async function daWalk(path, top = true) {
+/** Every file under `path`, skipping the SKIP folders at the top; `folders` collects the folders. */
+async function daWalk(path, top = true, folders = []) {
   const files = [];
   const items = await daList(path);
   for (const item of items) {
     if (item.ext) files.push(item);
-    else if (!(top && SKIP.has(item.name))) files.push(...await daWalk(item.path, false));
+    else if (!(top && SKIP.has(item.name))) {
+      folders.push(item);
+      files.push(...await daWalk(item.path, false, folders));
+    }
   }
   return files;
+}
+
+/** Creates an empty folder (DA keeps a folder that has no files as a marker of its own). */
+async function daCreateFolder(path) {
+  const res = await da(`/source${path}`, { method: 'POST' });
+  if (!res.ok) throw new Error(`Couldn't create the folder ${path} (${res.status})`);
 }
 
 /** Copies a file or a whole folder; DA copies a batch per call and answers 206 while more remain. */
@@ -244,15 +253,17 @@ const isHidden = (path, root) => rel(path, root).split('/').some((part) => part.
 
 /**
  * Every file backup and reset handle under `root`, including `.da` and the hidden `.<page>` image folder
- * of every page (DA hides those folders from listings, so each one is listed by name).
+ * of every page (DA hides those folders from listings, so each one is listed by name). `folders`
+ * collects the folders under `root` that DA lists.
  */
-async function allFiles(root) {
-  const files = await daWalk(root);
+async function allFiles(root, folders = []) {
+  const files = await daWalk(root, true, folders);
   files.push(...await daWalk(`${root}/.da`, false));
-  const folders = files.filter((f) => f.ext === 'html')
+  const imageFolders = files.filter((f) => f.ext === 'html')
     .map((f) => `${f.path.slice(0, f.path.lastIndexOf('/'))}/.${f.name}`);
-  for (let i = 0; i < folders.length; i += 10) {
-    const found = await Promise.all(folders.slice(i, i + 10).map((folder) => daWalk(folder, false)));
+  for (let i = 0; i < imageFolders.length; i += 10) {
+    const found = await Promise.all(imageFolders.slice(i, i + 10)
+      .map((folder) => daWalk(folder, false)));
     files.push(...found.flat());
   }
   return files.filter((f) => f.path !== INFO && f.path !== OPS);
@@ -391,35 +402,185 @@ function webPath(file) {
 
 /* ---------- backup ---------- */
 
-async function backup(step, notes) {
-  let s = step('Reading the demo');
-  const items = await topItems(ROOT);
-  if (!items.length) throw new Error('The demo is empty, so there\'s nothing to back up.');
-  s(`Found ${items.length} folders and files`, 'done');
+// files copied or removed at once
+const BACKUP_PARALLEL = 4;
 
-  s = step('Removing the previous backup');
-  for (const item of await topItems(BACKUP)) {
-    s(`Removing the previous backup: ${rel(item.path, BACKUP)}`);
-    await daDelete(item.path);
-  }
-  s('Removed the previous backup', 'done');
-  notes.push('Removed the previous backup.');
+/**
+ * What a backup has to do to match the demo: copy the files the backup doesn't have, or has an older
+ * copy of, and remove the ones the demo no longer has. A DA copy is dated when it's made, so a demo
+ * file edited after its last backup is newer than its copy.
+ * Folders are compared too, as a folder can be there without any files.
+ * @param {Object[]} demo the demo's files, from allFiles(ROOT)
+ * @param {Object[]} saved the backup's files, from allFiles(BACKUP)
+ * @param {Object[]} [demoFolders] the demo's folders
+ * @param {Object[]} [savedFolders] the backup's folders
+ * @returns {Object} demo files to `copy`, backup files to `remove`, folders to `create` in the
+ *   backup and backup folders to `drop`
+ */
+function backupPlan(demo, saved, demoFolders = [], savedFolders = []) {
+  const backedUp = new Map(saved.map((f) => [rel(f.path, BACKUP), f]));
+  const copy = demo.filter((f) => {
+    const copied = backedUp.get(rel(f.path, ROOT));
+    return !copied || !(copied.lastModified >= f.lastModified);
+  });
+  const inDemo = new Set(demo.map((f) => rel(f.path, ROOT)));
+  const remove = saved.filter((f) => !inDemo.has(rel(f.path, BACKUP)));
+  const backedUpFolders = new Set(savedFolders.map((f) => rel(f.path, BACKUP)));
+  const demoFolderPaths = new Set(demoFolders.map((f) => rel(f.path, ROOT)));
+  const create = demoFolders.filter((f) => !backedUpFolders.has(rel(f.path, ROOT)));
+  const drop = savedFolders.filter((f) => !demoFolderPaths.has(rel(f.path, BACKUP)));
+  return {
+    copy, remove, create, drop,
+  };
+}
 
-  s = step('Copying');
-  for (const item of items) {
-    s(`Copying ${rel(item.path, ROOT)}`);
-    await daCopy(item.path, `${BACKUP}${rel(item.path, ROOT)}`);
+/**
+ * Runs `fn` on every item, a few at a time; `report(done)` after each one. When one fails, the
+ * others started with it still finish before the error is passed on, so nothing keeps changing
+ * the backup after the run stops.
+ */
+async function inBatches(items, fn, report) {
+  let done = 0;
+  for (let i = 0; i < items.length; i += BACKUP_PARALLEL) {
+    const results = await Promise.allSettled(items.slice(i, i + BACKUP_PARALLEL).map(async (item) => {
+      await fn(item);
+      done += 1;
+      report(done);
+    }));
+    const failed = results.find((r) => r.status === 'rejected');
+    if (failed) throw failed.reason;
   }
-  s('Copied the demo', 'done');
+}
+
+/**
+ * Brings the backup up to date with the demo. By default it copies only what's new or changed.
+ * `full` rebuilds it: removes the previous backup and copies every folder again. DA leaves files
+ * with more than one dot in their name (photo.v2.jpg) out of its listings, so only a folder copy
+ * picks them up. The image folders of top-level pages (and .da) can only be copied file by file,
+ * so even a rebuild misses such files there.
+ */
+async function backup(step, notes, { full = false } = {}) {
+  let s = step('Comparing the demo with the backup');
+  const demoFolders = [];
+  const demo = await allFiles(ROOT, demoFolders);
+  if (!demo.length && !demoFolders.length) throw new Error('The demo is empty, so there\'s nothing to back up.');
+  const savedFolders = [];
+  const { copy, remove, drop } = backupPlan(demo, await allFiles(BACKUP, savedFolders), demoFolders, savedFolders);
+  const same = demo.length - copy.length;
+  s(full
+    ? `${demo.length} files in the demo`
+    : `${copy.length} files to copy, ${remove.length} to remove, ${same} unchanged`, 'done');
+
+  if (full) {
+    s = step('Removing the previous backup');
+    const previous = await topItems(BACKUP);
+    let deleted = 0;
+    try {
+      await inBatches(previous, (item) => daDelete(item.path), (done) => {
+        deleted = done;
+        s(`Removed ${done} of ${previous.length} folders and files`);
+      });
+    } finally {
+      notes.push(deleted === previous.length
+        ? 'Removed the previous backup.'
+        : `Removed ${deleted} of ${previous.length} folders and files of the previous backup.`);
+    }
+    s('Removed the previous backup', 'done');
+
+    s = step('Copying the whole demo');
+    const items = await topItems(ROOT);
+    let copiedItems = 0;
+    try {
+      await inBatches(items, (item) => daCopy(item.path, `${BACKUP}${rel(item.path, ROOT)}`), (done) => {
+        copiedItems = done;
+        s(`Copied ${done} of ${items.length} folders and files`);
+      });
+    } finally {
+      if (copiedItems) notes.push(`Copied ${copiedItems} of ${items.length} folders and files.`);
+    }
+    s('Copied the demo', 'done');
+  }
+
+  // a full backup has copied everything already
+  const changed = full ? [] : copy;
+  if (!full) {
+    s = step('Copying what changed');
+    let copied = 0;
+    try {
+      await inBatches(changed, (f) => daCopy(f.path, `${BACKUP}${rel(f.path, ROOT)}`), (done) => {
+        copied = done;
+        s(`Copied ${done} of ${changed.length}`);
+      });
+    } finally {
+      // a stopped backup keeps what it copied: backing up again copies only the rest
+      if (copied) notes.push(`Copied ${copied} of ${changed.length} new or changed files.`);
+    }
+    s(changed.length ? `Copied ${changed.length} files` : 'Nothing changed', 'done');
+  }
+
+  // a full backup removed the previous one already
+  const stale = full ? [] : remove;
+  s = step('Removing what the demo no longer has');
+  const removed = [];
+  const removeFile = async (f) => {
+    await daDelete(f.path);
+    removed.push(rel(f.path, BACKUP));
+  };
+  const report = () => s(`Removed ${removed.length} of ${stale.length}`);
+  try {
+    // pages last: a page's images are found through the page, so if a run stops, the next one
+    // still finds the images of a page it couldn't finish removing
+    await inBatches(stale.filter((f) => f.ext !== 'html'), removeFile, report);
+    await inBatches(stale.filter((f) => f.ext === 'html'), removeFile, report);
+  } finally {
+    if (removed.length) notes.push(`Removed ${removed.length} files the demo no longer has: ${removed.join(', ')}.`);
+  }
+  // then the folders the demo no longer has (with anything DA doesn't list in them)
+  const gone = full ? [] : drop
+    .filter((f) => !drop.some((other) => other !== f && rel(f.path, BACKUP).startsWith(`${rel(other.path, BACKUP)}/`)));
+  const dropped = [];
+  try {
+    await inBatches(gone, async (f) => {
+      await daDelete(f.path);
+      dropped.push(rel(f.path, BACKUP));
+    }, () => s(`Removed ${dropped.length} of ${gone.length} folders`));
+  } finally {
+    if (dropped.length) notes.push(`Removed ${dropped.length} folders the demo no longer has: ${dropped.join(', ')}.`);
+  }
+  s(stale.length || gone.length ? `Removed ${stale.length} files and ${gone.length} folders` : 'Nothing to remove', 'done');
+
+  // folders the demo has with no files in them: looked up after the removals, as removing the
+  // last file of a backup folder removes that folder too
+  if (!full) {
+    const nowFolders = [];
+    await allFiles(BACKUP, nowFolders);
+    const missing = backupPlan([], [], demoFolders, nowFolders).create;
+    if (missing.length) {
+      s = step('Adding folders');
+      await inBatches(missing, (f) => daCreateFolder(`${BACKUP}${rel(f.path, ROOT)}`), (done) => {
+        s(`Added ${done} of ${missing.length}`);
+      });
+      notes.push(`Added ${missing.length} folders: ${missing.map((f) => rel(f.path, ROOT)).join(', ')}.`);
+      s(`Added ${missing.length} folders`, 'done');
+    }
+  }
 
   s = step('Checking the backup');
-  const copied = [...await daWalk(BACKUP, false), ...await daWalk(`${BACKUP}/.da`, false)]
-    .filter((f) => f.path !== OPS);
-  const info = { created: new Date().toISOString(), by: email, files: String(copied.length) };
+  const checkedFolders = [];
+  const left = backupPlan(demo, await allFiles(BACKUP, checkedFolders), demoFolders, checkedFolders);
+  const off = left.copy.length + left.remove.length + left.create.length + left.drop.length;
+  if (off) {
+    throw new Error(`The backup doesn't match the demo yet (${left.copy.length + left.create.length} missing, ${left.remove.length + left.drop.length} extra). Back up again.`);
+  }
+  const info = { created: new Date().toISOString(), by: email, files: String(demo.length) };
   await writeBackupInfo(info);
-  s(`Backup ready: ${copied.length} files`, 'done');
+  s(`Backup ready: ${demo.length} files`, 'done');
   showBackupInfo(info);
-  return { comments: `Backed up ${copied.length} files.` };
+  return {
+    comments: full
+      ? `Full backup of ${demo.length} files.`
+      : `Backed up ${demo.length} files: copied ${copy.length} new or changed, removed ${remove.length}, ${same} unchanged.`,
+  };
 }
 
 /* ---------- reset ---------- */
@@ -656,10 +817,19 @@ async function init() {
 $('backup').addEventListener('click', async () => {
   const yes = await confirmAction({
     title: 'Back up the demo?',
-    text: 'This replaces the previous backup.',
+    text: 'The backup is updated to match the demo as it is now.',
     action: 'Back up',
   });
   if (yes) run('backup-log', backup, { action: 'backup', target: SITE });
+});
+
+$('backup-full').addEventListener('click', async () => {
+  const yes = await confirmAction({
+    title: 'Make a full backup?',
+    text: 'The previous backup is removed and every folder of the demo is copied again, so this takes longer than a regular backup. It also picks up files DA doesn\'t list, such as images with more than one dot in their name (except on top-level pages).',
+    action: 'Back up everything',
+  });
+  if (yes) run('backup-log', (step, notes) => backup(step, notes, { full: true }), { action: 'full backup', target: SITE });
 });
 
 $('reset').addEventListener('click', async () => {

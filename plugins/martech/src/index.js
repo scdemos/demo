@@ -341,16 +341,32 @@ function loadAndConfigureAlloy(instanceName, webSDKConfig) {
   return alloyReady;
 }
 
-/** Fetch JSON code-based content without applying it or reporting an impression. */
-export async function getCodeBasedExperience(surface, signal, canRequest = () => true) {
+/**
+ * Loads and configures the Web SDK now instead of in the lazy phase, for callers that need an
+ * Edge answer before the page is shown.
+ * @returns {Promise<void>}
+ */
+export async function loadWebSDK() {
+  assertInitialized('loadWebSDK');
+  await loadAndConfigureAlloy(config.alloyInstanceName, alloyConfig);
+}
+
+/**
+ * Fetches Journey Optimizer code-based JSON content for the given surfaces, without applying it
+ * or reporting an impression: the caller applies what it can and reports what it displayed.
+ * @param {String[]} surfaces surface URIs, e.g. web://example.com/path#location
+ * @param {Function} [canRequest] checked again once the library is ready
+ * @returns {Promise<Object|null>} the Web SDK response, null when the request was skipped
+ */
+export async function getCodeBasedExperience(surfaces, canRequest = () => true) {
   assertInitialized('getCodeBasedExperience');
   await loadAndConfigureAlloy(config.alloyInstanceName, alloyConfig);
-  if (signal?.aborted || !canRequest()) return null;
+  if (!canRequest()) return null;
   return sendEvent({
     type: 'decisioning.propositionFetch',
     renderDecisions: false,
     personalization: {
-      surfaces: [surface],
+      surfaces,
       schemas: ['https://ns.adobe.com/personalization/json-content-item'],
       defaultPersonalizationEnabled: false,
       sendDisplayEvent: false,
