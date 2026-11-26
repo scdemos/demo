@@ -407,19 +407,24 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 Most of these came with main since Nov 17. They call `admin.da.live` and admin.hlx.page directly, or
 only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 
-- [ ] **Clone it**: redone on main's reworked Clone it
+- [ ] **Clone it**: [#166](https://github.com/scdemos/demo/pull/166) (open, in review; branch
+  [demo/clonehx6](https://github.com/scdemos/demo/tree/clonehx6)), redone on main's reworked Clone it
   ([#115](https://github.com/scdemos/demo/pull/115), [#128](https://github.com/scdemos/demo/pull/128),
   [#129](https://github.com/scdemos/demo/pull/129), [#132](https://github.com/scdemos/demo/pull/132),
-  [#133](https://github.com/scdemos/demo/pull/133)) in [demo/clonehx6](https://github.com/scdemos/demo/tree/clonehx6).
-  Opened from demo-hlx6, it clones demo-hlx6: it creates the new site's config first, copies through the
-  source bus, previews and publishes through the Helix 6 API, and gives the requester the `admin` site role
-  instead of DA write. Today "Start clone" stays disabled on demo-hlx6 because the worker's CORS allowlist
-  only has demo's origins; the branch adds demo-hlx6's, for calls with the user's IMS token only. On Nov 24
-  a local run with Ben's tokens in place of the worker's service account cloned demo-hlx6 completely: 209 of
-  209 files copied, 194 pages and assets previewed and published, then removed again. Ben's account can't
-  add a new repo to AEM Code Sync, so that step was stubbed and the clone had no code; it's untested with
-  the real service account. Merging changes `workers/cloneit_token/**`, which deploys the worker. Demo Admin still can't delete a Helix 6 clone (it only accepts `content.da.live` sources). The check
-  that a new site name is free is the separate branch `cloneck`.
+  [#133](https://github.com/scdemos/demo/pull/133)). On main, "Start clone" stays disabled on demo-hlx6
+  because the worker's CORS allowlist only has demo's origins; the PR adds demo-hlx6's, for calls with the
+  user's IMS token only. Opened from demo-hlx6, it clones demo-hlx6 as an experimental Helix 6 demo: it
+  creates the new site's config first, copies through the source bus with the requester's token, previews
+  and publishes through the Helix 6 API and builds the query index. The requester gets the `admin` site
+  role and joins demo-hlx6's `author`, `publish` and `config_admin` roles. Opened from any other site, it
+  still clones demo as on main. On Nov 26 live test clones from the branch with the worker preview
+  published 194 pages and assets and built the query index; the test sites and repos are deleted again.
+  AEM Code Sync writes a default site config (content in DA) 8-18 s after a new repo is added, which
+  replaced ours on the first live run; Clone it now replaces only that default and checks again after the
+  copy. The classic path from demo isn't tested live from the branch yet. Merging changes
+  `workers/cloneit_token/**`, which deploys the production worker. Demo Admin still can't delete a Helix 6
+  clone (it only accepts `content.da.live` sources). The check that a new site name is free is the
+  separate branch `cloneck`.
 
 - [ ] **Demo Admin** ([#142](https://github.com/scdemos/demo/pull/142), [#143](https://github.com/scdemos/demo/pull/143)):
   backs up and resets the demo and deletes CloneIt demos. It copies and deletes through `admin.da.live` and
@@ -446,6 +451,8 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   [#135](https://github.com/scdemos/demo/pull/135)) and Clone it workers allow `main--demo--scdemos` and
   `*--demo--scdemos` origins. `main--demo-hlx6--scdemos` matches none of them. The content search and feed
   workers also read content from demo's hosts (`CONTENT_ORIGIN`), so demo-hlx6 would need its own config.
+  The Clone it worker gets demo-hlx6's origins in [#166](https://github.com/scdemos/demo/pull/166), for
+  calls with the user's IMS token only.
 
 - [ ] **Customer demos** ([#103](https://github.com/scdemos/demo/pull/103), `.github/workflows/provision-demo.yaml`,
   the `customer-demo` skill): build on Clone it sites with DA content.
