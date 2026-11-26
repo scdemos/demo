@@ -63,8 +63,11 @@ Site setup and content:
   so the two rows went into demo-hlx6's `editor.da` `data` sheet. Checked: browse links both app docs to
   `da.live/form`, and the form editor loads `experience` with its schema.
 - [x] Draft pages the how-tos link to (experimentation challenger, FAQ block demo) copied and published.
-- [x] Access roles: demo's site roles copied, `*@adobe.com` and the two demo IMS groups can publish
-  (see the verification item below).
+- [x] Access roles: since Nov 25 they follow demo's DA permissions sheet, not demo's site roles.
+  `*@adobe.com` can only read (`view`). `author` and `publish` hold the two demo IMS groups and the people
+  on demo's `/demo/+**` row, `config_admin` the groups and people on its `CONFIG` row, and `admin` holds
+  demo-hlx6's earlier admins plus everyone on the org-wide `/+**` row. Clone it makes these admins `admin`
+  of every Helix 6 clone (see the verification item below).
 - [x] Scheduler: demo-hlx6 registered with its own API key.
 - [x] Publish request worker: demo-hlx6 registered (same settings as demo). It only helps once the worker
   supports Helix 6, see request publish below.
@@ -415,8 +418,9 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   because the worker's CORS allowlist only has demo's origins; the PR adds demo-hlx6's, for calls with the
   user's IMS token only. Opened from demo-hlx6, it clones demo-hlx6 as an experimental Helix 6 demo: it
   creates the new site's config first, copies through the source bus with the requester's token, previews
-  and publishes through the Helix 6 API and builds the query index. The requester gets the `admin` site
-  role and joins demo-hlx6's `author`, `publish` and `config_admin` roles. Opened from any other site, it
+  and publishes through the Helix 6 API and builds the query index. The requester and demo-hlx6's admins get the
+  `admin` site role, `*@adobe.com` gets none, and the requester joins demo-hlx6's `author`, `publish` and
+  `config_admin` roles. Opened from any other site, it
   still clones demo as on main. On Nov 26 live test clones from the branch with the worker preview
   published 194 pages and assets and built the query index; the test sites and repos are deleted again.
   AEM Code Sync writes a default site config (content in DA) 8-18 s after a new repo is added, which
@@ -482,7 +486,10 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   `/fragments/offers/hero-*` Target offers, `/docs/library/blocks/journey-map`); demo-hlx6 kept their
   October copies live.
 
-- [ ] **Access roles**: test edit, preview and publish as a plain `@adobe.com` user.
+- [ ] **Access roles**: test them with real users. Running helix-api-service's role code against the live
+  config (Nov 25) says an `@adobe.com` user who isn't listed can open demo-hlx6's pages but not save them,
+  someone who is only in the `da-demosite-authors` IMS group can save and publish, and unlisted users get
+  no access to a Helix 6 clone, as with a classic clone. Nobody like that has tried it yet.
 
 - [ ] **how-to-add-new-users**: on Helix 6 the IMS groups go into the site's access roles, not the DA
   permissions sheet. Update the doc.
