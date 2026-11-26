@@ -19,6 +19,7 @@ import {
   isAnonymousCacheable,
 } from './handlers/gating.js';
 import { isAuthenticated } from './handlers/auth-check.js';
+import { fetchEdgeOptimized, isAgentRequest } from './handlers/edge-optimize.js';
 import { DEMO_SESSION_COOKIE } from '../shared/demo-session.js';
 
 const getExtension = (path) => {
@@ -168,7 +169,7 @@ const isCachedGatedPath = (url, env) => String(env.GATED_CACHE_PATHS || '').spli
   .map((path) => path.trim()).filter(Boolean)
   .includes(url.pathname);
 
-const handleFetch = async (request, env, ctx) => {
+const handleSiteFetch = async (request, env, ctx) => {
   const url = new URL(request.url);
   if (!ctx?.exports?.Anonymous || url.port || request.headers.has('Authorization')
     || !canContainGatedHtml(request, url) || !isCachedGatedPath(url, env)
@@ -181,6 +182,35 @@ const handleFetch = async (request, env, ctx) => {
   return ctx.exports.Anonymous.fetch(anonymousRequest, {
     cf: { cacheKey: anonymousCacheKey(request) },
   });
+};
+
+// AI agents get pages from Edge Optimize; if it fails, the page comes from the origin as usual
+const handleFetch = async (request, env, ctx) => {
+  if (!isAgentRequest(request, env)) return handleSiteFetch(request, env, ctx);
+  // agents are anonymous visitors: gated pages show them only what anyone may see, even if
+  // Edge Optimize served more than its fetch through this worker returned
+  const agentRequest = new Request(request);
+  agentRequest.headers.delete('cookie');
+  agentRequest.headers.delete('authorization');
+  const optimized = await fetchEdgeOptimized(agentRequest, env);
+  if (optimized) {
+    let incomplete = false;
+    const response = await applyGatingIfNeeded(agentRequest, new URL(request.url), optimized, async () => {
+      const full = new Request(agentRequest, { method: 'GET' });
+      ['Range', 'If-Range', 'If-None-Match', 'If-Modified-Since', 'If-Match', 'If-Unmodified-Since']
+        .forEach((name) => full.headers.delete(name));
+      const page = await fetchEdgeOptimized(full, env);
+      if (!page) incomplete = true;
+      return page || new Response(null, { status: 502 });
+    });
+    if (!incomplete) return response;
+    await response.body?.cancel();
+  }
+  // failover: the page from the origin, still as an anonymous visitor
+  const response = await handleSiteFetch(agentRequest, env, ctx);
+  const failover = new Response(response.body, response);
+  failover.headers.set('x-edgeoptimize-fo', '1');
+  return failover;
 };
 
 export default {
