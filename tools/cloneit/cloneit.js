@@ -630,6 +630,19 @@ function isCodeSyncDefault(config, siteName) {
   return config?.content?.source?.url === `https://content.da.live/${ORG}/${siteName}/`;
 }
 
+/** The stored site config, read up to 3 times: `{ status, config }`, config null when unreadable. */
+async function readSiteConfig(siteName) {
+  let response;
+  for (let i = 0; i < 3; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
+    if (response.ok) return { status: response.status, config: await response.json().catch(() => null) };
+    // eslint-disable-next-line no-await-in-loop
+    if (i < 2) await wait(1000);
+  }
+  return { status: response.status, config: null };
+}
+
 /**
  * `createOnly`: never replace a config that exists already (the PUT answers 409), except AEM Code
  * Sync's default for the new repo.
@@ -640,8 +653,14 @@ async function createAemSiteConfig(newSiteName, config, { createOnly = false } =
     body: JSON.stringify(config),
     contentType: 'application/json',
   });
-  if (response.status === 409
-    && (!createOnly || isCodeSyncDefault(await findSiteInAem(newSiteName), newSiteName))) {
+  if (response.status === 409 && createOnly) {
+    const stored = await readSiteConfig(newSiteName);
+    if (!isCodeSyncDefault(stored.config, newSiteName)) {
+      const found = stored.config ? `content: ${stored.config.content?.source?.url}` : `read: ${stored.status}`;
+      throw new Error(`A site config for ${ORG}/${newSiteName} exists already (${found}).`);
+    }
+  }
+  if (response.status === 409) {
     // AEM Code Sync may have created a default config for the new repo already; replace it with ours
     response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
       method: 'POST',
