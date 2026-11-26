@@ -132,6 +132,108 @@ function confirmAction({
   });
 }
 
+/**
+ * Fills one group of the choose dialog: a row per file, all selected, and a Select all box that
+ * selects or clears the group.
+ * @param {Element} group the fieldset
+ * @param {Object[]} files the files, with `path`, `label` and optional `meta`
+ * @returns {() => Object[]} returns the files selected when called
+ */
+function fillChoices(group, files) {
+  group.hidden = !files.length;
+  const list = group.querySelector('ul');
+  const all = group.querySelector('.admin-choice-all input');
+  const boxes = files.map((file) => {
+    const li = document.createElement('li');
+    const label = document.createElement('label');
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = true;
+    const path = document.createElement('span');
+    path.className = 'admin-choice-path';
+    path.textContent = file.label;
+    label.append(box, path);
+    if (file.meta) {
+      const meta = document.createElement('span');
+      meta.className = 'admin-choice-meta';
+      meta.textContent = file.meta;
+      label.append(meta);
+    }
+    li.append(label);
+    return box;
+  });
+  list.replaceChildren(...boxes.map((box) => box.closest('li')));
+  const sync = () => {
+    const on = boxes.filter((box) => box.checked).length;
+    all.checked = on === boxes.length;
+    all.indeterminate = on > 0 && on < boxes.length;
+  };
+  all.checked = true;
+  all.indeterminate = false;
+  all.onchange = () => {
+    boxes.forEach((box) => { box.checked = all.checked; });
+    sync();
+  };
+  boxes.forEach((box) => { box.onchange = sync; });
+  return () => files.filter((file, i) => boxes[i].checked);
+}
+
+/** The page an image belongs to (DA keeps a page's images in a `.<page>` folder next to it). */
+function imagePage(path) {
+  const parts = path.split('/');
+  const folder = parts[parts.length - 2] || '';
+  return folder.startsWith('.') && folder !== '.da'
+    ? `${parts.slice(0, -2).join('/')}/${folder.slice(1)}.html` : '';
+}
+
+/**
+ * Groups a page with its images (DA keeps them in a hidden `.<page>` folder next to it) into one
+ * choice: DA finds a page's images only through the page, so they're backed up together.
+ * @param {Object[]} files files to choose from
+ * @param {String} root where their paths start (ROOT or BACKUP)
+ * @param {(file: Object) => String} [meta] the note shown next to a file
+ * @returns {Object[]} choices with `path`, `label`, `meta` and their `files`
+ */
+function groupChoices(files, root, meta = () => '') {
+  const pages = new Map(files.filter((f) => f.ext === 'html').map((f) => [f.path, f]));
+  const choices = new Map();
+  files.forEach((file) => {
+    const page = imagePage(file.path);
+    const key = pages.has(page) ? page : file.path;
+    if (!choices.has(key)) choices.set(key, { path: key, files: [] });
+    choices.get(key).files.push(file);
+  });
+  return [...choices.values()].map((choice) => {
+    const main = pages.get(choice.path) || choice.files[0];
+    const images = choice.files.length - 1;
+    return {
+      ...choice,
+      label: `${rel(main.path, root)}${images ? ` + ${images} image${images > 1 ? 's' : ''}` : ''}`,
+      meta: meta(main),
+    };
+  });
+}
+
+/**
+ * Asks which changes to back up. Resolves the files selected, or null when the admin cancels.
+ * @param {Object[]} copy choices of demo files to copy, from groupChoices
+ * @param {Object[]} remove choices of backup files to remove, from groupChoices
+ * @returns {Promise<Object[]|null>}
+ */
+function chooseChanges(copy, remove) {
+  const dialog = $('choose');
+  const pickCopy = fillChoices($('choose-copy'), copy);
+  const pickRemove = fillChoices($('choose-remove'), remove);
+  dialog.returnValue = '';
+  dialog.showModal();
+  return new Promise((resolve) => {
+    dialog.addEventListener('close', () => {
+      resolve(dialog.returnValue === 'ok'
+        ? [...pickCopy(), ...pickRemove()].flatMap((choice) => choice.files) : null);
+    }, { once: true });
+  });
+}
+
 function lock(on) {
   busy = on;
   document.querySelectorAll('#tools button').forEach((b) => { b.disabled = on; });
@@ -282,7 +384,7 @@ async function writeBackupInfo(info) {
 
 function showBackupInfo(info) {
   $('backup-info').textContent = info
-    ? `Last backup: ${new Date(info.created).toLocaleString()} by ${info.by}, ${info.files} files.`
+    ? `Last backup: ${new Date(info.created).toLocaleString()} by ${info.by}, ${info.files} files${Number(info.skipped) ? `, ${info.skipped} changes left out` : ''}.`
     : 'No backup yet.';
 }
 
@@ -459,7 +561,9 @@ async function backup(step, notes, { full = false } = {}) {
   const demo = await allFiles(ROOT, demoFolders);
   if (!demo.length && !demoFolders.length) throw new Error('The demo is empty, so there\'s nothing to back up.');
   const savedFolders = [];
-  const { copy, remove, drop } = backupPlan(demo, await allFiles(BACKUP, savedFolders), demoFolders, savedFolders);
+  const saved = await allFiles(BACKUP, savedFolders);
+  const savedPaths = saved.map((f) => rel(f.path, BACKUP));
+  const { copy, remove, drop } = backupPlan(demo, saved, demoFolders, savedFolders);
   const same = demo.length - copy.length;
   s(full
     ? `${demo.length} files in the demo`
@@ -495,8 +599,47 @@ async function backup(step, notes, { full = false } = {}) {
     s('Copied the demo', 'done');
   }
 
-  // a full backup has copied everything already
-  const changed = full ? [] : copy;
+  // the admin picks what to back up; what they leave out stays as it is in the backup. The first
+  // backup takes everything: there's nothing to compare with yet.
+  let changed = full ? [] : copy;
+  let stale = full ? [] : remove;
+  let skipped = [];
+  if (!full && saved.length && (copy.length || remove.length)) {
+    s = step('Choosing what to back up');
+    const backedUp = new Set(savedPaths);
+    const when = (f) => (f.lastModified ? new Date(f.lastModified).toLocaleString() : '');
+    const copyChoices = groupChoices(copy, ROOT, (f) => `${backedUp.has(rel(f.path, ROOT)) ? 'changed' : 'new'} ${when(f)}`);
+    // an updated page's old images go with the update: the page in the backup still uses them
+    // until it's replaced
+    const updates = new Map(copyChoices.filter((c) => c.path.endsWith('.html'))
+      .map((c) => [rel(c.path, ROOT), c]));
+    const oldImages = remove.filter((f) => updates.has(rel(imagePage(f.path), BACKUP)));
+    oldImages.forEach((f) => {
+      const update = updates.get(rel(imagePage(f.path), BACKUP));
+      update.files.push(f);
+      update.replaced = (update.replaced || 0) + 1;
+    });
+    copyChoices.forEach((c) => {
+      if (c.replaced) c.label += `, removes ${c.replaced} old image${c.replaced > 1 ? 's' : ''}`;
+    });
+    const picked = await chooseChanges(
+      copyChoices,
+      groupChoices(remove.filter((f) => !oldImages.includes(f)), BACKUP),
+    );
+    if (!picked) {
+      s('Cancelled, nothing was changed', 'fail');
+      return { result: 'cancelled', comments: 'Cancelled before changing anything.' };
+    }
+    const chosen = new Set(picked.map((f) => f.path));
+    changed = copy.filter((f) => chosen.has(f.path));
+    stale = remove.filter((f) => chosen.has(f.path));
+    skipped = [...copy, ...remove].filter((f) => !chosen.has(f.path))
+      .map((f) => ({ ...f, label: rel(f.path, f.path.startsWith(`${BACKUP}/`) ? BACKUP : ROOT) }));
+    s(skipped.length
+      ? `Backing up ${changed.length + stale.length} changes, leaving out ${skipped.length}`
+      : `Backing up all ${changed.length + stale.length} changes`, 'done');
+    if (skipped.length) notes.push(`Left out ${skipped.length} changes: ${skipped.map((f) => f.label || f.path).join(', ')}.`);
+  }
   if (!full) {
     s = step('Copying what changed');
     let copied = 0;
@@ -512,8 +655,6 @@ async function backup(step, notes, { full = false } = {}) {
     s(changed.length ? `Copied ${changed.length} files` : 'Nothing changed', 'done');
   }
 
-  // a full backup removed the previous one already
-  const stale = full ? [] : remove;
   s = step('Removing what the demo no longer has');
   const removed = [];
   const removeFile = async (f) => {
@@ -529,9 +670,11 @@ async function backup(step, notes, { full = false } = {}) {
   } finally {
     if (removed.length) notes.push(`Removed ${removed.length} files the demo no longer has: ${removed.join(', ')}.`);
   }
-  // then the folders the demo no longer has (with anything DA doesn't list in them)
-  const gone = full ? [] : drop
-    .filter((f) => !drop.some((other) => other !== f && rel(f.path, BACKUP).startsWith(`${rel(other.path, BACKUP)}/`)));
+  // then the folders the demo no longer has (with anything DA doesn't list in them), except
+  // those holding a file the admin left out
+  const inside = (file, folder) => file.path.startsWith(`${folder.path}/`);
+  const removable = full ? [] : drop.filter((f) => !skipped.some((file) => inside(file, f)));
+  const gone = removable.filter((f) => !removable.some((other) => other !== f && inside(f, other)));
   const dropped = [];
   try {
     await inBatches(gone, async (f) => {
@@ -561,19 +704,27 @@ async function backup(step, notes, { full = false } = {}) {
 
   s = step('Checking the backup');
   const checkedFolders = [];
-  const left = backupPlan(demo, await allFiles(BACKUP, checkedFolders), demoFolders, checkedFolders);
+  const backedUpNow = await allFiles(BACKUP, checkedFolders);
+  const left = backupPlan(demo, backedUpNow, demoFolders, checkedFolders);
+  // what the admin left out isn't there yet, and folders holding it stay
+  const leftOut = new Set(skipped.map((f) => f.path));
+  left.copy = left.copy.filter((f) => !leftOut.has(f.path));
+  left.remove = left.remove.filter((f) => !leftOut.has(f.path));
+  left.drop = left.drop.filter((folder) => !skipped.some((file) => inside(file, folder)));
   const off = left.copy.length + left.remove.length + left.create.length + left.drop.length;
   if (off) {
     throw new Error(`The backup doesn't match the demo yet (${left.copy.length + left.create.length} missing, ${left.remove.length + left.drop.length} extra). Back up again.`);
   }
-  const info = { created: new Date().toISOString(), by: email, files: String(demo.length) };
+  const info = {
+    created: new Date().toISOString(), by: email, files: String(backedUpNow.length), skipped: String(skipped.length),
+  };
   await writeBackupInfo(info);
-  s(`Backup ready: ${demo.length} files`, 'done');
+  s(`Backup ready: ${backedUpNow.length} files`, 'done');
   showBackupInfo(info);
   return {
     comments: full
-      ? `Full backup of ${demo.length} files.`
-      : `Backed up ${demo.length} files: copied ${copy.length} new or changed, removed ${remove.length}, ${same} unchanged.`,
+      ? `Full backup of ${backedUpNow.length} files.`
+      : `Backup has ${backedUpNow.length} files: copied ${changed.length} new or changed, removed ${stale.length}, ${same} unchanged${skipped.length ? `, left out ${skipped.length} changes` : ''}.`,
   };
 }
 

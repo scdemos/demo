@@ -19,7 +19,7 @@
         <p class="admin-meta">Every backup, reset and delete is recorded in the <a href="https://da.live/sheet#/scdemos/demo/.backup/demo-admin-operations" target="_blank" rel="noopener">operations log</a>.</p>
         <section class="admin-card" aria-labelledby="backup-title">
           <h2 id="backup-title">Backup</h2>
-          <p>Updates the backup in <code>/demo/.backup</code> to match the demo: copies what's new or changed since the last backup and removes what's gone. Drafts aren't included.</p>
+          <p>Updates the backup in <code>/demo/.backup</code> to match the demo: copies what's new or changed since the last backup and removes what's gone. You see the list first and can leave out what you don't want backed up yet. Drafts aren't included.</p>
           <p>Full backup removes the previous backup and copies every folder again. It takes longer, and it's the only way to pick up files DA doesn't list, such as images with more than one dot in their name (except on top-level pages).</p>
           <p class="admin-meta" id="backup-info"></p>
           <button type="button" id="backup">Back up now</button>
@@ -46,6 +46,27 @@
           <ol class="admin-log" id="clone-log" aria-live="polite" hidden></ol>
         </section>
       </div>
+
+      <dialog class="admin-dialog admin-dialog-wide" id="choose" aria-labelledby="choose-title">
+        <form method="dialog">
+          <h2 id="choose-title">Choose what to back up</h2>
+          <p>Everything is selected. Clear what you'd rather leave as it is in the backup for now.</p>
+          <fieldset class="admin-choices" id="choose-copy">
+            <legend>New or changed in the demo</legend>
+            <label class="admin-choice-all"><input type="checkbox" checked> Select all</label>
+            <ul></ul>
+          </fieldset>
+          <fieldset class="admin-choices" id="choose-remove">
+            <legend>Gone from the demo, removed from the backup</legend>
+            <label class="admin-choice-all"><input type="checkbox" checked> Select all</label>
+            <ul></ul>
+          </fieldset>
+          <div class="admin-dialog-actions">
+            <button type="submit" value="cancel" class="secondary">Cancel</button>
+            <button type="submit" value="ok" id="choose-ok">Back up selected</button>
+          </div>
+        </form>
+      </dialog>
 
       <dialog class="admin-dialog" id="confirm" aria-labelledby="confirm-title">
         <form method="dialog">

@@ -211,3 +211,65 @@
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+.admin-dialog-wide {
+  width: min(720px, calc(100% - 32px));
+}
+
+.admin-choices {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.admin-choices legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.admin-choices ul {
+  max-height: 30vh;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  font-size: var(--step-n1);
+}
+
+.admin-choices li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-choices li:last-child {
+  border-bottom: 0;
+}
+
+.admin-dialog .admin-choices label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.admin-dialog .admin-choices .admin-choice-all {
+  font-weight: 600;
+}
+
+.admin-dialog .admin-choices input {
+  width: auto;
+  flex: none;
+}
+
+.admin-choice-path {
+  overflow-wrap: anywhere;
+}
+
+.admin-choice-meta {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
