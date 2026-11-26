@@ -33,6 +33,21 @@
         </div>
         <div class="cloneit-aside-meta" aria-label="Target org">
           <span class="cloneit-pill">org: scdemos</span>
+          <span class="cloneit-pill cloneit-pill-hlx6" data-hlx6 hidden>helix 6, experimental</span>
+          <button class="cloneit-info-btn" type="button" popovertarget="hlx6-info" aria-label="About Helix 6 demos" data-hlx6 hidden>
+            <img src="/tools/cloneit/icons/info.svg" width="16" height="16" alt="">
+          </button>
+          <div class="cloneit-popover" id="hlx6-info" popover>
+            <p class="cloneit-popover-title">Helix 6 demo (experimental)</p>
+            <p>Your demo keeps its content in the Helix 6 source bus. You edit it in DA as usual. Not there yet:</p>
+            <ul>
+              <li>Demo Admin can't delete the demo.</li>
+              <li>Files over about 4.5 MB, such as videos, can't be saved.</li>
+              <li>The event and press pages that demo-hlx6 generates aren't copied.</li>
+              <li>The <code>customer-demo</code> AI skill isn't tested on Helix 6 demos.</li>
+              <li>Translation, MSM and the media library don't work on Helix 6 sites yet.</li>
+            </ul>
+          </div>
         </div>
         <p class="cloneit-aside-lede">Create your own demo site from the <strong>scdemos demo</strong> in a few minutes. It's yours to show as is, or to make look like a customer with AI.</p>
         <p class="cloneit-aside-head">You get</p>
@@ -43,7 +58,8 @@
           </li>
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
-            <span><strong>DA folder</strong> with the demo's pages, block library and authoring config, which you can edit (content and config)</span>
+            <span data-da><strong>DA folder</strong> with the demo's pages, block library and authoring config, which you can edit (content and config)</span>
+            <span data-hlx6 hidden><strong>Helix 6 site</strong> with the demo's pages, block library and authoring config, which you edit in DA as its admin</span>
           </li>
           <li>
             <span class="cloneit-aside-dot" aria-hidden="true"></span>
@@ -101,7 +117,9 @@
               <span class="surface-eyebrow">Site identity</span>
               <h2 class="card-title">Customer site and site name</h2>
               <p class="card-desc">
-                Every demo gets its own repo and DA folder, starting from the scdemos demo site (code and content). The customer site is optional: if you enter it, the site name is suggested from its domain (change it if you like). CloneIt doesn't copy the customer's website: it's used for the ready-to-paste AI prompt you get at the end.
+                <span data-da>Every demo gets its own repo and DA folder, starting from the scdemos demo site (code and content).</span>
+                <span data-hlx6 hidden>Every demo gets its own repo and Helix 6 site, with the code of the scdemos demo site and the content of demo-hlx6.</span>
+                The customer site is optional: if you enter it, the site name is suggested from its domain (change it if you like). CloneIt doesn't copy the customer's website: it's used for the ready-to-paste AI prompt you get at the end.
               </p>
             </div>
             <div class="card-content">
@@ -384,7 +402,8 @@
           <div class="modal-body modal-body-help">
             <div class="help-section">
               <h3>What does CloneIt do?</h3>
-              <p>CloneIt creates <code>github.com/scdemos/&lt;site&gt;</code> from <code>scdemos/demo</code>, adds it to AEM Code Sync and makes you its admin, then copies all demo content except <code>/drafts</code> and <code>/demo-docs</code> (e.g. <code>/en</code>, <code>/de</code>, <code>/media</code>), the DA config and index into <code>da.live/#/scdemos/&lt;site&gt;</code>, and gives you write access to that folder and its config. Demo it as is, or run the <code>customer-demo</code> AI skill to make it look like the customer.</p>
+              <p data-hlx6 hidden>Opened from demo-hlx6, CloneIt creates <code>github.com/scdemos/&lt;site&gt;</code> from <code>scdemos/demo</code>, adds it to AEM Code Sync and makes you its admin, creates a Helix 6 site, and copies demo-hlx6's content into its source bus with your Adobe login (without <code>/drafts</code> and <code>/demo-docs</code>). You become the site's admin and edit it in DA. Demo it as is, or run the <code>customer-demo</code> AI skill to make it look like the customer.</p>
+              <p data-da>CloneIt creates <code>github.com/scdemos/&lt;site&gt;</code> from <code>scdemos/demo</code>, adds it to AEM Code Sync and makes you its admin, then copies all demo content except <code>/drafts</code> and <code>/demo-docs</code> (e.g. <code>/en</code>, <code>/de</code>, <code>/media</code>), the DA config and index into <code>da.live/#/scdemos/&lt;site&gt;</code>, and gives you write access to that folder and its config. Demo it as is, or run the <code>customer-demo</code> AI skill to make it look like the customer.</p>
               <p>CloneIt previews and publishes all pages for you. You need to be signed in to da.live with your Adobe account.</p>
             </div>
             <div class="help-section">

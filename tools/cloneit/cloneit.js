@@ -34,7 +34,8 @@ const CLONEIT_WORKER_URL = resolveWorkerUrl();
 const BASELINE_SITE = 'demo';
 // opened in DA from demo-hlx6 (demo's Helix 6 copy), CloneIt clones that site's content instead;
 // opened from any other site (every demo repo carries this tool), it still clones demo
-const TEMPLATE_SITES = [BASELINE_SITE, 'demo-hlx6'];
+const HLX6_TEMPLATE = 'demo-hlx6';
+const TEMPLATE_SITES = [BASELINE_SITE, HLX6_TEMPLATE];
 const GH_USER_KEY = 'cloneit.githubUser';
 const GH_USER_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 const REGISTRY = { site: 'demo-registry', path: 'demos.json' };
@@ -47,6 +48,8 @@ const UI = {
   toastSdkFailed:
     'Sign in to Document Authoring and open CloneIt from DA, then refresh.',
   toastReady: 'CloneIt is ready. Enter a site name and your GitHub username to start.',
+  resultReady: 'Your repository, site and DA folder are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.',
+  resultReadyHlx6: 'Your repository and Helix 6 site are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.',
 };
 
 // Paths must stay aligned with workers/cloneit_token isAllowedProxyPath().
@@ -406,7 +409,7 @@ function showResult(success, siteName, errorMessage, options = {}) {
 
     const sub = document.getElementById('result-sub');
     if (sub) {
-      sub.textContent = 'Your repository, site and DA folder are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.';
+      sub.textContent = options.hlx6 ? UI.resultReadyHlx6 : UI.resultReady;
     }
     const handoff = document.getElementById('ai-handoff');
     if (handoff) {
@@ -1322,6 +1325,13 @@ function applyAvailability() {
   if (note) note.hidden = !app.workerReady || !app.sdkReady || app.standaloneAvailable;
 }
 
+/** Opened from the Helix 6 template, the page shows its texts ([data-hlx6]) instead of the DA ones ([data-da]). */
+function applyTemplate() {
+  const hlx6 = app.baselineSite === HLX6_TEMPLATE;
+  document.querySelectorAll('[data-hlx6]').forEach((el) => { el.hidden = !hlx6; });
+  document.querySelectorAll('[data-da]').forEach((el) => { el.hidden = hlx6; });
+}
+
 function updateCloneButtonState() {
   const cloneBtn = document.getElementById('clone-btn');
   const siteInput = document.getElementById('site-name-input');
@@ -1504,6 +1514,7 @@ async function init() {
 
   // the DA SDK provides the signed-in user's IMS token, which the worker needs on every call
   await initDaSdk();
+  applyTemplate();
   try {
     await ensureWorkerReady();
     app.workerReady = true;
