@@ -194,7 +194,11 @@ Things Helix 6 doesn't support yet, or supports differently. We can't fix these 
     Managed Agents versions and deletes them there
     ([nx-skills-editor.js#L1135-L1158](https://github.com/adobe-rnd/ew-extensions/blob/42453867aa147aa9e3019f1511e4deda85717a71/blocks/skills/nx-skills-editor.js#L1135-L1158),
     [skills-editor-api.js#L791-L808](https://github.com/adobe-rnd/ew-extensions/blob/42453867aa147aa9e3019f1511e4deda85717a71/blocks/skills/skills-editor-api.js#L791-L808)). Only the da-agent path still
-    writes `.da/skills` through admin.da.live.
+    writes `.da/skills` through admin.da.live. Observed on the Helix 6 test site benpeter/hlx6-cma
+    (2026-11-26): an uploaded skill shows up as a "Personal" skill in the skills app, and neither the source
+    bus nor admin.da.live has a `.da` folder for the site afterwards. The CMA chat itself refused to run there:
+    "Tenant 138A07885EE042D20A495CFA@AdobeOrg is not yet enabled for this preview" (the bridge's CMA pilot
+    allowlist), so using the skill in a chat isn't tested yet.
   - CMA can copy a site's old da-agent skills: since
     [Adobe-AEM-Sites/aem-sites-claudebridge#388](https://github.com/Adobe-AEM-Sites/aem-sites-claudebridge/pull/388) (merged 2026-11-20,
     behind a flag) it reads `.da/skills/<id>/skill.md`, or the `skills` sheet when there are no folders, from
