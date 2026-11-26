@@ -291,7 +291,7 @@ export function createSourceBusClient({
         await sleep(delay);
       }
     },
-    /** Starts a bulk preview (`preview`) or publish (`live`) job on the resource root. */
+    /** Starts a bulk preview (`preview`), publish (`live`) or `index` job on the resource root. */
     startJob(route, body) {
       return request(`${route}/`, {
         method: 'POST',

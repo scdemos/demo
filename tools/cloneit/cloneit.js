@@ -264,6 +264,7 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     verified: queryIndexVerified = false,
     skippedNoBaseline = false,
     error: queryIndexError = null,
+    buildError: indexBuildError = null,
   } = queryIndex;
 
   const plainLines = [];
@@ -279,6 +280,9 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   } else if (queryIndexError) {
     queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): <strong>not copied</strong> — ${escapeHtml(queryIndexError)}</li>`;
     plainLines.push(`Query index (query.yaml): not copied — ${queryIndexError}`);
+  } else if (queryIndexCopied && indexBuildError) {
+    queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): copied, but <strong>the index wasn't built</strong> — ${escapeHtml(indexBuildError)}</li>`;
+    plainLines.push(`Query index (query.yaml): copied, but the index wasn't built — ${indexBuildError}`);
   } else if (queryIndexCopied && queryIndexVerified) {
     queryLine = `<li>Query index (<code>query.yaml</code>): copied and <strong>verified</strong></li>`;
     plainLines.push('Query index (query.yaml): copied and verified');
@@ -1218,6 +1222,18 @@ async function cloneSite(siteName, opts = {}) {
     } catch (pubErr) {
       console.warn('Bulk preview/publish failed:', pubErr);
       publish = { error: pubErr.message || String(pubErr) };
+    }
+
+    // a Helix 6 bulk publish only updates the sitemap index, not the indexes in query.yaml
+    if (hlx6 && queryIndex.copied && publish?.published) {
+      setProgress(true, 99, 'Building the query index…', null, 'Index', '');
+      try {
+        const resp = await sourceBus.startJob('index', { paths: ['/*'] });
+        if (!resp.ok) throw new Error(`${resp.status} ${resp.headers.get('x-error') || ''}`.trim());
+      } catch (indexErr) {
+        console.warn('Query index not built:', indexErr);
+        queryIndex.buildError = indexErr.message || String(indexErr);
+      }
     }
 
     // write access for the requester to the demo's DA content and config (org permissions sheet).
