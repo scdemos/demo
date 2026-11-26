@@ -307,7 +307,9 @@ async function logOperation(row) {
       const res = await da(`/source${OPS}`);
       if (!res.ok && res.status !== 404) return false;
       const sheet = res.ok ? await res.json() : { data: [] };
-      const etag = res.headers.get('ETag');
+      // browsers get the log compressed, and DA marks the ETag of a compressed response as weak
+      // (W/"…"); If-Match only accepts the strong form, so drop the prefix
+      const etag = res.headers.get('ETag')?.replace(/^W\//, '');
       if (!Array.isArray(sheet?.data) || (res.ok && !etag)) return false;
       const data = [entry, ...sheet.data].slice(0, OPS_MAX);
       const form = new FormData();
