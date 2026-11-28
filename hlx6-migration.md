@@ -206,6 +206,10 @@ Known problems that won't be fixed.
   [adobe/helix-api-service#574](https://github.com/adobe/helix-api-service/pull/574) (closed).
   Nobody is working on it.
 
+- **Old icons in git ([#192](https://github.com/scdemos/demo/issues/192))**: the redesigned header and
+  footer draw their icons inline. The logo is already in git. Only old preview pages and drafts refer to
+  the missing SVGs; the redesign doesn't need them.
+
 ---
 
 ## Pending: Blocked on Helix 6
@@ -486,9 +490,6 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 
 - [ ] **how-to-add-new-users**: on Helix 6 the IMS groups go into the site's access roles, not the DA
   permissions sheet. Update the doc.
-
-- [ ] **Icons in git (this repo)**: main added only `icons/logo.svg`. The 10 svgs under `/icons/` still exist
-  only as previewed content. Check which ones the redesign still uses and commit those.
 
 - [ ] **Broken images and videos (demo content)**: every image was stored in the media bus during the
   copy, except in 3 docs whose DA source on demo already has `about:error` images: `/en/membership`,
