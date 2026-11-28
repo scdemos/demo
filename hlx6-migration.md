@@ -379,7 +379,7 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Translations: failed page or project read**: [da-nx/locreads](https://github.com/adobe/da-nx/tree/locreads), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L92-L94).
   A read that throws leaves the page without content and without an error, and it goes to the vendor like that.
 
-- [ ] **Quick edit: failed preview**: [da-nx/qepvstat](https://github.com/adobe/da-nx/tree/qepvstat), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/src/utils.js#L284-L285).
+- [ ] **Quick edit: failed preview**: [da-nx#1073](https://github.com/adobe/da-nx/pull/1073) (draft, `qepvstat`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/src/utils.js#L284-L285).
   The message ends after the colon, because admin.hlx.page answers over HTTP/2, which has no status text. The branch adds the status code.
 
 - [ ] **Quick edit: failed start**: [da-nx/qeretry](https://github.com/adobe/da-nx/tree/qeretry), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/quick-edit-portal.js#L122-L127).
