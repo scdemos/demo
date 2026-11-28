@@ -45,6 +45,8 @@ async function applyConsent(categories) {
   window.dispatchEvent(new CustomEvent('consent.update', {
     detail: { consented: categories.analytics, categories },
   }));
+  // The site no longer keeps visit history; drop the marker earlier versions stored.
+  try { localStorage.removeItem('demo-first-visit'); } catch { /* nothing stored */ }
   if (consented) {
     await consented.updateConsent(categories);
   } else if (categories.analytics) {

@@ -23,6 +23,10 @@ import {
 } from '../plugins/martech/src/index.js';
 import { getMarket, getStoredConsent, isGatedPage } from './shared.js';
 import { runExperimentation, runExperimentationLazy } from './experiment-loader.js';
+import { MARTECH_DATASTREAM_ID } from './ajo-config.js';
+import {
+  applyAjoSections, setAjoConsent, setAjoMartechReady,
+} from './ajo.js';
 
 const { searchParams } = new URL(window.location.href);
 const IS_QUICK_EDIT = searchParams.has('quick-edit');
@@ -524,9 +528,10 @@ export function isMartechStarted() {
  */
 export function startMartech(consent, personalization) {
   martechStarted = true;
+  setAjoConsent(consent);
   const ready = initMartech(
     {
-      datastreamId: 'd73be188-bc37-4ede-a5da-8aa7cd1e343b',
+      datastreamId: MARTECH_DATASTREAM_ID,
       orgId: '138A07885EE042D20A495CFA@AdobeOrg',
       thirdPartyCookiesEnabled: false,
       // First-party Edge Network host (Adobe-managed certificate, CNAME to Adobe) so Adobe
@@ -558,6 +563,9 @@ export function startMartech(consent, personalization) {
     marketing: consent.targeting,
     share: false,
   }).catch(() => { /* Web SDK reports its own errors */ });
+  setAjoMartechReady(ready);
+  // Journey Optimizer may stop waiting for startup; keep its rejection handled independently.
+  ready.catch(() => {});
   return ready;
 }
 
@@ -687,6 +695,8 @@ async function loadEager(doc) {
   const main = doc.querySelector('main');
   if (main) {
     await runExperimentation(doc, EXPERIMENTATION_CONFIG);
+    // Authors edit the authored sections, so Journey Optimizer content stays out of editors.
+    if (!IS_EDITOR) await applyAjoSections(main);
     await buildProductPage(main);
     decorateMain(main);
     // Target offers can bring in block markup after the page was decorated
@@ -694,7 +704,8 @@ async function loadEager(doc) {
     document.body.classList.add('appear');
     await Promise.all([
       martechLoadedPromise && martechLoadedPromise.then(martechEager),
-      loadSection(main.querySelector('.section'), async (s) => {
+      // An empty main (or one Journey Optimizer could not fill) has no first section to load.
+      main.querySelector('.section') && loadSection(main.querySelector('.section'), async (s) => {
         await waitForFirstImage(s);
         await loadFragments(s);
       }),

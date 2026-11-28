@@ -20,7 +20,7 @@ const MESSAGES = {
 };
 const say = (code) => MESSAGES[code] || `Couldn't load this (${code}).`;
 
-// The site's analytics events (scripts/cart.js, form, booking and quiz blocks) by their GA4 names.
+// The site's analytics events (scripts/cart.js, form and quiz blocks) by their GA4 names.
 const EVENT_LABELS = {
   page_view: 'Page views',
   view_item: 'Product views',

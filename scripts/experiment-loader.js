@@ -9,6 +9,34 @@ const PLUGIN = '../plugins/experimentation/src/index.js';
 // so the lazy phase can't look again.
 let enabled = false;
 
+const SECTION_KEYS = /^data-(experiment|campaign|audience)/;
+
+/**
+ * Delivered pages carry Section Metadata as section data attributes (e.g. data-experiment,
+ * data-audience:-mobile).
+ * The plugin reads Section Metadata tables, so rebuild one per section from those attributes.
+ * @param {Document} doc
+ */
+function restoreSectionMetadata(doc) {
+  doc.querySelectorAll('main > div').forEach((section) => {
+    const attrs = [...section.attributes].filter(({ name }) => SECTION_KEYS.test(name));
+    if (!attrs.length || section.querySelector(':scope > .section-metadata')) return;
+    const meta = doc.createElement('div');
+    meta.className = 'section-metadata';
+    attrs.forEach(({ name, value }) => {
+      const row = doc.createElement('div');
+      const key = doc.createElement('div');
+      const cell = doc.createElement('div');
+      key.textContent = name.slice(5);
+      cell.textContent = value;
+      row.append(key, cell);
+      meta.append(row);
+      section.removeAttribute(name);
+    });
+    section.append(meta);
+  });
+}
+
 /**
  * Whether the page has experiment, campaign or audience metadata (page or section level).
  * @returns {boolean}
@@ -40,6 +68,7 @@ function answerEmptyConfig() {
  * @param {Object} config experimentation options
  */
 export async function runExperimentation(doc, config) {
+  restoreSectionMetadata(doc);
   enabled = isExperimentationEnabled();
   if (!enabled) {
     answerEmptyConfig();
@@ -47,7 +76,7 @@ export async function runExperimentation(doc, config) {
   }
   try {
     const { loadEager } = await import(PLUGIN);
-    return loadEager(doc, config);
+    return await loadEager(doc, config);
   } catch (error) {
     console.error('Failed to load experimentation (eager):', error);
     return null;

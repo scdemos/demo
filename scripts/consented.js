@@ -7,6 +7,7 @@ import {
   martechDelayed, martechLazy, updateUserConsent,
 } from '../plugins/martech/src/index.js';
 import { isMartechStarted, startMartech } from './scripts.js';
+import { setAjoConsent } from './ajo.js';
 import {
   gtmDelayed, gtmLazy, startGtm, updateGtmConsent,
 } from './gtm-martech.js';
@@ -64,6 +65,7 @@ export function startConsented(categories) {
  */
 export async function updateConsent(categories) {
   latest = categories;
+  setAjoConsent(categories);
   updateGtmConsent(categories);
   if (!isMartechStarted()) {
     if (categories.analytics) startConsented(categories);

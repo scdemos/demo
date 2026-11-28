@@ -9,7 +9,7 @@ const SECTION_STYLES = [
   'light', 'dark-scheme', 'light-scheme', 'divider', 'gradient', 'highlight',
   'ink', 'rust', 'warm', 'center', 'login-teaser-image', 'tabs', 'cover',
 ];
-const SECTION_KEYS = ['tab-id', 'tab-title', 'view', 'mbox', 'mbox-action'];
+const SECTION_KEYS = ['tab-id', 'tab-title', 'view', 'mbox', 'mbox-action', 'ajo'];
 const SECTION_INTERNAL_ATTRS = ['data-section-status'];
 
 const blockLabel = (name) => `'${name}' block`;

@@ -20,10 +20,16 @@ const PUBLISHABLE = new Set(['html', 'json']);
 const BULK_MAX = 1000;
 const params = new URLSearchParams(window.location.search);
 const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
+const PREVIEW_RE = /^[a-z][a-z0-9-]{0,43}$/;
 
-/** ?worker= is honored only for local testing: a page served locally talking to a local worker. */
+/**
+ * ?worker=<branch> uses that branch's Preview of the worker (tools/cloneit/README.md, "Branch Previews").
+ * ?worker=<url> is honored only for local testing: a page served locally talking to a local worker.
+ */
 function workerUrl() {
   const fallback = 'https://demo.bbird.live/cloneit';
+  const preview = params.get('worker') || '';
+  if (PREVIEW_RE.test(preview)) return `https://${preview}-demo-cloneit-token.aem-poc-lab.workers.dev/cloneit`;
   if (!LOCAL_HOSTS.includes(window.location.hostname)) return fallback;
   try {
     const u = new URL(params.get('worker') || '');
@@ -178,15 +184,24 @@ async function daList(path) {
   return items;
 }
 
-/** Every file under `path`, skipping the SKIP folders at the top. */
-async function daWalk(path, top = true) {
+/** Every file under `path`, skipping the SKIP folders at the top; `folders` collects the folders. */
+async function daWalk(path, top = true, folders = []) {
   const files = [];
   const items = await daList(path);
   for (const item of items) {
     if (item.ext) files.push(item);
-    else if (!(top && SKIP.has(item.name))) files.push(...await daWalk(item.path, false));
+    else if (!(top && SKIP.has(item.name))) {
+      folders.push(item);
+      files.push(...await daWalk(item.path, false, folders));
+    }
   }
   return files;
+}
+
+/** Creates an empty folder (DA keeps a folder that has no files as a marker of its own). */
+async function daCreateFolder(path) {
+  const res = await da(`/source${path}`, { method: 'POST' });
+  if (!res.ok) throw new Error(`Couldn't create the folder ${path} (${res.status})`);
 }
 
 /** Copies a file or a whole folder; DA copies a batch per call and answers 206 while more remain. */
@@ -238,15 +253,17 @@ const isHidden = (path, root) => rel(path, root).split('/').some((part) => part.
 
 /**
  * Every file backup and reset handle under `root`, including `.da` and the hidden `.<page>` image folder
- * of every page (DA hides those folders from listings, so each one is listed by name).
+ * of every page (DA hides those folders from listings, so each one is listed by name). `folders`
+ * collects the folders under `root` that DA lists.
  */
-async function allFiles(root) {
-  const files = await daWalk(root);
+async function allFiles(root, folders = []) {
+  const files = await daWalk(root, true, folders);
   files.push(...await daWalk(`${root}/.da`, false));
-  const folders = files.filter((f) => f.ext === 'html')
+  const imageFolders = files.filter((f) => f.ext === 'html')
     .map((f) => `${f.path.slice(0, f.path.lastIndexOf('/'))}/.${f.name}`);
-  for (let i = 0; i < folders.length; i += 10) {
-    const found = await Promise.all(folders.slice(i, i + 10).map((folder) => daWalk(folder, false)));
+  for (let i = 0; i < imageFolders.length; i += 10) {
+    const found = await Promise.all(imageFolders.slice(i, i + 10)
+      .map((folder) => daWalk(folder, false)));
     files.push(...found.flat());
   }
   return files.filter((f) => f.path !== INFO && f.path !== OPS);
@@ -290,7 +307,9 @@ async function logOperation(row) {
       const res = await da(`/source${OPS}`);
       if (!res.ok && res.status !== 404) return false;
       const sheet = res.ok ? await res.json() : { data: [] };
-      const etag = res.headers.get('ETag');
+      // browsers get the log compressed, and DA marks the ETag of a compressed response as weak
+      // (W/"…"); If-Match only accepts the strong form, so drop the prefix
+      const etag = res.headers.get('ETag')?.replace(/^W\//, '');
       if (!Array.isArray(sheet?.data) || (res.ok && !etag)) return false;
       const data = [entry, ...sheet.data].slice(0, OPS_MAX);
       const form = new FormData();
@@ -385,40 +404,413 @@ function webPath(file) {
 
 /* ---------- backup ---------- */
 
-async function backup(step, notes) {
-  let s = step('Reading the demo');
-  const items = await topItems(ROOT);
-  if (!items.length) throw new Error('The demo is empty, so there\'s nothing to back up.');
-  s(`Found ${items.length} folders and files`, 'done');
+/**
+ * How the demo and the backup differ, by each file's path in the demo. A DA copy is dated when it's
+ * made, so a demo file that isn't newer than its backup copy hasn't been edited since that copy:
+ * the two are the same without looking. A newer one may only have been saved again or restored
+ * (both change the date, not the content), so those are `edited` and still need contentChanged().
+ * Folders are compared too, as a folder can be there without any files.
+ * @param {Object[]} demo the demo's files, from allFiles(ROOT)
+ * @param {Object[]} saved the backup's files, from allFiles(BACKUP)
+ * @param {Object[]} [demoFolders] the demo's folders
+ * @param {Object[]} [savedFolders] the backup's folders
+ * @returns {Object} `onlyDemo` and `onlyBackup` files, demo files `edited` after their backup copy,
+ *   and `foldersOnlyDemo` and `foldersOnlyBackup`
+ */
+function compare(demo, saved, demoFolders = [], savedFolders = []) {
+  const backedUp = new Map(saved.map((f) => [rel(f.path, BACKUP), f]));
+  const inDemo = new Set(demo.map((f) => rel(f.path, ROOT)));
+  const backedUpFolders = new Set(savedFolders.map((f) => rel(f.path, BACKUP)));
+  const demoFolderPaths = new Set(demoFolders.map((f) => rel(f.path, ROOT)));
+  return {
+    onlyDemo: demo.filter((f) => !backedUp.has(rel(f.path, ROOT))),
+    onlyBackup: saved.filter((f) => !inDemo.has(rel(f.path, BACKUP))),
+    edited: demo.filter((f) => {
+      const copy = backedUp.get(rel(f.path, ROOT));
+      return copy && !(copy.lastModified >= f.lastModified);
+    }),
+    foldersOnlyDemo: demoFolders.filter((f) => !backedUpFolders.has(rel(f.path, ROOT))),
+    foldersOnlyBackup: savedFolders.filter((f) => !demoFolderPaths.has(rel(f.path, BACKUP))),
+  };
+}
 
-  s = step('Removing the previous backup');
-  for (const item of await topItems(BACKUP)) {
-    s(`Removing the previous backup: ${rel(item.path, BACKUP)}`);
-    await daDelete(item.path);
-  }
-  s('Removed the previous backup', 'done');
-  notes.push('Removed the previous backup.');
+// files copied, removed or compared at once
+const BACKUP_PARALLEL = 4;
 
-  s = step('Copying');
-  for (const item of items) {
-    s(`Copying ${rel(item.path, ROOT)}`);
-    await daCopy(item.path, `${BACKUP}${rel(item.path, ROOT)}`);
+/**
+ * Runs `fn` on every item, a few at a time; `report(done)` after each one. When one fails, the
+ * others started with it still finish before the error is passed on, so nothing keeps changing
+ * the demo or the backup after the run stops.
+ */
+async function inBatches(items, fn, report) {
+  let done = 0;
+  for (let i = 0; i < items.length; i += BACKUP_PARALLEL) {
+    const results = await Promise.allSettled(items.slice(i, i + BACKUP_PARALLEL).map(async (item) => {
+      await fn(item);
+      done += 1;
+      report(done);
+    }));
+    const failed = results.find((r) => r.status === 'rejected');
+    if (failed) throw failed.reason;
   }
-  s('Copied the demo', 'done');
+}
+
+/** Whether a demo file and its backup copy have the same content, byte for byte. */
+async function sameContent(file) {
+  const path = rel(file.path, ROOT);
+  const [a, b] = await Promise.all([`${ROOT}${path}`, `${BACKUP}${path}`].map(async (p) => {
+    const res = await da(`/source${p}`);
+    if (!res.ok) throw new Error(`Couldn't read ${p} (${res.status})`);
+    return new Uint8Array(await res.arrayBuffer());
+  }));
+  return a.length === b.length && a.every((byte, i) => byte === b[i]);
+}
+
+/** The demo files of `edited` whose content differs from their backup copy. */
+async function contentChanged(edited, report) {
+  const changed = [];
+  await inBatches(edited, async (f) => {
+    if (!await sameContent(f)) changed.push(f);
+  }, report);
+  return changed;
+}
+
+/** The outermost of `folders`: removing a folder removes the folders in it. */
+const outermost = (folders, root) => folders.filter((f) => !folders
+  .some((other) => other !== f && rel(f.path, root).startsWith(`${rel(other.path, root)}/`)));
+
+/**
+ * Brings the backup up to date with the demo. By default it copies only what's new or changed.
+ * `full` rebuilds it: removes the previous backup and copies every folder again. DA leaves files
+ * with more than one dot in their name (photo.v2.jpg) out of its listings, so only a folder copy
+ * picks them up. The image folders of top-level pages (and .da) can only be copied file by file,
+ * so even a rebuild misses such files there.
+ */
+async function backup(step, notes, { full = false } = {}) {
+  let s = step('Comparing the demo with the backup');
+  const demoFolders = [];
+  const demo = await allFiles(ROOT, demoFolders);
+  if (!demo.length && !demoFolders.length) throw new Error('The demo is empty, so there\'s nothing to back up.');
+  const savedFolders = [];
+  const diff = compare(demo, await allFiles(BACKUP, savedFolders), demoFolders, savedFolders);
+  // a full backup copies everything anyway, so it doesn't need to look inside edited files
+  const changed = full ? [] : await contentChanged(diff.edited, (done) => {
+    s(`Comparing ${done} of ${diff.edited.length} edited files`);
+  });
+  const copy = [...diff.onlyDemo, ...changed];
+  const remove = diff.onlyBackup;
+  const same = demo.length - copy.length;
+  s(full
+    ? `${demo.length} files in the demo`
+    : `${copy.length} files to copy, ${remove.length} to remove, ${same} unchanged`, 'done');
+
+  if (full) {
+    s = step('Removing the previous backup');
+    const previous = await topItems(BACKUP);
+    let deleted = 0;
+    try {
+      await inBatches(previous, (item) => daDelete(item.path), (done) => {
+        deleted = done;
+        s(`Removed ${done} of ${previous.length} folders and files`);
+      });
+    } finally {
+      notes.push(deleted === previous.length
+        ? 'Removed the previous backup.'
+        : `Removed ${deleted} of ${previous.length} folders and files of the previous backup.`);
+    }
+    s('Removed the previous backup', 'done');
+
+    s = step('Copying the whole demo');
+    const items = await topItems(ROOT);
+    let copiedItems = 0;
+    try {
+      await inBatches(items, (item) => daCopy(item.path, `${BACKUP}${rel(item.path, ROOT)}`), (done) => {
+        copiedItems = done;
+        s(`Copied ${done} of ${items.length} folders and files`);
+      });
+    } finally {
+      if (copiedItems) notes.push(`Copied ${copiedItems} of ${items.length} folders and files.`);
+    }
+    s('Copied the demo', 'done');
+  } else {
+    s = step('Copying what changed');
+    let copied = 0;
+    try {
+      await inBatches(copy, (f) => daCopy(f.path, `${BACKUP}${rel(f.path, ROOT)}`), (done) => {
+        copied = done;
+        s(`Copied ${done} of ${copy.length}`);
+      });
+    } finally {
+      // a stopped backup keeps what it copied: backing up again copies only the rest
+      if (copied) notes.push(`Copied ${copied} of ${copy.length} new or changed files.`);
+    }
+    s(copy.length ? `Copied ${copy.length} files` : 'Nothing changed', 'done');
+  }
+
+  // a full backup removed the previous one already
+  const stale = full ? [] : remove;
+  s = step('Removing what the demo no longer has');
+  const removed = [];
+  const removeFile = async (f) => {
+    await daDelete(f.path);
+    removed.push(rel(f.path, BACKUP));
+  };
+  const report = () => s(`Removed ${removed.length} of ${stale.length}`);
+  try {
+    // pages last: a page's images are found through the page, so if a run stops, the next one
+    // still finds the images of a page it couldn't finish removing
+    await inBatches(stale.filter((f) => f.ext !== 'html'), removeFile, report);
+    await inBatches(stale.filter((f) => f.ext === 'html'), removeFile, report);
+  } finally {
+    if (removed.length) notes.push(`Removed ${removed.length} files the demo no longer has: ${removed.join(', ')}.`);
+  }
+  // then the folders the demo no longer has (with anything DA doesn't list in them)
+  const gone = full ? [] : outermost(diff.foldersOnlyBackup, BACKUP);
+  const dropped = [];
+  try {
+    await inBatches(gone, async (f) => {
+      await daDelete(f.path);
+      dropped.push(rel(f.path, BACKUP));
+    }, () => s(`Removed ${dropped.length} of ${gone.length} folders`));
+  } finally {
+    if (dropped.length) notes.push(`Removed ${dropped.length} folders the demo no longer has: ${dropped.join(', ')}.`);
+  }
+  s(stale.length || gone.length ? `Removed ${stale.length} files and ${gone.length} folders` : 'Nothing to remove', 'done');
+
+  // folders the demo has with no files in them: looked up after the removals, as removing the
+  // last file of a backup folder removes that folder too
+  if (!full) {
+    const nowFolders = [];
+    await allFiles(BACKUP, nowFolders);
+    const missing = compare([], [], demoFolders, nowFolders).foldersOnlyDemo;
+    if (missing.length) {
+      s = step('Adding folders');
+      await inBatches(missing, (f) => daCreateFolder(`${BACKUP}${rel(f.path, ROOT)}`), (done) => {
+        s(`Added ${done} of ${missing.length}`);
+      });
+      notes.push(`Added ${missing.length} folders: ${missing.map((f) => rel(f.path, ROOT)).join(', ')}.`);
+      s(`Added ${missing.length} folders`, 'done');
+    }
+  }
 
   s = step('Checking the backup');
-  const copied = [...await daWalk(BACKUP, false), ...await daWalk(`${BACKUP}/.da`, false)]
-    .filter((f) => f.path !== OPS);
-  const info = { created: new Date().toISOString(), by: email, files: String(copied.length) };
+  const checkedFolders = [];
+  const left = compare(demo, await allFiles(BACKUP, checkedFolders), demoFolders, checkedFolders);
+  // every copy just made is newer than its demo file, so none of them should still count as edited
+  const copied = new Set(copy.map((f) => f.path));
+  const notCopied = left.edited.filter((f) => copied.has(f.path));
+  const missing = left.onlyDemo.length + left.foldersOnlyDemo.length + notCopied.length;
+  const extra = left.onlyBackup.length + left.foldersOnlyBackup.length;
+  if (missing || extra) {
+    throw new Error(`The backup doesn't match the demo yet (${missing} missing, ${extra} extra). Back up again.`);
+  }
+  const info = { created: new Date().toISOString(), by: email, files: String(demo.length) };
   await writeBackupInfo(info);
-  s(`Backup ready: ${copied.length} files`, 'done');
+  s(`Backup ready: ${demo.length} files`, 'done');
   showBackupInfo(info);
-  return { comments: `Backed up ${copied.length} files.` };
+  return {
+    comments: full
+      ? `Full backup of ${demo.length} files.`
+      : `Backed up ${demo.length} files: copied ${copy.length} new or changed, removed ${remove.length}, ${same} unchanged.`,
+  };
 }
 
 /* ---------- reset ---------- */
 
+/**
+ * The page to preview and publish again when a demo file changes: the page itself, or for an image in
+ * a page's hidden `.<page>` folder, that page (it only picks up the image when it's previewed again).
+ * Returns '' for files that aren't served as pages (.da settings, media of the demo's own media folders).
+ */
+function pageOf(path) {
+  const parts = path.split('/');
+  const hidden = parts.findIndex((part) => part.startsWith('.'));
+  if (hidden === -1) return /\.(html|json)$/.test(path) ? webPath({ path: `${ROOT}${path}` }) : '';
+  if (parts[hidden] === '.da') return '';
+  const page = `${parts.slice(0, hidden).join('/')}/${parts[hidden].slice(1)}.html`;
+  return webPath({ path: `${ROOT}${page}` });
+}
+
+/** Whether the live version of `page` is older than `lastModified` (ms), the DA date of a file it shows. */
+async function liveIsOlder(page, lastModified) {
+  const res = await helix(`/status/${ORG}/${SITE}/main${page}`);
+  if (!res.ok) return true;
+  const { preview, live } = await res.json();
+  // when it was last previewed, and published after that (not the page's own date: a restored image is
+  // newer than its page); a publish without a fresh preview only republishes the old preview.
+  // The Admin API dates to the second.
+  const previewed = Date.parse(preview?.lastModified || '');
+  return preview?.status !== 200 || live?.status !== 200
+    || !(previewed >= Math.floor(lastModified / 1000) * 1000)
+    || !(Date.parse(live.lastModified || '') >= previewed);
+}
+
+/** Previews then publishes `pages`, or with `remove`, unpublishes then unpreviews them. */
+async function publishPages(pages, step, notes, { remove = false } = {}) {
+  if (!pages.length) return [];
+  const runs = remove
+    ? [['live', 'Unpublishing'], ['preview', 'Unpreviewing']]
+    : [['preview', 'Previewing'], ['live', 'Publishing']];
+  const failed = new Set();
+  for (const [kind, label] of runs) {
+    // a page whose preview failed isn't published: that would only publish its old preview again
+    const todo = remove ? pages : pages.filter((p) => !failed.has(p));
+    if (!todo.length) break;
+    const s = step(label);
+    const out = await bulkPaths(kind, todo, s, label, remove ? { delete: true } : {});
+    out.failed.forEach((p) => failed.add(p));
+    s(`${label}: ${todo.length - out.failed.length} of ${todo.length}`, out.failed.length ? 'fail' : 'done');
+    notes.push(`${label}: ${todo.length - out.failed.length} of ${todo.length}.`, retryComment(label, out));
+  }
+  return [...failed];
+}
+
+/**
+ * Puts the demo back to the backup. Only what differs is touched: files the demo lost or changed
+ * since the backup are copied back (over the demo's file, so a page keeps its document ID and its
+ * comments), files added since are removed, and only those pages are published or taken offline again.
+ * When nothing differs there is nothing to do. Republishing every page is a separate action.
+ */
 async function reset(step, notes) {
+  let s = step('Checking the backup');
+  const info = await readBackupInfo();
+  if (!info) throw new Error('no_backup');
+  const savedFolders = [];
+  const saved = await allFiles(BACKUP, savedFolders);
+  if (!saved.length && !savedFolders.length) throw new Error('no_backup');
+  s(`Backup from ${new Date(info.created).toLocaleString()}`, 'done');
+
+  s = step('Comparing the demo with the backup');
+  const demoFolders = [];
+  let demo = await allFiles(ROOT, demoFolders);
+  // backups made before .da was included have none: leave the demo's .da alone then
+  if (!saved.some((f) => rel(f.path, BACKUP).startsWith('/.da/'))) {
+    demo = demo.filter((f) => !rel(f.path, ROOT).startsWith('/.da/'));
+  }
+  const diff = compare(demo, saved, demoFolders, savedFolders);
+  const changed = await contentChanged(diff.edited, (done) => {
+    s(`Comparing ${done} of ${diff.edited.length} edited files`);
+  });
+  const restore = [...diff.onlyBackup.map((f) => rel(f.path, BACKUP)), ...changed.map((f) => rel(f.path, ROOT))];
+  // files with the backup's content but a newer date were restored by an earlier reset (or saved again):
+  // their page is published again when its live version is older than the file, e.g. when that reset
+  // stopped before publishing, or a page failed to publish
+  const changedPaths = new Set(changed.map((f) => f.path));
+  const same = diff.edited.filter((f) => !changedPaths.has(f.path) && pageOf(rel(f.path, ROOT)));
+  const stalePages = new Set();
+  await inBatches(same, async (f) => {
+    const page = pageOf(rel(f.path, ROOT));
+    if (await liveIsOlder(page, f.lastModified)) stalePages.add(page);
+  }, (done) => s(`Checking ${done} of ${same.length} published pages`));
+  const added = diff.onlyDemo;
+  const addedFolders = outermost(diff.foldersOnlyDemo, ROOT);
+  // empty folders of the backup; folders with files come back with their files
+  const emptyFolders = diff.foldersOnlyBackup.map((f) => rel(f.path, BACKUP))
+    .filter((folder) => !restore.some((path) => path.startsWith(`${folder}/`)));
+  const todo = restore.length + added.length + addedFolders.length + emptyFolders.length + stalePages.size;
+  s(todo
+    ? `${restore.length} files to restore, ${added.length} files and ${addedFolders.length} folders added since the backup${stalePages.size ? `, ${stalePages.size} pages to publish again` : ''}`
+    : `${demo.length} files, all the same as the backup`, 'done');
+  if (!todo) {
+    step('The demo already matches the backup')('The demo already matches the backup', 'done');
+    return { comments: `The demo already matched the backup from ${info.created}: nothing to restore, publish or remove.` };
+  }
+  notes.push(`Reset to the backup from ${info.created}.`);
+
+  if (restore.length) {
+    s = step('Restoring');
+    let restored = 0;
+    try {
+      await inBatches(restore, (path) => daCopy(`${BACKUP}${path}`, `${ROOT}${path}`), (done) => {
+        restored = done;
+        s(`Restored ${done} of ${restore.length}`);
+      });
+    } finally {
+      if (restored) notes.push(`Restored ${restored} of ${restore.length} files: ${restore.join(', ')}.`);
+    }
+    s(`Restored ${restore.length} files`, 'done');
+  }
+
+  if (added.length || addedFolders.length) {
+    s = step('Removing what was added since the backup');
+    const removed = [];
+    const removeFile = async (f) => {
+      await daDelete(f.path);
+      removed.push(rel(f.path, ROOT));
+    };
+    const report = () => s(`Removed ${removed.length} of ${added.length + addedFolders.length}`);
+    try {
+      // pages last, then folders: a page's images are found through the page, so a stopped run
+      // still finds the images of a page it couldn't finish removing
+      await inBatches(added.filter((f) => f.ext !== 'html'), removeFile, report);
+      await inBatches(added.filter((f) => f.ext === 'html'), removeFile, report);
+      await inBatches(addedFolders, removeFile, report);
+    } finally {
+      if (removed.length) notes.push(`Removed ${removed.length} files and folders added since the backup: ${removed.join(', ')}.`);
+    }
+    s(`Removed ${added.length} files and ${addedFolders.length} folders`, 'done');
+  }
+
+  // the backup's empty folders, looked up after the removals: removing the last file of a folder
+  // removes that folder too
+  if (savedFolders.length) {
+    const nowFolders = [];
+    await allFiles(ROOT, nowFolders);
+    const missing = compare([], [], nowFolders, savedFolders).foldersOnlyBackup;
+    if (missing.length) {
+      s = step('Adding folders');
+      await inBatches(missing, (f) => daCreateFolder(`${ROOT}${rel(f.path, BACKUP)}`), (done) => {
+        s(`Added ${done} of ${missing.length}`);
+      });
+      notes.push(`Added ${missing.length} empty folders: ${missing.map((f) => rel(f.path, BACKUP)).join(', ')}.`);
+      s(`Added ${missing.length} folders`, 'done');
+    }
+  }
+
+  // keep going when some pages fail, so the rest is still published; report them at the end
+  const republish = [...new Set([...restore.map(pageOf).filter(Boolean), ...stalePages])];
+  const restoredPages = new Set(republish);
+  // pages whose DA page was added since the backup go offline (pages that were live without a DA page
+  // before the backup, e.g. fragments used by Target offers, are left alone)
+  const offline = [...new Set(added.map((f) => rel(f.path, ROOT))
+    .filter((path) => PUBLISHABLE.has(path.split('.').pop()) && !isHidden(`${ROOT}${path}`, ROOT))
+    .map((path) => webPath({ path: `${ROOT}${path}` })))]
+    .filter((page) => !restoredPages.has(page));
+  const problems = await publishPages(republish, step, notes);
+  const stillOnline = await publishPages(offline, step, notes, { remove: true });
+
+  const advice = [];
+  if (problems.length) advice.push(`These pages didn't preview or publish, even on retry: ${problems.join(', ')}. Publish them from Experience Workspace, or reset again.`);
+  // their DA pages are gone, so another reset won't find them: name them
+  if (stillOnline.length) advice.push(`These added pages may still be online: ${stillOnline.join(', ')}. Unpublish them with Sidekick.`);
+  const end = advice.length ? `Reset finished with problems. ${advice.join(' ')}` : 'The demo matches the backup';
+  step(end)(end, advice.length ? 'fail' : 'done');
+  return { result: advice.length ? 'problems' : 'ok' };
+}
+
+/**
+ * Previews and publishes every page and sheet of the demo (except drafts). For when the published site
+ * drifted without any change in DA, e.g. a page was unpublished with Sidekick; a reset doesn't do it.
+ */
+async function republishAll(step, notes) {
+  const s = step('Listing pages');
+  const pages = (await daWalk(ROOT)).filter((f) => PUBLISHABLE.has(f.ext)).map(webPath);
+  s(`${pages.length} pages and sheets`, 'done');
+  const problems = await publishPages(pages, step, notes);
+  const end = problems.length
+    ? `Finished with problems. These pages didn't preview or publish, even on retry: ${problems.join(', ')}.`
+    : `Published all ${pages.length} pages and sheets`;
+  step(end)(end, problems.length ? 'fail' : 'done');
+  return { result: problems.length ? 'problems' : 'ok' };
+}
+
+/**
+ * The full reset (the reset before it compared anything): copies every top-level folder of the backup
+ * over the demo, removes the files added since, and previews and publishes every page. It's slow, and
+ * it's the only way to restore files DA doesn't list, such as images with more than one dot in their
+ * name, which only a full backup picks up.
+ */
+async function fullReset(step, notes) {
   let s = step('Checking the backup');
   const info = await readBackupInfo();
   if (!info) throw new Error('no_backup');
@@ -650,10 +1042,19 @@ async function init() {
 $('backup').addEventListener('click', async () => {
   const yes = await confirmAction({
     title: 'Back up the demo?',
-    text: 'This replaces the previous backup.',
+    text: 'The backup is updated to match the demo as it is now.',
     action: 'Back up',
   });
   if (yes) run('backup-log', backup, { action: 'backup', target: SITE });
+});
+
+$('backup-full').addEventListener('click', async () => {
+  const yes = await confirmAction({
+    title: 'Make a full backup?',
+    text: 'The previous backup is removed and every folder of the demo is copied again, so this takes longer than a regular backup. It also picks up files DA doesn\'t list, such as images with more than one dot in their name (except on top-level pages).',
+    action: 'Back up everything',
+  });
+  if (yes) run('backup-log', (step, notes) => backup(step, notes, { full: true }), { action: 'full backup', target: SITE });
 });
 
 $('reset').addEventListener('click', async () => {
@@ -661,11 +1062,32 @@ $('reset').addEventListener('click', async () => {
   if (!info) { progress('reset-log')(say('no_backup'))(say('no_backup'), 'fail'); return; }
   const yes = await confirmAction({
     title: 'Reset the demo?',
-    text: `Everything in the demo except drafts is replaced with the backup from ${new Date(info.created).toLocaleString()}, then published. Changes since then are lost.`,
+    text: `Everything that changed since the backup from ${new Date(info.created).toLocaleString()} is put back and published again, and pages added since are removed. Those changes are lost. Drafts stay as they are.`,
     typed: SITE,
     action: 'Reset demo',
   });
   if (yes) run('reset-log', reset, { action: 'reset', target: SITE });
+});
+
+$('reset-full').addEventListener('click', async () => {
+  const info = await readBackupInfo();
+  if (!info) { progress('reset-log')(say('no_backup'))(say('no_backup'), 'fail'); return; }
+  const yes = await confirmAction({
+    title: 'Make a full reset?',
+    text: `Every folder of the backup from ${new Date(info.created).toLocaleString()} is copied over the demo, files added since are removed, and every page is published again. This takes much longer than a regular reset. Use it when files DA doesn't list, such as images with more than one dot in their name, need to come back.`,
+    typed: SITE,
+    action: 'Full reset',
+  });
+  if (yes) run('reset-log', fullReset, { action: 'full reset', target: SITE });
+});
+
+$('republish').addEventListener('click', async () => {
+  const yes = await confirmAction({
+    title: 'Republish every page?',
+    text: 'Every page and sheet of the demo (except drafts) is previewed and published again as it is in DA now. This takes a few minutes.',
+    action: 'Republish',
+  });
+  if (yes) run('reset-log', republishAll, { action: 'republish all', target: SITE });
 });
 
 init();

@@ -11,6 +11,7 @@ Worker code is based on [aem-cloudflare-prod-worker](https://github.com/adobe/ae
 | `ORIGIN_HOSTNAME` | `main--demo--scdemos.aem.network` |
 | `PUSH_INVALIDATION` | `enabled` |
 | `GATED_CACHE_PATHS` | empty (optional: exact paths of gated pages to edge-cache for visitors) |
+| `EDGE_OPTIMIZE_API_KEY` | secret, optional: turns on [Optimize at Edge](#optimize-at-edge-ai-agents) routing |
 
 ## Auth-aware sections
 
@@ -54,6 +55,35 @@ headers. The origin cache can still store the full source.
 **Invalidation:** AEM push invalidation clears Cloudflare's zone cache, not Workers Cache. Published
 changes, deletions and audience changes can take up to 60 seconds to appear. Expired responses aren't
 served. Code deployments start with a new cache.
+
+## Optimize at Edge (AI agents)
+
+`handlers/edge-optimize.js` sends AI agents (ChatGPT, Perplexity, Claude and Adobe's own agent)
+asking for a page to [Optimize at Edge](https://experienceleague.adobe.com/en/docs/brand-visibility/using/resources/optimize-at-edge/cloudflare-byocdn)
+(`live.edgeoptimize.net`), which serves the optimizations deployed in Adobe Brand Visibility.
+It is the manual setup from that guide, merged into this worker: Brand Visibility's guided setup
+can't add its own worker, because this one already owns `demo.bbird.live/*`.
+
+- **Who:** GET and HEAD requests for pages (paths ending in `/` or `.html`, or without an
+  extension) whose user agent names one of the agents. People, SEO bots, assets, JSON and
+  `/drafts/` are served as before.
+- **Loop:** Edge Optimize fetches the page back through this worker with `x-edgeoptimize-request`;
+  those requests go to the origin.
+- **Failover:** if Edge Optimize fails or returns 4xx/5xx, the page comes from the origin with
+  `x-edgeoptimize-fo: 1`.
+- **Privacy:** cookies, `Authorization` and incoming `x-edgeoptimize-*` headers are removed
+  before the request goes to Edge Optimize.
+- **Gating:** optimized pages go through the same audience gating as an anonymous visitor's, so
+  agents never get member-only sections, even with a session cookie.
+- **Switch:** nothing is routed until the `EDGE_OPTIMIZE_API_KEY` secret is set (the API key from
+  Brand Visibility). Set it once; deploys keep it. Delete it to switch routing off.
+
+```bash
+npx wrangler secret put EDGE_OPTIMIZE_API_KEY --config ./workers/cdn/wrangler.toml
+# check: an agent gets x-edgeoptimize-request-id, a browser doesn't
+curl -svo /dev/null https://demo.bbird.live/en/booking -H 'user-agent: chatgpt-user' 2>&1 | grep -i x-edgeoptimize
+curl -svo /dev/null https://demo.bbird.live/en/booking 2>&1 | grep -i x-edgeoptimize
+```
 
 ## Partial and conditional requests
 

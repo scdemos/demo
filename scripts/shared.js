@@ -1,5 +1,14 @@
 import { getMetadata, loadCSS } from './aem.js';
 
+/** Bound optional remote work without leaving a timer running after completion. */
+export function withTimeout(promise, timeout, fallback = null) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((resolve) => { timer = setTimeout(() => resolve(fallback), timeout); }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 /**
  * Market context from the URL: the first /{lang}/ folder in the path (e.g. /en/, /de/).
  * Anything before it (e.g. a content folder such as /drafts/frescopa) is part of the root.
@@ -65,7 +74,8 @@ export function fragmentPaths(path) {
 export async function fetchFragment(path) {
   const tryPath = async ([first, ...rest]) => {
     if (!first) return null;
-    const resp = await fetch(`${first}.plain.html`);
+    // from this site, also when its code runs embedded in another page (aem-embed)
+    const resp = await fetch(new URL(`${first}.plain.html`, import.meta.url));
     if (resp.ok) return { path: first, html: await resp.text() };
     return tryPath(rest);
   };

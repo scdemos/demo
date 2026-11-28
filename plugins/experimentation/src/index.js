@@ -620,7 +620,9 @@ async function applyAllModifications(
   // config + resolution (as section- and fragment-level already do).
   const keyFn = type === pluginOptions.experimentsMetaTagPrefix ? toCamelCase : toClassName;
   const pageMetadata = getAllMetadata(type, keyFn);
-  const pageNS = await modificationsHandler(
+  // A served page-level campaign leaves its head metadata in place; skipping page-level
+  // audiences and experiments keeps them from replacing the campaign's content.
+  const pageNS = pluginOptions.skipPageLevel ? null : await modificationsHandler(
     document.querySelector('main'),
     pageMetadata,
   );
@@ -1158,9 +1160,18 @@ export async function loadEager(document, options = {}) {
 
   const ns = window.aem || window.hlx || {};
   ns.experimentation = { version: VERSION };
-  ns.audiences = await serveAudience(document, pluginOptions);
-  ns.experiments = await runExperiment(document, pluginOptions);
+  // A campaign link is the visitor's explicit intent, so it wins over audience and experiment
+  // variants on the same section: serving it replaces the section, metadata included.
   ns.campaigns = await runCampaign(document, pluginOptions);
+  const pageCampaignServed = ns.campaigns.some((c) => c.type === 'page' && c.servedExperience);
+  ns.audiences = await serveAudience(
+    document,
+    pageCampaignServed ? { ...pluginOptions, skipPageLevel: true } : pluginOptions,
+  );
+  ns.experiments = await runExperiment(
+    document,
+    pageCampaignServed ? { ...pluginOptions, skipPageLevel: true } : pluginOptions,
+  );
 
   // Backward compatibility
   ns.experiment = ns.experiments.find((e) => e.type === 'page');

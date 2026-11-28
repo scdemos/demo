@@ -31,7 +31,7 @@ export async function loadFragment(path) {
       // reset base path for media to the fragment version that loaded
       const resetAttributeBase = (tag, attr) => {
         main.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((elem) => {
-          elem[attr] = new URL(elem.getAttribute(attr), new URL(found.path, window.location)).href;
+          elem[attr] = new URL(elem.getAttribute(attr), new URL(found.path, import.meta.url)).href;
         });
       };
       resetAttributeBase('img', 'src');
