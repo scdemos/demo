@@ -29,8 +29,11 @@
 
         <section class="admin-card" aria-labelledby="reset-title">
           <h2 id="reset-title">Reset the demo</h2>
-          <p>Replaces the demo with the backup, then previews and publishes every page. Pages added since the backup are unpublished and removed. Drafts stay as they are.</p>
+          <p>Puts back what changed since the backup: changed or deleted files are restored and published again, and pages added since are unpublished and removed. Everything else is left alone, so when nothing changed, a reset is done in seconds. Drafts stay as they are.</p>
+          <p>Full reset copies every folder of the backup over the demo and publishes every page. It takes much longer, and it's the only way to bring back files DA doesn't list, such as images with more than one dot in their name. Republish every page publishes the whole demo as it is, for when the live site is out of step with the content, for example after a page was unpublished in Sidekick.</p>
           <button type="button" id="reset" class="danger">Reset to backup</button>
+          <button type="button" id="reset-full" class="secondary">Full reset</button>
+          <button type="button" id="republish" class="secondary">Republish every page</button>
           <ol class="admin-log" id="reset-log" aria-live="polite" hidden></ol>
         </section>
         <section class="admin-card" aria-labelledby="clones-title">

@@ -21,7 +21,7 @@ const CONTAINERS = {
 const DATA_LAYER = 'gtmDataLayer';
 const CONFIGURED = TAGS.length > 0 || CONTAINERS.lazy.length > 0 || CONTAINERS.delayed.length > 0;
 
-// URL parameters GA4 may see: campaign attribution only. Others (e.g. the booking form's
+// URL parameters GA4 may see: campaign attribution only. Others (e.g. a form's
 // email, phone and name prefill) can carry personal data.
 const KEEP_PARAMS = /^(utm_\w+|gclid|gbraid|wbraid|dclid)$/;
 
