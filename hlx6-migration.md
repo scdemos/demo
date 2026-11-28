@@ -376,8 +376,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Translations: dependent languages**: [da-nx#996](https://github.com/adobe/da-nx/pull/996) (open), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L370).
   When a source read fails, the page can go to the vendor without content and the dependent language is not retried. #996 covers the `locdeps` fix and keeps the language waiting if a read throws. It needs a test conflict fixed and a review.
 
-- [ ] **Translations: failed page or project read**: [da-nx/locreads](https://github.com/adobe/da-nx/tree/locreads), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L92-L94).
-  A read that throws leaves the page without content and without an error, and it goes to the vendor like that.
+- [ ] **Translations: failed page or project read**: [da-nx#1079](https://github.com/adobe/da-nx/pull/1079) (draft, `locreads`).
+  The app shows the error when a project fails to load or a page read fails during validation or rollout. [da-nx#996](https://github.com/adobe/da-nx/pull/996) covers the vendor-send case.
 
 - [ ] **Quick edit: failed preview**: [da-nx#1073](https://github.com/adobe/da-nx/pull/1073) (draft, `qepvstat`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/src/utils.js#L284-L285).
   The message ends after the colon, because admin.hlx.page answers over HTTP/2, which has no status text. The branch adds the status code.
