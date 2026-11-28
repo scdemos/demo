@@ -400,8 +400,10 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **MSM (on top of #1341): one unreadable satellite**: [da-live/msmauth](https://github.com/adobe/da-live/tree/msmauth), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/shared/utils.js#L78-L95).
   A 401 from DA sends the whole editor to /not-found.
 
-- [ ] **Clone it: site name check**: [demo/cloneck](https://github.com/scdemos/demo/tree/cloneck), [bug on main](https://github.com/scdemos/demo/blob/4172925b11690f68656f8c904b7eaf4ea3fb36e9/tools/cloneit/cloneit.js#L460-L463).
-  Every answer except 2xx counts as "name is free", so a 401, 403, 429 or 5xx lets the clone go on: it creates the repo and copies the DA content, and a 409 on the config write is answered with a POST that replaces the existing config.
+- [ ] **Clone it: site name check**: [#238](https://github.com/scdemos/demo/pull/238) (draft, `cloneck`),
+  [bug on main](https://github.com/scdemos/demo/blob/28f0fa3e1c039750141373569ef518521fc9c090/tools/cloneit/cloneit.js#L463-L475).
+  Stop before creating a repo if the AEM site lookup or DA folder lookup fails. Chromium tests
+  with a simulated 503 covered both checks. Keep both checks when resolving the overlap with #166.
 
 ---
 
@@ -428,7 +430,7 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   copy. The classic path from demo isn't tested live from the branch yet. Merging changes
   `workers/cloneit_token/**`, which deploys the production worker. Demo Admin still can't delete a Helix 6
   clone (it only accepts `content.da.live` sources). The check that a new site name is free is the
-  separate branch `cloneck`.
+  separate draft [#238](https://github.com/scdemos/demo/pull/238).
 
 - [ ] **Demo Admin** ([#142](https://github.com/scdemos/demo/pull/142), [#143](https://github.com/scdemos/demo/pull/143)):
   backs up and resets the demo and deletes CloneIt demos. It copies and deletes through `admin.da.live` and
