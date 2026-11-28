@@ -355,8 +355,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Media library: index lock refresh**: [da-nx/mllockhb](https://github.com/adobe/da-nx/tree/mllockhb), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/media-library/indexing/build.js#L271-L318).
   The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. Merge before `mlhlx6` or together with it.
 
-- [ ] **Schema editor: markup in schema text**: [da-nx/schmesc](https://github.com/adobe/da-nx/tree/schmesc), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/utils/utils.js#L89).
-  `<em>` in a description is lost on save and `&copy;` comes back as `©`; `$&` in the JSON writes `{{JSON}}`.
+- [ ] **Schema editor: markup in schema text**: [da-nx#1071](https://github.com/adobe/da-nx/pull/1071) (draft, `schmesc`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/utils/utils.js#L53).
+  In the Helix 6 editor, the branch keeps literal `<em>` and `&copy;` in a description after save and reload. Main drops the tags and decodes the entity. #936 already fixed the separate `$&` bug.
 
 - [ ] **Schema editor: files that aren't schemas**: [da-nx#1069](https://github.com/adobe/da-nx/pull/1069) (draft, `schmhtml`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/utils/utils.js#L106-L108).
   A sheet in `.da/forms/schemas` can hide a valid schema with the same name. In da.live on legacy DA and Helix 6, main listed the sheets as invalid schemas and the fix opened the `.html` schema without fetching the sheets.
