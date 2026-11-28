@@ -310,11 +310,13 @@ along the way" below.
   and [#1073](https://github.com/adobe/da-nx/pull/1073). In the combined code, make
   [#1075](https://github.com/adobe/da-nx/pull/1075)'s retry test fail the document `HEAD`, not the upgrade check.
 
-- [ ] **Translations and rollouts**: prepared ([da-nx/lochlx6](https://github.com/adobe/da-nx/tree/lochlx6)).
-  Translate and rollout read `.da/translate.json` from `admin.da.live` and would save projects there. The
-  branch now sits on the copy engine from [adobe/da-nx#801](https://github.com/adobe/da-nx/pull/801) (merged
-  Nov 4) and hands it a fetch and a config loader that use the source bus on Helix 6. Still open: the
-  editor's Rollout panel builds its own copy engine and keeps versions on `admin.da.live`. Main was merged in on Nov 25.
+- [ ] **Translations and rollouts**: [da-nx#1082](https://github.com/adobe/da-nx/pull/1082) (draft, `lochlx6`).
+  The translation app uses the source bus for site config, projects and rollout on Helix 6. The editor's
+  Rollout panel is unchanged. Checked the site ping, active folder and config on demo-hlx6. When combining
+  with [#1076](https://github.com/adobe/da-nx/pull/1076), have its failing-read test match `translate.json`,
+  not the ping. Keep the response checks from [#1077](https://github.com/adobe/da-nx/pull/1077) and
+  [#1079](https://github.com/adobe/da-nx/pull/1079), and only one retry layer when combining with
+  [#877](https://github.com/adobe/da-nx/pull/877).
 
 - [ ] **Media library**: [adobe/da-nx#944](https://github.com/adobe/da-nx/pull/944) (open, in review).
   "Site not found" today. With the fix, validation, indexing and rebuild work; the Images view still
