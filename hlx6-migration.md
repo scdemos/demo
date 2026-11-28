@@ -298,11 +298,11 @@ from both are pushed. When the Helix 6 check fails, the apps use the legacy stor
 main has too are not in these branches. Each is its own small branch and PR, listed under "Fixes found
 along the way" below.
 
-- [ ] **Quick edit**: prepared ([da-nx/qehlx6](https://github.com/adobe/da-nx/tree/qehlx6)). The portal
-  opens, but nothing becomes editable: it checks `admin.da.live` for the page and gives up on the 404. Also
-  hardcodes the collab room and image upload. Small overlaps with the open
-  [adobe/da-nx#896](https://github.com/adobe/da-nx/pull/896) and [adobe/da-nx#992](https://github.com/adobe/da-nx/pull/992):
-  whichever lands second needs a small rebase.
+- [ ] **Quick edit**: [da-nx#1080](https://github.com/adobe/da-nx/pull/1080) (draft, `qehlx6`).
+  The portal opens Helix 6 pages through the source bus and uses legacy DA if the upgrade check fails.
+  Overlaps with [#896](https://github.com/adobe/da-nx/pull/896), [#992](https://github.com/adobe/da-nx/pull/992)
+  and [#1073](https://github.com/adobe/da-nx/pull/1073). In the combined code, make
+  [#1075](https://github.com/adobe/da-nx/pull/1075)'s retry test fail the document `HEAD`, not the upgrade check.
 
 - [ ] **Translations and rollouts**: prepared ([da-nx/lochlx6](https://github.com/adobe/da-nx/tree/lochlx6)).
   Translate and rollout read `.da/translate.json` from `admin.da.live` and would save projects there. The
