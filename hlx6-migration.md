@@ -352,8 +352,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **API: org-level `.da` paths**: [da-nx#1072](https://github.com/adobe/da-nx/pull/1072) (draft, `nodaping`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx2/utils/api.js#L680-L699).
   For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da` and caches the failure. The branch skips the browser ping and uses the legacy store. In da.live, Browse renders the org folder and the list returns 200.
 
-- [ ] **Media library: index lock refresh**: [da-nx/mllockhb](https://github.com/adobe/da-nx/tree/mllockhb), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/media-library/indexing/build.js#L271-L318).
-  The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. Merge before `mlhlx6` or together with it.
+- [ ] **Media library: index lock refresh**: [da-nx#1074](https://github.com/adobe/da-nx/pull/1074) (draft, `mllockhb`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/media-library/indexing/build.js#L271-L318).
+  The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. This can merge before or after [da-nx#944](https://github.com/adobe/da-nx/pull/944).
 
 - [ ] **Schema editor: markup in schema text**: [da-nx#1071](https://github.com/adobe/da-nx/pull/1071) (draft, `schmesc`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/utils/utils.js#L53).
   In the Helix 6 editor, the branch keeps literal `<em>` and `&copy;` in a description after save and reload. Main drops the tags and decodes the entity. #936 already fixed the separate `$&` bug.
