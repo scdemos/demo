@@ -319,11 +319,11 @@ along the way" below.
   [#877](https://github.com/adobe/da-nx/pull/877).
 
 - [ ] **Media library**: [adobe/da-nx#944](https://github.com/adobe/da-nx/pull/944) (open, in review).
-  "Site not found" today. With the fix, validation, indexing and rebuild work; the Images view still
-  needs the medialog (above). Merge order to agree with
-  [adobe/da-nx#866](https://github.com/adobe/da-nx/pull/866). The ping header alone decides where a site
-  lives, and a failed check uses DA, as main does. A race in the index lock heartbeat (main has it too)
-  is the separate branch `mllockhb`; merge it first or together with this PR.
+  The app lists pages and saves its index on the source bus. It releases the lock by writing
+  `locked: false`; on legacy DA it still deletes the file. On demo-hlx6, a disposable file read back
+  the unlocked value and was removed. The trash still holds 45 older lock files. Merge the heartbeat
+  fix [#1074](https://github.com/adobe/da-nx/pull/1074) first. Images still need the media log (above);
+  [#866](https://github.com/adobe/da-nx/pull/866) has no merge order with this change.
 
 - [ ] **Request publish**: [worker #42](https://github.com/cloudadoption/publish-requests-worker/pull/42)
   and [aem-apps #75](https://github.com/adobe-rnd/aem-apps/pull/75) (drafts). The worker reads rules
@@ -351,7 +351,7 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
   For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da` and caches the failure. The branch skips the browser ping and uses the legacy store. In da.live, Browse renders the org folder and the list returns 200.
 
 - [ ] **Media library: index lock refresh**: [da-nx#1074](https://github.com/adobe/da-nx/pull/1074) (draft, `mllockhb`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/media-library/indexing/build.js#L271-L318).
-  The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. This can merge before or after [da-nx#944](https://github.com/adobe/da-nx/pull/944).
+  The build stops its 60-second lock refresh only after it deletes the lock, so a late refresh can write the lock again and the next build sees it as held for up to 10 minutes. Merge this before [da-nx#944](https://github.com/adobe/da-nx/pull/944).
 
 - [ ] **Schema editor: markup in schema text**: [da-nx#1071](https://github.com/adobe/da-nx/pull/1071) (draft, `schmesc`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/utils/utils.js#L53).
   In the Helix 6 editor, the branch keeps literal `<em>` and `&copy;` in a description after save and reload. Main drops the tags and decodes the entity. #936 already fixed the separate `$&` bug.
