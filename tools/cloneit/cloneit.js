@@ -473,7 +473,7 @@ async function siteExistsInAem(siteName) {
 
 async function folderExistsInDa(siteName) {
   const response = await cloneitProcessFetch('da', Paths.daList(siteName));
-  if (!response.ok) return false;
+  if (!response.ok) throw new Error(`Couldn't check the DA folder for "${siteName}" (${response.status}). Try again.`);
   const data = await response.json();
   const items = Array.isArray(data) ? data : (data.sources || data.children || []);
   return items.length > 0;
