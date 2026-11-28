@@ -370,7 +370,7 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Translations: copy and archive in the dashboard**: [da-nx#1077](https://github.com/adobe/da-nx/pull/1077) (draft, `loccopy`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/index.js#L61).
   A 403 or 500 shows as done: copy adds a project that doesn't exist, archive drops one that is still active.
 
-- [ ] **Translations: first load of the dashboard**: [da-nx/locdash](https://github.com/adobe/da-nx/tree/locdash), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/dashboard.js#L146).
+- [ ] **Translations: first load of the dashboard**: [da-nx#1078](https://github.com/adobe/da-nx/pull/1078) (draft, `locdash`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/dashboard.js#L146).
   A failed or cancelled first load leaves the loading bar and nothing else, and later filter changes wait on the same failed load.
 
 - [ ] **Translations: dependent languages**: [da-nx#996](https://github.com/adobe/da-nx/pull/996) (open), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L370).
