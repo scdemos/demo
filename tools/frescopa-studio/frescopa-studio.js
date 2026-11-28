@@ -19,6 +19,7 @@ import { renderForm, showErrors } from './form.js';
 
 const DA_ADMIN = 'https://admin.da.live';
 const AEM_ADMIN = 'https://admin.hlx.page';
+const AEM_API = 'https://api.aem.live';
 // The fragment picker plugin from AEM Apps, for fields marked "format": "fragment"
 // (https://github.com/adobe-rnd/aem-apps/tree/main/tools/plugins/fragments).
 const FRAGMENT_PICKER = new URL('https://main--aem-apps--adobe-rnd.aem.live/tools/plugins/fragments/fragments.html');
@@ -303,9 +304,17 @@ function addPickers(engine, patterns) {
   });
 }
 
-/** Preview, publish or status for the document, through the AEM admin API. */
-function admin(route, method = 'POST') {
-  return daFetch(`${AEM_ADMIN}/${route}/${org}/${site}/main${DOCUMENT}`, { method });
+let hlx6;
+
+/** Preview, publish or check status on the site's AEM API. */
+async function admin(route, method = 'POST') {
+  hlx6 ??= daFetch(`${AEM_ADMIN}/ping/${org}/${site}`)
+    .then((resp) => resp.headers.has('x-api-upgrade-available'))
+    .catch(() => false);
+  const url = (await hlx6)
+    ? `${AEM_API}/${org}/sites/${site}/${route}${DOCUMENT}`
+    : `${AEM_ADMIN}/${route}/${org}/${site}/main${DOCUMENT}`;
+  return daFetch(url, { method });
 }
 
 const time = (date) => (date ? new Date(date).getTime() : 0);
