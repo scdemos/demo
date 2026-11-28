@@ -367,7 +367,7 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Translations: unreadable `translate.json`**: [da-nx#1076](https://github.com/adobe/da-nx/pull/1076) (draft, `loccfg`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/utils/utils.js#L320).
   A read that throws is cached as an empty config. Validation reports missing languages and translate skips the site's DNT rules. The draft shows the error and retries next time. Merge [da-nx#996](https://github.com/adobe/da-nx/pull/996) first so a config error can't send empty pages for a waiting language.
 
-- [ ] **Translations: copy and archive in the dashboard**: [da-nx/loccopy](https://github.com/adobe/da-nx/tree/loccopy), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/index.js#L61).
+- [ ] **Translations: copy and archive in the dashboard**: [da-nx#1077](https://github.com/adobe/da-nx/pull/1077) (draft, `loccopy`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/index.js#L61).
   A 403 or 500 shows as done: copy adds a project that doesn't exist, archive drops one that is still active.
 
 - [ ] **Translations: first load of the dashboard**: [da-nx/locdash](https://github.com/adobe/da-nx/tree/locdash), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/dashboard.js#L146).
