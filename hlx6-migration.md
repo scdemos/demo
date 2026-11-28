@@ -441,10 +441,11 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   ([admin.js#L84](https://github.com/scdemos/demo/blob/8b0b6a69914d07e9e7ab421eb873cfae8396dc1e/workers/cloneit_token/admin.js#L84)),
   so a Helix 6 clone can't be deleted from there.
 
-- [ ] **Frescopa Studio** ([#124](https://github.com/scdemos/demo/pull/124)): reads and saves the app
-  document, the schemas in `.da/forms/schemas`, folder lists and the site config through `admin.da.live`,
-  and previews through admin.hlx.page
-  ([frescopa-studio.js#L20](https://github.com/scdemos/demo/blob/8b0b6a69914d07e9e7ab421eb873cfae8396dc1e/tools/frescopa-studio/frescopa-studio.js#L20)).
+- [ ] **Frescopa Studio**: [#239](https://github.com/scdemos/demo/pull/239) (draft, `studiohlx6`).
+  Preview, Publish and Status use the Helix 6 API on upgraded sites. The browser fixture stops with
+  404 on main and publishes on the branch. The three routes returned 200 on a disposable demo-hlx6
+  page, then the page was taken down. DA still handles the app's source and config requests. The phone
+  app still points at demo, and Studio still checks DA permissions for reads and saves.
 
 - [ ] **Page insights** ([#153](https://github.com/scdemos/demo/pull/153), [#154](https://github.com/scdemos/demo/pull/154)):
   the worker checks access with `admin.da.live/list/scdemos/demo` (`SITE` in
