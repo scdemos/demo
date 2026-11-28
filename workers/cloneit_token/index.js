@@ -3,6 +3,7 @@
 //   POST /cloneprocess  → allow-listed Admin API (admin.hlx.page) / DA (admin.da.live) proxy, technical account
 //   POST /standalone    → create scdemos/<site> from the template repo, add it to AEM Code Sync, make the requester admin
 //   POST /permissions   → give the requester write on /<site>/CONFIG and /<site>/** in the org's DA permissions sheet
+//                         (Helix 6 template: add them to the template's author, publish and config_admin roles)
 //   POST /admin/clones  → demo admins: the CloneIt demos (see admin.js)
 //   POST /admin/delete  → demo admins: one step of deleting a CloneIt demo { site, step, job }
 //   POST /admin/job     → demo admins: state of a bulk job a delete step started { site, topic, name }
@@ -14,6 +15,7 @@
 // LEGACY_COMPAT (default on): requests WITHOUT an Authorization header behave exactly like the previous
 // CloneIt worker (POST / returns the technical token, /cloneprocess limited to the old allowlist), so the
 // currently deployed CloneIt page keeps working. Set LEGACY_COMPAT = "false" once every page sends a token.
+// Only ALLOWED_ORIGINS get the legacy routes; IMS_ONLY_ORIGINS always need a token.
 
 import {
   assertDemoAdmin, listClones, deleteCloneStep, jobState, outsidePrefix,
@@ -34,17 +36,19 @@ let cachedToken = null;
 let cachedExpiry = 0;
 const userCache = new Map(); // token hash → { email, exp }
 
-function getAllowedOrigins(env) {
-  return (env.ALLOWED_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
+/** ALLOWED_ORIGINS, plus IMS_ONLY_ORIGINS unless the request takes a legacy (no-token) route. */
+function getAllowedOrigins(env, legacy) {
+  return [env.ALLOWED_ORIGINS, !legacy && env.IMS_ONLY_ORIGINS].filter(Boolean).join(',')
+    .split(',').map((o) => o.trim()).filter(Boolean);
 }
 
 /**
  * Exact match, or a `*` wildcard for one branch label: `https://*--demo--scdemos.aem.page` allows
  * `https://custdemo--demo--scdemos.aem.page` (branch previews), never extra subdomains or other hosts.
  */
-export function originMatches(origin, env) {
+export function originMatches(origin, env, legacy = false) {
   if (!origin) return false;
-  return getAllowedOrigins(env).some((allowed) => {
+  return getAllowedOrigins(env, legacy).some((allowed) => {
     if (!allowed.includes('*')) return allowed === origin;
     const re = new RegExp(`^${allowed.split('*').map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[a-z0-9](?:[a-z0-9-]{0,38}[a-z0-9])?')}$`);
     return re.test(origin);
@@ -393,10 +397,47 @@ export async function assertOwnsDemo(site, email, env, gh) {
   if (!requester || !sameEmail(requester, email)) throw fail('not_demo_requester');
 }
 
-/** Reads the org config, appends the requester's rows, writes it back and checks they stuck (retries lost updates). */
-export async function grantDemoPermissions({ site, email }, env, { adminFetch, gh }, wait = sleep) {
+/** Helix 6 template roles that match the DA rows a requester joins: /<template>/+** (author, publish) and CONFIG. */
+const TEAM_ROLES = ['author', 'publish', 'config_admin'];
+
+/** Adds `email` to the team roles it's missing from. Returns { role, joined } (role null when nothing changes). */
+export function addToTeamRoles(role, email) {
+  const joined = TEAM_ROLES.filter((name) => !(role[name] || []).some((m) => sameEmail(m, email)));
+  if (!joined.length) return { role: null, joined };
+  const next = { ...role };
+  joined.forEach((name) => { next[name] = [...(role[name] || []), email]; });
+  return { role: next, joined };
+}
+
+/**
+ * Helix 6 template: the site config's roles decide who edits, not the DA permissions sheet. The requester is
+ * already admin of the new site; this adds them to the template's team roles and checks they stuck.
+ */
+async function joinTemplateRoles({ site, email, template }, env, adminFetch, wait) {
+  const path = `/config/${env.ORG || DEFAULT_ORG}/sites/${template}/access/admin/role.json`;
+  let joinedRoles = [];
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const res = await adminFetch('helix', path);
+    if (!res.ok) throw Object.assign(new Error(`template_roles_read_failed_${res.status}`), { status: 502 });
+    const { role, joined } = addToTeamRoles(await res.json(), email);
+    if (!role) return { site, email, siteRole: 'admin', template, joined: joinedRoles };
+    if (!joinedRoles.length) joinedRoles = joined;
+    if (attempt === 3) break;
+    const post = await adminFetch('helix', path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(role) });
+    if (!post.ok) throw Object.assign(new Error(`template_roles_write_failed_${post.status}`), { status: 502 });
+    await wait(500);
+  }
+  throw Object.assign(new Error('template_roles_write_not_confirmed'), { status: 502 });
+}
+
+/**
+ * Reads the org config, appends the requester's rows, writes it back and checks they stuck (retries lost updates).
+ * For a clone of the Helix 6 template (`template` === HLX6_TEMPLATE) it joins the template's roles instead.
+ */
+export async function grantDemoPermissions({ site, email, template }, env, { adminFetch, gh }, wait = sleep) {
   const org = env.ORG || DEFAULT_ORG;
   await assertOwnsDemo(site, email, env, gh);
+  if (template && template === env.HLX6_TEMPLATE) return joinTemplateRoles({ site, email, template }, env, adminFetch, wait);
   const rows = permissionRows(site, email);
   // also join the shared rows: org config (CONFIG) and the template's content, so the requester can
   // change any site config and the template like the rest of the team
@@ -452,7 +493,8 @@ export default {
     if (!env.ADOBE_CLIENT_ID || !env.ADOBE_CLIENT_SECRET) return workerErr(cors, 'Worker not configured', 500);
 
     // previous CloneIt page (no Authorization header): unchanged behavior while LEGACY_COMPAT is on
-    if (!request.headers.get('Authorization') && env.LEGACY_COMPAT !== 'false' && ['/', '/cloneprocess'].includes(pathname)) {
+    if (!request.headers.get('Authorization') && env.LEGACY_COMPAT !== 'false' && ['/', '/cloneprocess'].includes(pathname)
+      && originMatches(request.headers.get('Origin') || '', env, true)) {
       try {
         if (pathname === '/cloneprocess') return await proxyToAdmin(request, env, cors, true);
         const token = await generateToken(env);
@@ -490,7 +532,7 @@ export default {
         // the email always comes from the verified IMS token, never from the request
         if (!env.GITHUB_PROVISION_TOKEN) return workerErr(cors, 'standalone_not_configured', 501);
         const result = await grantDemoPermissions(
-          { site: String(body.site || '').toLowerCase(), email: user.email },
+          { site: String(body.site || '').toLowerCase(), email: user.email, template: String(body.template || '') },
           env,
           { adminFetch: techFetch(env), gh: githubClient(env) },
         );

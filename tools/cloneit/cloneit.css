@@ -215,6 +215,71 @@ body.cloneit-app {
   color: var(--text-dim);
 }
 
+.cloneit-pill-hlx6 {
+  background: #f2f3f7;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.cloneit-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.cloneit-info-btn[hidden] {
+  display: none;
+}
+
+.cloneit-info-btn:hover {
+  border-color: var(--border-strong);
+}
+
+.cloneit-info-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cloneit-popover {
+  max-width: min(26rem, calc(100vw - 2rem));
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(20 18 40 / 16%);
+  color: var(--text);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.cloneit-popover::backdrop {
+  background: rgb(20 18 40 / 12%);
+}
+
+.cloneit-popover p {
+  margin: 0 0 0.5rem;
+}
+
+.cloneit-popover-title {
+  font-weight: 700;
+}
+
+.cloneit-popover ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.cloneit-popover li {
+  margin-top: 0.25rem;
+}
+
 /* Workspace */
 .cloneit-work {
   display: flex;

@@ -9,6 +9,8 @@ PATH_PREFIX = "cloneit"
 # Origins allowed for POST /cloneprocess and POST / (IMS ping + Admin API forwarding).
 # Include the origin that serves CloneIt (e.g. https://demo.bbird.live if the tool is hosted there).
 ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.preview.da.live,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live"
+# Origins allowed only with the caller's IMS token (Authorization): never on the LEGACY_COMPAT routes.
+IMS_ONLY_ORIGINS = "https://*--demo-hlx6--scdemos.preview.da.live,https://*--demo-hlx6--scdemos.aem.page,https://*--demo-hlx6--scdemos.aem.live"
 
 # Previous CloneIt page (no token) keeps working until this is set to "false".
 LEGACY_COMPAT = "true"
@@ -24,6 +26,8 @@ GITHUB_TEAM = "sc-team"
 # Demo Admin (tools/demo-admin) never lists or deletes these sites (the template repo's site is always protected).
 PROTECTED_SITES = ""
 CODE_SYNC_INSTALLATION_ID = "180300339"   # AEM Code Sync on scdemos (org settings → GitHub Apps); auto-discovered when unset
+# Helix 6 template: /permissions adds the requester to its author, publish and config_admin roles.
+HLX6_TEMPLATE = "demo-hlx6"
 # Secrets (wrangler secret put …): ADOBE_CLIENT_ID, ADOBE_CLIENT_SECRET, GITHUB_PROVISION_TOKEN
 #   GITHUB_PROVISION_TOKEN: classic PAT of an scdemos org OWNER/bot (scopes: repo, read:org; + admin:org only with GITHUB_TEAM;
 #   authorize for SSO if enforced; + delete_repo for Demo Admin's clone delete). Without it the
@@ -35,6 +39,7 @@ CODE_SYNC_INSTALLATION_ID = "180300339"   # AEM Code Sync on scdemos (org settin
 [previews.vars]
 PATH_PREFIX = "cloneit"
 ALLOWED_ORIGINS = "https://main--demo--scdemos.aem.live,https://main--demo--scdemos.preview.da.live,https://main--demo--scdemos.aem.page,https://main--demo--scdemos.aem.network,https://demo.bbird.live,http://localhost:3000,https://*--demo--scdemos.preview.da.live,https://*--demo--scdemos.aem.page,https://*--demo--scdemos.aem.live"
+IMS_ONLY_ORIGINS = "https://*--demo-hlx6--scdemos.preview.da.live,https://*--demo-hlx6--scdemos.aem.page,https://*--demo-hlx6--scdemos.aem.live"
 LEGACY_COMPAT = "true"
 ALLOWED_EMAIL_DOMAINS = "adobe.com"
 IMS_CLIENT_IDS = "darkalley"
@@ -42,6 +47,7 @@ TEMPLATE_REPO = "scdemos/demo"
 GITHUB_TEAM = "sc-team"
 PROTECTED_SITES = ""
 CODE_SYNC_INSTALLATION_ID = "180300339"
+HLX6_TEMPLATE = "demo-hlx6"
 SITE_PREFIX = "ci-"
 
 [observability.logs]

@@ -4,6 +4,17 @@
 // (created by the worker from scdemos/demo and added to AEM Code Sync) and its own DA folder with the
 // demo content, config and index, previewed and published. Customizing it with the customer-demo AI
 // skill is an optional next step.
+// A template on Helix 6 (content in the AEM source bus) gives a clone on Helix 6: see source.js.
+
+import {
+  isHlx6Config,
+  hlx6ContentSource,
+  createSourceBusClient,
+  collectSourceBusFiles,
+  copyFiles,
+  rewriteForNewSite,
+  bulkPaths,
+} from './source.js';
 
 const ORG = 'scdemos';
 const CODE_OWNER = 'scdemos';
@@ -19,8 +30,12 @@ function resolveWorkerUrl() {
   return DEFAULT_WORKER_URL;
 }
 const CLONEIT_WORKER_URL = resolveWorkerUrl();
-// every demo starts from the base demo site (content + code); the customer-demo skill replaces the content
+// every demo starts from the base demo site (content + code); the customer-demo skill replaces the content.
 const BASELINE_SITE = 'demo';
+// opened in DA from demo-hlx6 (demo's Helix 6 copy), CloneIt clones that site's content instead;
+// opened from any other site (every demo repo carries this tool), it still clones demo
+const HLX6_TEMPLATE = 'demo-hlx6';
+const TEMPLATE_SITES = [BASELINE_SITE, HLX6_TEMPLATE];
 const GH_USER_KEY = 'cloneit.githubUser';
 const GH_USER_RE = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
 const REGISTRY = { site: 'demo-registry', path: 'demos.json' };
@@ -33,6 +48,8 @@ const UI = {
   toastSdkFailed:
     'Sign in to Document Authoring and open CloneIt from DA, then refresh.',
   toastReady: 'CloneIt is ready. Enter a site name and your GitHub username to start.',
+  resultReady: 'Your repository, site and DA folder are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.',
+  resultReadyHlx6: 'Your repository and Helix 6 site are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.',
 };
 
 // Paths must stay aligned with workers/cloneit_token isAllowedProxyPath().
@@ -111,6 +128,7 @@ const app = {
   imsToken: '',
   userEmail: '',
   standaloneAvailable: false,
+  baselineSite: BASELINE_SITE,
 };
 
 const SITE_NAME_MAX_LENGTH = 50;
@@ -131,6 +149,11 @@ function showToast(message, type = 'info') {
   }, 5000);
 }
 
+/** The site to clone: the site CloneIt is opened from when it's a template, else demo. */
+function templateSite(repo) {
+  return TEMPLATE_SITES.includes(repo) ? repo : BASELINE_SITE;
+}
+
 /** Loads the DA SDK for the signed-in user's IMS token (the worker requires it on every call). */
 async function initDaSdk() {
   try {
@@ -139,6 +162,7 @@ async function initDaSdk() {
     const sdk = await Promise.race([DA_SDK, wait(8000).then(() => { throw new Error('no_da_context'); })]);
     app.imsToken = sdk.token || '';
     app.sdkReady = !!app.imsToken;
+    app.baselineSite = templateSite(sdk.context?.repo);
   } catch (e) {
     console.error('DA SDK unavailable:', e);
     app.sdkReady = false;
@@ -233,17 +257,21 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
     publish = null,
     copyFailed = [],
     permissions = null,
+    hlx6 = false,
+    overlaySkipped = false,
   } = options;
   const baselineSite = baselineSiteOpt || '—';
+  const contentLabel = hlx6 ? 'Content (source bus)' : 'DA content';
   const {
     copied: queryIndexCopied = false,
     verified: queryIndexVerified = false,
     skippedNoBaseline = false,
     error: queryIndexError = null,
+    buildError: indexBuildError = null,
   } = queryIndex;
 
   const plainLines = [];
-  plainLines.push(`DA content: ${ORG}/${baselineSite}/ → ${ORG}/${siteName}/`);
+  plainLines.push(`${contentLabel}: ${ORG}/${baselineSite}/ → ${ORG}/${siteName}/`);
   if (daConfigCopied) plainLines.push('DA config copied');
   plainLines.push('AEM site config created');
 
@@ -255,6 +283,9 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   } else if (queryIndexError) {
     queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): <strong>not copied</strong> — ${escapeHtml(queryIndexError)}</li>`;
     plainLines.push(`Query index (query.yaml): not copied — ${queryIndexError}`);
+  } else if (queryIndexCopied && indexBuildError) {
+    queryLine = `<li class="result-summary-warn">Query index (<code>query.yaml</code>): copied, but <strong>the index wasn't built</strong> — ${escapeHtml(indexBuildError)}</li>`;
+    plainLines.push(`Query index (query.yaml): copied, but the index wasn't built — ${indexBuildError}`);
   } else if (queryIndexCopied && queryIndexVerified) {
     queryLine = `<li>Query index (<code>query.yaml</code>): copied and <strong>verified</strong></li>`;
     plainLines.push('Query index (query.yaml): copied and verified');
@@ -272,13 +303,24 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   }
   extra.push([`Own repository <code>${ORG}/${escapeHtml(siteName)}</code>, added to AEM Code Sync`, `Own repository ${ORG}/${siteName}, added to AEM Code Sync`]);
   if (!codeSynced) extra.push(['<strong>Code sync still running</strong>: the site may show unstyled for a minute', 'Code sync still running']);
+  if (overlaySkipped) {
+    extra.push(['<strong>Pages generated by the template\'s content overlay</strong> (e.g. <code>json2html</code> event pages) were not copied', 'Pages generated by the template\'s content overlay were not copied']);
+  }
   if (publish?.error) {
     extra.push([`<strong>Automatic preview/publish failed</strong> (${escapeHtml(publish.error)}): use Bulk Preview/Publish below`, `Automatic preview/publish failed: ${publish.error}`]);
   } else if (publish) {
     const failed = publish.failed?.length ? `, ${publish.failed.length} not published (see below)` : '';
     extra.push([`Previewed and published ${publish.published} pages and assets${escapeHtml(failed)}`, `Published ${publish.published}${failed}`]);
   }
-  if (permissions?.error) {
+  if (permissions?.siteRole) {
+    // Helix 6: the site config's roles decide who can edit, not the DA permissions sheet
+    const joined = permissions.joined || [];
+    const team = joined.length ? `, and added to <code>${escapeHtml(baselineSite)}</code> roles <code>${joined.map(escapeHtml).join('</code>, <code>')}</code>` : '';
+    extra.push([`You can edit the demo's content and config (<code>${escapeHtml(permissions.email)}</code>: <code>${escapeHtml(permissions.siteRole)}</code> role on the new site${team})`, `Edit access for ${permissions.email}: ${permissions.siteRole} role on the new site${joined.length ? `; added to ${baselineSite} roles ${joined.join(', ')}` : ''}`]);
+    if (permissions.error) {
+      extra.push([`<strong>Not added to the <code>${escapeHtml(baselineSite)}</code> team roles</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin`, `Not added to the ${baselineSite} team roles: ${permissions.error}`]);
+    }
+  } else if (permissions?.error) {
     extra.push([`<strong>Edit access not added</strong> (${escapeHtml(permissions.error)}): ask an scdemos admin for write on <code>/${escapeHtml(siteName)}/CONFIG</code> and <code>/${escapeHtml(siteName)}/**</code>`, `Edit access not added: ${permissions.error}`]);
   } else if (permissions) {
     const shared = (permissions.joined || []).length ? `, and added to <code>${permissions.joined.map(escapeHtml).join('</code>, <code>')}</code>` : '';
@@ -290,7 +332,7 @@ function buildResultSummaryHtmlAndPlainLines(siteName, options) {
   const adminLine = '';
 
   const html = `
-    <li>DA content: <code>${ORG}/${escapeHtml(baselineSite)}/</code> → <code>${ORG}/${siteName}/</code></li>
+    <li>${contentLabel}: <code>${ORG}/${escapeHtml(baselineSite)}/</code> → <code>${ORG}/${siteName}/</code></li>
     ${daConfigCopied ? '<li>DA config copied</li>' : ''}
     <li>AEM site config created</li>
     ${adminLine}
@@ -367,7 +409,7 @@ function showResult(success, siteName, errorMessage, options = {}) {
 
     const sub = document.getElementById('result-sub');
     if (sub) {
-      sub.textContent = 'Your repository, site and DA folder are ready. Demo it as is, or make it look like the customer with the customer-demo AI skill.';
+      sub.textContent = options.hlx6 ? UI.resultReadyHlx6 : UI.resultReady;
     }
     const handoff = document.getElementById('ai-handoff');
     if (handoff) {
@@ -460,9 +502,10 @@ function handleBulkAction() {
   openBulkAppWithUrls(app.lastClonedSite, app.contentPaths);
 }
 
-async function siteExistsInAem(siteName) {
+/** The site config stored for a name; null when there is none. A config it can't read counts as one. */
+async function findSiteInAem(siteName) {
   const response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
-  return response.ok;
+  return response.ok ? (await response.json().catch(() => ({}))) ?? {} : null;
 }
 
 async function folderExistsInDa(siteName) {
@@ -509,9 +552,14 @@ function rewriteBaselineRefs(value, baselineSite, newSiteName) {
  * Site config for the new site: content from its DA folder, code from its own repo.
  * Roles: the requester as admin, *@adobe.com author/publish,
  * plus the template's technical accounts so automation (bulk preview/publish) keeps working.
+ * Helix 6 template: content from the new site's source bus, and the DA config (which a Helix 6
+ * site keeps in `editor.da`) rewritten for the new site. On Helix 6 the roles also decide who
+ * can edit content, so there is no *@adobe.com author/publish: the requester and the template's
+ * admins are admin.
  */
 function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
   const { userEmail = '', baselineSite = '' } = opts;
+  const hlx6 = isHlx6Config(baselineConfig);
   const now = new Date().toISOString();
   const codeRepo = newSiteName;
   const config = {
@@ -520,7 +568,9 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
     created: now,
     lastModified: now,
     content: {
-      source: { type: 'markup', url: `https://content.da.live/${ORG}/${newSiteName}/` },
+      source: hlx6
+        ? hlx6ContentSource(baselineConfig.content.source, ORG, newSiteName)
+        : { type: 'markup', url: `https://content.da.live/${ORG}/${newSiteName}/` },
     },
     code: {
       ...(baselineConfig.code || {}),
@@ -551,9 +601,11 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
     config.public = pub;
   }
 
-  const admins = new Set([userEmail].filter(Boolean));
-  const role = { admin: [...admins], author: ['*@adobe.com'], publish: ['*@adobe.com'] };
   const baseRoles = baselineConfig.access?.admin?.role || {};
+  const admins = new Set([userEmail, ...(hlx6 ? baseRoles.admin || [] : [])].filter(Boolean));
+  const role = hlx6
+    ? { admin: [...admins] }
+    : { admin: [...admins], author: ['*@adobe.com'], publish: ['*@adobe.com'] };
   Object.entries(baseRoles).forEach(([name, members]) => {
     (members || []).filter((m) => /@techacct\.adobe\.com$/i.test(m)).forEach((m) => {
       role[name] = [...new Set([...(role[name] || []), m])];
@@ -561,16 +613,56 @@ function buildNewSiteConfig(baselineConfig, newSiteName, opts = {}) {
   });
   if (role.admin.length) config.access = { admin: { role } };
 
+  const daConfig = hlx6 && baselineConfig.editor?.da;
+  if (daConfig) {
+    // apps that take the site as query parameters (`?org=scdemos&site=demo-hlx6`) open the new site
+    const appSite = new RegExp(`([?&]org=${ORG}&site=)${baselineSite}(?=[&#"]|$)`, 'g');
+    const editor = JSON.stringify(daConfig).replace(appSite, `$1${newSiteName}`);
+    config.editor = { da: JSON.parse(rewriteDaConfigForNewSite(editor, newSiteName, baselineSite, userEmail)) };
+  }
+
   cleanupSiteConfig(config);
   return config;
 }
 
-async function createAemSiteConfig(newSiteName, config) {
+/**
+ * AEM Code Sync sets up a new repo with a default site config that has its content in DA. On Helix 6
+ * it can come before or after ours: on ci-hlx6-1126 it replaced ours 350 ms after the PUT.
+ */
+function isCodeSyncDefault(config, siteName) {
+  return config?.content?.source?.url === `https://content.da.live/${ORG}/${siteName}/`;
+}
+
+/** The stored site config, read up to 3 times: `{ status, config }`, config null when unreadable. */
+async function readSiteConfig(siteName) {
+  let response;
+  for (let i = 0; i < 3; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    response = await cloneitProcessFetch('helix', Paths.helixSiteJson(siteName));
+    if (response.ok) return { status: response.status, config: await response.json().catch(() => null) };
+    // eslint-disable-next-line no-await-in-loop
+    if (i < 2) await wait(1000);
+  }
+  return { status: response.status, config: null };
+}
+
+/**
+ * `createOnly`: never replace a config that exists already (the PUT answers 409), except AEM Code
+ * Sync's default for the new repo.
+ */
+async function createAemSiteConfig(newSiteName, config, { createOnly = false } = {}) {
   let response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
     method: 'PUT',
     body: JSON.stringify(config),
     contentType: 'application/json',
   });
+  if (response.status === 409 && createOnly) {
+    const stored = await readSiteConfig(newSiteName);
+    if (!isCodeSyncDefault(stored.config, newSiteName)) {
+      const found = stored.config ? `content: ${stored.config.content?.source?.url}` : `read: ${stored.status}`;
+      throw new Error(`A site config for ${ORG}/${newSiteName} exists already (${found}).`);
+    }
+  }
   if (response.status === 409) {
     // AEM Code Sync may have created a default config for the new repo already; replace it with ours
     response = await cloneitProcessFetch('helix', Paths.helixSiteJson(newSiteName), {
@@ -660,10 +752,14 @@ function rewriteDaConfigForNewSite(configJson, newSiteName, baselineSite, userEm
   let cfg;
   try { cfg = JSON.parse(rewritten); } catch { return rewritten; }
   const sheet = cfg['publish-workflow-config'];
+  const approvers = userEmail ? [{ pattern: '/*', approvers: userEmail, cc: '', notifyonreject: 'true' }] : [];
   if (sheet && Array.isArray(sheet.data)) {
-    sheet.data = userEmail ? [{ pattern: '/*', approvers: userEmail, cc: '', notifyonreject: 'true' }] : [];
+    sheet.data = approvers;
     sheet.total = sheet.data.length;
     sheet.limit = sheet.data.length;
+  } else if (Array.isArray(sheet)) {
+    // Helix 6 `editor.da`: each sheet is its array of rows
+    cfg['publish-workflow-config'] = approvers;
   }
   return JSON.stringify(cfg);
 }
@@ -899,21 +995,36 @@ async function waitForCodeSync(siteName, onTick) {
   return false;
 }
 
-/** Bulk preview (topic preview) or publish (topic publish) through the Admin API; waits for the job. */
-async function runBulkJob(siteName, topic, paths, onTick) {
+/**
+ * Bulk jobs through the Admin API with the worker's technical account (DA sites). Same methods as
+ * the source bus client, which runs them on the Helix 6 API for source-bus sites.
+ */
+function adminBulk(siteName) {
+  return {
+    startJob: (route, body) => cloneitProcessFetch('helix', Paths.helixBulk(route, siteName), {
+      method: 'POST',
+      body: JSON.stringify(body),
+      contentType: 'application/json',
+    }),
+    jobDetails: async (job) => (await cloneitProcessFetch('helix', Paths.helixJob(siteName, job.topic, job.name)))
+      .json().catch(() => ({})),
+  };
+}
+
+/**
+ * Bulk preview (topic preview) or publish (topic publish) through the Admin API, or the Helix 6
+ * API for a source-bus site; waits for the job.
+ */
+async function runBulkJob(siteName, topic, paths, onTick, bulk = adminBulk(siteName)) {
   const route = topic === 'publish' ? 'live' : 'preview';
-  const response = await cloneitProcessFetch('helix', Paths.helixBulk(route, siteName), {
-    method: 'POST',
-    body: JSON.stringify({ paths, forceUpdate: true }),
-    contentType: 'application/json',
-  });
+  const response = await bulk.startJob(route, { paths, forceUpdate: true });
   if (!response.ok) throw new Error(`${route}: ${response.status} ${response.headers.get('x-error') || ''}`.trim());
   const { job } = await response.json();
   for (let i = 0; i < 180; i += 1) {
     // eslint-disable-next-line no-await-in-loop
     await wait(2000);
     // eslint-disable-next-line no-await-in-loop
-    const d = await (await cloneitProcessFetch('helix', Paths.helixJob(siteName, topic, job.name))).json().catch(() => ({}));
+    const d = await bulk.jobDetails(job);
     // the job reports progress while it runs (processed of total); if not, the UI shows "in bulk…"
     if (onTick) onTick(d.progress?.processed ?? null, d.progress?.total ?? paths.length);
     if (d.state === 'stopped') {
@@ -927,7 +1038,7 @@ async function runBulkJob(siteName, topic, paths, onTick) {
   throw new Error(`${route} job did not finish in time`);
 }
 
-async function runBulkInChunks(siteName, topic, paths, onPhase) {
+async function runBulkInChunks(siteName, topic, paths, onPhase, bulk) {
   const okPaths = [];
   const failed = [];
   for (let i = 0; i < paths.length; i += 400) {
@@ -935,7 +1046,7 @@ async function runBulkInChunks(siteName, topic, paths, onPhase) {
     // eslint-disable-next-line no-await-in-loop
     const r = await runBulkJob(siteName, topic, paths.slice(i, i + 400), (processed) => {
       if (onPhase && processed != null) onPhase(topic, i + processed, paths.length);
-    });
+    }, bulk);
     okPaths.push(...r.okPaths);
     failed.push(...r.failed);
   }
@@ -946,16 +1057,16 @@ async function runBulkInChunks(siteName, topic, paths, onPhase) {
  * Preview everything (one retry for transient 5xx), then publish only what previewed. Files in hidden
  * DA attachment folders (`/.name/…`) are previewed but never published: the live tier doesn't serve them.
  */
-async function previewAndPublish(siteName, paths, onPhase) {
-  const preview = await runBulkInChunks(siteName, 'preview', paths, onPhase);
+async function previewAndPublish(siteName, paths, onPhase, bulk) {
+  const preview = await runBulkInChunks(siteName, 'preview', paths, onPhase, bulk);
   const transient = preview.failed.filter((f) => f.status >= 500).map((f) => f.path);
   if (transient.length) {
-    const retry = await runBulkInChunks(siteName, 'preview', transient, onPhase);
+    const retry = await runBulkInChunks(siteName, 'preview', transient, onPhase, bulk);
     preview.okPaths.push(...retry.okPaths);
     preview.failed = [...preview.failed.filter((f) => f.status < 500), ...retry.failed];
   }
   const publishable = preview.okPaths.filter((p) => !/(^|\/)\.[^/]+\//.test(p));
-  const live = await runBulkInChunks(siteName, 'publish', publishable, onPhase);
+  const live = await runBulkInChunks(siteName, 'publish', publishable, onPhase, bulk);
   return {
     previewed: preview.okPaths.length,
     published: live.okPaths.length,
@@ -983,8 +1094,50 @@ async function recordInRegistry(row) {
   }
 }
 
+/**
+ * Helix 6 template: the new site's config comes first (the source bus answers 404 for a site
+ * without one, and its admin role lets the requester write), then every file is read from the
+ * template's source bus and written to the new site's, with the requester's own token.
+ */
+async function cloneToSourceBus(siteName, baselineSite, baselineConfig) {
+  setProgress(true, 15, 'Creating site config…', null, 'Configuring', '');
+  const newConfig = buildNewSiteConfig(baselineConfig, siteName, { userEmail: app.userEmail, baselineSite });
+  await createAemSiteConfig(siteName, newConfig, { createOnly: true });
+  const template = createSourceBusClient({ org: ORG, site: baselineSite, token: app.imsToken });
+  const sourceBus = createSourceBusClient({ org: ORG, site: siteName, token: app.imsToken });
+  setProgress(true, 17, 'Waiting for the new site…', null, 'Configuring', '');
+  await sourceBus.waitUntilReady();
+
+  setProgress(true, 18, 'Discovering files…', null, 'Discovering', '');
+  const files = await collectSourceBusFiles((folder) => template.list(folder), SKIPPED_FOLDERS);
+  if (!files.length) throw new Error(`No files found in ${ORG}/${baselineSite}.`);
+  const { copied, failed } = await copyFiles({
+    files,
+    read: (path) => template.read(path),
+    write: (path, body, contentType) => sourceBus.write(path, body, contentType),
+    transform: (text, path) => rewriteForNewSite(text, {
+      org: ORG, template: baselineSite, site: siteName, path,
+    }),
+    onProgress: (current, total, fileName) => {
+      const pct = 18 + Math.floor((current / total) * 32);
+      setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
+    },
+  });
+  failed.forEach((f) => console.warn(`Not copied: ${f.path} (${f.status ?? ''} ${f.error})`));
+  if (!copied.length) throw new Error(`No content could be copied from ${ORG}/${baselineSite}.`);
+  // Code Sync's default may have replaced our config after the PUT. Write ours again before the
+  // query index and preview, which go to the content bus of the config in place.
+  if (isCodeSyncDefault(await findSiteInAem(siteName), siteName)) {
+    setProgress(true, 50, 'Restoring site config…', 'AEM Code Sync replaced the site config, writing it again', 'Configuring', '');
+    await createAemSiteConfig(siteName, newConfig);
+  }
+  return {
+    newConfig, sourceBus, copied, failed: failed.map((f) => f.path),
+  };
+}
+
 async function cloneSite(siteName, opts = {}) {
-  const baselineSite = BASELINE_SITE;
+  const { baselineSite } = app;
   const { githubUser = '', customerSite = '' } = opts;
   if (!app.workerReady) {
     showToast('CloneIt worker is not ready. Sign in to da.live and refresh.', 'error');
@@ -998,10 +1151,15 @@ async function cloneSite(siteName, opts = {}) {
 
   try {
     setProgress(true, 3, 'Checking if site name is available…', null, 'Checking', '');
-    const [aemExists, daExists] = await Promise.all([siteExistsInAem(siteName), folderExistsInDa(siteName)]);
-    // second run: AEM Code Sync may have created a default config for this repo already
-    const resumable = aemExists && (await fetchBaselineConfig(siteName).catch(() => ({}))).code?.repo === siteName;
-    if (aemExists && !resumable) {
+    // the template's config says where its content is: a DA folder, or the source bus (Helix 6)
+    const baselineConfig = await fetchBaselineConfig(baselineSite);
+    const hlx6 = isHlx6Config(baselineConfig);
+    const [existingSite, daExists] = await Promise.all([findSiteInAem(siteName), !hlx6 && folderExistsInDa(siteName)]);
+    // second run: AEM Code Sync may have created a default config for this repo already.
+    // Helix 6 never resumes: a config with this repo can belong to a finished demo, and its
+    // source files would be overwritten. Nor does a DA clone take over a Helix 6 site.
+    const resumable = !hlx6 && existingSite?.code?.repo === siteName && !isHlx6Config(existingSite);
+    if (existingSite && !resumable) {
       throw new Error(`A demo named "${siteName}" already exists. Change the site name (e.g. "${siteName}-2") and try again.`);
     }
     if (daExists) {
@@ -1015,32 +1173,41 @@ async function cloneSite(siteName, opts = {}) {
       throw new Error(`Repository created, but it couldn't be added to AEM Code Sync (${repo.codeSync?.reason}). Ask an scdemos admin to add ${ORG}/${siteName} to AEM Code Sync, then run CloneIt again with the same name.`);
     }
 
-    setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
-    const { copied: copiedFiles, failed: copyFailed } = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
-      const pct = 15 + Math.floor((current / total) * 35);
-      setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
-    });
-    if (!copiedFiles.length) throw new Error(`No content could be copied from ${ORG}/${baselineSite}.`);
-
-    setProgress(true, 52, 'Copying DA config (all sheets)…', null, 'Setup', '');
+    let copiedFiles;
+    let copyFailed;
     let daConfigCopied = false;
-    const daConfigContent = await fetchDaConfig(ORG, baselineSite);
-    if (daConfigContent?.trim()) {
-      try {
-        await createDaConfig(ORG, siteName, rewriteDaConfigForNewSite(daConfigContent, siteName, baselineSite, app.userEmail));
-        daConfigCopied = true;
-      } catch (configErr) {
-        console.warn('DA config copy skipped:', configErr);
-      }
-    }
+    let newConfig;
+    let sourceBus = null;
+    if (hlx6) {
+      ({
+        newConfig, sourceBus, copied: copiedFiles, failed: copyFailed,
+      } = await cloneToSourceBus(siteName, baselineSite, baselineConfig));
+      daConfigCopied = !!newConfig.editor?.da;
+    } else {
+      setProgress(true, 15, 'Discovering files…', null, 'Discovering', '');
+      ({ copied: copiedFiles, failed: copyFailed } = await copyDaFolder(siteName, baselineSite, (current, total, fileName) => {
+        const pct = 15 + Math.floor((current / total) * 35);
+        setProgress(true, pct, fileName, fileName, 'Copying', `${current} / ${total}`);
+      }));
+      if (!copiedFiles.length) throw new Error(`No content could be copied from ${ORG}/${baselineSite}.`);
 
-    setProgress(true, 55, 'Fetching baseline config…', null, 'Configuring', '');
-    const baselineConfig = await fetchBaselineConfig(baselineSite);
-    setProgress(true, 60, 'Creating site config…', null, 'Configuring', '');
-    const newConfig = buildNewSiteConfig(baselineConfig, siteName, {
-      userEmail: app.userEmail, baselineSite,
-    });
-    await createAemSiteConfig(siteName, newConfig);
+      setProgress(true, 52, 'Copying DA config (all sheets)…', null, 'Setup', '');
+      const daConfigContent = await fetchDaConfig(ORG, baselineSite);
+      if (daConfigContent?.trim()) {
+        try {
+          await createDaConfig(ORG, siteName, rewriteDaConfigForNewSite(daConfigContent, siteName, baselineSite, app.userEmail));
+          daConfigCopied = true;
+        } catch (configErr) {
+          console.warn('DA config copy skipped:', configErr);
+        }
+      }
+
+      setProgress(true, 60, 'Creating site config…', null, 'Configuring', '');
+      newConfig = buildNewSiteConfig(baselineConfig, siteName, {
+        userEmail: app.userEmail, baselineSite,
+      });
+      await createAemSiteConfig(siteName, newConfig);
+    }
 
     const queryIndex = { copied: false, verified: false, skippedNoBaseline: false, error: null };
     const queryYaml = await fetchBaselineQueryIndex(baselineSite);
@@ -1061,7 +1228,7 @@ async function cloneSite(siteName, opts = {}) {
     setProgress(true, 68, 'Syncing code to AEM…', null, 'Code sync', '');
     const codeSynced = await waitForCodeSync(siteName, (i) => setProgress(true, 68, `Waiting for AEM Code Sync… (${(i + 1) * 3}s)`, null, 'Code sync', ''));
 
-    const contentPaths = daPathsToApiPaths(copiedFiles);
+    const contentPaths = hlx6 ? bulkPaths(copiedFiles) : daPathsToApiPaths(copiedFiles);
     let publish = null;
     try {
       let lastPhase = '';
@@ -1073,21 +1240,36 @@ async function cloneSite(siteName, opts = {}) {
         const first = !done && lastPhase !== topic;
         lastPhase = topic;
         setProgress(true, pct, `${verb} ${total} pages and assets in bulk…`, first ? `${verb} in bulk (one AEM job)…` : null, topic === 'preview' ? 'Preview' : 'Publish', done ? `${Math.min(done, total)} / ${total}` : '');
-      });
+      }, sourceBus || undefined);
     } catch (pubErr) {
       console.warn('Bulk preview/publish failed:', pubErr);
       publish = { error: pubErr.message || String(pubErr) };
     }
 
-    // write access for the requester to the demo's DA content and config (org permissions sheet)
-    setProgress(true, 99, 'Giving you edit access in DA…', null, 'Permissions', '');
+    // a Helix 6 bulk publish only updates the sitemap index, not the indexes in query.yaml
+    if (hlx6 && queryIndex.copied && publish?.published) {
+      setProgress(true, 99, 'Building the query index…', null, 'Index', '');
+      try {
+        const resp = await sourceBus.startJob('index', { paths: ['/*'] });
+        if (!resp.ok) throw new Error(`${resp.status} ${resp.headers.get('x-error') || ''}`.trim());
+      } catch (indexErr) {
+        console.warn('Query index not built:', indexErr);
+        queryIndex.buildError = indexErr.message || String(indexErr);
+      }
+    }
+
+    // write access for the requester to the demo's DA content and config (org permissions sheet).
+    // On Helix 6 the DA sheet plays no part: the admin role in the new site config grants it, and the
+    // worker adds the requester to the template's team roles.
     let permissions = null;
+    setProgress(true, 99, hlx6 ? 'Adding you to the template team…' : 'Giving you edit access in DA…', null, 'Permissions', '');
     try {
-      permissions = await workerPost('permissions', { site: siteName });
+      permissions = await workerPost('permissions', hlx6 ? { site: siteName, template: baselineSite } : { site: siteName });
     } catch (permErr) {
       console.warn('Permissions not added:', permErr);
       permissions = { error: permErr.message || String(permErr) };
     }
+    if (hlx6) permissions = { email: app.userEmail, siteRole: 'admin', ...permissions };
 
     await recordInRegistry({
       date: new Date().toISOString(),
@@ -1111,6 +1293,9 @@ async function cloneSite(siteName, opts = {}) {
       customerSite,
       copyFailed,
       permissions,
+      hlx6,
+      // only stored source files are copied; the clone gets no content overlay
+      overlaySkipped: hlx6 && !!baselineConfig.content?.overlay,
     });
     showToast(`Site ${siteName} created successfully!`, 'success');
   } catch (error) {
@@ -1140,10 +1325,17 @@ function applyAvailability() {
   if (note) note.hidden = !app.workerReady || !app.sdkReady || app.standaloneAvailable;
 }
 
+/** Opened from the Helix 6 template, the page shows its texts ([data-hlx6]) instead of the DA ones ([data-da]). */
+function applyTemplate() {
+  const hlx6 = app.baselineSite === HLX6_TEMPLATE;
+  document.querySelectorAll('[data-hlx6]').forEach((el) => { el.hidden = !hlx6; });
+  document.querySelectorAll('[data-da]').forEach((el) => { el.hidden = hlx6; });
+}
+
 function updateCloneButtonState() {
   const cloneBtn = document.getElementById('clone-btn');
   const siteInput = document.getElementById('site-name-input');
-  const { value } = validateSiteName(siteInput?.value || '', BASELINE_SITE);
+  const { value } = validateSiteName(siteInput?.value || '', app.baselineSite);
   // the requester's GitHub username is required: they become admin of the new repo
   const ghOk = GH_USER_RE.test(getGithubUser());
   const urlOk = getCustomerSite() !== null;
@@ -1163,7 +1355,7 @@ function setupEventListeners() {
 
   if (siteInput) {
     siteInput.addEventListener('input', () => {
-      const { value } = validateSiteName(siteInput.value, BASELINE_SITE);
+      const { value } = validateSiteName(siteInput.value, app.baselineSite);
       if (previewEl) previewEl.textContent = value || 'acme-investments';
       updateCloneButtonState();
     });
@@ -1177,7 +1369,7 @@ function setupEventListeners() {
 
   if (cloneBtn) {
     cloneBtn.addEventListener('click', () => {
-      const { valid, value, error } = validateSiteName(siteInput?.value, BASELINE_SITE);
+      const { valid, value, error } = validateSiteName(siteInput?.value, app.baselineSite);
       if (!valid) {
         showToast(error, 'error');
         return;
@@ -1322,6 +1514,7 @@ async function init() {
 
   // the DA SDK provides the signed-in user's IMS token, which the worker needs on every call
   await initDaSdk();
+  applyTemplate();
   try {
     await ensureWorkerReady();
     app.workerReady = true;
