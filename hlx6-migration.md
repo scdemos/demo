@@ -364,8 +364,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Schema editor: failed save or delete**: [da-nx#1070](https://github.com/adobe/da-nx/pull/1070) (draft, `schmerr`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/schema-editor.js#L162-L170).
   The error goes to a field that only exists when creating a schema. With simulated 500s in da.live, the branch shows a warning for both save and delete.
 
-- [ ] **Translations: unreadable `translate.json`**: [da-nx/loccfg](https://github.com/adobe/da-nx/tree/loccfg), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/utils/utils.js#L320).
-  A failed read is cached as an empty config, so translate and validate run without the site's languages until a reload.
+- [ ] **Translations: unreadable `translate.json`**: [da-nx#1076](https://github.com/adobe/da-nx/pull/1076) (draft, `loccfg`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/utils/utils.js#L320).
+  A read that throws is cached as an empty config. Validation reports missing languages and translate skips the site's DNT rules. The draft shows the error and retries next time. Merge [da-nx#996](https://github.com/adobe/da-nx/pull/996) first so a config error can't send empty pages for a waiting language.
 
 - [ ] **Translations: copy and archive in the dashboard**: [da-nx/loccopy](https://github.com/adobe/da-nx/tree/loccopy), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/index.js#L61).
   A 403 or 500 shows as done: copy adds a project that doesn't exist, archive drops one that is still active.
