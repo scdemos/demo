@@ -317,18 +317,11 @@ along the way" below.
   lives, and a failed check uses DA, as main does. A race in the index lock heartbeat (main has it too)
   is the separate branch `mllockhb`; merge it first or together with this PR.
 
-- [ ] **Request publish**: prepared for the worker
-  ([publish-requests-worker/prhlx6](https://github.com/cloudadoption/publish-requests-worker/tree/prhlx6), v1
-  and v2 API) and for the aem-apps plugins and inboxes ([aem-apps/rfphlx6](https://github.com/adobe-rnd/aem-apps/tree/rfphlx6)).
-  Today the worker reads
-  config, checks pages and keeps the requests sheet on `admin.da.live`, and the plugins preview through
-  admin.hlx.page, which can't preview Helix 6 pages. The aem-apps branch also fixes two inbox gaps that
-  came with [aem-apps#68](https://github.com/adobe-rnd/aem-apps/pull/68) and
-  [aem-apps#73](https://github.com/adobe-rnd/aem-apps/pull/73). The worker's new setup routes
-  ([publish-requests-worker#41](https://github.com/cloudadoption/publish-requests-worker/pull/41)) only
-  use `admin.da.live`, so on Helix 6 the branch refuses them (501) instead of saving config the workflow
-  ignores. Whether setup should write `config/editor/da.json` instead is for Sagar to decide. Both branches
-  use the ping header alone to pick the store, and a failed detection uses DA, as main does.
+- [ ] **Request publish**: [worker #42](https://github.com/cloudadoption/publish-requests-worker/pull/42)
+  and [aem-apps #75](https://github.com/adobe-rnd/aem-apps/pull/75) (drafts). The worker reads rules
+  and stores requests on the source bus. The plugins and inboxes use the Helix 6 API for preview,
+  publish and approval versions. Deploy the worker first. Helix 6 setup still returns `501`, and
+  registering a site still needs a manual KV entry. Sagar can decide how setup and registration work.
 
 - [ ] **EW chat (da-agent)**: prepared (da-agent `agnthlx6`, not pushed). The agent calls Helix 6 pages
   "empty", joins the wrong collab room and would write to the legacy store. Pushing any da-agent branch
