@@ -361,8 +361,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Schema editor: files that aren't schemas**: [da-nx#1069](https://github.com/adobe/da-nx/pull/1069) (draft, `schmhtml`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/utils/utils.js#L106-L108).
   A sheet in `.da/forms/schemas` can hide a valid schema with the same name. In da.live on legacy DA and Helix 6, main listed the sheets as invalid schemas and the fix opened the `.html` schema without fetching the sheets.
 
-- [ ] **Schema editor: failed save or delete**: [da-nx/schmerr](https://github.com/adobe/da-nx/tree/schmerr), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/schema-editor.js#L157).
-  The error goes to a field that only exists in new-schema mode, so the editor throws and shows nothing.
+- [ ] **Schema editor: failed save or delete**: [da-nx#1070](https://github.com/adobe/da-nx/pull/1070) (draft, `schmerr`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/schema-editor.js#L162-L170).
+  The error goes to a field that only exists when creating a schema. With simulated 500s in da.live, the branch shows a warning for both save and delete.
 
 - [ ] **Translations: unreadable `translate.json`**: [da-nx/loccfg](https://github.com/adobe/da-nx/tree/loccfg), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/utils/utils.js#L320).
   A failed read is cached as an empty config, so translate and validate run without the site's languages until a reload.
