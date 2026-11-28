@@ -495,8 +495,10 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   someone who is only in the `da-demosite-authors` IMS group can save and publish, and unlisted users get
   no access to a Helix 6 clone, as with a classic clone. Nobody like that has tried it yet.
 
-- [ ] **how-to-add-new-users**: on Helix 6 the IMS groups go into the site's access roles, not the DA
-  permissions sheet. Update the doc.
+- [x] **how-to-add-new-users** ([#191](https://github.com/scdemos/demo/issues/191)): the
+  [demo-hlx6 guide](https://main--demo-hlx6--scdemos.aem.live/demo-docs/usecases/how-to-add-new-users)
+  explains the IMS group roles and links to User Admin. The legacy guide is unchanged. Preserve the
+  demo-hlx6 note on each resync; the pages differ on purpose.
 
 - [ ] **Broken images and videos (demo content)**: every image was stored in the media bus during the
   copy, except in 3 docs whose DA source on demo already has `about:error` images: `/en/membership`,
