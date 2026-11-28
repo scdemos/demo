@@ -347,7 +347,7 @@ along the way" below.
 
 ## Fixes found along the way (not Helix 6)
 
-These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. All are pushed, none has a PR yet. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`. The five MSM branches are on hold, since MSM is getting a full overhaul (see the MSM panel under "Won't Do").
+These bugs exist on main too. They turned up while the Helix 6 fixes were compared with legacy sites. Each is its own small branch and PR (one fix per branch, red test first), so none rides along with a Helix 6 PR. The branches are pushed. See each item for its PR status. The MSM branches are based on the #1341 head (`5e814350`), the others on `origin/main`. The five MSM branches are on hold, since MSM is getting a full overhaul (see the MSM panel under "Won't Do").
 
 - [ ] **API: org-level `.da` paths**: [da-nx/nodaping](https://github.com/adobe/da-nx/tree/nodaping), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx2/utils/api.js#L690).
   For `/{org}/.da/...` paths nx2 pings `/ping/{org}/.da`, which fails as a network error and stays failed, so `source.*` calls on those paths fail for the whole page. The fix uses the legacy store for those paths without sending a ping.
@@ -358,8 +358,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Schema editor: markup in schema text**: [da-nx/schmesc](https://github.com/adobe/da-nx/tree/schmesc), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/utils/utils.js#L89).
   `<em>` in a description is lost on save and `&copy;` comes back as `©`; `$&` in the JSON writes `{{JSON}}`.
 
-- [ ] **Schema editor: files that aren't schemas**: [da-nx/schmhtml](https://github.com/adobe/da-nx/tree/schmhtml), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/utils/utils.js#L78-L80).
-  Every entry in `.da/forms/schemas` is listed as a schema, so a `.json` file shows up as an empty invalid schema and can replace the existing schema with the same name.
+- [ ] **Schema editor: files that aren't schemas**: [da-nx#1069](https://github.com/adobe/da-nx/pull/1069) (draft, `schmhtml`), [bug on main](https://github.com/adobe/da-nx/blob/87147d4a881441f968b11243d9445a6cb992f551/nx/blocks/schema-editor/utils/utils.js#L106-L108).
+  A sheet in `.da/forms/schemas` can hide a valid schema with the same name. In da.live on legacy DA and Helix 6, main listed the sheets as invalid schemas and the fix opened the `.html` schema without fetching the sheets.
 
 - [ ] **Schema editor: failed save or delete**: [da-nx/schmerr](https://github.com/adobe/da-nx/tree/schmerr), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/schema-editor/schema-editor.js#L157).
   The error goes to a field that only exists in new-schema mode, so the editor throws and shows nothing.
@@ -373,8 +373,8 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Translations: first load of the dashboard**: [da-nx/locdash](https://github.com/adobe/da-nx/tree/locdash), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/dashboard/dashboard.js#L146).
   A failed or cancelled first load leaves the loading bar and nothing else, and later filter changes wait on the same failed load.
 
-- [ ] **Translations: dependent languages**: [da-nx/locdeps](https://github.com/adobe/da-nx/tree/locdeps), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L370).
-  When a read of the source language's pages fails, the page goes to the vendor without content and the language is never retried.
+- [ ] **Translations: dependent languages**: [da-nx#996](https://github.com/adobe/da-nx/pull/996) (open), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L370).
+  When a source read fails, the page can go to the vendor without content and the dependent language is not retried. #996 covers the `locdeps` fix and keeps the language waiting if a read throws. It needs a test conflict fixed and a review.
 
 - [ ] **Translations: failed page or project read**: [da-nx/locreads](https://github.com/adobe/da-nx/tree/locreads), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/loc/views/translate/index.js#L92-L94).
   A read that throws leaves the page without content and without an error, and it goes to the vendor like that.
