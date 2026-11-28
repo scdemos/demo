@@ -188,9 +188,10 @@ Known problems that won't be fixed.
   (see MSM inheritance below, [Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795640325947449?thread_ts=1795639365.103839)). The fix stays on
   [da-live/msmhlx6](https://github.com/adobe/da-live/tree/msmhlx6) without a PR, on top of
   [adobe/da-live#1341](https://github.com/adobe/da-live/pull/1341) (open), see also
-  [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473). da-nx#801 removed the `mergeCopy`
-  export that merge from base imports, so #1341's merge is broken on main today. That fix is the separate
-  branch `msmmerge`, on hold with the four other #1341 fixes (see "Fixes found along the way"). The
+  [adobe/da-live#1473](https://github.com/adobe/da-live/issues/1473).
+  da-nx#801 removed the `mergeCopy` export that merge from base imports, so the merge is broken on
+  #1341. `main` does not contain that panel. The separate `msmmerge` fix is on hold with the four other
+  #1341 fixes (see "Fixes found along the way"). The
   aem-apps MSM app ([adobe-rnd/aem-apps#42](https://github.com/adobe-rnd/aem-apps/pull/42), merged Nov 4)
   is DA-only too.
 
@@ -383,19 +384,19 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Quick edit: failed start**: [da-nx#1075](https://github.com/adobe/da-nx/pull/1075) (draft, `qeretry`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/quick-edit-portal.js#L122-L127).
   A network error on the image cookie or the document check is kept for the life of the page, so nothing opens until a reload.
 
-- [ ] **MSM (on top of #1341): merge from base**: [da-live/msmmerge](https://github.com/adobe/da-live/tree/msmmerge), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L69-L77).
+- [ ] **MSM (on top of #1341): merge from base**: [da-live/msmmerge](https://github.com/adobe/da-live/tree/msmmerge), [bug on #1341](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L69-L77).
   #1341 imports `mergeCopy` from loc code that da-nx#801 moved to the public SDK, so every merge fails with "mergeCopy is not a function".
 
-- [ ] **MSM (on top of #1341): inherited pages**: [da-live/msmhead](https://github.com/adobe/da-live/tree/msmhead), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/config.js#L71-L77).
+- [ ] **MSM (on top of #1341): inherited pages**: [da-live/msmhead](https://github.com/adobe/da-live/tree/msmhead), [bug on #1341](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/config.js#L71-L77).
   Any failed HEAD counts as "no page of its own", so a 403 or 5xx lists a satellite as inherited, and Cancel inheritance overwrites its page.
 
-- [ ] **MSM (on top of #1341): resume inheritance**: [da-live/msmstat](https://github.com/adobe/da-live/tree/msmstat), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L45-L54).
+- [ ] **MSM (on top of #1341): resume inheritance**: [da-live/msmstat](https://github.com/adobe/da-live/tree/msmstat), [bug on #1341](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L45-L54).
   A failed status read counts as "not previewed, not published", so the override is deleted and preview and live keep serving it.
 
-- [ ] **MSM (on top of #1341): result of resume inheritance**: [da-live/msmrepub](https://github.com/adobe/da-live/tree/msmrepub), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/msm.js#L234-L254).
+- [ ] **MSM (on top of #1341): result of resume inheritance**: [da-live/msmrepub](https://github.com/adobe/da-live/tree/msmrepub), [bug on #1341](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/msm.js#L234-L254).
   A failed re-preview or re-publish is ignored and the row shows success.
 
-- [ ] **MSM (on top of #1341): one unreadable satellite**: [da-live/msmauth](https://github.com/adobe/da-live/tree/msmauth), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/shared/utils.js#L78-L95).
+- [ ] **MSM (on top of #1341): one unreadable satellite**: [da-live/msmauth](https://github.com/adobe/da-live/tree/msmauth), [bug on #1341](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/shared/utils.js#L78-L95).
   A 401 from DA sends the whole editor to /not-found.
 
 - [ ] **Clone it: site name check**: [#238](https://github.com/scdemos/demo/pull/238) (draft, `cloneck`),
@@ -479,10 +480,10 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   `how-to-use-quick-edit`, `how-to-manage-translations-and-rollouts`, `how-to-use-ew-basics`,
   `how-to-reuse-demo-site`, `how-to-author-ue`.
 
-- [ ] **Event template images (this repo)**: `templates/events/events.html` loads event images from
-  `main--demo--scdemos.aem.live`
-  ([events.html#L49](https://github.com/scdemos/demo/blob/8b0b6a69914d07e9e7ab421eb873cfae8396dc1e/templates/events/events.html#L49)),
-  so event pages on demo-hlx6 show demo's images. A relative URL would work for both sites.
+- [ ] **Event template images** ([#201](https://github.com/scdemos/demo/issues/201)): the hero and image
+  metadata use demo's host. The eight images match today. A relative URL alone resolves against the
+  JSON-to-HTML worker and returns 404. Before changing the template, test a per-site `relativeURLPrefix`
+  with quotes in event data: the worker decodes entities across the HTML, including the JSON-LD.
 
 - [ ] **Orphan pages on demo**: `/en/offers/member-week` is live on demo but has no DA source, so authors
   can't edit it there (rebuilt on demo-hlx6, see above). demo also still serves 7 pages whose source is
@@ -506,8 +507,11 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   `how-to-see-page-analytics` links `experience-workspace-page-insights-ga4.mp4`, which doesn't exist on
   demo either.
 
-- [ ] **xmod reskin prompt**: the prompt template in `/demo-docs/` tells the agent to read and write through
-  `admin.da.live` and `admin.hlx.page`, the wrong store for a Helix 6 site.
+- [x] **xmod reskin prompt** ([#195](https://github.com/scdemos/demo/issues/195)): the
+  [demo-hlx6 sample](https://main--demo-hlx6--scdemos.aem.live/demo-docs/media/healthdemo-xmod-prompt)
+  checks the target site, lists both sets of API routes, keeps TLS verification on and uses the code
+  repo for code sync. Preview and live match. The legacy sample is unchanged; keep the updated
+  demo-hlx6 copy when resyncing. The unlinked `media/old` copy was not edited.
 
 - [ ] **Canvas metadata recheck** ([#196](https://github.com/scdemos/demo/issues/196)): da-universal#307
   is deployed. The renderer keeps page and section metadata in the local source-bus fixture. The gated
