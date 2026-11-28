@@ -382,7 +382,7 @@ These bugs exist on main too. They turned up while the Helix 6 fixes were compar
 - [ ] **Quick edit: failed preview**: [da-nx#1073](https://github.com/adobe/da-nx/pull/1073) (draft, `qepvstat`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/src/utils.js#L284-L285).
   The message ends after the colon, because admin.hlx.page answers over HTTP/2, which has no status text. The branch adds the status code.
 
-- [ ] **Quick edit: failed start**: [da-nx/qeretry](https://github.com/adobe/da-nx/tree/qeretry), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/quick-edit-portal.js#L122-L127).
+- [ ] **Quick edit: failed start**: [da-nx#1075](https://github.com/adobe/da-nx/pull/1075) (draft, `qeretry`), [bug on main](https://github.com/adobe/da-nx/blob/d352ce19c3164d947e2caaacc627198ca9cc951b/nx/blocks/quick-edit-portal/quick-edit-portal.js#L122-L127).
   A network error on the image cookie or the document check is kept for the life of the page, so nothing opens until a reload.
 
 - [ ] **MSM (on top of #1341): merge from base**: [da-live/msmmerge](https://github.com/adobe/da-live/tree/msmmerge), [bug on main](https://github.com/adobe/da-live/blob/5e8143502a17bc6619deb806557fd67ed5f8779b/blocks/edit/da-prepare/actions/msm/helpers/utils.js#L69-L77).
