@@ -328,8 +328,9 @@ along the way" below.
 - [ ] **Request publish**: [worker #42](https://github.com/cloudadoption/publish-requests-worker/pull/42)
   and [aem-apps #75](https://github.com/adobe-rnd/aem-apps/pull/75) (drafts). The worker reads rules
   and stores requests on the source bus. The plugins and inboxes use the Helix 6 API for preview,
-  publish and approval versions. Deploy the worker first. Helix 6 setup still returns `501`, and
-  registering a site still needs a manual KV entry. Sagar can decide how setup and registration work.
+  publish and approval versions. Keep the worker in draft until the workflow checks Helix 6 roles and a
+  group-only author can submit. A branch push deploys shared CI, which uses production KV and can send
+  real email. Helix 6 setup still returns `501`, and new sites need a manual KV entry.
 
 - [ ] **EW chat (da-agent)**: prepared (da-agent `agnthlx6`, not pushed). The agent calls Helix 6 pages
   "empty", joins the wrong collab room and would write to the legacy store. Pushing any da-agent branch
@@ -427,7 +428,10 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
   copy. The classic path from demo isn't tested live from the branch yet. Merging changes
   `workers/cloneit_token/**`, which deploys the production worker. Demo Admin still can't delete a Helix 6
   clone (it only accepts `content.da.live` sources). The check that a new site name is free is the
-  separate draft [#238](https://github.com/scdemos/demo/pull/238).
+  separate draft [#238](https://github.com/scdemos/demo/pull/238). Current main was merged into
+  `clonehx6` on Nov 28 without changing the worker. Merge #238 first and keep its name-check guards, but
+  leave the post-copy config read separate. The classic preview clone still needs a live test; it writes
+  to the shared permissions sheet and demo registry.
 
 - [ ] **Demo Admin** ([#142](https://github.com/scdemos/demo/pull/142), [#143](https://github.com/scdemos/demo/pull/143)):
   backs up and resets the demo and deletes CloneIt demos. It copies and deletes through `admin.da.live` and
