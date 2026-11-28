@@ -507,7 +507,10 @@ only accept demo's hosts. Read from the code, not tried on demo-hlx6.
 - [ ] **xmod reskin prompt**: the prompt template in `/demo-docs/` tells the agent to read and write through
   `admin.da.live` and `admin.hlx.page`, the wrong store for a Helix 6 site.
 
-- [ ] **Recheck after upstream deploys**: page and section metadata in the canvas (gated content toggle,
-  nav/footer overrides) after da-universal#307.
+- [ ] **Canvas metadata recheck** ([#196](https://github.com/scdemos/demo/issues/196)): da-universal#307
+  is deployed. The renderer keeps page and section metadata in the local source-bus fixture. The gated
+  [guide preview](https://main--demo-hlx6--scdemos.aem.page/en/guides/first-90-days) shows the correct
+  sections in both auth states. The signed canvas preview read returned 403. Keep the live canvas check
+  open. The canvas still lets `metadata.json` override page-level nav and footer on both backends.
 
 - [ ] **Test content**: `/drafts/hlx6-tests/` holds pages and media from the fix tests. Keep or remove.
