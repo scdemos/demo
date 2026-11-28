@@ -81,6 +81,8 @@ Site setup and content:
 
 Fixed upstream:
 
+- [x] Site apps read the Helix 6 editor config: [adobe/da-nx#990](https://github.com/adobe/da-nx/pull/990).
+  Verified [Your Apps on demo-hlx6](https://da.live/apps#/scdemos/demo-hlx6): nine cards, config returned 200.
 - [x] Canvas routes Helix 6 sites to the source bus: [adobe/da-live#1249](https://github.com/adobe/da-live/pull/1249)
 - [x] Co-editing saves without a 401, image writes use POST: [adobe/da-collab#197](https://github.com/adobe/da-collab/pull/197), [adobe/da-collab#193](https://github.com/adobe/da-collab/pull/193)
 - [x] Canvas metadata: page metadata and section metadata were ignored in the canvas because Helix 6
@@ -327,10 +329,6 @@ along the way" below.
   "empty", joins the wrong collab room and would write to the legacy store. Pushing any da-agent branch
   redeploys `da-agent-ci`, and da-agent is to be removed "before Christmas"
   ([Slack](https://cq-dev.slack.com/archives/C0BAAAFRX5L/p1795444687667769?thread_ts=1795429693.558869)).
-
-- [ ] **Site apps (`da.live/apps#/...`)**: nothing prepared.
-  [site-apps.js#L67](https://github.com/adobe/da-nx/blob/0f67b1b0c9d2ad7427c2f52fc524b8eab6178ed7/nx/blocks/site-apps/site-apps.js#L67)
-  builds `admin.da.live` URLs.
 
 - [ ] **Comments**: commenting doesn't work on Helix 6 sites, probably because Helix 6 doesn't send a
   document ID. [adobe/da-live#1780](https://github.com/adobe/da-live/issues/1780) (open, Usman Khalid),
